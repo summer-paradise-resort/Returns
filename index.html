@@ -2,10 +2,439 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Summer Paradise Resort Returns</title>
+  <style>
+    :root{
+      --navy:#0d2743;
+      --gold:#a87b2f;
+      --gold2:#c7a45d;
+      --cream:#fbf8f1;
+      --white:#fff;
+      --line:#ddd3c3;
+      --muted:#6d6a64;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+      color:var(--navy);
+      background:#fff;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    img{display:block;width:100%}
+    .hidden{display:none!important}
+
+    /* INTRO */
+    #intro{
+      position:fixed; inset:0;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      color:#fff;
+      overflow:hidden;
+      background:#0c1c2c;
+      transition:opacity 1.2s ease, visibility 1.2s ease;
+    }
+    #intro::before{
+      content:"";
+      position:absolute; inset:-4%;
+      background:
+        linear-gradient(rgba(5,15,28,.28),rgba(5,15,28,.44)),
+        url("summer_paradise_sunset_mobile.jpg") center/cover no-repeat;
+      transform:scale(1.03);
+      animation:introZoom 6s ease-out forwards;
+    }
+    #intro.leave{opacity:0;visibility:hidden}
+    @keyframes introZoom{from{transform:scale(1.08)}to{transform:scale(1.02)}}
+    .intro-content{position:relative;z-index:2;padding:28px}
+    .intro-mark{font-size:15px;letter-spacing:.25em;color:#e4c982;margin-bottom:18px}
+    .intro-title{
+      font-size:clamp(28px,7vw,44px);
+      letter-spacing:.12em;
+      font-weight:500;
+      margin:0 0 14px;
+      opacity:0;
+      animation:fadeUp 1.4s .45s ease forwards;
+    }
+    .intro-sub{
+      font-family:Georgia,serif;
+      font-size:12px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      color:#ead8aa;
+      opacity:0;
+      animation:fadeUp 1.4s .9s ease forwards;
+    }
+    .intro-line{
+      width:120px;height:1px;background:rgba(255,255,255,.32);
+      margin:32px auto 0;overflow:hidden;position:relative;
+    }
+    .intro-line::after{
+      content:"";position:absolute;inset:0 auto 0 0;width:0;
+      background:#fff;animation:load 2.8s 1s ease forwards;
+    }
+    @keyframes load{to{width:100%}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+    /* HEADER */
+    header{
+      height:76px;background:rgba(255,255,255,.96);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 22px;
+      position:sticky;top:0;z-index:50;
+      border-bottom:1px solid rgba(168,123,47,.12);
+      backdrop-filter:blur(12px);
+    }
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .shell{
+      width:36px;height:36px;border:2px solid var(--gold);
+      border-radius:50% 50% 45% 45%; position:relative;
+    }
+    .shell::before,.shell::after{
+      content:"";position:absolute;left:50%;top:5px;width:1px;height:25px;background:var(--gold);
+      transform-origin:bottom;
+    }
+    .shell::before{transform:translateX(-50%) rotate(-26deg)}
+    .shell::after{transform:translateX(-50%) rotate(26deg)}
+    .brand-name{
+      color:var(--gold);font-family:Georgia,serif;font-size:20px;
+      line-height:1;white-space:nowrap;
+    }
+    .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
+    .menu-btn{
+      border:0;background:transparent;color:var(--navy);
+      width:48px;height:48px;display:grid;place-items:center;
+    }
+    .burger,.burger::before,.burger::after{
+      width:28px;height:1px;background:var(--navy);display:block;position:relative;
+    }
+    .burger::before,.burger::after{content:"";position:absolute;left:0}
+    .burger::before{top:-8px}.burger::after{top:8px}
+
+    /* HERO */
+    .hero{
+      min-height:670px;
+      position:relative;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
+        url("summer_paradise_noon_mobile.jpg") center 38%/cover no-repeat;
+      display:flex;align-items:flex-start;
+      padding:56px 24px 170px;
+    }
+    .hero-copy{
+      max-width:390px;
+      text-shadow:0 1px 10px rgba(255,255,255,.52);
+    }
+    .hero h1{
+      font-size:clamp(42px,12vw,66px);font-weight:500;
+      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);
+    }
+    .hero p{font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
+    .engline{
+      margin-top:24px;color:#8d6a35;letter-spacing:.28em;font-family:Georgia,serif;
+      font-size:11px;line-height:1.7;
+    }
+
+    /* BOOKING */
+    .booking-wrap{
+      margin:-118px 18px 0;position:relative;z-index:10;
+    }
+    .booking{
+      background:rgba(255,255,255,.97);
+      box-shadow:0 14px 36px rgba(14,32,51,.14);
+      border:1px solid rgba(168,123,47,.13);
+      padding:18px 16px 16px;
+    }
+    .booking-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+    .field{padding:0 10px;border-right:1px solid var(--line);min-width:0}
+    .field:last-child{border-right:0}
+    .field label{
+      display:block;font-size:10px;letter-spacing:.08em;margin-bottom:6px;color:#33465a;
+    }
+    .field input,.field select{
+      appearance:none;-webkit-appearance:none;
+      width:100%;border:0;background:transparent;
+      color:var(--navy);font-size:15px;padding:5px 0;outline:none;
+      min-width:0;
+    }
+    .search-btn{
+      width:100%;border:0;margin-top:17px;padding:16px;
+      background:linear-gradient(90deg,#b78a41,#89631f);
+      color:white;letter-spacing:.18em;font-size:16px;
+    }
+    .search-btn small{display:block;font-family:Georgia,serif;font-size:9px;letter-spacing:.34em;margin-top:5px}
+
+    /* MAIN */
+    .section{padding:70px 20px}
+    .section-head{text-align:center;margin-bottom:28px}
+    .section-head::before{
+      content:"";display:block;width:34px;height:1px;background:var(--gold);margin:0 auto 17px;
+    }
+    .section-head h2{font-size:22px;font-weight:500;letter-spacing:.12em;margin:0}
+    .section-head p{font-family:Georgia,serif;color:#a07c43;font-size:10px;letter-spacing:.28em}
+
+    .cards{display:grid;gap:20px}
+    .card{
+      border:0;background:#fff;padding:0;text-align:left;color:inherit;
+      box-shadow:0 8px 25px rgba(19,40,62,.08);
+    }
+    .card img{aspect-ratio:16/9;object-fit:cover}
+    .card-body{padding:20px}
+    .card-title{font-size:21px;letter-spacing:.14em;margin:0 0 5px}
+    .card-en{font-family:Georgia,serif;color:var(--gold);letter-spacing:.3em;font-size:10px}
+    .card-desc{font-size:13px;line-height:1.8;color:#4b5663;margin-top:13px}
+    .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
+
+    /* ROOM GALLERY */
+    #roomView{
+      position:fixed;inset:0;z-index:200;background:#fff;
+      overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
+    }
+    #roomView.open{opacity:1;visibility:visible}
+    .room-top{
+      height:70px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;border-bottom:1px solid #eee;
+      position:sticky;top:0;background:rgba(255,255,255,.97);z-index:5;
+    }
+    .back-btn{border:0;background:transparent;color:var(--navy);font-size:13px;letter-spacing:.12em}
+    .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
+    .gallery{overflow:hidden;touch-action:pan-y;position:relative}
+    .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
+    .gallery-slide{flex:0 0 100%;height:68svh;min-height:470px;background:#eee}
+    .gallery-slide img{width:100%;height:100%;object-fit:cover}
+    .dots{text-align:center;padding:15px 0 4px}
+    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
+    .dot.active{background:#9b7536}
+    .room-info{padding:18px 25px 42px}
+    .room-info h2{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0 0 8px;letter-spacing:.04em}
+    .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
+    .room-meta{font-size:11px;letter-spacing:.12em;color:#a17d43;margin:16px 0}
+    .room-info p{font-size:13px;line-height:2;color:#4e5660;margin:0}
+
+    /* RESULT SHEET */
+    #resultSheet{
+      position:fixed;inset:0;z-index:300;background:rgba(6,18,31,.42);
+      display:flex;align-items:flex-end;opacity:0;visibility:hidden;transition:.3s;
+    }
+    #resultSheet.open{opacity:1;visibility:visible}
+    .sheet{
+      width:100%;background:#fff;padding:26px 22px max(30px,env(safe-area-inset-bottom));
+      border-radius:22px 22px 0 0;transform:translateY(30px);transition:.35s;
+    }
+    #resultSheet.open .sheet{transform:none}
+    .sheet h3{margin:0 0 10px;font-size:20px;font-weight:500}
+    .sheet p{font-size:13px;line-height:1.8;color:#59616a}
+    .sheet-room{
+      margin-top:18px;border-top:1px solid #eee;border-bottom:1px solid #eee;padding:18px 0;
+      display:flex;gap:15px;align-items:center;
+    }
+    .sheet-room img{width:38%;aspect-ratio:16/9;object-fit:cover}
+    .sheet-room strong{font-family:Georgia,serif;font-size:14px}
+    .sheet-close{width:100%;margin-top:18px;border:1px solid #b18a49;background:#fff;color:#8b672e;padding:13px}
+
+    footer{text-align:center;padding:45px 20px 55px;background:#f7f3eb;color:#8d7b60}
+    footer .fbrand{font-family:Georgia,serif;font-size:18px;letter-spacing:.08em}
+    footer small{display:block;margin-top:9px;letter-spacing:.24em}
+
+    @media(min-width:700px){
+      body{max-width:520px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.1)}
+    }
+  </style>
 </head>
 <body>
-  <h1>Summer Paradise Resort Returns</h1>
+
+  <div id="intro">
+    <div class="intro-content">
+      <div class="intro-mark">SUMMER PARADISE RESORT</div>
+      <h1 class="intro-title">心ほどけるひと時を</h1>
+      <div class="intro-sub">Welcome to a place of gentle luxury.</div>
+      <div class="intro-line"></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="shell" aria-hidden="true"></div>
+      <div class="brand-name">Summer Paradise<small>RESORT</small></div>
+    </div>
+    <button class="menu-btn" aria-label="メニュー"><span class="burger"></span></button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <h1>楽園へ、還る。</h1>
+        <p>どこまでも続く青と、やすらぎに満ちた時間。<br>ここは、心が還る特別な場所。</p>
+        <div class="engline">A REFINED STAY<br>IN PARADISE</div>
+      </div>
+    </section>
+
+    <div class="booking-wrap">
+      <div class="booking">
+        <div class="booking-grid">
+          <div class="field">
+            <label for="checkin">チェックイン</label>
+            <input id="checkin" type="date">
+          </div>
+          <div class="field">
+            <label for="checkout">チェックアウト</label>
+            <input id="checkout" type="date">
+          </div>
+          <div class="field">
+            <label for="guests">ご宿泊人数</label>
+            <select id="guests">
+              <option value="1">1名</option>
+              <option value="2" selected>2名</option>
+              <option value="3">3名</option>
+              <option value="4">4名</option>
+            </select>
+          </div>
+        </div>
+        <button class="search-btn" id="searchBtn">宿泊を検索する<small>RESERVE NOW</small></button>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>心が還る、楽園のひととき</h2>
+        <p>A SANCTUARY IN PARADISE</p>
+      </div>
+
+      <div class="cards">
+        <button class="card" id="roomCard">
+          <img src="ocean_view_room_16-9.JPG" alt="オーシャンビュー客室">
+          <div class="card-body">
+            <h3 class="card-title">客室</h3>
+            <div class="card-en">ROOMS</div>
+            <div class="card-desc">海と空につながる、静かな滞在のための客室。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
+        </button>
+
+        <div class="card">
+          <img src="sunset_terrace_16x9.jpg" alt="レストラン">
+          <div class="card-body">
+            <h3 class="card-title">レストラン</h3>
+            <div class="card-en">DINING</div>
+            <div class="card-desc">この地ならではの恵みを、海を眺めながら味わうひととき。</div>
+            <div class="view">COMING SOON</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="mermaids_cove_16x9.jpg" alt="リゾート体験">
+          <div class="card-body">
+            <h3 class="card-title">体験</h3>
+            <div class="card-en">EXPERIENCE</div>
+            <div class="card-desc">海、入り江、灯台。ここにしかない時間をお楽しみください。</div>
+            <div class="view">COMING SOON</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="fbrand">Summer Paradise Resort</div>
+    <small>RETURNS</small>
+  </footer>
+
+  <section id="roomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="roomBack">← BACK</button>
+      <div class="room-label">ROOMS & SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="gallery">
+      <div class="gallery-track" id="galleryTrack">
+        <div class="gallery-slide"><img src="ocean_view_room_16-9.JPG" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom_16-9.JPG" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom_16-9.JPG" alt="バスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="dots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>DELUXE OCEAN VIEW</h2>
+      <div class="jp">デラックス オーシャンビュー</div>
+      <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
+      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
+    </div>
+  </section>
+
+  <div id="resultSheet">
+    <div class="sheet">
+      <h3>空室検索</h3>
+      <p id="searchSummary"></p>
+      <div class="sheet-room">
+        <img src="ocean_view_room_16-9.JPG" alt="">
+        <div>
+          <strong>DELUXE OCEAN VIEW</strong>
+          <p style="margin:6px 0 0">ご指定の条件でご案内可能です。</p>
+        </div>
+      </div>
+      <button class="sheet-close" id="sheetClose">閉じる</button>
+    </div>
+  </div>
+
+  <script>
+    const intro = document.getElementById('intro');
+    setTimeout(() => intro.classList.add('leave'), 3800);
+    setTimeout(() => intro.remove(), 5200);
+
+    const today = new Date();
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+    const dayAfter = new Date(today); dayAfter.setDate(today.getDate()+2);
+    const fmt = d => {
+      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    };
+    document.getElementById('checkin').value = fmt(tomorrow);
+    document.getElementById('checkout').value = fmt(dayAfter);
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const ci = document.getElementById('checkin').value;
+      const co = document.getElementById('checkout').value;
+      const g = document.getElementById('guests').value;
+      if(!ci || !co){ alert('チェックイン日とチェックアウト日を選択してください。'); return; }
+      if(new Date(co) <= new Date(ci)){ alert('チェックアウト日はチェックイン日より後の日付を選択してください。'); return; }
+      document.getElementById('searchSummary').textContent =
+        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　${g}名`;
+      document.getElementById('resultSheet').classList.add('open');
+    });
+    document.getElementById('sheetClose').addEventListener('click', () => {
+      document.getElementById('resultSheet').classList.remove('open');
+    });
+
+    const roomView = document.getElementById('roomView');
+    document.getElementById('roomCard').addEventListener('click', () => {
+      roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('roomBack').addEventListener('click', () => {
+      roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
+    });
+
+    let slide = 0, startX = 0, endX = 0;
+    const track = document.getElementById('galleryTrack');
+    const dots = [...document.querySelectorAll('.dot')];
+    function showSlide(n){
+      slide = Math.max(0, Math.min(2, n));
+      track.style.transform = `translateX(-${slide*100}%)`;
+      dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
+    }
+    const gallery = document.getElementById('gallery');
+    gallery.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true});
+    gallery.addEventListener('touchend',e=>{
+      endX=e.changedTouches[0].screenX;
+      if(startX-endX>45) showSlide(slide+1);
+      if(endX-startX>45) showSlide(slide-1);
+    },{passive:true});
+  </script>
 </body>
 </html>
