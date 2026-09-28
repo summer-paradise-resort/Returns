@@ -191,11 +191,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView{
+    #roomView,#restaurantView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open{opacity:1;visibility:visible}
+    #roomView.open,#restaurantView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -205,8 +205,8 @@
     .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
     .gallery{overflow:hidden;touch-action:pan-y;position:relative}
     .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
-    .gallery-slide{flex:0 0 100%;height:68svh;min-height:470px;background:#eee;display:flex;align-items:center;justify-content:center}
-    .gallery-slide img{width:70%;height:70%;object-fit:contain}
+    .gallery-slide{flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
+    .gallery-slide img{width:100%;height:100%;object-fit:contain}
     .dots{text-align:center;padding:15px 0 4px}
     .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
     .dot.active{background:#9b7536}
@@ -316,15 +316,15 @@
           </div>
         </button>
 
-        <div class="card">
-          <img src="sunset_terrace_16x9.jpg" alt="レストラン">
+        <button class="card" id="restaurantCard" type="button">
+          <img src="sunset_terrace_16x9.jpg" alt="レストラン＆カフェ">
           <div class="card-body">
-            <h3 class="card-title">レストラン</h3>
-            <div class="card-en">DINING</div>
+            <h3 class="card-title">レストラン＆カフェ</h3>
+            <div class="card-en">RESTAURANT &amp; CAFÉ</div>
             <div class="card-desc">この地ならではの恵みを、海を眺めながら味わうひととき。</div>
-            <div class="view">COMING SOON</div>
+            <div class="view">VIEW MORE　›</div>
           </div>
-        </div>
+        </button>
 
         <div class="card">
           <img src="mermaids_cove_16x9.jpg" alt="リゾート体験">
@@ -365,6 +365,34 @@
       <div class="jp">デラックス オーシャンビュー</div>
       <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
       <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
+    </div>
+  </section>
+
+  <section id="restaurantView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="restaurantBack">← BACK</button>
+      <div class="room-label">RESTAURANT &amp; CAFÉ</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="restaurantGallery">
+      <div class="gallery-track" id="restaurantGalleryTrack">
+        <div class="gallery-slide"><img src="the_pearl_terrace_interior_16x9.jpg" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="sunset_terrace_16x9.jpg" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="restaurant1.PNG" alt="レストラン"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_tea_1672x941.jpg" alt="Marine Bloom Cafe ティーセット"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_interior.jpg" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_exterior_16x9.jpg" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="restaurant2.PNG" alt="レストラン"></div>
+      </div>
+    </div>
+    <div class="dots" id="restaurantDots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>RESTAURANT &amp; CAFÉ</h2>
+      <div class="jp">レストラン＆カフェ</div>
+      <div class="room-meta">THE PEARL TERRACE　/　MARINE BLOOM CAFE</div>
+      <p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
     </div>
   </section>
 
@@ -420,9 +448,33 @@
       roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
     });
 
+    const restaurantView = document.getElementById('restaurantView');
+    document.getElementById('restaurantCard').addEventListener('click', () => {
+      restaurantView.classList.add('open'); restaurantView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('restaurantBack').addEventListener('click', () => {
+      restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
+    });
+
+    let restaurantSlide = 0, restaurantStartX = 0;
+    const restaurantTrack = document.getElementById('restaurantGalleryTrack');
+    const restaurantDots = [...document.querySelectorAll('#restaurantDots .dot')];
+    function showRestaurantSlide(n){
+      restaurantSlide = Math.max(0, Math.min(restaurantDots.length - 1, n));
+      restaurantTrack.style.transform = `translateX(-${restaurantSlide*100}%)`;
+      restaurantDots.forEach((d,i)=>d.classList.toggle('active',i===restaurantSlide));
+    }
+    const restaurantGallery = document.getElementById('restaurantGallery');
+    restaurantGallery.addEventListener('touchstart',e=>restaurantStartX=e.changedTouches[0].screenX,{passive:true});
+    restaurantGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - restaurantStartX;
+      if(distance < -45) showRestaurantSlide(restaurantSlide + 1);
+      if(distance > 45) showRestaurantSlide(restaurantSlide - 1);
+    },{passive:true});
+
     let slide = 0, startX = 0, endX = 0;
     const track = document.getElementById('galleryTrack');
-    const dots = [...document.querySelectorAll('.dot')];
+    const dots = [...document.querySelectorAll('#dots .dot')];
     function showSlide(n){
       slide = Math.max(0, Math.min(2, n));
       track.style.transform = `translateX(-${slide*100}%)`;
