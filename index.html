@@ -201,6 +201,13 @@
       color:var(--navy);font-size:15px;padding:5px 0;outline:none;
       min-width:0;
     }
+    .room-choice{margin-top:15px;padding:12px 10px 9px;border-top:1px solid var(--line)}
+    .room-choice label{display:block;font-size:10px;letter-spacing:.1em;margin-bottom:7px;color:#33465a}
+    .room-choice select{
+      appearance:none;-webkit-appearance:none;width:100%;border:0;border-bottom:1px solid #cdbb9e;
+      border-radius:0;background:linear-gradient(45deg,transparent 50%,#8b682f 50%) right 7px center/6px 6px no-repeat;
+      color:var(--navy);font-size:14px;padding:7px 24px 9px 0;outline:none;
+    }
     .search-btn{
       width:100%;border:0;margin-top:17px;padding:16px;
       background:linear-gradient(90deg,#b78a41,#89631f);
@@ -230,11 +237,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#restaurantView,#barView,#experienceView{
+    #roomView,#familyRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
+    #roomView.open,#familyRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -255,6 +262,13 @@
     .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
     .room-meta{font-size:11px;letter-spacing:.12em;color:#a17d43;margin:16px 0}
     .room-info p{font-size:13px;line-height:2;color:#4e5660;margin:0}
+    .other-room-card{display:block;width:100%;margin-top:30px;padding:0;border:1px solid #e1d6c4;background:#fff;text-align:left;color:var(--navy)}
+    .other-room-card img{aspect-ratio:16/9;object-fit:cover}
+    .other-room-copy{padding:16px 17px 18px}
+    .other-room-copy small{display:block;color:#9a7539;letter-spacing:.2em;margin-bottom:7px}
+    .other-room-copy strong{font-family:Georgia,serif;font-size:18px;font-weight:500;letter-spacing:.04em}
+    .other-room-desc{font-size:12px;line-height:1.8;color:#56616d;margin:9px 0 0}
+    .other-room-copy span{display:block;margin-top:8px;color:#8b682f;font-size:10px;letter-spacing:.2em}
     .hours-panel{margin-top:26px;padding:20px 18px;background:var(--cream);border:1px solid var(--line)}
     .hours-panel h3{margin:0 0 13px;font-size:15px;font-weight:500;letter-spacing:.1em}
     .hours-item{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:12px 0;border-top:1px solid rgba(168,123,47,.2)}
@@ -262,26 +276,35 @@
     .hours-time{font-family:Georgia,serif;font-size:13px;color:#765a2c;white-space:nowrap}
     .hours-note{grid-column:1/-1;font-size:11px;line-height:1.7;color:#715f48}
 
-    /* RESULT SHEET */
-    #resultSheet{
-      position:fixed;inset:0;z-index:300;background:rgba(6,18,31,.42);
-      display:flex;align-items:flex-end;opacity:0;visibility:hidden;transition:.3s;
+    /* RESERVATION FLOW */
+    #reservationView,#confirmationView{
+      position:fixed;inset:0;z-index:310;background:#fff;overflow-y:auto;
+      opacity:0;visibility:hidden;transform:translateY(16px);transition:.35s ease;
     }
-    #resultSheet.open{opacity:1;visibility:visible}
-    .sheet{
-      width:100%;background:#fff;padding:26px 22px max(30px,env(safe-area-inset-bottom));
-      border-radius:22px 22px 0 0;transform:translateY(30px);transition:.35s;
-    }
-    #resultSheet.open .sheet{transform:none}
-    .sheet h3{margin:0 0 10px;font-size:20px;font-weight:500}
-    .sheet p{font-size:13px;line-height:1.8;color:#59616a}
-    .sheet-room{
-      margin-top:18px;border-top:1px solid #eee;border-bottom:1px solid #eee;padding:18px 0;
-      display:flex;gap:15px;align-items:center;
-    }
-    .sheet-room img{width:38%;aspect-ratio:16/9;object-fit:cover}
-    .sheet-room strong{font-family:Georgia,serif;font-size:14px}
-    .sheet-close{width:100%;margin-top:18px;border:1px solid #b18a49;background:#fff;color:#8b672e;padding:13px}
+    #confirmationView{z-index:320;background:linear-gradient(165deg,#fff 0 58%,#f5eee1 100%)}
+    #reservationView.open,#confirmationView.open{opacity:1;visibility:visible;transform:none}
+    .reserve-content{padding:35px 22px max(46px,env(safe-area-inset-bottom))}
+    .reserve-kicker{font-family:Georgia,serif;color:#a17d43;font-size:10px;letter-spacing:.28em;margin-bottom:9px}
+    .reserve-content h2{margin:0 0 24px;font-size:25px;font-weight:500;letter-spacing:.08em}
+    .reserve-summary{border:1px solid #dfd4c1;background:var(--cream);padding:15px;margin-bottom:27px}
+    .reserve-summary img{aspect-ratio:16/9;object-fit:cover;margin-bottom:15px}
+    .reserve-room-name{font-family:Georgia,serif;font-size:17px;letter-spacing:.04em;margin-bottom:9px}
+    .reserve-detail{font-size:13px;color:#526070;line-height:1.8}
+    .form-field{margin:0 0 21px}
+    .form-field label{display:block;margin-bottom:8px;font-size:12px;letter-spacing:.09em}
+    .form-field input{width:100%;border:1px solid #d8cbb7;background:#fff;padding:14px 12px;color:var(--navy);font-size:16px;outline:none}
+    .form-field input:focus{border-color:#a87b2f;box-shadow:0 0 0 2px rgba(168,123,47,.1)}
+    .reserve-button{width:100%;border:0;background:linear-gradient(90deg,#b78a41,#89631f);color:#fff;padding:17px;font-size:16px;letter-spacing:.18em}
+    .reserve-note{margin:12px 0 0;text-align:center;color:#7b756c;font-size:10px;line-height:1.7}
+    .confirmation-content{min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:52px 24px max(45px,env(safe-area-inset-bottom))}
+    .confirmation-mark{width:62px;height:62px;margin:0 auto 22px;border:1px solid #b38a47;border-radius:50%;display:grid;place-items:center;color:#a87b2f;font-size:28px}
+    .confirmation-content h2{margin:0 0 10px;font-size:25px;font-weight:500;letter-spacing:.08em}
+    .confirmation-lead{font-size:13px;color:#66717c;line-height:1.9;margin:0 0 29px}
+    .code-card{border:1px solid #d9c7a9;background:rgba(255,255,255,.82);padding:24px 16px;margin-bottom:22px}
+    .code-label{font-family:Georgia,serif;color:#9b763a;font-size:9px;letter-spacing:.28em}
+    #bookingCode{font-family:Georgia,serif;font-size:27px;letter-spacing:.12em;margin:12px 0 17px;word-break:break-all}
+    #confirmationSummary{font-size:12px;line-height:1.9;color:#465465}
+    .screenshot-note{margin:0 0 25px;font-size:13px;line-height:1.8;color:#5d5549}
 
     footer{text-align:center;padding:45px 20px 55px;background:#f7f3eb;color:#8d7b60}
     footer .fbrand{font-family:Georgia,serif;font-size:18px;letter-spacing:.08em}
@@ -374,7 +397,16 @@
             </select>
           </div>
         </div>
-        <button class="search-btn" id="searchBtn">宿泊を検索する<small>RESERVE NOW</small></button>
+        <div class="room-choice">
+          <label for="roomChoice">客室</label>
+          <select id="roomChoice">
+            <option value="deluxe">DELUXE OCEAN VIEW（1〜2名）</option>
+            <option value="family">FAMILY OCEAN SUITE（3〜4名）</option>
+            <option value="suite">OCEAN GRAND SUITE（1〜2名）</option>
+            <option value="royal">ROYAL OCEAN VILLA（1〜2名）</option>
+          </select>
+        </div>
+        <button class="search-btn" id="searchBtn">予約内容を決定する<small>CONFIRM YOUR STAY</small></button>
       </div>
     </div>
 
@@ -453,6 +485,100 @@
       <div class="jp">デラックス オーシャンビュー</div>
       <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
       <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
+      <button class="other-room-card" id="familyRoomCard" type="button">
+        <img src="family_01.jpg" alt="ファミリー オーシャンスイートの客室">
+        <div class="other-room-copy">
+          <small>FOR 3–4 GUESTS</small>
+          <strong>FAMILY OCEAN SUITE</strong>
+          <p class="other-room-desc">海を望むリビングを囲み、ご家族でくつろぐゆとりの一室。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+      <button class="other-room-card" id="suiteRoomCard" type="button">
+        <img src="suite_01.jpg" alt="夕景を望むオーシャン グランドスイートのテラス">
+        <div class="other-room-copy">
+          <small>SUITE FOR 1–2 GUESTS</small>
+          <strong>OCEAN GRAND SUITE</strong>
+          <p class="other-room-desc">夕景を眺めるテラスと上質なリビングを備えたスイート。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+      <button class="other-room-card" id="royalRoomCard" type="button">
+        <img src="villa_01.jpg" alt="専用プール付きのロイヤル オーシャンヴィラ">
+        <div class="other-room-copy">
+          <small>TOP-FLOOR POOL VILLA</small>
+          <strong>ROYAL OCEAN VILLA</strong>
+          <p class="other-room-desc">専用プールと海の眺望を楽しむ最上階のヴィラ。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="suiteRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="suiteRoomBack">← BACK</button>
+      <div class="room-label">ROOMS &amp; SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="suiteGallery">
+      <div class="gallery-track" id="suiteGalleryTrack">
+        <div class="gallery-slide"><img src="suite_01.jpg" alt="夕日を望むスイートのテラスとリビング"></div>
+        <div class="gallery-slide"><img src="suite_02.jpg" alt="オーシャン グランドスイートの客室"></div>
+        <div class="gallery-slide"><img src="suite_03.jpg" alt="海を望むスイートのバスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="suiteDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="room-info">
+      <h2>OCEAN GRAND SUITE</h2>
+      <div class="jp">オーシャン グランドスイート</div>
+      <div class="room-meta">62㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
+      <p>広々としたリビングとベッドルームがひとつながりになったスイート。夕日に染まる海を望むテラスには、くつろぎの席とダイニングをご用意しました。大きな窓から海を眺めるバスルームで、滞在の時間をゆっくりとお楽しみください。</p>
+    </div>
+  </section>
+
+  <section id="royalRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="royalRoomBack">← BACK</button>
+      <div class="room-label">PENTHOUSE VILLA</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="royalGallery">
+      <div class="gallery-track" id="royalGalleryTrack">
+        <div class="gallery-slide"><img src="villa_01.jpg" alt="海を見下ろす専用インフィニティプールとテラス"></div>
+        <div class="gallery-slide"><img src="villa_02.jpg" alt="最上階ロイヤル オーシャンヴィラの客室"></div>
+        <div class="gallery-slide"><img src="villa_03.jpg" alt="最上階の景色を望むスパバスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="royalDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="room-info">
+      <h2>ROYAL OCEAN VILLA</h2>
+      <div class="jp">最上階 ロイヤル オーシャンヴィラ</div>
+      <div class="room-meta">120㎡　/　1–2 GUESTS　/　TOP FLOOR PRIVATE POOL</div>
+      <p>ホテル最上階に広がるロイヤルヴィラ。海と海岸線を見晴らす専用インフィニティプール、屋根付きのパビリオン、ゆったりとしたベッドルームとリビングを備えています。開放的なスパバスルームまで続く上質な空間で、特別な滞在をお楽しみください。</p>
+    </div>
+  </section>
+
+  <section id="familyRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="familyRoomBack">← BACK</button>
+      <div class="room-label">ROOMS &amp; SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="familyGallery">
+      <div class="gallery-track" id="familyGalleryTrack">
+        <div class="gallery-slide"><img src="family_01.jpg" alt="海を望むファミリー用の客室とリビング"></div>
+        <div class="gallery-slide"><img src="family_02.jpg" alt="ファミリー用客室のバスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="familyDots">
+      <span class="dot active"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>FAMILY OCEAN SUITE</h2>
+      <div class="jp">ファミリー オーシャンスイート</div>
+      <div class="room-meta">62㎡　/　3–4 GUESTS　/　OCEAN VIEW</div>
+      <p>大きな窓の向こうに海が広がり、ベッドスペースとリビング・ダイニングをゆったりと配置したファミリー向けの客室。明るいバスルームまでやわらかな色合いで揃え、ご家族やご友人とくつろいでお過ごしいただけます。</p>
     </div>
   </section>
 
@@ -559,20 +685,48 @@
     </div>
   </section>
 
-  <div id="resultSheet">
-    <div class="sheet">
-      <h3>空室検索</h3>
-      <p id="searchSummary"></p>
-      <div class="sheet-room">
-        <img src="ocean_view_room.jpg?v=202609281830" alt="">
-        <div>
-          <strong>DELUXE OCEAN VIEW</strong>
-          <p style="margin:6px 0 0">ご指定の条件でご案内可能です。</p>
-        </div>
-      </div>
-      <button class="sheet-close" id="sheetClose">閉じる</button>
+  <section id="reservationView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="reservationBack" type="button">← BACK</button>
+      <div class="room-label">RESERVATION</div>
+      <div style="width:46px"></div>
     </div>
-  </div>
+    <div class="reserve-content">
+      <div class="reserve-kicker">YOUR STAY</div>
+      <h2>ご予約内容の確認</h2>
+      <div class="reserve-summary">
+        <img id="reservationImage" src="ocean_view_room.jpg?v=202609281830" alt="選択した客室">
+        <div class="reserve-room-name" id="reservationRoomName"></div>
+        <div class="reserve-detail" id="reservationSummary"></div>
+      </div>
+      <div class="form-field">
+        <label for="guestName">お名前</label>
+        <input id="guestName" type="text" autocomplete="name" placeholder="例：サマー パラダイス">
+      </div>
+      <div class="form-field">
+        <label for="guestAddress">メールアドレス</label>
+        <input id="guestAddress" type="text" autocomplete="email" placeholder="例：guest@example.com">
+      </div>
+      <button class="reserve-button" id="reserveBtn" type="button">予約する</button>
+      <p class="reserve-note">入力した内容が外部へ送信されることはありません。</p>
+    </div>
+  </section>
+
+  <section id="confirmationView" aria-hidden="true">
+    <div class="confirmation-content">
+      <div class="confirmation-mark">✓</div>
+      <div class="reserve-kicker">RESERVATION COMPLETE</div>
+      <h2>ご予約を承りました</h2>
+      <p class="confirmation-lead">サマーパラダイスリゾートで<br>お会いできることを楽しみにしています。</p>
+      <div class="code-card">
+        <div class="code-label">RESERVATION NUMBER</div>
+        <div id="bookingCode"></div>
+        <div id="confirmationSummary"></div>
+      </div>
+      <p class="screenshot-note">予約番号が見えるように、この画面をスクリーンショットして掲示してください。</p>
+      <button class="reserve-button" id="confirmationClose" type="button">トップへ戻る</button>
+    </div>
+  </section>
 
   <script>
     const intro = document.getElementById('intro');
@@ -617,18 +771,76 @@
     document.getElementById('checkin').value = fmt(tomorrow);
     document.getElementById('checkout').value = fmt(dayAfter);
 
+    const guestsSelect = document.getElementById('guests');
+    const roomChoice = document.getElementById('roomChoice');
+    const reservationView = document.getElementById('reservationView');
+    const confirmationView = document.getElementById('confirmationView');
+    const rooms = {
+      deluxe:{name:'DELUXE OCEAN VIEW',jp:'デラックス オーシャンビュー',image:'ocean_view_room.jpg?v=202609281830',min:1,max:2},
+      family:{name:'FAMILY OCEAN SUITE',jp:'ファミリー オーシャンスイート',image:'family_01.jpg',min:3,max:4},
+      suite:{name:'OCEAN GRAND SUITE',jp:'オーシャン グランドスイート',image:'suite_01.jpg',min:1,max:2},
+      royal:{name:'ROYAL OCEAN VILLA',jp:'ロイヤル オーシャンヴィラ',image:'villa_01.jpg',min:1,max:2}
+    };
+    let currentReservation = null;
+
+    guestsSelect.addEventListener('change', () => {
+      roomChoice.value = Number(guestsSelect.value) >= 3 ? 'family' : 'deluxe';
+    });
+
+    function setOverlay(view,isOpen){
+      view.classList.toggle('open',isOpen);
+      view.setAttribute('aria-hidden',String(!isOpen));
+      document.body.classList.toggle('menu-open',isOpen);
+      if(isOpen) view.scrollTop = 0;
+    }
+
     document.getElementById('searchBtn').addEventListener('click', () => {
       const ci = document.getElementById('checkin').value;
       const co = document.getElementById('checkout').value;
-      const g = document.getElementById('guests').value;
+      const guests = Number(guestsSelect.value);
+      const room = rooms[roomChoice.value];
       if(!ci || !co){ alert('チェックイン日とチェックアウト日を選択してください。'); return; }
       if(new Date(co) <= new Date(ci)){ alert('チェックアウト日はチェックイン日より後の日付を選択してください。'); return; }
-      document.getElementById('searchSummary').textContent =
-        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　${g}名`;
-      document.getElementById('resultSheet').classList.add('open');
+      if(guests < room.min || guests > room.max){
+        alert(`${room.name}は${room.min}〜${room.max}名様用です。人数に合う客室を選択してください。`); return;
+      }
+      currentReservation = {ci,co,guests,room};
+      document.getElementById('reservationImage').src = room.image;
+      document.getElementById('reservationRoomName').textContent = room.name;
+      document.getElementById('reservationSummary').textContent =
+        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　／　${guests}名`;
+      setOverlay(reservationView,true);
     });
-    document.getElementById('sheetClose').addEventListener('click', () => {
-      document.getElementById('resultSheet').classList.remove('open');
+    document.getElementById('reservationBack').addEventListener('click', () => setOverlay(reservationView,false));
+
+    function makeBookingCode(){
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const values = new Uint32Array(8);
+      if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(values);
+      else values.forEach((_,i) => values[i] = Math.floor(Math.random()*chars.length));
+      let code = '';
+      values.forEach(value => code += chars[value % chars.length]);
+      return `SPR-${code.slice(0,4)}-${code.slice(4)}`;
+    }
+
+    document.getElementById('reserveBtn').addEventListener('click', () => {
+      const name = document.getElementById('guestName').value.trim();
+      const address = document.getElementById('guestAddress').value.trim();
+      if(!name){ alert('お名前を入力してください。'); return; }
+      if(!address){ alert('メールアドレスを入力してください。'); return; }
+      document.getElementById('bookingCode').textContent = makeBookingCode();
+      document.getElementById('confirmationSummary').textContent =
+        `${currentReservation.room.name}\n${currentReservation.ci.replaceAll('-','/')} 〜 ${currentReservation.co.replaceAll('-','/')}　／　${currentReservation.guests}名\nご予約者：${name}`;
+      document.getElementById('confirmationSummary').style.whiteSpace = 'pre-line';
+      reservationView.classList.remove('open');
+      reservationView.setAttribute('aria-hidden','true');
+      setOverlay(confirmationView,true);
+    });
+    document.getElementById('confirmationClose').addEventListener('click', () => {
+      setOverlay(confirmationView,false);
+      document.getElementById('guestName').value = '';
+      document.getElementById('guestAddress').value = '';
+      window.scrollTo({top:0,behavior:'smooth'});
     });
 
     const roomView = document.getElementById('roomView');
@@ -637,6 +849,30 @@
     });
     document.getElementById('roomBack').addEventListener('click', () => {
       roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
+    });
+
+    const familyRoomView = document.getElementById('familyRoomView');
+    document.getElementById('familyRoomCard').addEventListener('click', () => {
+      showFamilySlide(0); familyRoomView.classList.add('open'); familyRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('familyRoomBack').addEventListener('click', () => {
+      familyRoomView.classList.remove('open'); familyRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const suiteRoomView = document.getElementById('suiteRoomView');
+    document.getElementById('suiteRoomCard').addEventListener('click', () => {
+      showSuiteSlide(0); suiteRoomView.classList.add('open'); suiteRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('suiteRoomBack').addEventListener('click', () => {
+      suiteRoomView.classList.remove('open'); suiteRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const royalRoomView = document.getElementById('royalRoomView');
+    document.getElementById('royalRoomCard').addEventListener('click', () => {
+      showRoyalSlide(0); royalRoomView.classList.add('open'); royalRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('royalRoomBack').addEventListener('click', () => {
+      royalRoomView.classList.remove('open'); royalRoomView.setAttribute('aria-hidden','true');
     });
 
     const restaurantView = document.getElementById('restaurantView');
@@ -728,6 +964,54 @@
       endX=e.changedTouches[0].screenX;
       if(startX-endX>45) showSlide(slide+1);
       if(endX-startX>45) showSlide(slide-1);
+    },{passive:true});
+
+    let familySlide = 0, familyStartX = 0;
+    const familyTrack = document.getElementById('familyGalleryTrack');
+    const familyDots = [...document.querySelectorAll('#familyDots .dot')];
+    function showFamilySlide(n){
+      familySlide = Math.max(0, Math.min(familyDots.length - 1, n));
+      familyTrack.style.transform = `translateX(-${familySlide*100}%)`;
+      familyDots.forEach((d,i)=>d.classList.toggle('active',i===familySlide));
+    }
+    const familyGallery = document.getElementById('familyGallery');
+    familyGallery.addEventListener('touchstart',e=>familyStartX=e.changedTouches[0].screenX,{passive:true});
+    familyGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - familyStartX;
+      if(distance < -45) showFamilySlide(familySlide + 1);
+      if(distance > 45) showFamilySlide(familySlide - 1);
+    },{passive:true});
+
+    let suiteSlide = 0, suiteStartX = 0;
+    const suiteTrack = document.getElementById('suiteGalleryTrack');
+    const suiteDots = [...document.querySelectorAll('#suiteDots .dot')];
+    function showSuiteSlide(n){
+      suiteSlide = Math.max(0, Math.min(suiteDots.length - 1, n));
+      suiteTrack.style.transform = `translateX(-${suiteSlide*100}%)`;
+      suiteDots.forEach((d,i)=>d.classList.toggle('active',i===suiteSlide));
+    }
+    const suiteGallery = document.getElementById('suiteGallery');
+    suiteGallery.addEventListener('touchstart',e=>suiteStartX=e.changedTouches[0].screenX,{passive:true});
+    suiteGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - suiteStartX;
+      if(distance < -45) showSuiteSlide(suiteSlide + 1);
+      if(distance > 45) showSuiteSlide(suiteSlide - 1);
+    },{passive:true});
+
+    let royalSlide = 0, royalStartX = 0;
+    const royalTrack = document.getElementById('royalGalleryTrack');
+    const royalDots = [...document.querySelectorAll('#royalDots .dot')];
+    function showRoyalSlide(n){
+      royalSlide = Math.max(0, Math.min(royalDots.length - 1, n));
+      royalTrack.style.transform = `translateX(-${royalSlide*100}%)`;
+      royalDots.forEach((d,i)=>d.classList.toggle('active',i===royalSlide));
+    }
+    const royalGallery = document.getElementById('royalGallery');
+    royalGallery.addEventListener('touchstart',e=>royalStartX=e.changedTouches[0].screenX,{passive:true});
+    royalGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - royalStartX;
+      if(distance < -45) showRoyalSlide(royalSlide + 1);
+      if(distance > 45) showRoyalSlide(royalSlide - 1);
     },{passive:true});
   </script>
 </body>
