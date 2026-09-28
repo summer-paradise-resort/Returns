@@ -237,11 +237,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#familyRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
+    #roomView,#deluxeRoomView,#familyRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#familyRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
+    #roomView.open,#deluxeRoomView.open,#familyRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -470,21 +470,16 @@
       <div class="room-label">ROOMS & SUITES</div>
       <div style="width:46px"></div>
     </div>
-    <div class="gallery" id="gallery">
-      <div class="gallery-track" id="galleryTrack">
-        <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281830" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ベッドルーム"></div>
-        <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281830" alt="バスルーム"></div>
-      </div>
-    </div>
-    <div class="dots" id="dots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
-    </div>
     <div class="room-info">
-      <h2>DELUXE OCEAN VIEW</h2>
-      <div class="jp">デラックス オーシャンビュー</div>
-      <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
-      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
+      <button class="other-room-card" id="deluxeRoomCard" type="button">
+        <img src="ocean_view_room.jpg?v=202609281830" alt="デラックス オーシャンビューの客室">
+        <div class="other-room-copy">
+          <small>FOR 1–2 GUESTS</small>
+          <strong>DELUXE OCEAN VIEW</strong>
+          <p class="other-room-desc">大きな窓から海を望み、穏やかな波音に包まれる客室。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
       <button class="other-room-card" id="familyRoomCard" type="button">
         <img src="family_01.jpg" alt="ファミリー オーシャンスイートの客室">
         <div class="other-room-copy">
@@ -512,6 +507,30 @@
           <span>客室を見る　›</span>
         </div>
       </button>
+    </div>
+  </section>
+
+  <section id="deluxeRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="deluxeRoomBack">← BACK</button>
+      <div class="room-label">ROOMS & SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="gallery">
+      <div class="gallery-track" id="galleryTrack">
+        <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281830" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281830" alt="バスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="dots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>DELUXE OCEAN VIEW</h2>
+      <div class="jp">デラックス オーシャンビュー</div>
+      <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
+      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
     </div>
   </section>
 
@@ -569,10 +588,11 @@
       <div class="gallery-track" id="familyGalleryTrack">
         <div class="gallery-slide"><img src="family_01.jpg" alt="海を望むファミリー用の客室とリビング"></div>
         <div class="gallery-slide"><img src="family_02.jpg" alt="ファミリー用客室のバスルーム"></div>
+        <div class="gallery-slide"><img src="family_03.jpg" alt="ファミリー用客室のテラスから望む海の景色"></div>
       </div>
     </div>
     <div class="dots" id="familyDots">
-      <span class="dot active"></span><span class="dot"></span>
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
     </div>
     <div class="room-info">
       <h2>FAMILY OCEAN SUITE</h2>
@@ -845,10 +865,18 @@
 
     const roomView = document.getElementById('roomView');
     document.getElementById('roomCard').addEventListener('click', () => {
-      showSlide(0); roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
+      roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
     });
     document.getElementById('roomBack').addEventListener('click', () => {
       roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
+    });
+
+    const deluxeRoomView = document.getElementById('deluxeRoomView');
+    document.getElementById('deluxeRoomCard').addEventListener('click', () => {
+      showSlide(0); deluxeRoomView.classList.add('open'); deluxeRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('deluxeRoomBack').addEventListener('click', () => {
+      deluxeRoomView.classList.remove('open'); deluxeRoomView.setAttribute('aria-hidden','true');
     });
 
     const familyRoomView = document.getElementById('familyRoomView');
