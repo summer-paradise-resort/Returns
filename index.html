@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Summer Paradise Resort Returns</title>
-  <meta name="summer-paradise-build" content="2026-09-28-1350">
-  <!-- BUILD: 2026-09-28 13:50 JST / RESTAURANT HOURS ADDED -->
+  <meta name="summer-paradise-build" content="2026-09-28-1505">
+  <!-- BUILD: 2026-09-28 15:05 JST / EXPERIENCE AND BAR LOUNGE UPDATED -->
   <style>
     :root{
       --navy:#0d2743;
@@ -47,7 +47,7 @@
       position:absolute; inset:-4%;
       background:
         linear-gradient(rgba(5,15,28,.28),rgba(5,15,28,.44)),
-        url("sunset_terrace.jpg?v=202609281350") center/cover no-repeat;
+        url("summer_paradise_noon0.JPEG?v=202609281505") center/cover no-repeat;
       transform:scale(1.03);
       animation:introZoom 6s ease-out forwards;
     }
@@ -124,7 +124,7 @@
       position:relative;
       background:
         linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
-        url("summer_paradise_noon.jpg?v=202609281350") center 38%/cover no-repeat;
+        url("summer_paradise_noon.jpg?v=202609281505") center 38%/cover no-repeat;
       display:flex;align-items:flex-start;
       padding:56px 24px 170px;
     }
@@ -186,8 +186,6 @@
       box-shadow:0 8px 25px rgba(19,40,62,.08);
     }
     .card img{aspect-ratio:16/9;object-fit:cover}
-    .experience-images{display:grid;grid-template-columns:1fr 1fr;gap:2px;overflow:hidden}
-    .experience-images img{height:100%;min-width:0;object-fit:cover}
     .card-body{padding:20px}
     .card-title{font-size:21px;letter-spacing:.14em;margin:0 0 5px}
     .card-en{font-family:Georgia,serif;color:var(--gold);letter-spacing:.3em;font-size:10px}
@@ -195,11 +193,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#restaurantView{
+    #roomView,#restaurantView,#barView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#restaurantView.open{opacity:1;visibility:visible}
+    #roomView.open,#restaurantView.open,#barView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -317,7 +315,7 @@
 
       <div class="cards">
         <button class="card" id="roomCard">
-          <img src="ocean_view_room.JPG?v=202609281350" alt="オーシャンビュー客室">
+          <img src="ocean_view_room.JPG?v=202609281505" alt="オーシャンビュー客室">
           <div class="card-body">
             <h3 class="card-title">客室</h3>
             <div class="card-en">ROOMS</div>
@@ -327,7 +325,7 @@
         </button>
 
         <button class="card" id="restaurantCard" type="button">
-          <img src="the_pearl_terrace_e.jpg?v=202609281350" alt="レストラン＆カフェ">
+          <img src="the_pearl_terrace_e.jpg?v=202609281505" alt="レストラン＆カフェ">
           <div class="card-body">
             <h3 class="card-title">レストラン＆カフェ</h3>
             <div class="card-en">RESTAURANT &amp; CAFÉ</div>
@@ -337,17 +335,24 @@
         </button>
 
         <div class="card">
-          <div class="experience-images">
-            <img src="mermaids_cove.jpg?v=202609281350" alt="マーメイドの入り江">
-            <img src="lighthouse.jpg?v=202609281350" alt="海辺の灯台">
-          </div>
+          <img src="mermaids_cove.jpg?v=202609281505" alt="マーメイドの入り江">
           <div class="card-body">
             <h3 class="card-title">体験</h3>
             <div class="card-en">EXPERIENCE</div>
-            <div class="card-desc">海、入り江、灯台。ここにしかない時間をお楽しみください。</div>
+            <div class="card-desc">美しい入り江で、ここにしかないひとときをお楽しみください。</div>
             <div class="view">COMING SOON</div>
           </div>
         </div>
+
+        <button class="card" id="barCard" type="button" aria-controls="barView">
+          <img src="seaside_bar.jpg?v=202609281505" alt="シーサイドバー">
+          <div class="card-body">
+            <h3 class="card-title">Bar &amp; ラウンジ</h3>
+            <div class="card-en">BAR &amp; LOUNGE</div>
+            <div class="card-desc">海辺の景色とともに、ゆったりとしたひとときを。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
+        </button>
       </div>
     </section>
   </main>
@@ -365,9 +370,9 @@
     </div>
     <div class="gallery" id="gallery">
       <div class="gallery-track" id="galleryTrack">
-        <div class="gallery-slide"><img src="ocean_view_room.JPG?v=202609281350" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom.JPG?v=202609281350" alt="ベッドルーム"></div>
-        <div class="gallery-slide"><img src="ocean_view_bathroom.JPG?v=202609281350" alt="バスルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_room.JPG?v=202609281505" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.JPG?v=202609281505" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom.JPG?v=202609281505" alt="バスルーム"></div>
       </div>
     </div>
     <div class="dots" id="dots">
@@ -389,13 +394,13 @@
     </div>
     <div class="gallery" id="restaurantGallery">
       <div class="gallery-track" id="restaurantGalleryTrack">
-        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281350" alt="サンセットテラス"></div>
-        <div class="gallery-slide"><img src="sunset_terrace1.PNG?v=202609281350" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="sunset_terrace2.PNG?v=202609281350" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281350" alt="The Pearl Terrace 店内"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281350" alt="The Pearl Terrace 外観"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281350" alt="Marine Bloom Cafe 店内"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281350" alt="Marine Bloom Cafe ティーセット"></div>
+        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281505" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="sunset_terrace1.PNG?v=202609281505" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="sunset_terrace2.PNG?v=202609281505" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281505" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281505" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281505" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281505" alt="Marine Bloom Cafe ティーセット"></div>
       </div>
     </div>
     <div class="dots" id="restaurantDots">
@@ -426,12 +431,31 @@
     </div>
   </section>
 
+  <section id="barView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="barBack">← BACK</button>
+      <div class="room-label">BAR &amp; LOUNGE</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery">
+      <div class="gallery-track">
+        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281505" alt="シーサイドバーの店内"></div>
+      </div>
+    </div>
+    <div class="room-info">
+      <h2>SEASIDE BAR</h2>
+      <div class="jp">シーサイドバー</div>
+      <div class="room-meta">BAR &amp; LOUNGE</div>
+      <p>海のそばで、心ほどけるくつろぎの時間をお過ごしください。</p>
+    </div>
+  </section>
+
   <div id="resultSheet">
     <div class="sheet">
       <h3>空室検索</h3>
       <p id="searchSummary"></p>
       <div class="sheet-room">
-        <img src="ocean_view_room.JPG?v=202609281350" alt="">
+        <img src="ocean_view_room.JPG?v=202609281505" alt="">
         <div>
           <strong>DELUXE OCEAN VIEW</strong>
           <p style="margin:6px 0 0">ご指定の条件でご案内可能です。</p>
@@ -484,6 +508,14 @@
     });
     document.getElementById('restaurantBack').addEventListener('click', () => {
       restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
+    });
+
+    const barView = document.getElementById('barView');
+    document.getElementById('barCard').addEventListener('click', () => {
+      barView.classList.add('open'); barView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('barBack').addEventListener('click', () => {
+      barView.classList.remove('open'); barView.setAttribute('aria-hidden','true');
     });
 
     let restaurantSlide = 0, restaurantStartX = 0;
