@@ -129,16 +129,16 @@
       padding:56px 24px 170px;
     }
     .hero-copy{
-      max-width:390px;
-      text-shadow:0 1px 10px rgba(255,255,255,.52);
+      width:100%;max-width:440px;
+      text-shadow:0 2px 6px rgba(5,24,42,.85),0 0 18px rgba(5,24,42,.5);
     }
     .hero h1{
-      font-size:clamp(42px,12vw,66px);font-weight:500;
-      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);
+      font-size:clamp(28px,8.5vw,52px);font-weight:500;white-space:nowrap;
+      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);text-shadow:0 1px 10px rgba(255,255,255,.52);
     }
-    .hero p{font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
+    .hero p{color:#fff;font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
     .engline{
-      margin-top:24px;color:#8d6a35;letter-spacing:.28em;font-family:Georgia,serif;
+      margin-top:24px;color:#fff0ca;letter-spacing:.28em;font-family:Georgia,serif;
       font-size:11px;line-height:1.7;
     }
 
@@ -205,13 +205,16 @@
     }
     .back-btn{border:0;background:transparent;color:var(--navy);font-size:13px;letter-spacing:.12em}
     .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
-    .gallery{overflow:hidden;touch-action:pan-y;position:relative}
-    .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
-    .gallery-slide{flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
-    .gallery-slide img{width:100%;height:100%;object-fit:contain}
+    .gallery{overflow-x:auto;overflow-y:hidden;position:relative;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto}
+    .gallery::-webkit-scrollbar{display:none}
+    .gallery-track{display:flex;width:100%}
+    .gallery-slide{scroll-snap-align:start;scroll-snap-stop:always;flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
+    .gallery-slide img{width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
     .dots{text-align:center;padding:15px 0 4px}
-    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
-    .dot.active{background:#9b7536}
+    .dot{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;background:transparent;vertical-align:middle;cursor:pointer;touch-action:manipulation}
+    .dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#d3ccbf}
+    .dot.active::before{background:#9b7536}
+    .dot:focus-visible{outline:2px solid #9b7536;outline-offset:1px}
     .room-info{padding:18px 25px 42px}
     .room-info h2{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0 0 8px;letter-spacing:.04em}
     .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
@@ -530,54 +533,45 @@
       barView.classList.remove('open'); barView.setAttribute('aria-hidden','true');
     });
 
-    let barSlide = 0, barStartX = 0;
-    const barTrack = document.getElementById('barGalleryTrack');
-    const barDots = [...document.querySelectorAll('#barDots .dot')];
-    function showBarSlide(n){
-      barSlide = Math.max(0, Math.min(barDots.length - 1, n));
-      barTrack.style.transform = `translateX(-${barSlide*100}%)`;
-      barDots.forEach((d,i)=>d.classList.toggle('active',i===barSlide));
+    // Native scrolling follows the finger and keeps vertical page scrolling available.
+    function setupGallery(galleryId, dotsId){
+      const gallery = document.getElementById(galleryId);
+      const slides = [...gallery.querySelectorAll('.gallery-slide')];
+      const dots = [...document.querySelectorAll('#' + dotsId + ' .dot')].map((old, i) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = old.className;
+        button.setAttribute('aria-label', `${i + 1}枚目の写真を表示`);
+        old.replaceWith(button);
+        button.addEventListener('click', () => show(i, true));
+        return button;
+      });
+      function update(){
+        const index = Math.round(gallery.scrollLeft / (gallery.clientWidth || 1));
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === index);
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+      function show(n, animate = false){
+        const index = Math.max(0, Math.min(slides.length - 1, n));
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        gallery.scrollTo({left: index * gallery.clientWidth, behavior: animate && !reduced ? 'smooth' : 'auto'});
+        update();
+      }
+      let pending = false;
+      gallery.addEventListener('scroll', () => {
+        if(pending) return;
+        pending = true;
+        requestAnimationFrame(() => { pending = false; update(); });
+      }, {passive:true});
+      slides.forEach(slide => slide.querySelectorAll('img').forEach(img => img.draggable = false));
+      update();
+      return show;
     }
-    const barGallery = document.getElementById('barGallery');
-    barGallery.addEventListener('touchstart',e=>barStartX=e.changedTouches[0].screenX,{passive:true});
-    barGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - barStartX;
-      if(distance < -45) showBarSlide(barSlide + 1);
-      if(distance > 45) showBarSlide(barSlide - 1);
-    },{passive:true});
-    barDots.forEach((dot,i)=>dot.addEventListener('click',()=>showBarSlide(i)));
-
-    let restaurantSlide = 0, restaurantStartX = 0;
-    const restaurantTrack = document.getElementById('restaurantGalleryTrack');
-    const restaurantDots = [...document.querySelectorAll('#restaurantDots .dot')];
-    function showRestaurantSlide(n){
-      restaurantSlide = Math.max(0, Math.min(restaurantDots.length - 1, n));
-      restaurantTrack.style.transform = `translateX(-${restaurantSlide*100}%)`;
-      restaurantDots.forEach((d,i)=>d.classList.toggle('active',i===restaurantSlide));
-    }
-    const restaurantGallery = document.getElementById('restaurantGallery');
-    restaurantGallery.addEventListener('touchstart',e=>restaurantStartX=e.changedTouches[0].screenX,{passive:true});
-    restaurantGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - restaurantStartX;
-      if(distance < -45) showRestaurantSlide(restaurantSlide + 1);
-      if(distance > 45) showRestaurantSlide(restaurantSlide - 1);
-    },{passive:true});
-
-    let slide = 0, startX = 0, endX = 0;
-    const track = document.getElementById('galleryTrack');
-    const dots = [...document.querySelectorAll('#dots .dot')];
-    function showSlide(n){
-      slide = Math.max(0, Math.min(2, n));
-      track.style.transform = `translateX(-${slide*100}%)`;
-      dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
-    }
-    const gallery = document.getElementById('gallery');
-    gallery.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true});
-    gallery.addEventListener('touchend',e=>{
-      endX=e.changedTouches[0].screenX;
-      if(startX-endX>45) showSlide(slide+1);
-      if(endX-startX>45) showSlide(slide-1);
-    },{passive:true});
+    const showBarSlide = setupGallery('barGallery', 'barDots');
+    const showRestaurantSlide = setupGallery('restaurantGallery', 'restaurantDots');
+    const showSlide = setupGallery('gallery', 'dots');
   </script>
 </body>
 </html>
