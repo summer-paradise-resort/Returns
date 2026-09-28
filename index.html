@@ -307,7 +307,7 @@
 
       <div class="cards">
         <button class="card" id="roomCard">
-          <img src="ocean_view_room_16-9.JPG" alt="オーシャンビュー客室">
+          <img src="ocean_view_room_16-9(1).JPG" alt="オーシャンビュー客室">
           <div class="card-body">
             <h3 class="card-title">客室</h3>
             <div class="card-en">ROOMS</div>
@@ -317,7 +317,7 @@
         </button>
 
         <button class="card" id="restaurantCard" type="button">
-          <img src="sunset_terrace_16x9.jpg" alt="レストラン＆カフェ">
+          <img src="sunset_terrace_16x9(1).jpg" alt="レストラン＆カフェ">
           <div class="card-body">
             <h3 class="card-title">レストラン＆カフェ</h3>
             <div class="card-en">RESTAURANT &amp; CAFÉ</div>
@@ -352,9 +352,9 @@
     </div>
     <div class="gallery" id="gallery">
       <div class="gallery-track" id="galleryTrack">
-        <div class="gallery-slide"><img src="ocean_view_room_16-9.JPG" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom_16-9.JPG" alt="ベッドルーム"></div>
-        <div class="gallery-slide"><img src="ocean_view_bathroom_16-9.JPG" alt="バスルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_room_16-9(1).JPG" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom_16-9(1).JPG" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom_16-9(1).JPG" alt="バスルーム"></div>
       </div>
     </div>
     <div class="dots" id="dots">
@@ -376,13 +376,13 @@
     </div>
     <div class="gallery" id="restaurantGallery">
       <div class="gallery-track" id="restaurantGalleryTrack">
-        <div class="gallery-slide"><img src="the_pearl_terrace_interior_16x9.jpg" alt="The Pearl Terrace 店内"></div>
-        <div class="gallery-slide"><img src="sunset_terrace_16x9.jpg" alt="サンセットテラス"></div>
-        <div class="gallery-slide"><img src="restaurant1.PNG" alt="レストラン"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_tea_1672x941.jpg" alt="Marine Bloom Cafe ティーセット"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_interior.jpg" alt="Marine Bloom Cafe 店内"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_exterior_16x9.jpg" alt="The Pearl Terrace 外観"></div>
-        <div class="gallery-slide"><img src="restaurant2.PNG" alt="レストラン"></div>
+        <div class="gallery-slide"><img src="sunset_terrace_16x9(1).jpg" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="restaurant1(1).PNG" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="restaurant2(1).PNG" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_exterior_16x9(1).jpg" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_interior_16x9(1).jpg" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_interior(1).jpg" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_tea_1672x941(1).jpg" alt="Marine Bloom Cafe ティーセット"></div>
       </div>
     </div>
     <div class="dots" id="restaurantDots">
@@ -401,7 +401,7 @@
       <h3>空室検索</h3>
       <p id="searchSummary"></p>
       <div class="sheet-room">
-        <img src="ocean_view_room_16-9.JPG" alt="">
+        <img src="ocean_view_room_16-9(1).JPG" alt="">
         <div>
           <strong>DELUXE OCEAN VIEW</strong>
           <p style="margin:6px 0 0">ご指定の条件でご案内可能です。</p>
@@ -442,7 +442,7 @@
 
     const roomView = document.getElementById('roomView');
     document.getElementById('roomCard').addEventListener('click', () => {
-      roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
+      showSlide(0); roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
     });
     document.getElementById('roomBack').addEventListener('click', () => {
       roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
@@ -450,7 +450,7 @@
 
     const restaurantView = document.getElementById('restaurantView');
     document.getElementById('restaurantCard').addEventListener('click', () => {
-      restaurantView.classList.add('open'); restaurantView.setAttribute('aria-hidden','false');
+      showRestaurantSlide(0); restaurantView.classList.add('open'); restaurantView.setAttribute('aria-hidden','false');
     });
     document.getElementById('restaurantBack').addEventListener('click', () => {
       restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
