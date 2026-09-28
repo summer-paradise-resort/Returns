@@ -303,7 +303,7 @@
     .code-card{border:1px solid #d9c7a9;background:rgba(255,255,255,.82);padding:24px 16px;margin-bottom:22px}
     .code-label{font-family:Georgia,serif;color:#9b763a;font-size:9px;letter-spacing:.28em}
     #bookingCode{font-family:Georgia,serif;font-size:27px;letter-spacing:.12em;margin:12px 0 17px;word-break:break-all}
-    #confirmationSummary{font-size:12px;line-height:1.9;color:#465465}
+    #confirmationSummary{font-size:12px;line-height:1.9;color:#465465;white-space:pre-line;overflow-wrap:anywhere}
     .screenshot-note{margin:0 0 25px;font-size:13px;line-height:1.8;color:#5d5549}
 
     footer{text-align:center;padding:45px 20px 55px;background:#f7f3eb;color:#8d7b60}
@@ -353,11 +353,11 @@
         </div>
         <div class="story-item">
           <button class="story-toggle" type="button" aria-expanded="false">リゾート開発まで<span>＋</span></button>
-          <div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイルです。</p></div>
+          <div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイです。</p></div>
         </div>
         <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイル<span>＋</span></button>
-          <div class="story-copy"><p>アーサー・グレイルは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div>
+          <button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイ<span>＋</span></button>
+          <div class="story-copy"><p>アーサー・グレイは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div>
         </div>
         <div class="story-item">
           <button class="story-toggle" type="button" aria-expanded="false">人魚の祝福伝説<span>＋</span></button>
@@ -402,8 +402,16 @@
           <select id="roomChoice">
             <option value="deluxe">DELUXE OCEAN VIEW（1〜2名）</option>
             <option value="family">FAMILY OCEAN SUITE（3〜4名）</option>
-            <option value="suite">OCEAN GRAND SUITE（1〜2名）</option>
+            <option value="suite">OCEAN GRAND SUITE（2名限定）</option>
             <option value="royal">ROYAL OCEAN VILLA（1〜2名）</option>
+          </select>
+        </div>
+        <div class="room-choice" id="deluxeBedChoice">
+          <label for="bedChoice">デラックス オーシャンビューのベッドタイプ</label>
+          <select id="bedChoice" required>
+            <option value="">ベッドタイプを選択してください</option>
+            <option value="double">ダブルベッド</option>
+            <option value="twin">ツインベッド</option>
           </select>
         </div>
         <button class="search-btn" id="searchBtn">予約内容を決定する<small>CONFIRM YOUR STAY</small></button>
@@ -492,7 +500,7 @@
       <button class="other-room-card" id="suiteRoomCard" type="button">
         <img src="suite_01.jpg" alt="夕景を望むオーシャン グランドスイートのテラス">
         <div class="other-room-copy">
-          <small>SUITE FOR 1–2 GUESTS</small>
+          <small>SUITE FOR 2 GUESTS</small>
           <strong>OCEAN GRAND SUITE</strong>
           <p class="other-room-desc">夕景を眺めるテラスと上質なリビングを備えたスイート。</p>
           <span>客室を見る　›</span>
@@ -519,18 +527,19 @@
     <div class="gallery" id="gallery">
       <div class="gallery-track" id="galleryTrack">
         <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281830" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ダブルベッドの客室"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom01.jpg" alt="ツインベッドの客室"></div>
         <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281830" alt="バスルーム"></div>
       </div>
     </div>
     <div class="dots" id="dots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
     </div>
     <div class="room-info">
       <h2>DELUXE OCEAN VIEW</h2>
       <div class="jp">デラックス オーシャンビュー</div>
       <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
-      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
+      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。ベッドはダブルベッドまたはツインベッドからお選びいただけます。</p>
     </div>
   </section>
 
@@ -551,7 +560,7 @@
     <div class="room-info">
       <h2>OCEAN GRAND SUITE</h2>
       <div class="jp">オーシャン グランドスイート</div>
-      <div class="room-meta">62㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
+      <div class="room-meta">62㎡　/　2 GUESTS　/　OCEAN VIEW</div>
       <p>広々としたリビングとベッドルームがひとつながりになったスイート。夕日に染まる海を望むテラスには、くつろぎの席とダイニングをご用意しました。大きな窓から海を眺めるバスルームで、滞在の時間をゆっくりとお楽しみください。</p>
     </div>
   </section>
@@ -720,11 +729,12 @@
         <div class="reserve-detail" id="reservationSummary"></div>
       </div>
       <div class="form-field">
-        <label for="guestName">お名前</label>
+        <label for="guestName">代表者様のお名前</label>
         <input id="guestName" type="text" autocomplete="name" placeholder="例：サマー パラダイス">
       </div>
+      <div id="companionFields"></div>
       <div class="form-field">
-        <label for="guestAddress">メールアドレス</label>
+        <label for="guestAddress">代表者様のメールアドレス</label>
         <input id="guestAddress" type="text" autocomplete="email" placeholder="例：guest@example.com">
       </div>
       <button class="reserve-button" id="reserveBtn" type="button">予約する</button>
@@ -743,7 +753,7 @@
         <div id="bookingCode"></div>
         <div id="confirmationSummary"></div>
       </div>
-      <p class="screenshot-note">予約番号が見えるように、この画面をスクリーンショットして掲示してください。</p>
+      <p class="screenshot-note">予約番号と宿泊者全員のお名前が見えるように、この画面をスクリーンショットして掲示してください。</p>
       <button class="reserve-button" id="confirmationClose" type="button">トップへ戻る</button>
     </div>
   </section>
@@ -793,25 +803,56 @@
 
     const guestsSelect = document.getElementById('guests');
     const roomChoice = document.getElementById('roomChoice');
+    const deluxeBedChoice = document.getElementById('deluxeBedChoice');
+    const bedChoice = document.getElementById('bedChoice');
     const reservationView = document.getElementById('reservationView');
     const confirmationView = document.getElementById('confirmationView');
     const rooms = {
       deluxe:{name:'DELUXE OCEAN VIEW',jp:'デラックス オーシャンビュー',image:'ocean_view_room.jpg?v=202609281830',min:1,max:2},
       family:{name:'FAMILY OCEAN SUITE',jp:'ファミリー オーシャンスイート',image:'family_01.jpg',min:3,max:4},
-      suite:{name:'OCEAN GRAND SUITE',jp:'オーシャン グランドスイート',image:'suite_01.jpg',min:1,max:2},
+      suite:{name:'OCEAN GRAND SUITE',jp:'オーシャン グランドスイート',image:'suite_01.jpg',min:2,max:2},
       royal:{name:'ROYAL OCEAN VILLA',jp:'ロイヤル オーシャンヴィラ',image:'villa_01.jpg',min:1,max:2}
     };
     let currentReservation = null;
 
+    function updateBedChoice(){
+      const isDeluxe = roomChoice.value === 'deluxe';
+      deluxeBedChoice.hidden = !isDeluxe;
+      bedChoice.disabled = !isDeluxe;
+    }
+    roomChoice.addEventListener('change', updateBedChoice);
     guestsSelect.addEventListener('change', () => {
       roomChoice.value = Number(guestsSelect.value) >= 3 ? 'family' : 'deluxe';
+      updateBedChoice();
     });
+    updateBedChoice();
 
     function setOverlay(view,isOpen){
       view.classList.toggle('open',isOpen);
       view.setAttribute('aria-hidden',String(!isOpen));
       document.body.classList.toggle('menu-open',isOpen);
       if(isOpen) view.scrollTop = 0;
+    }
+
+    const companionFields = document.getElementById('companionFields');
+    function renderCompanionFields(guestCount){
+      const previous = [...companionFields.querySelectorAll('input')].map(input => input.value);
+      companionFields.replaceChildren();
+      for(let i = 1; i < guestCount; i++){
+        const field = document.createElement('div');
+        field.className = 'form-field';
+        const label = document.createElement('label');
+        label.htmlFor = `companionName${i}`;
+        label.textContent = `お連れ様${i}のお名前`;
+        const input = document.createElement('input');
+        input.id = `companionName${i}`;
+        input.type = 'text';
+        input.autocomplete = 'off';
+        input.placeholder = 'お名前を入力してください';
+        input.value = previous[i - 1] || '';
+        field.append(label,input);
+        companionFields.append(field);
+      }
     }
 
     document.getElementById('searchBtn').addEventListener('click', () => {
@@ -822,13 +863,21 @@
       if(!ci || !co){ alert('チェックイン日とチェックアウト日を選択してください。'); return; }
       if(new Date(co) <= new Date(ci)){ alert('チェックアウト日はチェックイン日より後の日付を選択してください。'); return; }
       if(guests < room.min || guests > room.max){
-        alert(`${room.name}は${room.min}〜${room.max}名様用です。人数に合う客室を選択してください。`); return;
+        alert(room.min === room.max
+          ? `${room.name}は${room.min}名様限定です。宿泊人数を変更してください。`
+          : `${room.name}は${room.min}〜${room.max}名様用です。人数に合う客室を選択してください。`); return;
       }
-      currentReservation = {ci,co,guests,room};
+      if(roomChoice.value === 'deluxe' && !bedChoice.value){
+        alert('ダブルベッドまたはツインベッドを選択してください。');
+        bedChoice.focus(); return;
+      }
+      const bedType = roomChoice.value === 'deluxe' ? bedChoice.selectedOptions[0].textContent : '';
+      currentReservation = {ci,co,guests,room,bedType};
       document.getElementById('reservationImage').src = room.image;
       document.getElementById('reservationRoomName').textContent = room.name;
       document.getElementById('reservationSummary').textContent =
-        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　／　${guests}名`;
+        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　／　${guests}名${bedType ? '　／　' + bedType : ''}`;
+      renderCompanionFields(guests);
       setOverlay(reservationView,true);
     });
     document.getElementById('reservationBack').addEventListener('click', () => setOverlay(reservationView,false));
@@ -846,12 +895,18 @@
     document.getElementById('reserveBtn').addEventListener('click', () => {
       const name = document.getElementById('guestName').value.trim();
       const address = document.getElementById('guestAddress').value.trim();
-      if(!name){ alert('お名前を入力してください。'); return; }
-      if(!address){ alert('メールアドレスを入力してください。'); return; }
+      if(!name){ alert('代表者様のお名前を入力してください。'); document.getElementById('guestName').focus(); return; }
+      const companionNames = [];
+      for(const [index,input] of [...companionFields.querySelectorAll('input')].entries()){
+        const companionName = input.value.trim();
+        if(!companionName){ alert(`お連れ様${index + 1}のお名前を入力してください。`); input.focus(); return; }
+        companionNames.push(companionName);
+      }
+      if(!address){ alert('代表者様のメールアドレスを入力してください。'); document.getElementById('guestAddress').focus(); return; }
       document.getElementById('bookingCode').textContent = makeBookingCode();
+      const guestList = [`代表者様：${name}`, ...companionNames.map((companionName,index) => `お連れ様${index + 1}：${companionName}`)].join('\n');
       document.getElementById('confirmationSummary').textContent =
-        `${currentReservation.room.name}\n${currentReservation.ci.replaceAll('-','/')} 〜 ${currentReservation.co.replaceAll('-','/')}　／　${currentReservation.guests}名\nご予約者：${name}`;
-      document.getElementById('confirmationSummary').style.whiteSpace = 'pre-line';
+        `${currentReservation.room.name}\n${currentReservation.ci.replaceAll('-','/')} 〜 ${currentReservation.co.replaceAll('-','/')}　／　${currentReservation.guests}名${currentReservation.bedType ? '　／　' + currentReservation.bedType : ''}\n宿泊者のお名前\n${guestList}`;
       reservationView.classList.remove('open');
       reservationView.setAttribute('aria-hidden','true');
       setOverlay(confirmationView,true);
@@ -860,6 +915,7 @@
       setOverlay(confirmationView,false);
       document.getElementById('guestName').value = '';
       document.getElementById('guestAddress').value = '';
+      companionFields.replaceChildren();
       window.scrollTo({top:0,behavior:'smooth'});
     });
 
@@ -982,7 +1038,7 @@
     const track = document.getElementById('galleryTrack');
     const dots = [...document.querySelectorAll('#dots .dot')];
     function showSlide(n){
-      slide = Math.max(0, Math.min(2, n));
+      slide = Math.max(0, Math.min(dots.length - 1, n));
       track.style.transform = `translateX(-${slide*100}%)`;
       dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
     }
