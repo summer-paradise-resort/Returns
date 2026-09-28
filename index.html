@@ -6,6 +6,25 @@
   <title>Summer Paradise Resort Returns</title>
   <meta name="summer-paradise-build" content="2026-09-28-1830">
   <!-- BUILD: 2026-09-28 15:05 JST / EXPERIENCE AND BAR LOUNGE UPDATED -->
+  <script>
+    // 日本時間に合わせて、ページを開いたままでもトップ画像を更新する。
+    function updateHeroImage(){
+      const hour = Number(new Intl.DateTimeFormat('en-US', {
+        timeZone:'Asia/Tokyo', hour:'numeric', hourCycle:'h23'
+      }).format(new Date()));
+      const image = hour >= 7 && hour < 16
+        ? 'summer_paradise_noon.jpg'
+        : hour >= 16 && hour < 20
+          ? 'summer_paradise_sunset.jpg'
+          : 'summer_paradise_night.jpg';
+      document.documentElement.style.setProperty('--hero-image', `url("${image}")`);
+    }
+    updateHeroImage();
+    setInterval(updateHeroImage, 15000);
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) updateHeroImage();
+    });
+  </script>
   <style>
     :root{
       --navy:#0d2743;
@@ -15,6 +34,7 @@
       --white:#fff;
       --line:#ddd3c3;
       --muted:#6d6a64;
+      --hero-image:url("summer_paradise_noon.jpg");
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -161,7 +181,7 @@
       position:relative;
       background:
         linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
-        url("summer_paradise_noon.jpg?v=202609281830") center 38%/cover no-repeat;
+        var(--hero-image) center 38%/cover no-repeat;
       display:flex;align-items:flex-start;
       padding:56px 24px 170px;
     }
