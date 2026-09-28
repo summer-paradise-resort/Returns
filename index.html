@@ -112,6 +112,49 @@
     .burger::before,.burger::after{content:"";position:absolute;left:0}
     .burger::before{top:-8px}.burger::after{top:8px}
 
+    /* STORY MENU */
+    body.menu-open{overflow:hidden}
+    #siteMenu{
+      position:fixed;inset:0;z-index:500;
+      color:#fff;
+      background:
+        linear-gradient(180deg,rgba(6,25,45,.48),rgba(6,25,45,.84)),
+        url("summer_paradise_noon.jpg?v=202609281830") center 38%/cover no-repeat;
+      opacity:0;visibility:hidden;transform:translateY(-12px);
+      transition:opacity .4s ease,visibility .4s ease,transform .4s ease;
+      overflow-y:auto;
+    }
+    #siteMenu.open{opacity:1;visibility:visible;transform:none}
+    .menu-top{
+      height:76px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 22px;border-bottom:1px solid rgba(255,255,255,.24);
+      background:rgba(5,23,41,.26);backdrop-filter:blur(8px);
+    }
+    .menu-brand{font-family:Georgia,serif;color:#f0d89d;font-size:19px;letter-spacing:.06em}
+    .menu-brand small{display:block;font-size:8px;letter-spacing:.42em;text-align:center;margin-top:6px}
+    .menu-close{
+      width:48px;height:48px;border:0;background:transparent;color:#fff;
+      font-size:34px;font-weight:200;line-height:1;
+    }
+    .menu-content{padding:47px 27px max(58px,env(safe-area-inset-bottom))}
+    .menu-kicker{font-family:Georgia,serif;color:#e1c47e;font-size:10px;letter-spacing:.3em;margin-bottom:11px}
+    .menu-content h2{font-size:26px;font-weight:500;letter-spacing:.11em;margin:0 0 27px}
+    .story-list{border-top:1px solid rgba(255,255,255,.4)}
+    .story-item{border-bottom:1px solid rgba(255,255,255,.34)}
+    .story-toggle{
+      width:100%;border:0;background:transparent;color:#fff;padding:19px 2px;
+      display:flex;align-items:center;justify-content:space-between;text-align:left;
+      font-size:16px;letter-spacing:.12em;
+    }
+    .story-toggle span{color:#e1c47e;font-size:23px;font-weight:300;transition:transform .25s ease}
+    .story-toggle[aria-expanded="true"] span{transform:rotate(45deg)}
+    .story-copy{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s ease}
+    .story-copy.open{max-height:330px;opacity:1}
+    .story-copy p{
+      margin:0;padding:0 3px 21px;color:rgba(255,255,255,.91);
+      font-size:13px;line-height:2;letter-spacing:.055em;text-shadow:0 1px 5px rgba(0,0,0,.35);
+    }
+
     /* HERO */
     .hero{
       min-height:670px;
@@ -138,7 +181,7 @@
 
     /* BOOKING */
     .booking-wrap{
-      margin:-118px 18px 0;position:relative;z-index:10;
+      margin:-48px 18px 0;position:relative;z-index:10;
     }
     .booking{
       background:rgba(255,255,255,.97);
@@ -267,6 +310,39 @@
     </div>
     <button class="menu-btn" aria-label="メニュー"><span class="burger"></span></button>
   </header>
+
+  <section id="siteMenu" aria-hidden="true" aria-label="リゾート案内">
+    <div class="menu-top">
+      <div class="menu-brand">Summer Paradise<small>RESORT</small></div>
+      <button class="menu-close" id="menuClose" type="button" aria-label="メニューを閉じる">×</button>
+    </div>
+    <div class="menu-content">
+      <div class="menu-kicker">DISCOVER OUR STORY</div>
+      <h2>楽園を知る</h2>
+      <div class="story-list">
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">リゾートについて<span>＋</span></button>
+          <div class="story-copy"><p>青い海と空に抱かれたサマーパラダイスリゾートは、日常を離れ、心ほどける時間をお過ごしいただくための滞在地です。海を望む客室、この土地の恵みを味わうレストラン、島の景色と物語に触れる散策など、多彩な体験をご用意しています。移ろう光や潮風を感じながら、ここでしか出会えないひとときをお楽しみください。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">島の歴史<span>＋</span></button>
+          <div class="story-copy"><p>この島は古くから、長い航海を続ける人々が風と波の静まる時を待つ、ささやかな休息地として知られてきました。海とともに暮らした島民たちは、入り江や灯台を大切に守り、訪れた旅人を迎えてきたといわれています。石造りの小径や古い建物、島の各所に残る言い伝えの中には、今も当時の面影が息づいています。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">リゾート開発まで<span>＋</span></button>
+          <div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイルです。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイル<span>＋</span></button>
+          <div class="story-copy"><p>アーサー・グレイルは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">人魚の祝福伝説<span>＋</span></button>
+          <div class="story-copy"><p>この島には古くから、人魚の姿を見た者には海の祝福が授けられるという伝説があります。その祝福を受けた旅人は、穏やかな航海と大切な人との再会に恵まれ、いつの日か再び島へ導かれると語り継がれてきました。夕暮れ時のサンセットテラスでは、波音と潮風の向こうから、人魚の歌声が聞こえてくるかもしれません。</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <main>
     <section class="hero">
@@ -502,6 +578,34 @@
     const intro = document.getElementById('intro');
     setTimeout(() => intro.classList.add('leave'), 3800);
     setTimeout(() => intro.remove(), 5200);
+
+    const siteMenu = document.getElementById('siteMenu');
+    const menuButton = document.querySelector('.menu-btn');
+    const menuClose = document.getElementById('menuClose');
+    function openMenu(){
+      siteMenu.classList.add('open');
+      siteMenu.setAttribute('aria-hidden','false');
+      menuButton.setAttribute('aria-expanded','true');
+      document.body.classList.add('menu-open');
+    }
+    function closeMenu(){
+      siteMenu.classList.remove('open');
+      siteMenu.setAttribute('aria-hidden','true');
+      menuButton.setAttribute('aria-expanded','false');
+      document.body.classList.remove('menu-open');
+    }
+    menuButton.setAttribute('aria-controls','siteMenu');
+    menuButton.setAttribute('aria-expanded','false');
+    menuButton.addEventListener('click',openMenu);
+    menuClose.addEventListener('click',closeMenu);
+    document.querySelectorAll('.story-toggle').forEach(button => {
+      button.addEventListener('click',() => {
+        const copy = button.nextElementSibling;
+        const willOpen = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded',String(willOpen));
+        copy.classList.toggle('open',willOpen);
+      });
+    });
 
     const today = new Date();
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
