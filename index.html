@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Summer Paradise Resort Returns</title>
-  <meta name="summer-paradise-build" content="2026-09-28-1524">
+  <meta name="summer-paradise-build" content="2026-09-28-1758">
   <!-- BUILD: 2026-09-28 15:05 JST / EXPERIENCE AND BAR LOUNGE UPDATED -->
   <style>
     :root{
@@ -47,7 +47,7 @@
       position:absolute; inset:-4%;
       background:
         linear-gradient(rgba(5,15,28,.28),rgba(5,15,28,.44)),
-        url("summer_paradise_noon0.JPEG?v=202609281524") center/cover no-repeat;
+        url("summer_paradise_noon0.jpg?v=202609281758") center/cover no-repeat;
       transform:scale(1.03);
       animation:introZoom 6s ease-out forwards;
     }
@@ -124,21 +124,21 @@
       position:relative;
       background:
         linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
-        url("summer_paradise_noon.jpg?v=202609281524") center 38%/cover no-repeat;
+        url("summer_paradise_noon.jpg?v=202609281758") center 38%/cover no-repeat;
       display:flex;align-items:flex-start;
       padding:56px 24px 170px;
     }
     .hero-copy{
-      width:100%;max-width:440px;
-      text-shadow:0 2px 6px rgba(5,24,42,.85),0 0 18px rgba(5,24,42,.5);
+      max-width:390px;
+      text-shadow:0 1px 10px rgba(255,255,255,.52);
     }
     .hero h1{
-      font-size:clamp(28px,8.5vw,52px);font-weight:500;white-space:nowrap;
-      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);text-shadow:0 1px 10px rgba(255,255,255,.52);
+      font-size:clamp(42px,12vw,66px);font-weight:500;
+      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);
     }
-    .hero p{color:#fff;font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
+    .hero p{font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
     .engline{
-      margin-top:24px;color:#fff0ca;letter-spacing:.28em;font-family:Georgia,serif;
+      margin-top:24px;color:#8d6a35;letter-spacing:.28em;font-family:Georgia,serif;
       font-size:11px;line-height:1.7;
     }
 
@@ -193,11 +193,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#restaurantView,#barView{
+    #roomView,#restaurantView,#barView,#experienceView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#restaurantView.open,#barView.open{opacity:1;visibility:visible}
+    #roomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -205,16 +205,14 @@
     }
     .back-btn{border:0;background:transparent;color:var(--navy);font-size:13px;letter-spacing:.12em}
     .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
-    .gallery{overflow-x:auto;overflow-y:hidden;position:relative;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto}
-    .gallery::-webkit-scrollbar{display:none}
-    .gallery-track{display:flex;width:100%}
-    .gallery-slide{scroll-snap-align:start;scroll-snap-stop:always;flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
-    .gallery-slide img{width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
+    .gallery{overflow:hidden;touch-action:pan-y;position:relative}
+    .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
+    .gallery-slide{flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
+    .gallery-slide img{width:100%;height:100%;object-fit:contain}
     .dots{text-align:center;padding:15px 0 4px}
-    .dot{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;background:transparent;vertical-align:middle;cursor:pointer;touch-action:manipulation}
-    .dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#d3ccbf}
-    .dot.active::before{background:#9b7536}
-    .dot:focus-visible{outline:2px solid #9b7536;outline-offset:1px}
+    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
+    .dot.active{background:#9b7536}
+    #experienceDots .dot{border:0;padding:0;cursor:pointer}
     .room-info{padding:18px 25px 42px}
     .room-info h2{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0 0 8px;letter-spacing:.04em}
     .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
@@ -318,7 +316,7 @@
 
       <div class="cards">
         <button class="card" id="roomCard">
-          <img src="ocean_view_room.JPG?v=202609281524" alt="オーシャンビュー客室">
+          <img src="ocean_view_room.jpg?v=202609281758" alt="オーシャンビュー客室">
           <div class="card-body">
             <h3 class="card-title">客室</h3>
             <div class="card-en">ROOMS</div>
@@ -328,7 +326,7 @@
         </button>
 
         <button class="card" id="restaurantCard" type="button">
-          <img src="the_pearl_terrace_e.jpg?v=202609281524" alt="レストラン＆カフェ">
+          <img src="the_pearl_terrace_e.jpg?v=202609281758" alt="レストラン＆カフェ">
           <div class="card-body">
             <h3 class="card-title">レストラン＆カフェ</h3>
             <div class="card-en">RESTAURANT &amp; CAFÉ</div>
@@ -337,18 +335,18 @@
           </div>
         </button>
 
-        <div class="card">
-          <img src="mermaids_cove.jpg?v=202609281524" alt="マーメイドの入り江">
+        <button class="card" id="experienceCard" type="button" aria-controls="experienceView">
+          <img src="mermaids_cove.jpg?v=202609281758" alt="マーメイドの入り江">
           <div class="card-body">
             <h3 class="card-title">体験</h3>
             <div class="card-en">EXPERIENCE</div>
             <div class="card-desc">美しい入り江で、ここにしかないひとときをお楽しみください。</div>
-            <div class="view">COMING SOON</div>
+            <div class="view">VIEW MORE　›</div>
           </div>
-        </div>
+        </button>
 
         <button class="card" id="barCard" type="button" aria-controls="barView">
-          <img src="seaside_bar.jpg?v=202609281524" alt="シーサイドバー">
+          <img src="seaside_bar.jpg?v=202609281758" alt="シーサイドバー">
           <div class="card-body">
             <h3 class="card-title">Bar &amp; ラウンジ</h3>
             <div class="card-en">BAR &amp; LOUNGE</div>
@@ -372,9 +370,9 @@
     </div>
     <div class="gallery" id="gallery">
       <div class="gallery-track" id="galleryTrack">
-        <div class="gallery-slide"><img src="ocean_view_room.JPG?v=202609281524" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom.JPG?v=202609281524" alt="ベッドルーム"></div>
-        <div class="gallery-slide"><img src="ocean_view_bathroom.JPG?v=202609281524" alt="バスルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281758" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281758" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281758" alt="バスルーム"></div>
       </div>
     </div>
     <div class="dots" id="dots">
@@ -396,13 +394,13 @@
     </div>
     <div class="gallery" id="restaurantGallery">
       <div class="gallery-track" id="restaurantGalleryTrack">
-        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281524" alt="サンセットテラス"></div>
-        <div class="gallery-slide"><img src="sunset_terrace1.PNG?v=202609281524" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="sunset_terrace2.PNG?v=202609281524" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281524" alt="The Pearl Terrace 店内"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281524" alt="The Pearl Terrace 外観"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281524" alt="Marine Bloom Cafe 店内"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281524" alt="Marine Bloom Cafe ティーセット"></div>
+        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281758" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="sunset_terrace1.jpg?v=202609281758" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="sunset_terrace2.jpg?v=202609281758" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281758" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281758" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281758" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281758" alt="Marine Bloom Cafe ティーセット"></div>
       </div>
     </div>
     <div class="dots" id="restaurantDots">
@@ -433,6 +431,33 @@
     </div>
   </section>
 
+  <section id="experienceView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="experienceBack">← BACK</button>
+      <div class="room-label">EXPERIENCE</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="experienceGallery">
+      <div class="gallery-track" id="experienceGalleryTrack">
+        <div class="gallery-slide"><img src="summer_paradise_beach_v2.jpg?v=202609281758" alt="海と砂浜"></div>
+        <div class="gallery-slide"><img src="lighthouse.jpg?v=202609281758" alt="海を望む灯台"></div>
+        <div class="gallery-slide"><img src="mermaids_cove.jpg?v=202609281758" alt="マーメイドの入り江"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino.jpg?v=202609281758" alt="カジノ・ブルーシェルの外観"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino_e.jpg?v=202609281758" alt="カジノ・ブルーシェルの入口"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino_t.jpg?v=202609281758" alt="カジノのゲームテーブル"></div>
+      </div>
+    </div>
+    <div class="dots" id="experienceDots" aria-label="体験の写真">
+      <button class="dot active" type="button" aria-label="海の写真"></button><button class="dot" type="button" aria-label="灯台の写真"></button><button class="dot" type="button" aria-label="入り江の写真"></button><button class="dot" type="button" aria-label="カジノ外観の写真"></button><button class="dot" type="button" aria-label="カジノ入口の写真"></button><button class="dot" type="button" aria-label="ゲームテーブルの写真"></button>
+    </div>
+    <div class="room-info">
+      <h2>EXPERIENCE</h2>
+      <div class="jp">体験</div>
+      <div class="room-meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE　/　CASINO BLUE SHELL</div>
+      <p>海辺の散策から灯台、入り江、カジノまで。島で過ごすひとときを、思い思いにお楽しみください。</p>
+    </div>
+  </section>
+
   <section id="barView" aria-hidden="true">
     <div class="room-top">
       <button class="back-btn" id="barBack">← BACK</button>
@@ -441,9 +466,9 @@
     </div>
     <div class="gallery" id="barGallery">
       <div class="gallery-track" id="barGalleryTrack">
-        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281524" alt="海に面したシーサイドバー"></div>
-        <div class="gallery-slide"><img src="seaside_lounge.jpg?v=202609281524" alt="屋外バーとつながるホテルのラウンジ"></div>
-        <div class="gallery-slide"><img src="seaside1.jpeg?v=202609281524" alt="シーサイドバーの青いカクテル"></div>
+        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281758" alt="海に面したシーサイドバー"></div>
+        <div class="gallery-slide"><img src="seaside_lounge.jpg?v=202609281758" alt="屋外バーとつながるホテルのラウンジ"></div>
+        <div class="gallery-slide"><img src="seaside1.jpg?v=202609281758" alt="シーサイドバーの青いカクテル"></div>
       </div>
     </div>
     <div class="dots" id="barDots" aria-label="バーとラウンジの写真">
@@ -469,7 +494,7 @@
       <h3>空室検索</h3>
       <p id="searchSummary"></p>
       <div class="sheet-room">
-        <img src="ocean_view_room.JPG?v=202609281524" alt="">
+        <img src="ocean_view_room.jpg?v=202609281758" alt="">
         <div>
           <strong>DELUXE OCEAN VIEW</strong>
           <p style="margin:6px 0 0">ご指定の条件でご案内可能です。</p>
@@ -524,6 +549,31 @@
       restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
     });
 
+    const experienceView = document.getElementById('experienceView');
+    document.getElementById('experienceCard').addEventListener('click', () => {
+      showExperienceSlide(0);
+      experienceView.classList.add('open'); experienceView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('experienceBack').addEventListener('click', () => {
+      experienceView.classList.remove('open'); experienceView.setAttribute('aria-hidden','true');
+    });
+    let experienceSlide = 0, experienceStartX = 0;
+    const experienceTrack = document.getElementById('experienceGalleryTrack');
+    const experienceDots = [...document.querySelectorAll('#experienceDots .dot')];
+    function showExperienceSlide(n){
+      experienceSlide = Math.max(0, Math.min(experienceDots.length - 1, n));
+      experienceTrack.style.transform = `translateX(-${experienceSlide*100}%)`;
+      experienceDots.forEach((d,i)=>d.classList.toggle('active',i===experienceSlide));
+    }
+    const experienceGallery = document.getElementById('experienceGallery');
+    experienceGallery.addEventListener('touchstart',e=>experienceStartX=e.changedTouches[0].screenX,{passive:true});
+    experienceGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - experienceStartX;
+      if(distance < -45) showExperienceSlide(experienceSlide + 1);
+      if(distance > 45) showExperienceSlide(experienceSlide - 1);
+    },{passive:true});
+    experienceDots.forEach((dot,i)=>dot.addEventListener('click',()=>showExperienceSlide(i)));
+
     const barView = document.getElementById('barView');
     document.getElementById('barCard').addEventListener('click', () => {
       showBarSlide(0);
@@ -533,45 +583,54 @@
       barView.classList.remove('open'); barView.setAttribute('aria-hidden','true');
     });
 
-    // Native scrolling follows the finger and keeps vertical page scrolling available.
-    function setupGallery(galleryId, dotsId){
-      const gallery = document.getElementById(galleryId);
-      const slides = [...gallery.querySelectorAll('.gallery-slide')];
-      const dots = [...document.querySelectorAll('#' + dotsId + ' .dot')].map((old, i) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = old.className;
-        button.setAttribute('aria-label', `${i + 1}枚目の写真を表示`);
-        old.replaceWith(button);
-        button.addEventListener('click', () => show(i, true));
-        return button;
-      });
-      function update(){
-        const index = Math.round(gallery.scrollLeft / (gallery.clientWidth || 1));
-        dots.forEach((dot, i) => {
-          dot.classList.toggle('active', i === index);
-          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
-        });
-      }
-      function show(n, animate = false){
-        const index = Math.max(0, Math.min(slides.length - 1, n));
-        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        gallery.scrollTo({left: index * gallery.clientWidth, behavior: animate && !reduced ? 'smooth' : 'auto'});
-        update();
-      }
-      let pending = false;
-      gallery.addEventListener('scroll', () => {
-        if(pending) return;
-        pending = true;
-        requestAnimationFrame(() => { pending = false; update(); });
-      }, {passive:true});
-      slides.forEach(slide => slide.querySelectorAll('img').forEach(img => img.draggable = false));
-      update();
-      return show;
+    let barSlide = 0, barStartX = 0;
+    const barTrack = document.getElementById('barGalleryTrack');
+    const barDots = [...document.querySelectorAll('#barDots .dot')];
+    function showBarSlide(n){
+      barSlide = Math.max(0, Math.min(barDots.length - 1, n));
+      barTrack.style.transform = `translateX(-${barSlide*100}%)`;
+      barDots.forEach((d,i)=>d.classList.toggle('active',i===barSlide));
     }
-    const showBarSlide = setupGallery('barGallery', 'barDots');
-    const showRestaurantSlide = setupGallery('restaurantGallery', 'restaurantDots');
-    const showSlide = setupGallery('gallery', 'dots');
+    const barGallery = document.getElementById('barGallery');
+    barGallery.addEventListener('touchstart',e=>barStartX=e.changedTouches[0].screenX,{passive:true});
+    barGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - barStartX;
+      if(distance < -45) showBarSlide(barSlide + 1);
+      if(distance > 45) showBarSlide(barSlide - 1);
+    },{passive:true});
+    barDots.forEach((dot,i)=>dot.addEventListener('click',()=>showBarSlide(i)));
+
+    let restaurantSlide = 0, restaurantStartX = 0;
+    const restaurantTrack = document.getElementById('restaurantGalleryTrack');
+    const restaurantDots = [...document.querySelectorAll('#restaurantDots .dot')];
+    function showRestaurantSlide(n){
+      restaurantSlide = Math.max(0, Math.min(restaurantDots.length - 1, n));
+      restaurantTrack.style.transform = `translateX(-${restaurantSlide*100}%)`;
+      restaurantDots.forEach((d,i)=>d.classList.toggle('active',i===restaurantSlide));
+    }
+    const restaurantGallery = document.getElementById('restaurantGallery');
+    restaurantGallery.addEventListener('touchstart',e=>restaurantStartX=e.changedTouches[0].screenX,{passive:true});
+    restaurantGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - restaurantStartX;
+      if(distance < -45) showRestaurantSlide(restaurantSlide + 1);
+      if(distance > 45) showRestaurantSlide(restaurantSlide - 1);
+    },{passive:true});
+
+    let slide = 0, startX = 0, endX = 0;
+    const track = document.getElementById('galleryTrack');
+    const dots = [...document.querySelectorAll('#dots .dot')];
+    function showSlide(n){
+      slide = Math.max(0, Math.min(2, n));
+      track.style.transform = `translateX(-${slide*100}%)`;
+      dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
+    }
+    const gallery = document.getElementById('gallery');
+    gallery.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true});
+    gallery.addEventListener('touchend',e=>{
+      endX=e.changedTouches[0].screenX;
+      if(startX-endX>45) showSlide(slide+1);
+      if(endX-startX>45) showSlide(slide-1);
+    },{passive:true});
   </script>
 </body>
 </html>
