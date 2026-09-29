@@ -80,18 +80,19 @@
     .room-lounge.time-night{--sheet-bg:rgba(7,21,35,.97);--sheet-fg:#fff;--sheet-muted:#c8c2b7;--message-bg:rgba(255,255,255,.1);--mine-bg:rgba(199,164,93,.2)}
     .room-scene{position:absolute;inset:0;margin:0;background:#071a2b}
     .room-scene figure{position:absolute;inset:0;margin:0;background:#071a2b;overflow:hidden}
-    .room-scene img{width:100%;height:100%;object-fit:cover;transition:opacity .35s ease}
-    .room-photo-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,14,25,.54) 0%,transparent 27%,transparent 56%,rgba(3,14,25,.92) 92%);pointer-events:none}
-    .room-overlay-top{position:absolute;top:0;left:0;right:0;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:max(18px,env(safe-area-inset-top)) 18px 0;color:#fff}
+    .room-photo-area{position:absolute;inset:0;overflow:hidden}
+    .room-scene img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--scene-x,50%) var(--scene-y,50%);transition:opacity .35s ease}
+    .room-photo-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,14,25,.54) 0%,transparent 27%,transparent 60%,rgba(3,14,25,.92) 100%);pointer-events:none}
+    .room-overlay-top{position:absolute;top:0;left:0;right:0;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:max(12px,env(safe-area-inset-top)) 18px 12px;color:#fff}
     .room-leave{width:44px;height:44px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:rgba(7,21,35,.4);color:#fff;font-size:20px}
     .room-identity{text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.7)}
     .room-identity strong{display:block;font-size:15px;font-weight:500;letter-spacing:.14em}
     .room-identity small{display:block;margin-top:5px;font:10px Georgia,serif;letter-spacing:.2em;color:#ead4aa}
     .room-clock{text-align:right;font:12px Georgia,serif;letter-spacing:.1em;text-shadow:0 2px 8px rgba(0,0,0,.7)}
-    .room-overlay-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 20px max(22px,env(safe-area-inset-bottom));color:#fff}
+    .room-overlay-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 20px max(16px,env(safe-area-inset-bottom));color:#fff}
     .room-kicker{font:10px Georgia,serif;letter-spacing:.28em;color:#e3c68f;margin-bottom:7px}
-    .room-scene-title{font-size:25px;font-weight:400;letter-spacing:.1em;margin:0 0 5px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
-    .room-welcome{margin:0;font-size:12px;line-height:1.7;color:rgba(255,255,255,.82);text-shadow:0 2px 8px rgba(0,0,0,.65)}
+    .info .room-scene-title{text-align:left;font-size:25px;font-weight:400;letter-spacing:.1em;margin:0 0 5px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
+    .info .room-welcome{margin:0;font-size:12px;line-height:1.7;color:rgba(255,255,255,.82);text-shadow:0 2px 8px rgba(0,0,0,.65)}
     .room-view-controls{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;align-items:center;margin-top:17px}
     .room-view-controls button{height:46px;border:1px solid rgba(255,255,255,.4);background:rgba(7,21,35,.48);color:#fff;letter-spacing:.08em}
     .room-scene-arrow{font-size:22px}
@@ -130,6 +131,17 @@
     .room-fallback button{min-height:50px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;letter-spacing:.1em}
     .room-fallback button:first-of-type{background:#f6f0e5;color:#0d2743;border-color:#f6f0e5}
     .room-mapping{font-size:12px;line-height:1.9;color:#4c5661}
+    .room-scene[data-scene="phone"] .room-kicker,.room-scene[data-scene="phone"] .room-welcome{display:none}
+    .room-scene[data-scene="phone"] .room-scene-title{font-size:20px;margin:0 0 4px}
+    .room-scene[data-scene="phone"] .room-view-controls{margin-top:6px}
+    .room-scene[data-scene="phone"] .room-scene-dots{margin:7px 0}
+    .room-scene[data-scene="phone"] .room-chat-open{min-height:44px}
+    @media(max-height:540px) and (orientation:landscape){
+      .room-overlay-bottom{left:auto;width:270px;padding:10px 14px;max-height:calc(100% - 76px);overflow-y:auto;background:rgba(3,14,25,.5)}
+      .room-overlay-bottom .room-kicker,.room-overlay-bottom .room-welcome{display:none}
+      .room-view-controls{margin-top:8px}
+      .room-scene-nav{left:auto;width:240px;right:10px;bottom:70px}
+    }
     @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}}
     @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
   </style>
@@ -194,7 +206,7 @@
       <div id="roomLounge" class="room-lounge hidden">
         <div id="roomScene" class="room-scene hidden">
           <figure>
-            <img id="roomPhoto" src="" alt="デラックスオーシャンの部屋全体">
+            <div class="room-photo-area"><img id="roomPhoto" src="" alt="デラックスオーシャンの部屋全体"></div>
             <div class="room-photo-shade"></div>
             <div class="room-overlay-top">
               <button id="leaveRoom" class="room-leave" type="button" aria-label="客室から出る">←</button>
@@ -299,6 +311,16 @@
       closet:['Deluxe_Ocean_Closet.jpg','Deluxe_Ocean_Closet_Sunset.jpg','Deluxe_Ocean_Closet_Night.jpg'],
       bathroom:['Deluxe_Ocean_Bathroom.jpg','Deluxe_Ocean_Bathroom_Sunset.jpg','Deluxe_Ocean_Bathroom_Night.jpg']
     };
+    // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
+    // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
+    const roomScenePositions={
+      room:[[64,50],[64,50],[64,50]],
+      window:[[48,50],[48,50],[48,50]],
+      desk:[[36,55],[36,55],[36,55]],
+      phone:[[86,65],[86,65],[86,65]],
+      closet:[[86,50],[86,50],[86,50]],
+      bathroom:[[65,50],[65,50],[65,50]]
+    };
     const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
     const roomSceneOrder=['room','window','desk','phone','closet','bathroom'];
     const timeNames=['昼','夕暮れ','夜'];
@@ -320,6 +342,10 @@
       roomImageError.classList.add('hidden');
       roomPhoto.style.opacity='.35';
       roomPhoto.src=deluxeScenes[selectedRoomScene][time];
+      roomScene.dataset.scene=selectedRoomScene;
+      const focal=roomScenePositions[selectedRoomScene][time];
+      roomScene.style.setProperty('--scene-x',focal[0]+'%');
+      roomScene.style.setProperty('--scene-y',focal[1]+'%');
       roomPhoto.alt=`デラックスオーシャンの${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
       roomSceneTitle.textContent=sceneNames[selectedRoomScene];
       const sceneIndex=roomSceneOrder.indexOf(selectedRoomScene);
