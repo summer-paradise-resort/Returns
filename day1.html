@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2743">
+  <title>島で過ごす | Summer Paradise Resort / DAY 1</title>
+  <style>
+    :root{--navy:#0d2743;--gold:#a87b2f;--gold2:#c7a45d;--cream:#fbf8f1;--line:#ddd3c3;--muted:#6d6a64}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--navy);background:#fff}
+    button{font:inherit;cursor:pointer}
+    img{display:block;width:100%}
+    .hidden{display:none!important}
+    header{height:72px;background:rgba(255,255,255,.97);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(168,123,47,.18);backdrop-filter:blur(10px)}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand img{width:44px;height:44px;object-fit:contain}
+    .brand-name{font:20px/1 Georgia,serif;color:var(--gold);white-space:nowrap}
+    .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
+    .home-link{color:var(--navy);font:11px Georgia,serif;letter-spacing:.12em;text-decoration:none;padding:12px 4px}
+    .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat}
+    .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
+    .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
+    h1{font-size:clamp(31px,8vw,48px);font-weight:500;letter-spacing:.08em;line-height:1.35;margin:0 0 14px}
+    .hero p{font-size:14px;line-height:2;letter-spacing:.08em;margin:0}
+    main{padding-bottom:48px}
+    .section{padding:42px 18px 0;max-width:980px;margin:auto}
+    .section-head{text-align:center;margin-bottom:27px}
+    .section-head h2{font-size:22px;font-weight:500;letter-spacing:.1em;margin:0 0 9px}
+    .section-head p{font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold);margin:0}
+    .notice{max-width:760px;margin:0 auto 24px;padding:15px 17px;border:1px solid var(--line);background:var(--cream);font-size:12px;line-height:1.9;letter-spacing:.04em;text-align:center}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .card{padding:0;text-align:left;background:#fff;color:inherit;border:1px solid rgba(168,123,47,.18);box-shadow:0 8px 24px rgba(13,39,67,.08);transition:transform .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(13,39,67,.13)}
+    .card img{height:170px;object-fit:cover}
+    .card-body{padding:16px 15px 17px}
+    .card-title{font-size:18px;letter-spacing:.1em;font-weight:500;margin:0 0 5px}
+    .card-en{font:10px Georgia,serif;letter-spacing:.2em;color:var(--gold);margin-bottom:11px}
+    .card-desc{min-height:48px;font-size:12px;line-height:1.8;color:#4c5661;margin:0}
+    .view{font:10px Georgia,serif;letter-spacing:.15em;color:var(--gold);margin-top:15px}
+    footer{padding:26px 16px 34px;text-align:center;border-top:1px solid #eee8dc;color:#897b62;font:12px Georgia,serif;letter-spacing:.08em}
+    .subview{position:fixed;inset:0;background:#fff;z-index:40;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,visibility .25s,transform .25s}
+    .subview.open{opacity:1;visibility:visible;transform:none}
+    .subhead{height:66px;position:sticky;top:0;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;z-index:2;padding:0 12px}
+    .back{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font:12px Georgia,serif}
+    .subhead-title{text-align:center;font:11px Georgia,serif;letter-spacing:.18em;color:var(--gold)}
+    .gallery{overflow:hidden;background:#e8e3da;touch-action:pan-y}
+    .track{display:flex;transition:transform .35s ease}
+    .slide{flex:0 0 100%;aspect-ratio:16/10}
+    .slide img{height:100%;object-fit:cover}
+    .dots{display:flex;justify-content:center;gap:9px;padding:15px 0}
+    .dot{width:7px;height:7px;border-radius:50%;background:#d6d0c5;border:0;padding:0}
+    .dot.active{background:var(--gold)}
+    .info{max-width:700px;margin:0 auto;padding:12px 22px 50px}
+    .info h2{text-align:center;font:22px Georgia,serif;letter-spacing:.14em;font-weight:400;margin:10px 0 4px}
+    .jp{text-align:center;font-size:13px;letter-spacing:.13em;color:var(--gold);margin-bottom:23px}
+    .meta{text-align:center;font:10px/1.8 Georgia,serif;letter-spacing:.12em;color:var(--muted);margin-bottom:18px}
+    .info p{font-size:13px;line-height:2.1;letter-spacing:.04em;margin:0 0 18px;color:#37495a}
+    .panel{margin-top:22px;padding:18px;background:var(--cream);border:1px solid var(--line)}
+    .panel h3{font-size:15px;font-weight:500;letter-spacing:.1em;margin:0 0 10px}
+    .panel p{font-size:12px;margin:0;line-height:1.9}
+    .menu-list{display:grid;gap:10px;margin-top:15px}
+    .menu-item{background:white;border:1px solid #e7dfd1;padding:12px 13px;font-size:13px;line-height:1.7}
+    .menu-item small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
+    .casino-card{margin-top:18px;text-align:center;padding:24px 18px;background:linear-gradient(145deg,#102e4b,#071a2b);color:white;border:1px solid #c7a45d}
+    .casino-card .casino-mark{font:10px Georgia,serif;letter-spacing:.3em;color:#e4c982}
+    .casino-card h3{font-size:20px;font-weight:400;letter-spacing:.12em;margin:12px 0}
+    .casino-card p{color:#eee7d7;font-size:12px;line-height:1.9;margin:0}
+    .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
+    .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
+    .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
+    .room-entry .field{margin-bottom:15px}
+    .primary-btn{width:100%;min-height:46px;border:0;background:var(--navy);color:white;letter-spacing:.1em;padding:12px}
+    .room-error{min-height:1.5em;color:#a53b32;font-size:12px;margin:8px 0 0}
+    #roomView.room-active{overflow:hidden;background:#071a2b}
+    #roomView.room-active .subhead,#roomView.room-active .info>h2,#roomView.room-active .info>.jp,#roomView.room-active .info>.meta,#roomView.room-active .info>p,#roomView.room-active #roomEntry{display:none!important}
+    #roomView.room-active .info{max-width:none;height:100%;padding:0}
+    .room-lounge{--sheet-bg:rgba(251,248,241,.97);--sheet-fg:#0d2743;--sheet-muted:#776e60;--message-bg:#fff;--mine-bg:#e7eef4;position:relative;width:100%;height:100vh;height:100dvh;max-width:none;margin:0;padding:0;overflow:hidden;background:#071a2b;color:#fff;border:0}
+    .room-lounge.time-night{--sheet-bg:rgba(7,21,35,.97);--sheet-fg:#fff;--sheet-muted:#c8c2b7;--message-bg:rgba(255,255,255,.1);--mine-bg:rgba(199,164,93,.2)}
+    .room-scene{position:absolute;inset:0;margin:0;background:#071a2b}
+    .room-scene figure{position:absolute;inset:0;margin:0;background:#071a2b;overflow:hidden}
+    .room-scene img{width:100%;height:100%;object-fit:cover;transition:opacity .35s ease}
+    .room-photo-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,14,25,.54) 0%,transparent 27%,transparent 56%,rgba(3,14,25,.92) 92%);pointer-events:none}
+    .room-overlay-top{position:absolute;top:0;left:0;right:0;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:max(18px,env(safe-area-inset-top)) 18px 0;color:#fff}
+    .room-leave{width:44px;height:44px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:rgba(7,21,35,.4);color:#fff;font-size:20px}
+    .room-identity{text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.7)}
+    .room-identity strong{display:block;font-size:15px;font-weight:500;letter-spacing:.14em}
+    .room-identity small{display:block;margin-top:5px;font:10px Georgia,serif;letter-spacing:.2em;color:#ead4aa}
+    .room-clock{text-align:right;font:12px Georgia,serif;letter-spacing:.1em;text-shadow:0 2px 8px rgba(0,0,0,.7)}
+    .room-overlay-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 20px max(22px,env(safe-area-inset-bottom));color:#fff}
+    .room-kicker{font:10px Georgia,serif;letter-spacing:.28em;color:#e3c68f;margin-bottom:7px}
+    .room-scene-title{font-size:25px;font-weight:400;letter-spacing:.1em;margin:0 0 5px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
+    .room-welcome{margin:0;font-size:12px;line-height:1.7;color:rgba(255,255,255,.82);text-shadow:0 2px 8px rgba(0,0,0,.65)}
+    .room-view-controls{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;align-items:center;margin-top:17px}
+    .room-view-controls button{height:46px;border:1px solid rgba(255,255,255,.4);background:rgba(7,21,35,.48);color:#fff;letter-spacing:.08em}
+    .room-scene-arrow{font-size:22px}
+    .room-scene-menu-toggle{font-size:12px}
+    .room-scene-dots{display:flex;justify-content:center;gap:7px;margin:11px 0 15px}
+    .room-scene-dots span{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);transition:.2s}
+    .room-scene-dots span.active{width:18px;border-radius:8px;background:#c7a45d}
+    .room-scene-nav{position:absolute;z-index:8;left:18px;right:18px;bottom:154px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:14px;background:rgba(7,21,35,.94);backdrop-filter:blur(12px);opacity:0;visibility:hidden;transform:translateY(10px);transition:.25s}
+    .room-scene-nav.open{opacity:1;visibility:visible;transform:none}
+    .room-scene-nav button{min-height:44px;padding:9px 5px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-size:12px;letter-spacing:.04em}
+    .room-scene-nav button[aria-pressed="true"]{background:#f6f0e5;color:#0d2743;border-color:#f6f0e5}
+    .room-chat-open{width:100%;min-height:52px;border:0;background:#f6f0e5;color:#0d2743;font-size:15px;letter-spacing:.1em;display:flex;align-items:center;justify-content:center;gap:9px}
+    .chat-unread{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#a87b2f;color:#fff;display:grid;place-items:center;font:11px Arial,sans-serif}
+    .room-image-error{position:absolute;z-index:15;left:18px;right:18px;top:90px;padding:12px;background:rgba(255,255,255,.92);color:#a53b32;text-align:center;font-size:12px}
+    .room-chat-toast{position:absolute;z-index:14;left:20px;right:20px;bottom:94px;padding:12px 14px;background:rgba(7,21,35,.88);color:#fff;font-size:12px;line-height:1.6;opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s;backdrop-filter:blur(10px)}
+    .room-chat-toast.show{opacity:1;visibility:visible;transform:none}
+    .room-chat-sheet{position:absolute;z-index:20;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.3);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
+    .room-chat-sheet.open{transform:none;visibility:visible}
+    .room-chat-sheet:focus-within{height:min(82%,720px)}
+    .chat-sheet-handle{width:42px;height:4px;border-radius:2px;background:var(--sheet-muted);opacity:.45;margin:9px auto 5px}
+    .chat-sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:4px 14px 10px;border-bottom:1px solid rgba(130,110,76,.2)}
+    .chat-sheet-head h3{text-align:center;font-size:15px;font-weight:500;letter-spacing:.1em;margin:0}
+    .chat-sheet-close{grid-column:3;width:44px;height:44px;border:0;background:transparent;color:var(--sheet-fg);font-size:24px}
+    .chat-log{flex:1;min-height:0;overflow-y:auto;background:transparent;padding:13px 15px;display:flex;flex-direction:column;gap:9px}
+    .chat-message{padding:9px 11px;background:var(--message-bg);border-radius:8px;max-width:90%;align-self:flex-start;overflow-wrap:anywhere}
+    .chat-message.mine{background:var(--mine-bg);align-self:flex-end}
+    .chat-message small{display:block;color:var(--sheet-muted);font-size:10px;margin-bottom:3px}
+    .chat-message p{font-size:13px;line-height:1.6;margin:0;color:var(--sheet-fg)}
+    .chat-empty{text-align:center;color:var(--sheet-muted);font-size:12px;margin:auto}
+    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid rgba(130,110,76,.2)}
+    .chat-compose input{width:100%;min-height:46px;border:1px solid rgba(130,110,76,.35);background:var(--message-bg);padding:10px 12px;color:var(--sheet-fg);font:inherit;font-size:16px}
+    .chat-compose button{border:0;background:var(--gold);color:white;padding:0 18px;min-width:70px}
+    .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
+    .room-fallback h2{font-size:25px;font-weight:400;letter-spacing:.08em;margin:0}
+    .room-fallback p{font-size:13px;line-height:1.9;color:rgba(255,255,255,.75);margin:0 0 8px}
+    .room-fallback button{min-height:50px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;letter-spacing:.1em}
+    .room-fallback button:first-of-type{background:#f6f0e5;color:#0d2743;border-color:#f6f0e5}
+    .room-mapping{font-size:12px;line-height:1.9;color:#4c5661}
+    @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}}
+    @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
+    <a class="home-link" href="index.html">RESORT TOP　↗</a>
+  </header>
+
+  <main id="day1Home">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">サマーパラダイスリゾート　/　DAY1</p>
+        <h1>島で過ごす。</h1>
+        <p>目覚めたあとは、島の時間へ。<br>気になる場所を選んで、今日だけの滞在をお楽しみください。</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>館内の各施設</h2><p>YOUR STAY, YOUR STORY</p></div>
+      <div class="notice">館内の各施設をお選びいただけます。</div>
+      <div class="cards">
+        <button class="card" type="button" data-open="roomView">
+          <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
+          <div class="card-body"><h3 class="card-title">ROOM</h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="exploreView">
+          <img src="lighthouse.jpg" alt="島の灯台">
+          <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="restaurantView">
+          <img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace">
+          <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="barView">
+          <img src="seaside_bar.jpg" alt="シーサイドバー">
+          <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="casinoView">
+          <img src="blue_shell_casino.jpg" alt="カジノ・ブルーシェル">
+          <div class="card-body"><h3 class="card-title">カジノへ行く</h3><div class="card-en">CASINO BLUE SHELL</div><p class="card-desc">海辺の夜を彩る、ブルーシェルのゲームテーブル。</p><div class="view">ENTER CASINO　›</div></div>
+        </button>
+      </div>
+    </section>
+  </main>
+  <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE</footer>
+
+  <section class="subview" id="roomView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">YOUR PRIVATE ROOM</div><div></div></div>
+    <div class="info"><h2>ROOM</h2><div class="jp">客室へ入る</div><div class="meta">ENTER YOUR ROOM NUMBER</div>
+      <p>ご宿泊の部屋番号を暗証番号として入力してください。同じ番号を入力した方は、同じ客室に入室できます。</p>
+      <div id="roomEntry" class="room-entry">
+        <form id="roomEntryForm">
+          <div class="field"><label for="roomPin">部屋番号（暗証番号）</label><input id="roomPin" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="例：101" required></div>
+          <div class="field"><label for="guestName">チャットで使うお名前</label><input id="guestName" maxlength="20" autocomplete="nickname" placeholder="お名前"></div>
+          <button class="primary-btn" type="submit">客室に入る</button>
+          <p id="roomError" class="room-error" aria-live="polite"></p>
+        </form>
+        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜202：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
+      </div>
+      <div id="roomLounge" class="room-lounge hidden">
+        <div id="roomScene" class="room-scene hidden">
+          <figure>
+            <img id="roomPhoto" src="" alt="デラックスオーシャンの部屋全体">
+            <div class="room-photo-shade"></div>
+            <div class="room-overlay-top">
+              <button id="leaveRoom" class="room-leave" type="button" aria-label="客室から出る">←</button>
+              <div class="room-identity"><strong id="roomNumberLabel"></strong><small>DELUXE OCEAN</small></div>
+              <time id="roomClock" class="room-clock"></time>
+            </div>
+            <div class="room-overlay-bottom">
+              <div class="room-kicker">YOUR PRIVATE ROOM</div>
+              <h2 id="roomSceneTitle" class="room-scene-title">部屋全体</h2>
+              <p id="roomWelcome" class="room-welcome"></p>
+              <div class="room-view-controls">
+                <button id="roomScenePrev" class="room-scene-arrow" type="button" aria-label="前の場所">‹</button>
+                <button id="roomSceneMenuToggle" class="room-scene-menu-toggle" type="button" aria-expanded="false">場所一覧　1 / 6</button>
+                <button id="roomSceneNext" class="room-scene-arrow" type="button" aria-label="次の場所">›</button>
+              </div>
+              <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
+              <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
+            </div>
+          </figure>
+          <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday1.htmlと同じ場所にアップロードしてください。</p>
+          <nav id="roomSceneNav" class="room-scene-nav" aria-label="客室内を眺める" aria-hidden="true">
+            <button type="button" data-room-scene="room" aria-pressed="true">部屋全体</button>
+            <button type="button" data-room-scene="window" aria-pressed="false">窓</button>
+            <button type="button" data-room-scene="desk" aria-pressed="false">机</button>
+            <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
+            <button type="button" data-room-scene="closet" aria-pressed="false">クローゼット</button>
+            <button type="button" data-room-scene="bathroom" aria-pressed="false">バスルーム</button>
+          </nav>
+        </div>
+        <div id="roomFallback" class="room-fallback hidden">
+          <h2 id="fallbackRoomName"></h2><p>この客室の写真は準備中です。会話はご利用いただけます。</p>
+          <button id="fallbackChatOpen" type="button">この客室で話す</button><button id="fallbackLeaveRoom" type="button">部屋から出る</button>
+        </div>
+        <div id="roomChatToast" class="room-chat-toast" aria-live="polite"></div>
+        <section id="chatSheet" class="room-chat-sheet" aria-hidden="true" aria-label="この客室の会話">
+          <div class="chat-sheet-handle"></div>
+          <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
+          <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
+          <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="subview" id="exploreView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
+    <div class="gallery" data-gallery="explore"><div class="track">
+      <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
+    </div></div><div class="dots" data-dots="explore"></div>
+    <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel"><h3>島内の見どころ</h3><p>海辺、灯台、マーメイドの入り江を掲載しています。写真を左右にスワイプしてご覧ください。</p></div></div>
+  </section>
+
+  <section class="subview" id="restaurantView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">RESTAURANT &amp; CAFÉ</div><div></div></div>
+    <div class="gallery" data-gallery="restaurant"><div class="track">
+      <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div><div class="slide"><img src="sunset_terrace1.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="sunset_terrace2.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div><div class="slide"><img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace 外観"></div><div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div><div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Marine Bloom Cafe ティーセット"></div>
+    </div></div><div class="dots" data-dots="restaurant"></div>
+    <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
+      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><div class="menu-item">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></div><div class="menu-item">Marine Bloom Cafe<small>CAFÉ &amp; SWEETS</small></div></div></div>
+    </div>
+  </section>
+
+  <section class="subview" id="barView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
+    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
+    <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p><div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div></div>
+  </section>
+
+  <section class="subview" id="casinoView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
+    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
+    <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。テーブルに着く前のひとときも、ゆっくりお楽しみください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>ゲームテーブル</h3><p>ゲームとチップの仕組みを準備中です。<br>カジノの遊び方はこちらに追加できます。</p></div></div>
+  </section>
+
+  <script>
+    const views = [...document.querySelectorAll('.subview')];
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
+    function closeView(view){view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
+    document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+
+    const roomTypes={
+      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
+      201:'ファミリー',202:'ファミリー',
+      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',
+      401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
+    };
+    let activeRoom='', activeGuest='ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
+    const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), guestName=document.getElementById('guestName'), roomError=document.getElementById('roomError');
+    const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
+    const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto'), roomImageError=document.getElementById('roomImageError');
+    const roomSceneNav=document.getElementById('roomSceneNav'), roomSceneMenuToggle=document.getElementById('roomSceneMenuToggle');
+    const roomSceneTitle=document.getElementById('roomSceneTitle'), roomSceneDots=[...document.querySelectorAll('#roomSceneDots span')];
+    const roomSceneButtons=[...document.querySelectorAll('[data-room-scene]')], chatSheet=document.getElementById('chatSheet');
+    const chatUnread=document.getElementById('chatUnread'), roomChatToast=document.getElementById('roomChatToast');
+    const roomFallback=document.getElementById('roomFallback');
+    const deluxeScenes={
+      room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
+      window:['Deluxe_Ocean_Window.jpg','Deluxe_Ocean_Window_Sunset.jpg','Deluxe_Ocean_Window_Night.jpg'],
+      desk:['Deluxe_Ocean_Desk.jpg','Deluxe_Ocean_Desk_Sunset.jpg','Deluxe_Ocean_Desk_Night.jpg'],
+      phone:['Deluxe_Ocean_Phone.jpg','Deluxe_Ocean_Phone_Sunset.jpg','Deluxe_Ocean_Phone_Night.jpg'],
+      closet:['Deluxe_Ocean_Closet.jpg','Deluxe_Ocean_Closet_Sunset.jpg','Deluxe_Ocean_Closet_Night.jpg'],
+      bathroom:['Deluxe_Ocean_Bathroom.jpg','Deluxe_Ocean_Bathroom_Sunset.jpg','Deluxe_Ocean_Bathroom_Night.jpg']
+    };
+    const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
+    const roomSceneOrder=['room','window','desk','phone','closet','bathroom'];
+    const timeNames=['昼','夕暮れ','夜'];
+    let selectedRoomScene='room', shownTime=-1;
+    function roomTimeIndex(){
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=7&&hour<16?0:hour>=16&&hour<20?1:2;
+    }
+    function updateRoomPhoto(force=false){
+      if(!/^10[1-5]$/.test(activeRoom))return;
+      const time=roomTimeIndex();
+      const now=new Date();
+      document.getElementById('roomClock').textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+      document.getElementById('roomClock').dateTime=now.toISOString();
+      if(!force&&time===shownTime)return;
+      shownTime=time;
+      roomLounge.classList.remove('time-day','time-sunset','time-night');
+      roomLounge.classList.add(['time-day','time-sunset','time-night'][time]);
+      roomImageError.classList.add('hidden');
+      roomPhoto.style.opacity='.35';
+      roomPhoto.src=deluxeScenes[selectedRoomScene][time];
+      roomPhoto.alt=`デラックスオーシャンの${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
+      roomSceneTitle.textContent=sceneNames[selectedRoomScene];
+      const sceneIndex=roomSceneOrder.indexOf(selectedRoomScene);
+      roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${roomSceneOrder.length}`;
+      roomSceneDots.forEach((dot,index)=>dot.classList.toggle('active',index===sceneIndex));
+      roomSceneButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomScene===selectedRoomScene)));
+    }
+    function chooseRoomScene(scene){selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true)}
+    function stepRoomScene(amount){const index=roomSceneOrder.indexOf(selectedRoomScene);chooseRoomScene(roomSceneOrder[(index+amount+roomSceneOrder.length)%roomSceneOrder.length])}
+    roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
+    document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
+    document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
+    roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
+    roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
+    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
+    roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
+    roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
+    setInterval(()=>updateRoomPhoto(),30000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
+    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
+    function renderChat(){
+      if(!activeRoom)return;
+      const messages=roomMessages(); chatLog.replaceChildren();
+      if(!messages.length){const empty=document.createElement('div');empty.className='chat-empty';empty.textContent='この客室の会話はまだありません。';chatLog.append(empty);return;}
+      messages.slice(-100).forEach(message=>{const item=document.createElement('div');item.className='chat-message'+(message.name===activeGuest?' mine':'');const meta=document.createElement('small');meta.textContent=`${message.name}　${message.time}`;const body=document.createElement('p');body.textContent=message.text;item.append(meta,body);chatLog.append(item)});
+      chatLog.scrollTop=chatLog.scrollHeight;
+    }
+    function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
+    function openChatSheet(){roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
+    function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
+    function showChatToast(message){if(!message)return;clearTimeout(toastTimer);roomChatToast.textContent=`${message.name}「${message.text.slice(0,52)}${message.text.length>52?'…':''}」`;roomChatToast.classList.add('show');toastTimer=setTimeout(()=>roomChatToast.classList.remove('show'),4200)}
+    document.getElementById('chatOpenButton').addEventListener('click',openChatSheet);
+    document.getElementById('fallbackChatOpen').addEventListener('click',openChatSheet);
+    document.getElementById('chatCloseButton').addEventListener('click',closeChatSheet);
+    chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
+    chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
+    document.getElementById('roomEntryForm').addEventListener('submit',event=>{
+      event.preventDefault();const room=roomPin.value.trim();
+      if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号を入力してください。';return;}
+      activeRoom=room;activeGuest=guestName.value.trim()||'ゲスト';roomError.textContent='';
+      document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
+      document.getElementById('roomNumberLabel').textContent=`${room}号室`;
+      document.getElementById('chatSheetTitle').textContent=`${room}号室の会話`;
+      document.getElementById('fallbackRoomName').textContent=`${room}号室　／　${roomTypes[room]}`;
+      roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
+      const isDeluxe=/^10[1-5]$/.test(room);roomScene.classList.toggle('hidden',!isDeluxe);roomFallback.classList.toggle('hidden',isDeluxe);
+      closeChatSheet();unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
+      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
+    });
+    document.getElementById('chatForm').addEventListener('submit',event=>{
+      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
+      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
+    });
+    function leaveActiveRoom(){closeChatSheet();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';closeView(roomView)}
+    document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
+    document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
+    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}});
+
+    const galleries={};
+    document.querySelectorAll('[data-gallery]').forEach(gallery=>{
+      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
+      const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
+      function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
+      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
+      galleries[name]=show;
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+  </script>
+</body>
+</html>
