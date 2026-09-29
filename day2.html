@@ -3,299 +3,947 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0d2743">
-  <title>島で過ごす | Summer Paradise Resort / DAY 2</title>
+  <title>Summer Paradise Resort | Day Two</title>
+  <meta name="summer-paradise-build" content="2026-09-28-1830">
+  <!-- DAY 2: guest stay navigation edition -->
+  <script>
+    // 日本時間に合わせて、ページを開いたままでもトップ画像を更新する。
+    function updateHeroImage(){
+      const hour = Number(new Intl.DateTimeFormat('en-US', {
+        timeZone:'Asia/Tokyo', hour:'numeric', hourCycle:'h23'
+      }).format(new Date()));
+      const image = hour >= 7 && hour < 16
+        ? 'summer_paradise_noon.jpg'
+        : hour >= 16 && hour < 20
+          ? 'summer_paradise_sunset.jpg'
+          : 'summer_paradise_night.jpg';
+      document.documentElement.style.setProperty('--hero-image', `url("${image}")`);
+      document.documentElement.classList.toggle('night-hero', hour >= 20 || hour < 7);
+    }
+    updateHeroImage();
+    setInterval(updateHeroImage, 15000);
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) updateHeroImage();
+    });
+  </script>
   <style>
-    :root{--navy:#0d2743;--gold:#a87b2f;--gold2:#c7a45d;--cream:#fbf8f1;--line:#ddd3c3;--muted:#6d6a64}
+    :root{
+      --navy:#0d2743;
+      --gold:#a87b2f;
+      --gold2:#c7a45d;
+      --cream:#fbf8f1;
+      --white:#fff;
+      --line:#ddd3c3;
+      --muted:#6d6a64;
+      --hero-image:url("summer_paradise_noon.jpg");
+    }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--navy);background:#fff}
-    button{font:inherit;cursor:pointer}
+    body{
+      margin:0;
+      font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+      color:var(--navy);
+      background:#fff;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
     img{display:block;width:100%}
     .hidden{display:none!important}
-    header{height:72px;background:rgba(255,255,255,.97);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(168,123,47,.18);backdrop-filter:blur(10px)}
-    .brand{display:flex;align-items:center;gap:10px;min-width:0}
-    .brand img{width:44px;height:44px;object-fit:contain}
-    .brand-name{font:20px/1 Georgia,serif;color:var(--gold);white-space:nowrap}
+
+    /* INTRO */
+    #intro{
+      position:fixed; inset:0;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      color:#fff;
+      overflow:hidden;
+      background:#0c1c2c;
+      transition:opacity 1.2s ease, visibility 1.2s ease;
+    }
+    #intro::before{
+      content:"";
+      position:absolute; inset:-4%;
+      background:
+        linear-gradient(rgba(5,15,28,.28),rgba(5,15,28,.44)),
+        url("summer_paradise_noon0.jpg?v=202609281830") center/cover no-repeat;
+      transform:scale(1.03);
+      animation:introZoom 6s ease-out forwards;
+    }
+    #intro.leave{opacity:0;visibility:hidden}
+    @keyframes introZoom{from{transform:scale(1.08)}to{transform:scale(1.02)}}
+    .intro-content{position:relative;z-index:2;padding:28px}
+    .intro-mark{font-size:15px;letter-spacing:.25em;color:#e4c982;margin-bottom:18px}
+    .intro-title{
+      font-size:clamp(28px,7vw,44px);
+      letter-spacing:.12em;
+      font-weight:500;
+      margin:0 0 14px;
+      opacity:0;
+      animation:fadeUp 1.4s .45s ease forwards;
+    }
+    .intro-sub{
+      font-family:Georgia,serif;
+      font-size:12px;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      color:#ead8aa;
+      opacity:0;
+      animation:fadeUp 1.4s .9s ease forwards;
+    }
+    .intro-line{
+      width:120px;height:1px;background:rgba(255,255,255,.32);
+      margin:32px auto 0;overflow:hidden;position:relative;
+    }
+    .intro-line::after{
+      content:"";position:absolute;inset:0 auto 0 0;width:0;
+      background:#fff;animation:load 2.8s 1s ease forwards;
+    }
+    @keyframes load{to{width:100%}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+    /* HEADER */
+    header{
+      height:76px;background:rgba(255,255,255,.96);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 22px;
+      position:sticky;top:0;z-index:50;
+      border-bottom:1px solid rgba(168,123,47,.12);
+      backdrop-filter:blur(12px);
+    }
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .shell{
+      display:block;width:48px;height:48px;flex:0 0 48px;
+      object-fit:contain;border:0;
+    }
+    .brand-name{
+      color:var(--gold);font-family:Georgia,serif;font-size:20px;
+      line-height:1;white-space:nowrap;
+    }
     .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
-    .home-link{color:var(--navy);font:11px Georgia,serif;letter-spacing:.12em;text-decoration:none;padding:12px 4px}
-    .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat}
-    .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
-    .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
-    h1{font-size:clamp(31px,8vw,48px);font-weight:500;letter-spacing:.08em;line-height:1.35;margin:0 0 14px}
-    .hero p{font-size:14px;line-height:2;letter-spacing:.08em;margin:0}
-    main{padding-bottom:48px}
-    .section{padding:42px 18px 0;max-width:980px;margin:auto}
-    .section-head{text-align:center;margin-bottom:27px}
-    .section-head h2{font-size:22px;font-weight:500;letter-spacing:.1em;margin:0 0 9px}
-    .section-head p{font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold);margin:0}
-    .notice{max-width:760px;margin:0 auto 24px;padding:15px 17px;border:1px solid var(--line);background:var(--cream);font-size:12px;line-height:1.9;letter-spacing:.04em;text-align:center}
-    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-    .card{padding:0;text-align:left;background:#fff;color:inherit;border:1px solid rgba(168,123,47,.18);box-shadow:0 8px 24px rgba(13,39,67,.08);transition:transform .2s,box-shadow .2s}
-    .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(13,39,67,.13)}
-    .card img{height:170px;object-fit:cover}
-    .card-body{padding:16px 15px 17px}
-    .card-title{font-size:18px;letter-spacing:.1em;font-weight:500;margin:0 0 5px}
-    .card-en{font:10px Georgia,serif;letter-spacing:.2em;color:var(--gold);margin-bottom:11px}
-    .card-desc{min-height:48px;font-size:12px;line-height:1.8;color:#4c5661;margin:0}
-    .view{font:10px Georgia,serif;letter-spacing:.15em;color:var(--gold);margin-top:15px}
-    footer{padding:26px 16px 34px;text-align:center;border-top:1px solid #eee8dc;color:#897b62;font:12px Georgia,serif;letter-spacing:.08em}
-    .subview{position:fixed;inset:0;background:#fff;z-index:40;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,visibility .25s,transform .25s}
-    .subview.open{opacity:1;visibility:visible;transform:none}
-    .subhead{height:66px;position:sticky;top:0;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;z-index:2;padding:0 12px}
-    .back{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font:12px Georgia,serif}
-    .subhead-title{text-align:center;font:11px Georgia,serif;letter-spacing:.18em;color:var(--gold)}
-    .gallery{overflow:hidden;background:#e8e3da;touch-action:pan-y}
-    .track{display:flex;transition:transform .35s ease}
-    .slide{flex:0 0 100%;aspect-ratio:16/10}
-    .slide img{height:100%;object-fit:cover}
-    .dots{display:flex;justify-content:center;gap:9px;padding:15px 0}
-    .dot{width:7px;height:7px;border-radius:50%;background:#d6d0c5;border:0;padding:0}
-    .dot.active{background:var(--gold)}
-    .info{max-width:700px;margin:0 auto;padding:12px 22px 50px}
-    .info h2{text-align:center;font:22px Georgia,serif;letter-spacing:.14em;font-weight:400;margin:10px 0 4px}
-    .jp{text-align:center;font-size:13px;letter-spacing:.13em;color:var(--gold);margin-bottom:23px}
-    .meta{text-align:center;font:10px/1.8 Georgia,serif;letter-spacing:.12em;color:var(--muted);margin-bottom:18px}
-    .info p{font-size:13px;line-height:2.1;letter-spacing:.04em;margin:0 0 18px;color:#37495a}
-    .panel{margin-top:22px;padding:18px;background:var(--cream);border:1px solid var(--line)}
-    .panel h3{font-size:15px;font-weight:500;letter-spacing:.1em;margin:0 0 10px}
-    .panel p{font-size:12px;margin:0;line-height:1.9}
-    .menu-list{display:grid;gap:10px;margin-top:15px}
-    .menu-item{background:white;border:1px solid #e7dfd1;padding:12px 13px;font-size:13px;line-height:1.7}
-    .menu-item small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
-    .casino-card{margin-top:18px;text-align:center;padding:24px 18px;background:linear-gradient(145deg,#102e4b,#071a2b);color:white;border:1px solid #c7a45d}
-    .casino-card .casino-mark{font:10px Georgia,serif;letter-spacing:.3em;color:#e4c982}
-    .casino-card h3{font-size:20px;font-weight:400;letter-spacing:.12em;margin:12px 0}
-    .casino-card p{color:#eee7d7;font-size:12px;line-height:1.9;margin:0}
-    .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
-    .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
-    .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
-    .room-entry .field{margin-bottom:15px}
-    .primary-btn{width:100%;min-height:46px;border:0;background:var(--navy);color:white;letter-spacing:.1em;padding:12px}
-    .room-error{min-height:1.5em;color:#a53b32;font-size:12px;margin:8px 0 0}
-    .room-lounge{max-width:820px;margin:22px auto 0;padding:20px;background:var(--cream);border:1px solid var(--line)}
-    .room-welcome{text-align:center;margin:0 0 17px;font-size:13px;line-height:1.9}
-    .room-scene{margin:0 0 26px}
-    .room-scene figure{margin:0;background:#e8e3da}
-    .room-scene img{aspect-ratio:16/9;object-fit:cover}
-    .room-scene figcaption{padding:10px 4px 5px;text-align:center;font-size:12px;color:var(--muted)}
-    .room-scene-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
-    .room-scene-nav button{min-height:44px;padding:9px 5px;border:1px solid var(--line);background:#fff;color:var(--navy);font-size:12px;letter-spacing:.04em}
-    .room-scene-nav button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
-    .room-image-error{padding:12px;color:#a53b32;text-align:center;font-size:12px}
-    .room-chat-title{font-size:15px;font-weight:500;text-align:center;letter-spacing:.1em;margin:0 0 12px}
-    .chat-log{height:300px;overflow-y:auto;background:#fff;border:1px solid #e7dfd1;padding:12px;display:flex;flex-direction:column;gap:9px}
-    .chat-message{padding:9px 11px;background:#f5f2eb;border-radius:8px;max-width:90%;align-self:flex-start;overflow-wrap:anywhere}
-    .chat-message.mine{background:#e9f0f4;align-self:flex-end}
-    .chat-message small{display:block;color:#817764;font-size:10px;margin-bottom:3px}
-    .chat-message p{font-size:13px;line-height:1.6;margin:0;color:#263b4d}
-    .chat-empty{text-align:center;color:#897b62;font-size:12px;margin:auto}
-    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
-    .chat-compose button{border:0;background:var(--gold);color:white;padding:0 18px;min-width:76px}
-    .room-caption{text-align:center;font-size:11px;color:var(--muted);line-height:1.8;margin:10px 0 0}
-    .room-mapping{font-size:12px;line-height:1.9;color:#4c5661}
-    @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}.room-lounge{padding:14px}.room-scene-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
+    .menu-btn{
+      border:0;background:transparent;color:var(--navy);
+      width:48px;height:48px;display:grid;place-items:center;
+    }
+    .burger,.burger::before,.burger::after{
+      width:28px;height:1px;background:var(--navy);display:block;position:relative;
+    }
+    .burger::before,.burger::after{content:"";position:absolute;left:0}
+    .burger::before{top:-8px}.burger::after{top:8px}
+
+    /* STORY MENU */
+    body.menu-open{overflow:hidden}
+    #siteMenu{
+      position:fixed;inset:0;z-index:500;
+      color:#fff;
+      background:
+        linear-gradient(180deg,rgba(6,25,45,.48),rgba(6,25,45,.84)),
+        url("summer_paradise_noon.jpg?v=202609281830") center 38%/cover no-repeat;
+      opacity:0;visibility:hidden;transform:translateY(-12px);
+      transition:opacity .4s ease,visibility .4s ease,transform .4s ease;
+      overflow-y:auto;
+    }
+    #siteMenu.open{opacity:1;visibility:visible;transform:none}
+    .menu-top{
+      height:76px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 22px;border-bottom:1px solid rgba(255,255,255,.24);
+      background:rgba(5,23,41,.26);backdrop-filter:blur(8px);
+    }
+    .menu-brand{font-family:Georgia,serif;color:#f0d89d;font-size:19px;letter-spacing:.06em}
+    .menu-brand small{display:block;font-size:8px;letter-spacing:.42em;text-align:center;margin-top:6px}
+    .menu-close{
+      width:48px;height:48px;border:0;background:transparent;color:#fff;
+      font-size:34px;font-weight:200;line-height:1;
+    }
+    .menu-content{padding:47px 27px max(58px,env(safe-area-inset-bottom))}
+    .menu-kicker{font-family:Georgia,serif;color:#e1c47e;font-size:10px;letter-spacing:.3em;margin-bottom:11px}
+    .menu-content h2{font-size:26px;font-weight:500;letter-spacing:.11em;margin:0 0 27px}
+    .story-list{border-top:1px solid rgba(255,255,255,.4)}
+    .story-item{border-bottom:1px solid rgba(255,255,255,.34)}
+    .story-toggle{
+      width:100%;border:0;background:transparent;color:#fff;padding:19px 2px;
+      display:flex;align-items:center;justify-content:space-between;text-align:left;
+      font-size:16px;letter-spacing:.12em;
+    }
+    .story-toggle span{color:#e1c47e;font-size:23px;font-weight:300;transition:transform .25s ease}
+    .story-toggle[aria-expanded="true"] span{transform:rotate(45deg)}
+    .story-copy{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s ease}
+    .story-copy.open{max-height:330px;opacity:1}
+    .story-copy p{
+      margin:0;padding:0 3px 21px;color:rgba(255,255,255,.91);
+      font-size:13px;line-height:2;letter-spacing:.055em;text-shadow:0 1px 5px rgba(0,0,0,.35);
+    }
+
+    /* HERO */
+    .hero{
+      min-height:670px;
+      position:relative;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
+        var(--hero-image) center 38%/cover no-repeat;
+      display:flex;align-items:flex-start;
+      padding:56px 24px 170px;
+    }
+    .hero-copy{
+      max-width:390px;
+      text-shadow:0 1px 10px rgba(255,255,255,.52);
+    }
+    .hero h1{
+      font-size:clamp(28px,8.4vw,42px);font-weight:500;white-space:nowrap;
+      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);
+    }
+    .night-hero .hero h1{color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.65)}
+    .hero p{font-size:15px;line-height:2;letter-spacing:.08em;margin:0;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.65),0 2px 12px rgba(0,0,0,.35)}
+    .engline{
+      margin-top:24px;color:#8d6a35;letter-spacing:.28em;font-family:Georgia,serif;
+      font-size:11px;line-height:1.7;
+    }
+
+    /* DAY TWO NAVIGATION */
+    .booking-wrap{margin:-48px 18px 0;position:relative;z-index:10}
+    .booking{background:rgba(255,255,255,.97);box-shadow:0 14px 36px rgba(14,32,51,.14);border:1px solid rgba(168,123,47,.18);padding:20px 20px 16px}
+    .stay-nav-head{text-align:center;margin:0 0 10px}
+    .stay-nav-kicker{font-family:Georgia,serif;color:#a07c43;font-size:9px;letter-spacing:.32em;margin-bottom:7px}
+    .stay-nav-title{font-size:17px;letter-spacing:.16em;font-weight:500;margin:0}
+    .stay-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-top:15px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .stay-link{min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--navy);text-decoration:none;text-align:center;padding:10px 3px;position:relative}
+    .stay-link+.stay-link:before{content:"";position:absolute;left:0;top:22px;bottom:22px;width:1px;background:var(--line)}
+    .stay-icon{font-size:16px;line-height:1;color:#a87b2f}
+    .stay-label{font-size:10px;line-height:1.45;letter-spacing:.04em}
+    .stay-link:hover .stay-label,.stay-link:focus-visible .stay-label{color:#a87b2f}
+    .stay-link:focus-visible{outline:1px solid #a87b2f;outline-offset:-2px}
+    @media(max-width:390px){.booking{padding:17px 12px 13px}.stay-label{font-size:9px}.stay-icon{font-size:14px}.stay-link{min-height:76px}}
+
+    /* MAIN */
+    .section{padding:70px 20px}
+    .section-head{text-align:center;margin-bottom:28px}
+    .section-head::before{
+      content:"";display:block;width:34px;height:1px;background:var(--gold);margin:0 auto 17px;
+    }
+    .section-head h2{font-size:22px;font-weight:500;letter-spacing:.12em;margin:0}
+    .section-head p{font-family:Georgia,serif;color:#a07c43;font-size:10px;letter-spacing:.28em}
+
+    .cards{display:grid;gap:20px}
+    .card{
+      border:0;background:#fff;padding:0;text-align:left;color:inherit;
+      box-shadow:0 8px 25px rgba(19,40,62,.08);
+    }
+    .card img{aspect-ratio:16/9;object-fit:cover}
+    .card-body{padding:20px}
+    .card-title{font-size:21px;letter-spacing:.14em;margin:0 0 5px}
+    .card-en{font-family:Georgia,serif;color:var(--gold);letter-spacing:.3em;font-size:10px}
+    .card-desc{font-size:13px;line-height:1.8;color:#4b5663;margin-top:13px}
+    .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
+
+    /* ROOM GALLERY */
+    #roomView,#deluxeRoomView,#familyRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
+      position:fixed;inset:0;z-index:200;background:#fff;
+      overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
+    }
+    #roomView.open,#deluxeRoomView.open,#familyRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
+    .room-top{
+      height:70px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;border-bottom:1px solid #eee;
+      position:sticky;top:0;background:rgba(255,255,255,.97);z-index:5;
+    }
+    .back-btn{border:0;background:transparent;color:var(--navy);font-size:13px;letter-spacing:.12em}
+    .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
+    .gallery{overflow:hidden;touch-action:pan-y;position:relative}
+    .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
+    .gallery-slide{flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
+    .gallery-slide img{width:100%;height:100%;object-fit:contain}
+    .dots{text-align:center;padding:15px 0 4px}
+    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
+    .dot.active{background:#9b7536}
+    #experienceDots .dot{border:0;padding:0;cursor:pointer}
+    .room-info{padding:18px 25px 42px}
+    .room-info h2{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0 0 8px;letter-spacing:.04em}
+    .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
+    .room-meta{font-size:11px;letter-spacing:.12em;color:#a17d43;margin:16px 0}
+    .room-info p{font-size:13px;line-height:2;color:#4e5660;margin:0}
+    .other-room-card{display:block;width:100%;margin-top:30px;padding:0;border:1px solid #e1d6c4;background:#fff;text-align:left;color:var(--navy)}
+    .other-room-card img{aspect-ratio:16/9;object-fit:cover}
+    .other-room-copy{padding:16px 17px 18px}
+    .other-room-copy small{display:block;color:#9a7539;letter-spacing:.2em;margin-bottom:7px}
+    .other-room-copy strong{font-family:Georgia,serif;font-size:18px;font-weight:500;letter-spacing:.04em}
+    .other-room-desc{font-size:12px;line-height:1.8;color:#56616d;margin:9px 0 0}
+    .other-room-copy span{display:block;margin-top:8px;color:#8b682f;font-size:10px;letter-spacing:.2em}
+    .hours-panel{margin-top:26px;padding:20px 18px;background:var(--cream);border:1px solid var(--line)}
+    .hours-panel h3{margin:0 0 13px;font-size:15px;font-weight:500;letter-spacing:.1em}
+    .hours-item{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:12px 0;border-top:1px solid rgba(168,123,47,.2)}
+    .hours-name{font-size:13px;letter-spacing:.04em}
+    .hours-time{font-family:Georgia,serif;font-size:13px;color:#765a2c;white-space:nowrap}
+    .hours-note{grid-column:1/-1;font-size:11px;line-height:1.7;color:#715f48}
+
+    /* RESERVATION FLOW */
+    #reservationView,#confirmationView{
+      position:fixed;inset:0;z-index:310;background:#fff;overflow-y:auto;
+      opacity:0;visibility:hidden;transform:translateY(16px);transition:.35s ease;
+    }
+    #confirmationView{z-index:320;background:linear-gradient(165deg,#fff 0 58%,#f5eee1 100%)}
+    #reservationView.open,#confirmationView.open{opacity:1;visibility:visible;transform:none}
+    .reserve-content{padding:35px 22px max(46px,env(safe-area-inset-bottom))}
+    .reserve-kicker{font-family:Georgia,serif;color:#a17d43;font-size:10px;letter-spacing:.28em;margin-bottom:9px}
+    .reserve-content h2{margin:0 0 24px;font-size:25px;font-weight:500;letter-spacing:.08em}
+    .reserve-summary{border:1px solid #dfd4c1;background:var(--cream);padding:15px;margin-bottom:27px}
+    .reserve-summary img{aspect-ratio:16/9;object-fit:cover;margin-bottom:15px}
+    .reserve-room-name{font-family:Georgia,serif;font-size:17px;letter-spacing:.04em;margin-bottom:9px}
+    .reserve-detail{font-size:13px;color:#526070;line-height:1.8}
+    .form-field{margin:0 0 21px}
+    .form-field label{display:block;margin-bottom:8px;font-size:12px;letter-spacing:.09em}
+    .form-field input{width:100%;border:1px solid #d8cbb7;background:#fff;padding:14px 12px;color:var(--navy);font-size:16px;outline:none}
+    .form-field input:focus{border-color:#a87b2f;box-shadow:0 0 0 2px rgba(168,123,47,.1)}
+    .reserve-button{width:100%;border:0;background:linear-gradient(90deg,#b78a41,#89631f);color:#fff;padding:17px;font-size:16px;letter-spacing:.18em}
+    .reserve-note{margin:12px 0 0;text-align:center;color:#7b756c;font-size:10px;line-height:1.7}
+    .confirmation-content{min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:52px 24px max(45px,env(safe-area-inset-bottom))}
+    .confirmation-mark{width:62px;height:62px;margin:0 auto 22px;border:1px solid #b38a47;border-radius:50%;display:grid;place-items:center;color:#a87b2f;font-size:28px}
+    .confirmation-content h2{margin:0 0 10px;font-size:25px;font-weight:500;letter-spacing:.08em}
+    .confirmation-lead{font-size:13px;color:#66717c;line-height:1.9;margin:0 0 29px}
+    .code-card{border:1px solid #d9c7a9;background:rgba(255,255,255,.82);padding:24px 16px;margin-bottom:22px}
+    .code-label{font-family:Georgia,serif;color:#9b763a;font-size:9px;letter-spacing:.28em}
+    #bookingCode{font-family:Georgia,serif;font-size:27px;letter-spacing:.12em;margin:12px 0 17px;word-break:break-all}
+    #confirmationSummary{font-size:12px;line-height:1.9;color:#465465;white-space:pre-line;overflow-wrap:anywhere}
+    .screenshot-note{margin:0 0 25px;font-size:13px;line-height:1.8;color:#5d5549}
+
+    footer{text-align:center;padding:45px 20px 55px;background:#f7f3eb;color:#8d7b60}
+    footer .fbrand{font-family:Georgia,serif;font-size:18px;letter-spacing:.08em}
+    footer small{display:block;margin-top:9px;letter-spacing:.24em}
+
+    @media(min-width:700px){
+      body{max-width:520px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.1)}
+    }
   </style>
 </head>
 <body>
+
+  <div id="intro">
+    <div class="intro-content">
+      <div class="intro-mark">SUMMER PARADISE RESORT</div>
+      <h1 class="intro-title">心ほどけるひと時を</h1>
+      <div class="intro-sub">Welcome to a place of gentle luxury.</div>
+      <div class="intro-line"></div>
+    </div>
+  </div>
+
   <header>
-    <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
-    <a class="home-link" href="index.html">RESORT TOP　↗</a>
+    <div class="brand">
+      <img class="shell" src="LOG.PNG" alt="" width="48" height="48">
+      <div class="brand-name">Summer Paradise<small>RESORT</small></div>
+    </div>
+    <button class="menu-btn" aria-label="メニュー"><span class="burger"></span></button>
   </header>
 
-  <main id="day2Home">
+  <section id="siteMenu" aria-hidden="true" aria-label="リゾート案内">
+    <div class="menu-top">
+      <div class="menu-brand">Summer Paradise<small>RESORT</small></div>
+      <button class="menu-close" id="menuClose" type="button" aria-label="メニューを閉じる">×</button>
+    </div>
+    <div class="menu-content">
+      <div class="menu-kicker">DISCOVER OUR STORY</div>
+      <h2>楽園を知る</h2>
+      <div class="story-list">
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">リゾートについて<span>＋</span></button>
+          <div class="story-copy"><p>青い海と空に抱かれたサマーパラダイスリゾートは、日常を離れ、心ほどける時間をお過ごしいただくための滞在地です。海を望む客室、この土地の恵みを味わうレストラン、島の景色と物語に触れる散策など、多彩な体験をご用意しています。移ろう光や潮風を感じながら、ここでしか出会えないひとときをお楽しみください。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">島の歴史<span>＋</span></button>
+          <div class="story-copy"><p>この島は古くから、長い航海を続ける人々が風と波の静まる時を待つ、ささやかな休息地として知られてきました。海とともに暮らした島民たちは、入り江や灯台を大切に守り、訪れた旅人を迎えてきたといわれています。石造りの小径や古い建物、島の各所に残る言い伝えの中には、今も当時の面影が息づいています。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">リゾート開発まで<span>＋</span></button>
+          <div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイです。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイ<span>＋</span></button>
+          <div class="story-copy"><p>アーサー・グレイは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div>
+        </div>
+        <div class="story-item">
+          <button class="story-toggle" type="button" aria-expanded="false">人魚の祝福伝説<span>＋</span></button>
+          <div class="story-copy"><p>この島には古くから、人魚の姿を見た者には海の祝福が授けられるという伝説があります。その祝福を受けた旅人は、穏やかな航海と大切な人との再会に恵まれ、いつの日か再び島へ導かれると語り継がれてきました。夕暮れ時のサンセットテラスでは、波音と潮風の向こうから、人魚の歌声が聞こえてくるかもしれません。</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">サマーパラダイスリゾート　/　DAY2</p>
-        <h1>島で過ごす。</h1>
-        <p>目覚めたあとは、島の時間へ。<br>気になる場所を選んで、今日だけの滞在をお楽しみください。</p>
+        <h1>楽園へ、還る。</h1>
+        <p>どこまでも続く青と、やすらぎに満ちた時間。<br>ここは、心が還る特別な場所。</p>
+        <div class="engline">A REFINED STAY<br>IN PARADISE</div>
       </div>
     </section>
 
+    <div class="booking-wrap">
+      <div class="booking" aria-label="ご滞在中のご案内">
+        <div class="stay-nav-head">
+          <div class="stay-nav-kicker">YOUR ISLAND STAY</div>
+          <h2 class="stay-nav-title">ご滞在中のご案内</h2>
+        </div>
+        <nav class="stay-nav" aria-label="滞在先">
+          <a class="stay-link" href="room.html"><span class="stay-icon" aria-hidden="true">⌂</span><span class="stay-label">ROOM</span></a>
+          <a class="stay-link" href="restaurant.html"><span class="stay-icon" aria-hidden="true">♧</span><span class="stay-label">レストラン<br>&amp; カフェ</span></a>
+          <a class="stay-link" href="bar.html"><span class="stay-icon" aria-hidden="true">◒</span><span class="stay-label">BAR</span></a>
+          <a class="stay-link" href="explore.html"><span class="stay-icon" aria-hidden="true">⌖</span><span class="stay-label">探索</span></a>
+          <a class="stay-link" href="casino.html"><span class="stay-icon" aria-hidden="true">◇</span><span class="stay-label">カジノ</span></a>
+        </nav>
+      </div>
+    </div>
+
     <section class="section">
-      <div class="section-head"><h2>館内の各施設</h2><p>YOUR STAY, YOUR STORY</p></div>
-      <div class="notice">館内の各施設をお選びいただけます。</div>
+      <div class="section-head">
+        <h2>心が還る、楽園のひととき</h2>
+        <p>A SANCTUARY IN PARADISE</p>
+      </div>
+
       <div class="cards">
-        <button class="card" type="button" data-open="roomView">
-          <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
-          <div class="card-body"><h3 class="card-title">ROOM</h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
+        <button class="card" id="roomCard">
+          <img src="ocean_view_room.jpg?v=202609281830" alt="オーシャンビュー客室">
+          <div class="card-body">
+            <h3 class="card-title">客室</h3>
+            <div class="card-en">ROOMS</div>
+            <div class="card-desc">海と空につながる、静かな滞在のための客室。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
         </button>
-        <button class="card" type="button" data-open="exploreView">
-          <img src="lighthouse.jpg" alt="島の灯台">
-          <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
+
+        <button class="card" id="restaurantCard" type="button">
+          <img src="the_pearl_terrace_e.jpg?v=202609281830" alt="レストラン＆カフェ">
+          <div class="card-body">
+            <h3 class="card-title">レストラン＆カフェ</h3>
+            <div class="card-en">RESTAURANT &amp; CAFÉ</div>
+            <div class="card-desc">この地ならではの恵みを、海を眺めながら味わうひととき。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
         </button>
-        <button class="card" type="button" data-open="restaurantView">
-          <img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace">
-          <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
+
+        <button class="card" id="experienceCard" type="button" aria-controls="experienceView">
+          <img src="mermaids_cove.jpg?v=202609281830" alt="マーメイドの入り江">
+          <div class="card-body">
+            <h3 class="card-title">体験</h3>
+            <div class="card-en">EXPERIENCE</div>
+            <div class="card-desc">美しい入り江で、ここにしかないひとときをお楽しみください。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
         </button>
-        <button class="card" type="button" data-open="barView">
-          <img src="seaside_bar.jpg" alt="シーサイドバー">
-          <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
-        </button>
-        <button class="card" type="button" data-open="casinoView">
-          <img src="blue_shell_casino.jpg" alt="カジノ・ブルーシェル">
-          <div class="card-body"><h3 class="card-title">カジノへ行く</h3><div class="card-en">CASINO BLUE SHELL</div><p class="card-desc">海辺の夜を彩る、ブルーシェルのゲームテーブル。</p><div class="view">ENTER CASINO　›</div></div>
+
+        <button class="card" id="barCard" type="button" aria-controls="barView">
+          <img src="seaside_bar.jpg?v=202609281830" alt="シーサイドバー">
+          <div class="card-body">
+            <h3 class="card-title">Bar &amp; ラウンジ</h3>
+            <div class="card-en">BAR &amp; LOUNGE</div>
+            <div class="card-desc">ホテルのラウンジから海辺のバーへ。潮風に包まれるひとときを。</div>
+            <div class="view">VIEW MORE　›</div>
+          </div>
         </button>
       </div>
     </section>
   </main>
-  <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE</footer>
 
-  <section class="subview" id="roomView" aria-hidden="true">
-    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">YOUR PRIVATE ROOM</div><div></div></div>
-    <div class="info"><h2>ROOM</h2><div class="jp">客室へ入る</div><div class="meta">ENTER YOUR ROOM NUMBER</div>
-      <p>ご宿泊の部屋番号を暗証番号として入力してください。同じ番号を入力した方は、同じ客室に入室できます。</p>
-      <div id="roomEntry" class="room-entry">
-        <form id="roomEntryForm">
-          <div class="field"><label for="roomPin">部屋番号（暗証番号）</label><input id="roomPin" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="例：101" required></div>
-          <div class="field"><label for="guestName">チャットで使うお名前</label><input id="guestName" maxlength="20" autocomplete="nickname" placeholder="お名前"></div>
-          <button class="primary-btn" type="submit">客室に入る</button>
-          <p id="roomError" class="room-error" aria-live="polite"></p>
-        </form>
-        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜202：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
-      </div>
-      <div id="roomLounge" class="room-lounge hidden">
-        <p id="roomWelcome" class="room-welcome"></p>
-        <div id="roomScene" class="room-scene hidden">
-          <figure>
-            <img id="roomPhoto" src="" alt="デラックスオーシャンの部屋全体">
-            <figcaption id="roomSceneCaption" aria-live="polite"></figcaption>
-          </figure>
-          <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday2.htmlと同じ場所にアップロードしてください。</p>
-          <nav class="room-scene-nav" aria-label="客室内を眺める">
-            <button type="button" data-room-scene="room" aria-pressed="true">部屋全体</button>
-            <button type="button" data-room-scene="window" aria-pressed="false">窓</button>
-            <button type="button" data-room-scene="desk" aria-pressed="false">机</button>
-            <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
-            <button type="button" data-room-scene="closet" aria-pressed="false">クローゼット</button>
-            <button type="button" data-room-scene="bathroom" aria-pressed="false">バスルーム</button>
-          </nav>
+  <footer>
+    <div class="fbrand">Summer Paradise Resort</div>
+  </footer>
+
+  <section id="roomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="roomBack">← BACK</button>
+      <div class="room-label">ROOMS & SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="room-info">
+      <button class="other-room-card" id="deluxeRoomCard" type="button">
+        <img src="ocean_view_room.jpg?v=202609281830" alt="デラックス オーシャンビューの客室">
+        <div class="other-room-copy">
+          <small>FOR 1–2 GUESTS</small>
+          <strong>DELUXE OCEAN VIEW</strong>
+          <p class="other-room-desc">大きな窓から海を望み、穏やかな波音に包まれる客室。</p>
+          <span>客室を見る　›</span>
         </div>
-        <h3 class="room-chat-title">この客室の会話</h3>
-        <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
-        <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
-        <p class="room-caption">同じ部屋番号の滞在者同士でお話しいただけます。</p>
-        <button id="leaveRoom" class="primary-btn" type="button" style="margin-top:14px">部屋から出る</button>
+      </button>
+      <button class="other-room-card" id="familyRoomCard" type="button">
+        <img src="family_01.jpg" alt="ファミリー オーシャンスイートの客室">
+        <div class="other-room-copy">
+          <small>FOR 3–4 GUESTS</small>
+          <strong>FAMILY OCEAN SUITE</strong>
+          <p class="other-room-desc">海を望むリビングを囲み、ご家族でくつろぐゆとりの一室。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+      <button class="other-room-card" id="suiteRoomCard" type="button">
+        <img src="suite_01.jpg" alt="夕景を望むオーシャン グランドスイートのテラス">
+        <div class="other-room-copy">
+          <small>SUITE FOR 2 GUESTS</small>
+          <strong>OCEAN GRAND SUITE</strong>
+          <p class="other-room-desc">夕景を眺めるテラスと上質なリビングを備えたスイート。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+      <button class="other-room-card" id="royalRoomCard" type="button">
+        <img src="villa_01.jpg" alt="専用プール付きのロイヤル オーシャンヴィラ">
+        <div class="other-room-copy">
+          <small>TOP-FLOOR POOL VILLA</small>
+          <strong>ROYAL OCEAN VILLA</strong>
+          <p class="other-room-desc">専用プールと海の眺望を楽しむ最上階のヴィラ。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="deluxeRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="deluxeRoomBack">← BACK</button>
+      <div class="room-label">ROOMS & SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="gallery">
+      <div class="gallery-track" id="galleryTrack">
+        <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281830" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ダブルベッドの客室"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom01.jpg" alt="ツインベッドの客室"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281830" alt="バスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="dots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>DELUXE OCEAN VIEW</h2>
+      <div class="jp">デラックス オーシャンビュー</div>
+      <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
+      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。ベッドはダブルベッドまたはツインベッドからお選びいただけます。</p>
+    </div>
+  </section>
+
+  <section id="suiteRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="suiteRoomBack">← BACK</button>
+      <div class="room-label">ROOMS &amp; SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="suiteGallery">
+      <div class="gallery-track" id="suiteGalleryTrack">
+        <div class="gallery-slide"><img src="suite_01.jpg" alt="夕日を望むスイートのテラスとリビング"></div>
+        <div class="gallery-slide"><img src="suite_02.jpg" alt="オーシャン グランドスイートの客室"></div>
+        <div class="gallery-slide"><img src="suite_03.jpg" alt="海を望むスイートのバスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="suiteDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="room-info">
+      <h2>OCEAN GRAND SUITE</h2>
+      <div class="jp">オーシャン グランドスイート</div>
+      <div class="room-meta">62㎡　/　2 GUESTS　/　OCEAN VIEW</div>
+      <p>広々としたリビングとベッドルームがひとつながりになったスイート。夕日に染まる海を望むテラスには、くつろぎの席とダイニングをご用意しました。大きな窓から海を眺めるバスルームで、滞在の時間をゆっくりとお楽しみください。</p>
+    </div>
+  </section>
+
+  <section id="royalRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="royalRoomBack">← BACK</button>
+      <div class="room-label">PENTHOUSE VILLA</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="royalGallery">
+      <div class="gallery-track" id="royalGalleryTrack">
+        <div class="gallery-slide"><img src="villa_01.jpg" alt="海を見下ろす専用インフィニティプールとテラス"></div>
+        <div class="gallery-slide"><img src="villa_02.jpg" alt="最上階ロイヤル オーシャンヴィラの客室"></div>
+        <div class="gallery-slide"><img src="villa_03.jpg" alt="最上階の景色を望むスパバスルーム"></div>
+      </div>
+    </div>
+    <div class="dots" id="royalDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
+    <div class="room-info">
+      <h2>ROYAL OCEAN VILLA</h2>
+      <div class="jp">最上階 ロイヤル オーシャンヴィラ</div>
+      <div class="room-meta">120㎡　/　1–2 GUESTS　/　TOP FLOOR PRIVATE POOL</div>
+      <p>ホテル最上階に広がるロイヤルヴィラ。海と海岸線を見晴らす専用インフィニティプール、屋根付きのパビリオン、ゆったりとしたベッドルームとリビングを備えています。開放的なスパバスルームまで続く上質な空間で、特別な滞在をお楽しみください。</p>
+    </div>
+  </section>
+
+  <section id="familyRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="familyRoomBack">← BACK</button>
+      <div class="room-label">ROOMS &amp; SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="familyGallery">
+      <div class="gallery-track" id="familyGalleryTrack">
+        <div class="gallery-slide"><img src="family_01.jpg" alt="海を望むファミリー用の客室とリビング"></div>
+        <div class="gallery-slide"><img src="family_02.jpg" alt="ファミリー用客室のバスルーム"></div>
+        <div class="gallery-slide"><img src="family_03.jpg" alt="ファミリー用客室のテラスから望む海の景色"></div>
+      </div>
+    </div>
+    <div class="dots" id="familyDots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>FAMILY OCEAN SUITE</h2>
+      <div class="jp">ファミリー オーシャンスイート</div>
+      <div class="room-meta">62㎡　/　3–4 GUESTS　/　OCEAN VIEW</div>
+      <p>大きな窓の向こうに海が広がり、ベッドスペースとリビング・ダイニングをゆったりと配置したファミリー向けの客室。明るいバスルームまでやわらかな色合いで揃え、ご家族やご友人とくつろいでお過ごしいただけます。</p>
+    </div>
+  </section>
+
+  <section id="restaurantView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="restaurantBack">← BACK</button>
+      <div class="room-label">RESTAURANT &amp; CAFÉ</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="restaurantGallery">
+      <div class="gallery-track" id="restaurantGalleryTrack">
+        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281830" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="sunset_terrace1.jpg?v=202609281830" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="sunset_terrace2.jpg?v=202609281830" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281830" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281830" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281830" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281830" alt="Marine Bloom Cafe ティーセット"></div>
+      </div>
+    </div>
+    <div class="dots" id="restaurantDots">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>RESTAURANT &amp; CAFÉ</h2>
+      <div class="jp">レストラン＆カフェ</div>
+      <div class="room-meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div>
+      <p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
+      <div class="hours-panel">
+        <h3>営業時間・ご予約</h3>
+        <div class="hours-item">
+          <span class="hours-name">サンセットテラス</span>
+          <span class="hours-time">11:00〜22:00</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-name">The Pearl Terrace</span>
+          <span class="hours-time">9:00〜22:00</span>
+          <span class="hours-note">アフタヌーンティーは予約制です。</span>
+        </div>
+        <div class="hours-item">
+          <span class="hours-name">Marine Bloom Cafe</span>
+          <span class="hours-time">11:00〜23:00</span>
+          <span class="hours-note">アフタヌーンティーは予約制です。</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="subview" id="exploreView" aria-hidden="true">
-    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
-    <div class="gallery" data-gallery="explore"><div class="track">
-      <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
-    </div></div><div class="dots" data-dots="explore"></div>
-    <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel"><h3>島内の見どころ</h3><p>海辺、灯台、マーメイドの入り江を掲載しています。写真を左右にスワイプしてご覧ください。</p></div></div>
-  </section>
-
-  <section class="subview" id="restaurantView" aria-hidden="true">
-    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">RESTAURANT &amp; CAFÉ</div><div></div></div>
-    <div class="gallery" data-gallery="restaurant"><div class="track">
-      <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div><div class="slide"><img src="sunset_terrace1.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="sunset_terrace2.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div><div class="slide"><img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace 外観"></div><div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div><div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Marine Bloom Cafe ティーセット"></div>
-    </div></div><div class="dots" data-dots="restaurant"></div>
-    <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
-      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><div class="menu-item">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></div><div class="menu-item">Marine Bloom Cafe<small>CAFÉ &amp; SWEETS</small></div></div></div>
+  <section id="experienceView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="experienceBack">← BACK</button>
+      <div class="room-label">EXPERIENCE</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="experienceGallery">
+      <div class="gallery-track" id="experienceGalleryTrack">
+        <div class="gallery-slide"><img src="summer_paradise_beach.jpg?v=202609281830" alt="海と砂浜"></div>
+        <div class="gallery-slide"><img src="lighthouse.jpg?v=202609281830" alt="海を望む灯台"></div>
+        <div class="gallery-slide"><img src="mermaids_cove.jpg?v=202609281830" alt="マーメイドの入り江"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino.jpg?v=202609281830" alt="カジノ・ブルーシェルの外観"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino_e.jpg?v=202609281830" alt="カジノ・ブルーシェルの入口"></div>
+        <div class="gallery-slide"><img src="blue_shell_casino_t.jpg?v=202609281830" alt="カジノのゲームテーブル"></div>
+      </div>
+    </div>
+    <div class="dots" id="experienceDots" aria-label="体験の写真">
+      <button class="dot active" type="button" aria-label="海の写真"></button><button class="dot" type="button" aria-label="灯台の写真"></button><button class="dot" type="button" aria-label="入り江の写真"></button><button class="dot" type="button" aria-label="カジノ外観の写真"></button><button class="dot" type="button" aria-label="カジノ入口の写真"></button><button class="dot" type="button" aria-label="ゲームテーブルの写真"></button>
+    </div>
+    <div class="room-info">
+      <h2>EXPERIENCE</h2>
+      <div class="jp">体験</div>
+      <div class="room-meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE　/　CASINO BLUE SHELL</div>
+      <p>海辺の散策から灯台、入り江、カジノまで。島で過ごすひとときを、思い思いにお楽しみください。</p>
     </div>
   </section>
 
-  <section class="subview" id="barView" aria-hidden="true">
-    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
-    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
-    <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p><div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div></div>
+  <section id="barView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="barBack">← BACK</button>
+      <div class="room-label">BAR &amp; LOUNGE</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="barGallery">
+      <div class="gallery-track" id="barGalleryTrack">
+        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281830" alt="海に面したシーサイドバー"></div>
+        <div class="gallery-slide"><img src="seaside_lounge.jpg?v=202609281830" alt="屋外バーとつながるホテルのラウンジ"></div>
+        <div class="gallery-slide"><img src="seaside1.jpg?v=202609281830" alt="シーサイドバーの青いカクテル"></div>
+      </div>
+    </div>
+    <div class="dots" id="barDots" aria-label="バーとラウンジの写真">
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+    <div class="room-info">
+      <h2>BAR &amp; LOUNGE</h2>
+      <div class="jp">バー＆ラウンジ</div>
+      <div class="room-meta">SEASIDE BAR　/　SEASIDE LOUNGE</div>
+      <p>ホテル館内のラウンジと屋外のシーサイドバーは、そのまま行き来できるひと続きの空間。海を眺めながら、お好みの一杯をお楽しみください。お酒を楽しんだあとは、リゾート内の散策へ。ふと不思議な光景に出会えるかもしれません。</p>
+      <div class="hours-panel">
+        <h3>営業時間</h3>
+        <div class="hours-item">
+          <span class="hours-name">バー＆ラウンジ</span>
+          <span class="hours-time">11:00〜翌5:00</span>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="subview" id="casinoView" aria-hidden="true">
-    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
-    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
-    <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。テーブルに着く前のひとときも、ゆっくりお楽しみください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>ゲームテーブル</h3><p>ゲームとチップの仕組みを準備中です。<br>カジノの遊び方はこちらに追加できます。</p></div></div>
+  <section id="reservationView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="reservationBack" type="button">← BACK</button>
+      <div class="room-label">RESERVATION</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="reserve-content">
+      <div class="reserve-kicker">YOUR STAY</div>
+      <h2>ご予約内容の確認</h2>
+      <div class="reserve-summary">
+        <img id="reservationImage" src="ocean_view_room.jpg?v=202609281830" alt="選択した客室">
+        <div class="reserve-room-name" id="reservationRoomName"></div>
+        <div class="reserve-detail" id="reservationSummary"></div>
+      </div>
+      <div class="form-field">
+        <label for="guestName">代表者様のお名前</label>
+        <input id="guestName" type="text" autocomplete="name" placeholder="例：サマー パラダイス">
+      </div>
+      <div id="companionFields"></div>
+      <div class="form-field">
+        <label for="guestAddress">代表者様のメールアドレス</label>
+        <input id="guestAddress" type="text" autocomplete="email" placeholder="例：guest@example.com">
+      </div>
+      <button class="reserve-button" id="reserveBtn" type="button">予約する</button>
+      <p class="reserve-note">入力した内容が外部へ送信されることはありません。</p>
+    </div>
+  </section>
+
+  <section id="confirmationView" aria-hidden="true">
+    <div class="confirmation-content">
+      <div class="confirmation-mark">✓</div>
+      <div class="reserve-kicker">RESERVATION COMPLETE</div>
+      <h2>ご予約を承りました</h2>
+      <p class="confirmation-lead">サマーパラダイスリゾートで<br>お会いできることを楽しみにしています。</p>
+      <div class="code-card">
+        <div class="code-label">RESERVATION NUMBER</div>
+        <div id="bookingCode"></div>
+        <div id="confirmationSummary"></div>
+      </div>
+      <p class="screenshot-note">予約番号と宿泊者全員のお名前が見えるように、この画面をスクリーンショットして掲示してください。</p>
+      <button class="reserve-button" id="confirmationClose" type="button">トップへ戻る</button>
+    </div>
   </section>
 
   <script>
-    const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
-    function closeView(view){view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
-    document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
-    document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+    const intro = document.getElementById('intro');
+    setTimeout(() => intro.classList.add('leave'), 3800);
+    setTimeout(() => intro.remove(), 5200);
 
-    const roomTypes={
-      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
-      201:'ファミリー',202:'ファミリー',
-      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',
-      401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
-    };
-    let activeRoom='', activeGuest='ゲスト';
-    const roomPin=document.getElementById('roomPin'), guestName=document.getElementById('guestName'), roomError=document.getElementById('roomError');
-    const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
-    const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto');
-    const roomSceneCaption=document.getElementById('roomSceneCaption'), roomImageError=document.getElementById('roomImageError');
-    const roomSceneButtons=[...document.querySelectorAll('[data-room-scene]')];
-    const deluxeScenes={
-      room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset(1).jpg','Deluxe_Ocean_Room_Night.jpg'],
-      window:['Deluxe_Ocean_Window(1).jpg','Deluxe_Ocean_Window_Sunset(1).jpg','Deluxe_Ocean_Window_Night(1).jpg'],
-      desk:['Deluxe_Ocean_Desk(1).jpg','Deluxe_Ocean_Desk_Sunset(1).jpg','Deluxe_Ocean_Desk_Night(1).jpg'],
-      phone:['Deluxe_Ocean_Phone(1).jpg','Deluxe_Ocean_Phone_Sunset(1).jpg','Deluxe_Ocean_Phone_Night(1).jpg'],
-      closet:['Deluxe_Ocean_Closet(1).jpg','Deluxe_Ocean_Closet_Sunset(1).jpg','Deluxe_Ocean_Closet_Night(1).jpg'],
-      bathroom:['Deluxe_Ocean_Bathroom.jpg','Deluxe_Ocean_Bathroom_Sunset.jpg','Deluxe_Ocean_Bathroom_Night.jpg']
-    };
-    const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
-    const timeNames=['昼','夕暮れ','夜'];
-    let selectedRoomScene='room', shownTime=-1;
-    function roomTimeIndex(){
-      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
-      return hour>=7&&hour<16?0:hour>=16&&hour<20?1:2;
+    const siteMenu = document.getElementById('siteMenu');
+    const menuButton = document.querySelector('.menu-btn');
+    const menuClose = document.getElementById('menuClose');
+    function openMenu(){
+      siteMenu.classList.add('open');
+      siteMenu.setAttribute('aria-hidden','false');
+      menuButton.setAttribute('aria-expanded','true');
+      document.body.classList.add('menu-open');
     }
-    function updateRoomPhoto(force=false){
-      if(!/^10[1-5]$/.test(activeRoom))return;
-      const time=roomTimeIndex();
-      if(!force&&time===shownTime)return;
-      shownTime=time;
-      roomImageError.classList.add('hidden');
-      roomPhoto.src=deluxeScenes[selectedRoomScene][time];
-      roomPhoto.alt=`デラックスオーシャンの${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
-      roomSceneCaption.textContent=`${sceneNames[selectedRoomScene]}　／　${timeNames[time]}`;
-      roomSceneButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomScene===selectedRoomScene)));
+    function closeMenu(){
+      siteMenu.classList.remove('open');
+      siteMenu.setAttribute('aria-hidden','true');
+      menuButton.setAttribute('aria-expanded','false');
+      document.body.classList.remove('menu-open');
     }
-    roomSceneButtons.forEach(button=>button.addEventListener('click',()=>{selectedRoomScene=button.dataset.roomScene;updateRoomPhoto(true)}));
-    roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
-    roomPhoto.addEventListener('load',()=>roomImageError.classList.add('hidden'));
-    setInterval(()=>updateRoomPhoto(),30000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
-    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
-    function renderChat(){
-      if(!activeRoom)return;
-      const messages=roomMessages(); chatLog.replaceChildren();
-      if(!messages.length){const empty=document.createElement('div');empty.className='chat-empty';empty.textContent='この客室の会話はまだありません。';chatLog.append(empty);return;}
-      messages.slice(-100).forEach(message=>{const item=document.createElement('div');item.className='chat-message'+(message.name===activeGuest?' mine':'');const meta=document.createElement('small');meta.textContent=`${message.name}　${message.time}`;const body=document.createElement('p');body.textContent=message.text;item.append(meta,body);chatLog.append(item)});
-      chatLog.scrollTop=chatLog.scrollHeight;
-    }
-    document.getElementById('roomEntryForm').addEventListener('submit',event=>{
-      event.preventDefault();const room=roomPin.value.trim();
-      if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号を入力してください。';return;}
-      activeRoom=room;activeGuest=guestName.value.trim()||'ゲスト';roomError.textContent='';
-      document.getElementById('roomWelcome').textContent=`${room}号室　／　${roomTypes[room]}　—　${activeGuest}さん、いらっしゃいませ。`;
-      roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');
-      roomScene.classList.toggle('hidden',!/^10[1-5]$/.test(room));
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
+    menuButton.setAttribute('aria-controls','siteMenu');
+    menuButton.setAttribute('aria-expanded','false');
+    menuButton.addEventListener('click',openMenu);
+    menuClose.addEventListener('click',closeMenu);
+    document.querySelectorAll('.story-toggle').forEach(button => {
+      button.addEventListener('click',() => {
+        const copy = button.nextElementSibling;
+        const willOpen = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded',String(willOpen));
+        copy.classList.toggle('open',willOpen);
+      });
     });
-    document.getElementById('chatForm').addEventListener('submit',event=>{
-      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
-      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
-      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
-    });
-    document.getElementById('leaveRoom').addEventListener('click',()=>{activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';closeView(document.getElementById('roomView'))});
-    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`)renderChat()});
 
-    const galleries={};
-    document.querySelectorAll('[data-gallery]').forEach(gallery=>{
-      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
-      const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
-      function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
-      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
-      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
-      galleries[name]=show;
+    const roomView = document.getElementById('roomView');
+    document.getElementById('roomCard').addEventListener('click', () => {
+      roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){const open=views.find(view=>view.classList.contains('open'));if(open)closeView(open);}});
+    document.getElementById('roomBack').addEventListener('click', () => {
+      roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
+    });
+
+    const deluxeRoomView = document.getElementById('deluxeRoomView');
+    document.getElementById('deluxeRoomCard').addEventListener('click', () => {
+      showSlide(0); deluxeRoomView.classList.add('open'); deluxeRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('deluxeRoomBack').addEventListener('click', () => {
+      deluxeRoomView.classList.remove('open'); deluxeRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const familyRoomView = document.getElementById('familyRoomView');
+    document.getElementById('familyRoomCard').addEventListener('click', () => {
+      showFamilySlide(0); familyRoomView.classList.add('open'); familyRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('familyRoomBack').addEventListener('click', () => {
+      familyRoomView.classList.remove('open'); familyRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const suiteRoomView = document.getElementById('suiteRoomView');
+    document.getElementById('suiteRoomCard').addEventListener('click', () => {
+      showSuiteSlide(0); suiteRoomView.classList.add('open'); suiteRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('suiteRoomBack').addEventListener('click', () => {
+      suiteRoomView.classList.remove('open'); suiteRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const royalRoomView = document.getElementById('royalRoomView');
+    document.getElementById('royalRoomCard').addEventListener('click', () => {
+      showRoyalSlide(0); royalRoomView.classList.add('open'); royalRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('royalRoomBack').addEventListener('click', () => {
+      royalRoomView.classList.remove('open'); royalRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const restaurantView = document.getElementById('restaurantView');
+    document.getElementById('restaurantCard').addEventListener('click', () => {
+      showRestaurantSlide(0); restaurantView.classList.add('open'); restaurantView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('restaurantBack').addEventListener('click', () => {
+      restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
+    });
+
+    const experienceView = document.getElementById('experienceView');
+    document.getElementById('experienceCard').addEventListener('click', () => {
+      showExperienceSlide(0);
+      experienceView.classList.add('open'); experienceView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('experienceBack').addEventListener('click', () => {
+      experienceView.classList.remove('open'); experienceView.setAttribute('aria-hidden','true');
+    });
+    let experienceSlide = 0, experienceStartX = 0;
+    const experienceTrack = document.getElementById('experienceGalleryTrack');
+    const experienceDots = [...document.querySelectorAll('#experienceDots .dot')];
+    function showExperienceSlide(n){
+      experienceSlide = Math.max(0, Math.min(experienceDots.length - 1, n));
+      experienceTrack.style.transform = `translateX(-${experienceSlide*100}%)`;
+      experienceDots.forEach((d,i)=>d.classList.toggle('active',i===experienceSlide));
+    }
+    const experienceGallery = document.getElementById('experienceGallery');
+    experienceGallery.addEventListener('touchstart',e=>experienceStartX=e.changedTouches[0].screenX,{passive:true});
+    experienceGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - experienceStartX;
+      if(distance < -45) showExperienceSlide(experienceSlide + 1);
+      if(distance > 45) showExperienceSlide(experienceSlide - 1);
+    },{passive:true});
+    experienceDots.forEach((dot,i)=>dot.addEventListener('click',()=>showExperienceSlide(i)));
+
+    const barView = document.getElementById('barView');
+    document.getElementById('barCard').addEventListener('click', () => {
+      showBarSlide(0);
+      barView.classList.add('open'); barView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('barBack').addEventListener('click', () => {
+      barView.classList.remove('open'); barView.setAttribute('aria-hidden','true');
+    });
+
+    let barSlide = 0, barStartX = 0;
+    const barTrack = document.getElementById('barGalleryTrack');
+    const barDots = [...document.querySelectorAll('#barDots .dot')];
+    function showBarSlide(n){
+      barSlide = Math.max(0, Math.min(barDots.length - 1, n));
+      barTrack.style.transform = `translateX(-${barSlide*100}%)`;
+      barDots.forEach((d,i)=>d.classList.toggle('active',i===barSlide));
+    }
+    const barGallery = document.getElementById('barGallery');
+    barGallery.addEventListener('touchstart',e=>barStartX=e.changedTouches[0].screenX,{passive:true});
+    barGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - barStartX;
+      if(distance < -45) showBarSlide(barSlide + 1);
+      if(distance > 45) showBarSlide(barSlide - 1);
+    },{passive:true});
+    barDots.forEach((dot,i)=>dot.addEventListener('click',()=>showBarSlide(i)));
+
+    let restaurantSlide = 0, restaurantStartX = 0;
+    const restaurantTrack = document.getElementById('restaurantGalleryTrack');
+    const restaurantDots = [...document.querySelectorAll('#restaurantDots .dot')];
+    function showRestaurantSlide(n){
+      restaurantSlide = Math.max(0, Math.min(restaurantDots.length - 1, n));
+      restaurantTrack.style.transform = `translateX(-${restaurantSlide*100}%)`;
+      restaurantDots.forEach((d,i)=>d.classList.toggle('active',i===restaurantSlide));
+    }
+    const restaurantGallery = document.getElementById('restaurantGallery');
+    restaurantGallery.addEventListener('touchstart',e=>restaurantStartX=e.changedTouches[0].screenX,{passive:true});
+    restaurantGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - restaurantStartX;
+      if(distance < -45) showRestaurantSlide(restaurantSlide + 1);
+      if(distance > 45) showRestaurantSlide(restaurantSlide - 1);
+    },{passive:true});
+
+    let slide = 0, startX = 0, endX = 0;
+    const track = document.getElementById('galleryTrack');
+    const dots = [...document.querySelectorAll('#dots .dot')];
+    function showSlide(n){
+      slide = Math.max(0, Math.min(dots.length - 1, n));
+      track.style.transform = `translateX(-${slide*100}%)`;
+      dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
+    }
+    const gallery = document.getElementById('gallery');
+    gallery.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true});
+    gallery.addEventListener('touchend',e=>{
+      endX=e.changedTouches[0].screenX;
+      if(startX-endX>45) showSlide(slide+1);
+      if(endX-startX>45) showSlide(slide-1);
+    },{passive:true});
+
+    let familySlide = 0, familyStartX = 0;
+    const familyTrack = document.getElementById('familyGalleryTrack');
+    const familyDots = [...document.querySelectorAll('#familyDots .dot')];
+    function showFamilySlide(n){
+      familySlide = Math.max(0, Math.min(familyDots.length - 1, n));
+      familyTrack.style.transform = `translateX(-${familySlide*100}%)`;
+      familyDots.forEach((d,i)=>d.classList.toggle('active',i===familySlide));
+    }
+    const familyGallery = document.getElementById('familyGallery');
+    familyGallery.addEventListener('touchstart',e=>familyStartX=e.changedTouches[0].screenX,{passive:true});
+    familyGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - familyStartX;
+      if(distance < -45) showFamilySlide(familySlide + 1);
+      if(distance > 45) showFamilySlide(familySlide - 1);
+    },{passive:true});
+
+    let suiteSlide = 0, suiteStartX = 0;
+    const suiteTrack = document.getElementById('suiteGalleryTrack');
+    const suiteDots = [...document.querySelectorAll('#suiteDots .dot')];
+    function showSuiteSlide(n){
+      suiteSlide = Math.max(0, Math.min(suiteDots.length - 1, n));
+      suiteTrack.style.transform = `translateX(-${suiteSlide*100}%)`;
+      suiteDots.forEach((d,i)=>d.classList.toggle('active',i===suiteSlide));
+    }
+    const suiteGallery = document.getElementById('suiteGallery');
+    suiteGallery.addEventListener('touchstart',e=>suiteStartX=e.changedTouches[0].screenX,{passive:true});
+    suiteGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - suiteStartX;
+      if(distance < -45) showSuiteSlide(suiteSlide + 1);
+      if(distance > 45) showSuiteSlide(suiteSlide - 1);
+    },{passive:true});
+
+    let royalSlide = 0, royalStartX = 0;
+    const royalTrack = document.getElementById('royalGalleryTrack');
+    const royalDots = [...document.querySelectorAll('#royalDots .dot')];
+    function showRoyalSlide(n){
+      royalSlide = Math.max(0, Math.min(royalDots.length - 1, n));
+      royalTrack.style.transform = `translateX(-${royalSlide*100}%)`;
+      royalDots.forEach((d,i)=>d.classList.toggle('active',i===royalSlide));
+    }
+    const royalGallery = document.getElementById('royalGallery');
+    royalGallery.addEventListener('touchstart',e=>royalStartX=e.changedTouches[0].screenX,{passive:true});
+    royalGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - royalStartX;
+      if(distance < -45) showRoyalSlide(royalSlide + 1);
+      if(distance > 45) showRoyalSlide(royalSlide - 1);
+    },{passive:true});
   </script>
 </body>
 </html>
