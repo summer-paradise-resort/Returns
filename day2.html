@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2743">
-  <title>二日目のご案内 | Summer Paradise Resort</title>
+  <title>島で過ごす | Summer Paradise Resort / DAY 2</title>
   <style>
     :root{--navy:#0d2743;--gold:#a87b2f;--gold2:#c7a45d;--cream:#fbf8f1;--line:#ddd3c3;--muted:#6d6a64}
     *{box-sizing:border-box}
@@ -67,6 +67,24 @@
     .casino-card .casino-mark{font:10px Georgia,serif;letter-spacing:.3em;color:#e4c982}
     .casino-card h3{font-size:20px;font-weight:400;letter-spacing:.12em;margin:12px 0}
     .casino-card p{color:#eee7d7;font-size:12px;line-height:1.9;margin:0}
+    .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
+    .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
+    .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
+    .room-entry .field{margin-bottom:15px}
+    .primary-btn{width:100%;min-height:46px;border:0;background:var(--navy);color:white;letter-spacing:.1em;padding:12px}
+    .room-error{min-height:1.5em;color:#a53b32;font-size:12px;margin:8px 0 0}
+    .room-lounge{max-width:620px;margin:22px auto 0;padding:20px;background:var(--cream);border:1px solid var(--line)}
+    .room-welcome{text-align:center;margin:0 0 17px;font-size:13px;line-height:1.9}
+    .chat-log{height:300px;overflow-y:auto;background:#fff;border:1px solid #e7dfd1;padding:12px;display:flex;flex-direction:column;gap:9px}
+    .chat-message{padding:9px 11px;background:#f5f2eb;border-radius:8px;max-width:90%;align-self:flex-start;overflow-wrap:anywhere}
+    .chat-message.mine{background:#e9f0f4;align-self:flex-end}
+    .chat-message small{display:block;color:#817764;font-size:10px;margin-bottom:3px}
+    .chat-message p{font-size:13px;line-height:1.6;margin:0;color:#263b4d}
+    .chat-empty{text-align:center;color:#897b62;font-size:12px;margin:auto}
+    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+    .chat-compose button{border:0;background:var(--gold);color:white;padding:0 18px;min-width:76px}
+    .room-caption{text-align:center;font-size:11px;color:var(--muted);line-height:1.8;margin:10px 0 0}
+    .room-mapping{font-size:12px;line-height:1.9;color:#4c5661}
     @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}}
     @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
   </style>
@@ -80,16 +98,20 @@
   <main id="day2Home">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">SUMMER PARADISE RESORT　/　DAY 02</p>
-        <h1>島で過ごす、二日目。</h1>
+        <p class="eyebrow">サマーパラダイスリゾート　/　DAY2</p>
+        <h1>島で過ごす。</h1>
         <p>目覚めたあとは、島の時間へ。<br>気になる場所を選んで、今日だけの滞在をお楽しみください。</p>
       </div>
     </section>
 
     <section class="section">
-      <div class="section-head"><h2>本日の過ごし方</h2><p>YOUR STAY, YOUR STORY</p></div>
-      <div class="notice">館内の各施設をお選びいただけます。行き先を決めたら、カードをタップしてください。</div>
+      <div class="section-head"><h2>館内の各施設</h2><p>YOUR STAY, YOUR STORY</p></div>
+      <div class="notice">館内の各施設をお選びいただけます。</div>
       <div class="cards">
+        <button class="card" type="button" data-open="roomView">
+          <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
+          <div class="card-body"><h3 class="card-title">ROOM</h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して、同じ客室に滞在する方とチャット。</p><div class="view">ENTER YOUR ROOM　›</div></div>
+        </button>
         <button class="card" type="button" data-open="exploreView">
           <img src="lighthouse.jpg" alt="島の灯台">
           <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
@@ -97,6 +119,10 @@
         <button class="card" type="button" data-open="restaurantView">
           <img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace">
           <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="barView">
+          <img src="seaside_bar.jpg" alt="シーサイドバー">
+          <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
         </button>
         <button class="card" type="button" data-open="casinoView">
           <img src="blue_shell_casino.jpg" alt="カジノ・ブルーシェル">
@@ -106,6 +132,29 @@
     </section>
   </main>
   <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE</footer>
+
+  <section class="subview" id="roomView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">YOUR PRIVATE ROOM</div><div></div></div>
+    <div class="info"><h2>ROOM</h2><div class="jp">客室へ入る</div><div class="meta">ENTER YOUR ROOM NUMBER</div>
+      <p>ご宿泊の部屋番号を暗証番号として入力してください。同じ番号を入力した方は、同じ客室に入室できます。</p>
+      <div id="roomEntry" class="room-entry">
+        <form id="roomEntryForm">
+          <div class="field"><label for="roomPin">部屋番号（暗証番号）</label><input id="roomPin" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="例：101" required></div>
+          <div class="field"><label for="guestName">チャットで使うお名前</label><input id="guestName" maxlength="20" autocomplete="nickname" placeholder="お名前"></div>
+          <button class="primary-btn" type="submit">客室に入る</button>
+          <p id="roomError" class="room-error" aria-live="polite"></p>
+        </form>
+        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜202：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
+      </div>
+      <div id="roomLounge" class="room-lounge hidden">
+        <p id="roomWelcome" class="room-welcome"></p>
+        <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
+        <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
+        <p class="room-caption">同じ部屋番号の滞在者同士でお話しいただけます。</p>
+        <button id="leaveRoom" class="primary-btn" type="button" style="margin-top:14px">部屋番号を変更する</button>
+      </div>
+    </div>
+  </section>
 
   <section class="subview" id="exploreView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
@@ -125,6 +174,12 @@
     </div>
   </section>
 
+  <section class="subview" id="barView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
+    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
+    <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p><div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div></div>
+  </section>
+
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
     <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
@@ -137,6 +192,39 @@
     function closeView(view){view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+
+    const roomTypes={
+      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
+      201:'ファミリー',202:'ファミリー',
+      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',
+      401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
+    };
+    let activeRoom='', activeGuest='ゲスト';
+    const roomPin=document.getElementById('roomPin'), guestName=document.getElementById('guestName'), roomError=document.getElementById('roomError');
+    const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
+    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
+    function renderChat(){
+      if(!activeRoom)return;
+      const messages=roomMessages(); chatLog.replaceChildren();
+      if(!messages.length){const empty=document.createElement('div');empty.className='chat-empty';empty.textContent='この客室の会話はまだありません。';chatLog.append(empty);return;}
+      messages.slice(-100).forEach(message=>{const item=document.createElement('div');item.className='chat-message'+(message.name===activeGuest?' mine':'');const meta=document.createElement('small');meta.textContent=`${message.name}　${message.time}`;const body=document.createElement('p');body.textContent=message.text;item.append(meta,body);chatLog.append(item)});
+      chatLog.scrollTop=chatLog.scrollHeight;
+    }
+    document.getElementById('roomEntryForm').addEventListener('submit',event=>{
+      event.preventDefault();const room=roomPin.value.trim();
+      if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号を入力してください。';return;}
+      activeRoom=room;activeGuest=guestName.value.trim()||'ゲスト';roomError.textContent='';
+      document.getElementById('roomWelcome').textContent=`${room}号室　／　${roomTypes[room]}　—　${activeGuest}さん、いらっしゃいませ。`;
+      roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');renderChat();document.getElementById('chatInput').focus();
+    });
+    document.getElementById('chatForm').addEventListener('submit',event=>{
+      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
+      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
+    });
+    document.getElementById('leaveRoom').addEventListener('click',()=>{activeRoom='';roomLounge.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';roomPin.focus()});
+    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`)renderChat()});
+
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
       const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
