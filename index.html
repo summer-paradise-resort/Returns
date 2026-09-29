@@ -259,11 +259,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#deluxeRoomView,#familyRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
+    #roomView,#deluxeRoomView,#familyRoomView,#lagoonRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#deluxeRoomView.open,#familyRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
+    #roomView.open,#deluxeRoomView.open,#familyRoomView.open,#lagoonRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -424,6 +424,7 @@
           <select id="roomChoice">
             <option value="deluxe">DELUXE OCEAN VIEW（1〜2名）</option>
             <option value="family">FAMILY OCEAN SUITE（3〜4名）</option>
+            <option value="lagoon">OCEAN LAGOON（1〜2名）</option>
             <option value="suite">OCEAN GRAND SUITE（2名限定）</option>
             <option value="royal">ROYAL OCEAN VILLA（1〜2名）</option>
           </select>
@@ -519,6 +520,15 @@
           <span>客室を見る　›</span>
         </div>
       </button>
+      <button class="other-room-card" id="lagoonRoomCard" type="button">
+        <img data-lagoon-image="0" alt="オーシャンラグーンの客室">
+        <div class="other-room-copy">
+          <small>FOR 1–2 GUESTS</small>
+          <strong>OCEAN LAGOON</strong>
+          <p class="other-room-desc">専用プールと開放的なリビングで、海とともにくつろぐ贅沢な一室。</p>
+          <span>客室を見る　›</span>
+        </div>
+      </button>
       <button class="other-room-card" id="suiteRoomCard" type="button">
         <img src="suite_01.jpg" alt="夕景を望むオーシャン グランドスイートのテラス">
         <div class="other-room-copy">
@@ -562,6 +572,28 @@
       <div class="jp">デラックス オーシャンビュー</div>
       <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
       <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。ベッドはダブルベッドまたはツインベッドからお選びいただけます。</p>
+    </div>
+  </section>
+
+  <section id="lagoonRoomView" aria-hidden="true">
+    <div class="room-top">
+      <button class="back-btn" id="lagoonRoomBack">← BACK</button>
+      <div class="room-label">ROOMS &amp; SUITES</div>
+      <div style="width:46px"></div>
+    </div>
+    <div class="gallery" id="lagoonGallery">
+      <div class="gallery-track" id="lagoonGalleryTrack">
+        <div class="gallery-slide"><img data-lagoon-image="0" alt="オーシャンラグーンの寝室と専用プール"></div>
+        <div class="gallery-slide"><img data-lagoon-image="1" alt="オーシャンラグーンの客室写真2"></div>
+        <div class="gallery-slide"><img data-lagoon-image="2" alt="オーシャンラグーンの客室写真3"></div>
+      </div>
+    </div>
+    <div class="dots" id="lagoonDots"><button type="button" class="dot active" aria-label="寝室と専用プール" style="border:0;padding:0"></button><button type="button" class="dot" aria-label="客室写真2" style="border:0;padding:0"></button><button type="button" class="dot" aria-label="客室写真3" style="border:0;padding:0"></button></div>
+    <div class="room-info">
+      <h2>OCEAN LAGOON</h2>
+      <div class="jp">オーシャンラグーン</div>
+      <div class="room-meta">1–2 GUESTS　/　KING BED　/　PRIVATE POOL</div>
+      <p>青く澄んだ海を望む寝室と、テラスへ続く開放的なリビング。専用プールで過ごすひとときも、海風を感じながらくつろぐ時間も、心ゆくまでお楽しみいただけます。キングベッドを備えた上質な一室で、おひとりでも、おふたりでも、ゆとりある滞在を。</p>
     </div>
   </section>
 
@@ -829,9 +861,12 @@
     const bedChoice = document.getElementById('bedChoice');
     const reservationView = document.getElementById('reservationView');
     const confirmationView = document.getElementById('confirmationView');
+    const lagoonImages = ['Ocean_Lagoon01.jpg','Ocean_Lagoon02.jpg','Ocean_Lagoon03.jpg'];
+    document.querySelectorAll("[data-lagoon-image]").forEach(img => { img.src = lagoonImages[Number(img.dataset.lagoonImage)]; });
     const rooms = {
       deluxe:{name:'DELUXE OCEAN VIEW',jp:'デラックス オーシャンビュー',image:'ocean_view_room.jpg?v=202609281830',min:1,max:2},
       family:{name:'FAMILY OCEAN SUITE',jp:'ファミリー オーシャンスイート',image:'family_01.jpg',min:3,max:4},
+      lagoon:{name:'OCEAN LAGOON',jp:'オーシャンラグーン',image:lagoonImages[0],min:1,max:2},
       suite:{name:'OCEAN GRAND SUITE',jp:'オーシャン グランドスイート',image:'suite_01.jpg',min:2,max:2},
       royal:{name:'ROYAL OCEAN VILLA',jp:'ロイヤル オーシャンヴィラ',image:'villa_01.jpg',min:1,max:2}
     };
@@ -844,7 +879,11 @@
     }
     roomChoice.addEventListener('change', updateBedChoice);
     guestsSelect.addEventListener('change', () => {
-      roomChoice.value = Number(guestsSelect.value) >= 3 ? 'family' : 'deluxe';
+      const count = Number(guestsSelect.value);
+      const selectedRoom = rooms[roomChoice.value];
+      if(count < selectedRoom.min || count > selectedRoom.max){
+        roomChoice.value = count >= 3 ? 'family' : 'deluxe';
+      }
       updateBedChoice();
     });
     updateBedChoice();
@@ -963,6 +1002,14 @@
     });
     document.getElementById('familyRoomBack').addEventListener('click', () => {
       familyRoomView.classList.remove('open'); familyRoomView.setAttribute('aria-hidden','true');
+    });
+
+    const lagoonRoomView = document.getElementById('lagoonRoomView');
+    document.getElementById('lagoonRoomCard').addEventListener('click', () => {
+      showLagoonSlide(0); lagoonRoomView.classList.add('open'); lagoonRoomView.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('lagoonRoomBack').addEventListener('click', () => {
+      lagoonRoomView.classList.remove('open'); lagoonRoomView.setAttribute('aria-hidden','true');
     });
 
     const suiteRoomView = document.getElementById('suiteRoomView');
@@ -1087,6 +1134,24 @@
       if(distance < -45) showFamilySlide(familySlide + 1);
       if(distance > 45) showFamilySlide(familySlide - 1);
     },{passive:true});
+
+    let lagoonSlide = 0, lagoonStartX = 0;
+    const lagoonTrack = document.getElementById('lagoonGalleryTrack');
+    const lagoonDots = [...document.querySelectorAll('#lagoonDots .dot')];
+    function showLagoonSlide(n){
+      lagoonSlide = Math.max(0, Math.min(lagoonDots.length - 1, n));
+      lagoonTrack.style.transform = `translateX(-${lagoonSlide*100}%)`;
+      lagoonDots.forEach((d,i)=>d.classList.toggle('active',i===lagoonSlide));
+    }
+    const lagoonGallery = document.getElementById('lagoonGallery');
+    lagoonGallery.addEventListener('touchstart',e=>lagoonStartX=e.changedTouches[0].screenX,{passive:true});
+    lagoonGallery.addEventListener('touchend',e=>{
+      const distance = e.changedTouches[0].screenX - lagoonStartX;
+      if(distance < -45) showLagoonSlide(lagoonSlide + 1);
+      if(distance > 45) showLagoonSlide(lagoonSlide - 1);
+    },{passive:true});
+
+    lagoonDots.forEach((dot,i)=>dot.addEventListener('click',()=>showLagoonSlide(i)));
 
     let suiteSlide = 0, suiteStartX = 0;
     const suiteTrack = document.getElementById('suiteGalleryTrack');
