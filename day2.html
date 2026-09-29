@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2743">
+  <title>二日目のご案内 | Summer Paradise Resort</title>
+  <style>
+    :root{--navy:#0d2743;--gold:#a87b2f;--gold2:#c7a45d;--cream:#fbf8f1;--line:#ddd3c3;--muted:#6d6a64}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--navy);background:#fff}
+    button{font:inherit;cursor:pointer}
+    img{display:block;width:100%}
+    .hidden{display:none!important}
+    header{height:72px;background:rgba(255,255,255,.97);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(168,123,47,.18);backdrop-filter:blur(10px)}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .brand img{width:44px;height:44px;object-fit:contain}
+    .brand-name{font:20px/1 Georgia,serif;color:var(--gold);white-space:nowrap}
+    .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
+    .home-link{color:var(--navy);font:11px Georgia,serif;letter-spacing:.12em;text-decoration:none;padding:12px 4px}
+    .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat}
+    .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
+    .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
+    h1{font-size:clamp(31px,8vw,48px);font-weight:500;letter-spacing:.08em;line-height:1.35;margin:0 0 14px}
+    .hero p{font-size:14px;line-height:2;letter-spacing:.08em;margin:0}
+    main{padding-bottom:48px}
+    .section{padding:42px 18px 0;max-width:980px;margin:auto}
+    .section-head{text-align:center;margin-bottom:27px}
+    .section-head h2{font-size:22px;font-weight:500;letter-spacing:.1em;margin:0 0 9px}
+    .section-head p{font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold);margin:0}
+    .notice{max-width:760px;margin:0 auto 24px;padding:15px 17px;border:1px solid var(--line);background:var(--cream);font-size:12px;line-height:1.9;letter-spacing:.04em;text-align:center}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .card{padding:0;text-align:left;background:#fff;color:inherit;border:1px solid rgba(168,123,47,.18);box-shadow:0 8px 24px rgba(13,39,67,.08);transition:transform .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(13,39,67,.13)}
+    .card img{height:170px;object-fit:cover}
+    .card-body{padding:16px 15px 17px}
+    .card-title{font-size:18px;letter-spacing:.1em;font-weight:500;margin:0 0 5px}
+    .card-en{font:10px Georgia,serif;letter-spacing:.2em;color:var(--gold);margin-bottom:11px}
+    .card-desc{min-height:48px;font-size:12px;line-height:1.8;color:#4c5661;margin:0}
+    .view{font:10px Georgia,serif;letter-spacing:.15em;color:var(--gold);margin-top:15px}
+    footer{padding:26px 16px 34px;text-align:center;border-top:1px solid #eee8dc;color:#897b62;font:12px Georgia,serif;letter-spacing:.08em}
+    .subview{position:fixed;inset:0;background:#fff;z-index:40;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,visibility .25s,transform .25s}
+    .subview.open{opacity:1;visibility:visible;transform:none}
+    .subhead{height:66px;position:sticky;top:0;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;z-index:2;padding:0 12px}
+    .back{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font:12px Georgia,serif}
+    .subhead-title{text-align:center;font:11px Georgia,serif;letter-spacing:.18em;color:var(--gold)}
+    .gallery{overflow:hidden;background:#e8e3da;touch-action:pan-y}
+    .track{display:flex;transition:transform .35s ease}
+    .slide{flex:0 0 100%;aspect-ratio:16/10}
+    .slide img{height:100%;object-fit:cover}
+    .dots{display:flex;justify-content:center;gap:9px;padding:15px 0}
+    .dot{width:7px;height:7px;border-radius:50%;background:#d6d0c5;border:0;padding:0}
+    .dot.active{background:var(--gold)}
+    .info{max-width:700px;margin:0 auto;padding:12px 22px 50px}
+    .info h2{text-align:center;font:22px Georgia,serif;letter-spacing:.14em;font-weight:400;margin:10px 0 4px}
+    .jp{text-align:center;font-size:13px;letter-spacing:.13em;color:var(--gold);margin-bottom:23px}
+    .meta{text-align:center;font:10px/1.8 Georgia,serif;letter-spacing:.12em;color:var(--muted);margin-bottom:18px}
+    .info p{font-size:13px;line-height:2.1;letter-spacing:.04em;margin:0 0 18px;color:#37495a}
+    .panel{margin-top:22px;padding:18px;background:var(--cream);border:1px solid var(--line)}
+    .panel h3{font-size:15px;font-weight:500;letter-spacing:.1em;margin:0 0 10px}
+    .panel p{font-size:12px;margin:0;line-height:1.9}
+    .menu-list{display:grid;gap:10px;margin-top:15px}
+    .menu-item{background:white;border:1px solid #e7dfd1;padding:12px 13px;font-size:13px;line-height:1.7}
+    .menu-item small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
+    .casino-card{margin-top:18px;text-align:center;padding:24px 18px;background:linear-gradient(145deg,#102e4b,#071a2b);color:white;border:1px solid #c7a45d}
+    .casino-card .casino-mark{font:10px Georgia,serif;letter-spacing:.3em;color:#e4c982}
+    .casino-card h3{font-size:20px;font-weight:400;letter-spacing:.12em;margin:12px 0}
+    .casino-card p{color:#eee7d7;font-size:12px;line-height:1.9;margin:0}
+    @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}}
+    @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
+    <a class="home-link" href="index.html">RESORT TOP　↗</a>
+  </header>
+
+  <main id="day2Home">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">SUMMER PARADISE RESORT　/　DAY 02</p>
+        <h1>島で過ごす、二日目。</h1>
+        <p>目覚めたあとは、島の時間へ。<br>気になる場所を選んで、今日だけの滞在をお楽しみください。</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>本日の過ごし方</h2><p>YOUR STAY, YOUR STORY</p></div>
+      <div class="notice">館内の各施設をお選びいただけます。行き先を決めたら、カードをタップしてください。</div>
+      <div class="cards">
+        <button class="card" type="button" data-open="exploreView">
+          <img src="lighthouse.jpg" alt="島の灯台">
+          <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="restaurantView">
+          <img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace">
+          <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
+        </button>
+        <button class="card" type="button" data-open="casinoView">
+          <img src="blue_shell_casino.jpg" alt="カジノ・ブルーシェル">
+          <div class="card-body"><h3 class="card-title">カジノへ行く</h3><div class="card-en">CASINO BLUE SHELL</div><p class="card-desc">海辺の夜を彩る、ブルーシェルのゲームテーブル。</p><div class="view">ENTER CASINO　›</div></div>
+        </button>
+      </div>
+    </section>
+  </main>
+  <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE</footer>
+
+  <section class="subview" id="exploreView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
+    <div class="gallery" data-gallery="explore"><div class="track">
+      <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
+    </div></div><div class="dots" data-dots="explore"></div>
+    <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel"><h3>島内の見どころ</h3><p>海辺、灯台、マーメイドの入り江を掲載しています。写真を左右にスワイプしてご覧ください。</p></div></div>
+  </section>
+
+  <section class="subview" id="restaurantView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">RESTAURANT &amp; CAFÉ</div><div></div></div>
+    <div class="gallery" data-gallery="restaurant"><div class="track">
+      <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div><div class="slide"><img src="sunset_terrace1.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="sunset_terrace2.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div><div class="slide"><img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace 外観"></div><div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div><div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Marine Bloom Cafe ティーセット"></div>
+    </div></div><div class="dots" data-dots="restaurant"></div>
+    <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
+      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><div class="menu-item">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></div><div class="menu-item">Marine Bloom Cafe<small>CAFÉ &amp; SWEETS</small></div></div></div>
+    </div>
+  </section>
+
+  <section class="subview" id="casinoView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
+    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
+    <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。テーブルに着く前のひとときも、ゆっくりお楽しみください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>ゲームテーブル</h3><p>ゲームとチップの仕組みを準備中です。<br>カジノの遊び方はこちらに追加できます。</p></div></div>
+  </section>
+
+  <script>
+    const views = [...document.querySelectorAll('.subview')];
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
+    function closeView(view){view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
+    document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+    const galleries={};
+    document.querySelectorAll('[data-gallery]').forEach(gallery=>{
+      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
+      const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
+      function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
+      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
+      galleries[name]=show;
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){const open=views.find(view=>view.classList.contains('open'));if(open)closeView(open);}});
+  </script>
+</body>
+</html>
