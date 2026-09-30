@@ -244,6 +244,45 @@
     }
     @media(max-width:680px){.hero{min-height:390px;padding:36px 21px 44px}.cards{grid-template-columns:1fr;gap:13px}.card{display:grid;grid-template-columns:40% 1fr;min-height:148px}.card img{height:100%;min-height:148px}.card-body{padding:14px 13px}.card-desc{min-height:0}.view{margin-top:10px}.notice{font-size:11px}.section{padding-top:34px}}
     @media(min-width:681px){.hero{min-height:510px}.card img{height:210px}}
+  
+    /* SEASIDE BAR / DRINK ORDER */
+    .bar-order-panel{margin-top:18px;padding:20px 18px;background:linear-gradient(145deg,#fdf9f1,#f7efe1);border:1px solid rgba(168,123,47,.34);text-align:center}
+    .bar-order-panel .bar-order-kicker{font:10px Georgia,serif;letter-spacing:.24em;color:var(--gold);margin-bottom:8px}
+    .bar-order-panel p{margin:0 0 15px!important;font-size:12px!important;line-height:1.9!important;color:#52606c!important}
+    .bar-order-open{width:100%;min-height:48px;border:1px solid var(--gold2);background:var(--navy);color:#fff;font-size:13px;letter-spacing:.12em;padding:12px 16px}
+    .bar-order-status-mini{margin-top:12px;font-size:11px;line-height:1.8;color:#7f6944}
+    .bar-order-sheet{position:fixed;inset:0;z-index:66;background:#fff;overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);visibility:hidden;transition:transform .28s ease,visibility .28s}
+    .bar-order-sheet.open{transform:none;visibility:visible}
+    .bar-order-head{position:sticky;top:0;z-index:4;min-height:66px;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;padding:0 12px;backdrop-filter:blur(10px)}
+    .bar-order-close{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font-size:21px}
+    .bar-order-head-title{text-align:center;font:11px Georgia,serif;letter-spacing:.18em;color:var(--gold)}
+    .bar-order-content{max-width:720px;margin:auto;padding:22px 18px max(38px,env(safe-area-inset-bottom))}
+    .bar-period-card{padding:16px;border:1px solid #e7dcc9;background:#fbf8f1;margin-bottom:20px}
+    .bar-period-card strong{display:block;font-size:15px;letter-spacing:.08em;margin-bottom:5px}
+    .bar-period-card small{display:block;color:var(--gold);font:10px Georgia,serif;letter-spacing:.12em;margin-bottom:8px}
+    .bar-period-card p{font-size:12px;line-height:1.85;color:#4c5a67;margin:0}
+    .bar-menu-title{text-align:center;margin:24px 0 13px;font:13px Georgia,serif;letter-spacing:.22em;color:var(--gold)}
+    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .bar-menu-pages::-webkit-scrollbar{display:none}
+    .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
+    .bar-menu-page img{width:100%;height:auto;display:block}
+    .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#8c7b62;margin:-8px 0 22px}
+    .bar-drink-list{display:grid;gap:9px}
+    .bar-drink-item{width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid #e7dfd1;background:#fff;color:var(--navy);padding:12px 11px;min-height:68px}
+    .bar-drink-item .num{font:18px Georgia,serif;color:var(--gold);text-align:center}
+    .bar-drink-item strong{display:block;font-size:13px;font-weight:500;letter-spacing:.05em;margin-bottom:4px}
+    .bar-drink-item small{display:block;font-size:9px;line-height:1.65;color:#786d5e;letter-spacing:.03em}
+    .bar-drink-item .choose{font:9px Georgia,serif;letter-spacing:.12em;color:var(--gold);white-space:nowrap}
+    .bar-drink-item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}
+    .bar-drink-item:disabled{opacity:.5;cursor:default}
+    .bar-drink-item.ordered{opacity:1;border-color:#c9b17a;background:#fbf7ed}
+    .bar-order-confirm-wrap{position:sticky;bottom:0;margin:20px -18px -38px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #e8e0d3;backdrop-filter:blur(10px)}
+    .bar-selection{min-height:20px;font-size:11px;line-height:1.7;color:#665b4c;margin-bottom:9px;text-align:center}
+    .bar-order-confirm{width:100%;min-height:48px;border:0;background:var(--navy);color:#fff;font-size:13px;letter-spacing:.1em;padding:12px}
+    .bar-order-confirm:disabled{background:#b9b6ae;color:#f3f1ec;cursor:default}
+    .bar-order-result{margin-top:11px;padding:11px 12px;border:1px solid #d9c9a9;background:#fffaf0;color:#6b552d;font-size:11px;line-height:1.8;text-align:center}
+    @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
+
   </style>
 </head>
 <body>
@@ -367,11 +406,13 @@
               <div class="service-item" data-service-item="シーフードパスタ"><div><strong>シーフードパスタ</strong><small>魚介を使ったパスタ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="チキン＆ライス"><div><strong>チキン＆ライス</strong><small>温かいメインディッシュ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="フルーツプレート"><div><strong>フルーツプレート</strong><small>季節のフルーツ盛り合わせ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="苺のタルト"><div><strong>苺のタルト</strong><small>苺を重ねたデザートタルト</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
             </div>
             <div class="service-section-title">お飲み物</div>
             <div class="service-menu">
               <div class="service-item" data-service-item="コーヒー"><div><strong>コーヒー</strong><small>HOT / ICE</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="紅茶"><div><strong>紅茶</strong><small>HOT / ICE</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="ミルクティー"><div><strong>ミルクティー</strong><small>HOT / ICE</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="オレンジジュース"><div><strong>オレンジジュース</strong><small>CHILLED</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="ミネラルウォーター"><div><strong>ミネラルウォーター</strong><small>STILL WATER</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
             </div>
@@ -405,7 +446,24 @@
   <section class="subview" id="barView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
     <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
-    <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p><div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div></div>
+    <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p>
+      <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
+      <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
+    </div>
+    <section id="barOrderSheet" class="bar-order-sheet" aria-hidden="true" aria-label="シーサイドバー ドリンク注文">
+      <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
+      <div class="bar-order-content">
+        <div id="barPeriodCard" class="bar-period-card"></div>
+        <div class="bar-menu-title">ORIGINAL DRINK MENU</div>
+        <div class="bar-menu-pages" aria-label="シーサイドバーのメニュー表">
+          <figure class="bar-menu-page"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></figure>
+          <figure class="bar-menu-page"><img src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20"></figure>
+        </div>
+        <div class="bar-menu-hint">左右にスワイプしてメニュー表をご覧いただけます。</div>
+        <div id="barDrinkList" class="bar-drink-list"></div>
+        <div class="bar-order-confirm-wrap"><div id="barSelection" class="bar-selection">ドリンクをお選びください。</div><button id="barOrderConfirm" class="bar-order-confirm" type="button" disabled>このドリンクを注文する</button><div id="barOrderResult" class="bar-order-result hidden" aria-live="polite"></div></div>
+      </div>
+    </section>
   </section>
 
   <section class="subview" id="casinoView" aria-hidden="true">
@@ -538,6 +596,92 @@
     }
     window.showSpecialTableAnnouncement=activateSpecialTableAnnouncement;
     window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement()};
+
+
+    // SEASIDE BAR / ドリンク注文
+    // SECURITY CHECKの名前ごとに注文履歴を保存。効能は後からeffectKeyへ割り当て可能です。
+    const barDrinks=[
+      {no:1,name:'サンセットパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ'},
+      {no:2,name:'マーメイドキス',ingredients:'ライチリキュール × グレープフルーツジュース × ソーダ'},
+      {no:3,name:'パールラグーン',ingredients:'カルーア × ココナッツミルク × ミルク'},
+      {no:4,name:'ライトハウスキーパー',ingredients:'ラム × コーヒーリキュール × ミルク'},
+      {no:5,name:'サマーパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ'},
+      {no:6,name:'セイレーンズソング',ingredients:'ブルーキュラソー × ライチリキュール × ソーダ'},
+      {no:7,name:'ラストサンセット',ingredients:'ブラッドオレンジジュース × カシス × ウォッカ'},
+      {no:8,name:'タイドケイブ',ingredients:'ジン × グレープフルーツジュース × ブルーキュラソー'},
+      {no:9,name:'ワンウェイトリップ',ingredients:'ウォッカ × ブルーキュラソー × エナジードリンク'},
+      {no:10,name:'シェルブリーズ',ingredients:'ホワイトラム × レモンジュース × ソーダ'},
+      {no:11,name:'ラグーンブリーズ',ingredients:'ジン × グレープフルーツジュース × ソーダ'},
+      {no:12,name:'ミッドナイトランタン',ingredients:'ラム × コーラ × ライム'},
+      {no:13,name:'ホワイトピーチ',ingredients:'ココナッツリキュール × ミルク × バニラシロップ'},
+      {no:14,name:'ビーコンライト',ingredients:'ウォッカ × オレンジジュース × グレナデンシロップ'},
+      {no:15,name:'ラストゲスト',ingredients:'赤ワイン × カシス × ベリーシロップ'},
+      {no:16,name:'ムーンタイドグロット',ingredients:'ブルーキュラソー × ピーチリキュール × トニックウォーター'},
+      {no:17,name:'ゴールデンホライズン',ingredients:'オレンジジュース × アプリコットリキュール × シャンパン'},
+      {no:18,name:'ガーディアンフレア',ingredients:'テキーラ × オレンジジュース × グレナデンシロップ'},
+      {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー'},
+      {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター'}
+    ];
+    const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
+    const barOrderSheet=document.getElementById('barOrderSheet'), barDrinkList=document.getElementById('barDrinkList');
+    const barPeriodCard=document.getElementById('barPeriodCard'), barSelection=document.getElementById('barSelection');
+    const barOrderConfirm=document.getElementById('barOrderConfirm'), barOrderResult=document.getElementById('barOrderResult');
+    const barOrderStatusMini=document.getElementById('barOrderStatusMini');
+    let selectedBarDrink='';
+
+    function japanClockParts(){
+      const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+      const out={};parts.forEach(part=>{if(part.type!=='literal')out[part.type]=part.value});return{year:Number(out.year),month:Number(out.month),day:Number(out.day),hour:Number(out.hour),minute:Number(out.minute)};
+    }
+    function dateKeyFromParts({year,month,day}){return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`}
+    function addDaysToDateKey(key,days){const [y,m,d]=key.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1,d+days));return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`}
+    function barPeriodInfo(){
+      const now=japanClockParts();let id,label,hours,serviceDate=dateKeyFromParts(now),endDate=serviceDate,endTime;
+      if(now.hour>=7&&now.hour<16){id='day';label='昼';hours='7:00〜15:59';endTime='16:00:00'}
+      else if(now.hour>=16&&now.hour<20){id='sunset';label='夕';hours='16:00〜19:59';endTime='20:00:00'}
+      else{ id='night';label='夜';hours='20:00〜6:59';if(now.hour<7)serviceDate=addDaysToDateKey(serviceDate,-1);endDate=addDaysToDateKey(serviceDate,1);endTime='07:00:00'}
+      if(id!=='night')endDate=serviceDate;
+      const orderOpen=now.hour>=11||now.hour<5;
+      return{id,label,hours,serviceDate,token:`${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
+    }
+    function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
+    function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
+    function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
+    window.getCurrentBarDrinkEffect=currentBarDrink;
+
+    function buildBarDrinkList(){
+      barDrinkList.replaceChildren();
+      barDrinks.forEach(drink=>{const button=document.createElement('button');button.type='button';button.className='bar-drink-item';button.dataset.barDrink=drink.name;button.innerHTML=`<span class="num">${drink.no}</span><span><strong>${drink.name}</strong><small>${drink.ingredients}</small></span><span class="choose">SELECT</span>`;button.addEventListener('click',()=>{selectedBarDrink=drink.name;renderBarOrderState()});barDrinkList.append(button)});
+    }
+    function renderBarOrderState(){
+      const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null;
+      const periodText=`${info.label}　${info.hours}`;
+      if(ordered){
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${info.label}の時間帯が終了するまで保持されます。</p>`;
+        barOrderStatusMini.textContent=`${info.label}：${ordered.name} をご注文済みです。`;
+        barSelection.textContent=`ご注文済み：${ordered.name}`;barOrderConfirm.disabled=true;selectedBarDrink='';
+      }else if(!info.orderOpen){
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>BAR CLOSED / MENU VIEW ONLY</small><p>現在は営業時間外です。メニューはご覧いただけます。ドリンクのご注文は11:00〜翌5:00に承ります。</p>`;
+        barOrderStatusMini.textContent=`現在は営業時間外です。${info.label}のメニューをご覧いただけます。`;
+        barSelection.textContent='現在は営業時間外です。';barOrderConfirm.disabled=true;
+      }else{
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${storedGuestName}様は、この時間帯に1杯ご注文いただけます。注文したドリンクの効能は${info.label}の終了時刻まで保持されます。</p>`;
+        barOrderStatusMini.textContent=`${info.label}：まだご注文いただけます。`;
+        barSelection.textContent=selectedBarDrink?`選択中：${selectedBarDrink}`:'ドリンクをお選びください。';barOrderConfirm.disabled=!selectedBarDrink;
+      }
+      barDrinkList.querySelectorAll('[data-bar-drink]').forEach(button=>{const isOrdered=Boolean(ordered),match=(ordered&&button.dataset.barDrink===ordered.name);button.disabled=isOrdered||!info.orderOpen;button.classList.toggle('selected',!isOrdered&&button.dataset.barDrink===selectedBarDrink);button.classList.toggle('ordered',Boolean(match));button.querySelector('.choose').textContent=match?'ORDERED':isOrdered||!info.orderOpen?'—':button.dataset.barDrink===selectedBarDrink?'SELECTED':'SELECT'});
+    }
+    function openBarOrder(){selectedBarDrink='';barOrderResult.classList.add('hidden');barOrderResult.textContent='';renderBarOrderState();barOrderSheet.classList.add('open');barOrderSheet.setAttribute('aria-hidden','false')}
+    function closeBarOrder(){barOrderSheet.classList.remove('open');barOrderSheet.setAttribute('aria-hidden','true')}
+    document.getElementById('barOrderOpen').addEventListener('click',openBarOrder);
+    document.getElementById('barOrderClose').addEventListener('click',closeBarOrder);
+    barOrderConfirm.addEventListener('click',()=>{
+      const info=barPeriodInfo(),state=loadBarDrinkState();if(!selectedBarDrink||state[info.token]||!info.orderOpen){renderBarOrderState();return}
+      const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
+      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
+      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} のご注文を承りました。`;barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
+    });
+    buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
     restoreResortAnnouncement();
 
@@ -873,7 +1017,7 @@
       gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
       galleries[name]=show;
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
   </script>
 </body>
 </html>
