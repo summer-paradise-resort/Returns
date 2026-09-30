@@ -163,7 +163,10 @@
     .room-scene-nav.open{opacity:1;visibility:visible;transform:none}
     .room-scene-nav button{min-height:44px;padding:9px 5px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-size:12px;letter-spacing:.04em}
     .room-scene-nav button[aria-pressed="true"]{background:#f6f0e5;color:#0d2743;border-color:#f6f0e5}
-    .room-chat-open{width:100%;min-height:52px;border:0;background:#f6f0e5;color:#0d2743;font-size:15px;letter-spacing:.1em;display:flex;align-items:center;justify-content:center;gap:9px}
+    .room-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .room-chat-open,.room-service-open{width:100%;min-height:52px;border:0;font-size:14px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 8px}
+    .room-chat-open{background:#f6f0e5;color:#0d2743}
+    .room-service-open{background:#a87b2f;color:#fff}
     .chat-unread{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#a87b2f;color:#fff;display:grid;place-items:center;font:11px Arial,sans-serif}
     .room-image-error{position:absolute;z-index:15;left:18px;right:18px;top:90px;padding:12px;background:rgba(255,255,255,.92);color:#a53b32;text-align:center;font-size:12px}
     .room-chat-toast{position:absolute;z-index:14;left:20px;right:20px;bottom:94px;padding:12px 14px;background:rgba(7,21,35,.88);color:#fff;font-size:12px;line-height:1.6;opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s;backdrop-filter:blur(10px)}
@@ -184,6 +187,30 @@
     .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid rgba(130,110,76,.2)}
     .chat-compose input{width:100%;min-height:46px;border:1px solid rgba(130,110,76,.35);background:var(--message-bg);padding:10px 12px;color:var(--sheet-fg);font:inherit;font-size:16px}
     .chat-compose button{border:0;background:var(--gold);color:white;padding:0 18px;min-width:70px}
+    .room-service-sheet{position:absolute;z-index:21;left:0;right:0;bottom:0;height:min(82%,760px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.34);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
+    .room-service-sheet.open{transform:none;visibility:visible}
+    .service-sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:4px 14px 10px;border-bottom:1px solid rgba(130,110,76,.2)}
+    .service-sheet-head h3{text-align:center;font-size:15px;font-weight:500;letter-spacing:.1em;margin:0}
+    .service-sheet-close{grid-column:3;width:44px;height:44px;border:0;background:transparent;color:var(--sheet-fg);font-size:24px}
+    .service-body{flex:1;min-height:0;overflow-y:auto;padding:14px 15px 18px}
+    .service-room-meta{text-align:center;font:10px Georgia,serif;letter-spacing:.16em;color:var(--sheet-muted);margin:2px 0 14px}
+    .service-section-title{font-size:12px;letter-spacing:.12em;color:var(--sheet-muted);margin:18px 0 9px;border-bottom:1px solid rgba(130,110,76,.18);padding-bottom:7px}
+    .service-menu{display:grid;gap:8px}
+    .service-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18)}
+    .service-item strong{display:block;font-size:13px;font-weight:500;letter-spacing:.04em}
+    .service-item small{display:block;margin-top:4px;color:var(--sheet-muted);font-size:10px;line-height:1.6}
+    .service-qty{display:grid;grid-template-columns:36px 28px 36px;align-items:center;text-align:center;gap:2px}
+    .service-qty button{width:36px;height:36px;border:1px solid rgba(130,110,76,.3);background:transparent;color:var(--sheet-fg);font-size:18px}
+    .service-qty span{font:13px Arial,sans-serif}
+    .service-cart{margin-top:16px;padding:14px;background:rgba(168,123,47,.08);border:1px solid rgba(168,123,47,.3)}
+    .service-cart-title{font-size:12px;letter-spacing:.12em;margin-bottom:8px}
+    .service-cart-list{font-size:12px;line-height:1.8;color:var(--sheet-muted);min-height:22px}
+    .service-order-btn{width:100%;min-height:48px;margin-top:12px;border:0;background:var(--gold);color:#fff;letter-spacing:.1em}
+    .service-order-btn:disabled{opacity:.42;cursor:default}
+    .service-result{margin-top:12px;padding:12px;text-align:center;font-size:12px;line-height:1.8;background:var(--message-bg);border:1px solid rgba(130,110,76,.18)}
+    .service-history{display:grid;gap:7px;margin-top:8px}
+    .service-history-item{padding:10px 11px;background:var(--message-bg);border:1px solid rgba(130,110,76,.16);font-size:11px;line-height:1.7}
+    .service-history-item small{color:var(--sheet-muted)}
     .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
     .room-fallback h2{font-size:25px;font-weight:400;letter-spacing:.08em;margin:0}
     .room-fallback p{font-size:13px;line-height:1.9;color:rgba(255,255,255,.75);margin:0 0 8px}
@@ -194,7 +221,7 @@
     .room-scene[data-scene="phone"] .room-scene-title{font-size:20px;margin:0 0 4px}
     .room-scene[data-scene="phone"] .room-view-controls{margin-top:6px}
     .room-scene[data-scene="phone"] .room-scene-dots{margin:7px 0}
-    .room-scene[data-scene="phone"] .room-chat-open{min-height:44px}
+    .room-scene[data-scene="phone"] .room-chat-open,.room-scene[data-scene="phone"] .room-service-open{min-height:44px}
     @media(max-height:540px) and (orientation:landscape){
       .room-overlay-bottom{left:auto;width:270px;padding:10px 14px;max-height:calc(100% - 76px);overflow-y:auto;background:rgba(3,14,25,.5)}
       .room-overlay-bottom .room-kicker,.room-overlay-bottom .room-welcome{display:none}
@@ -222,7 +249,6 @@
 
     <section class="section">
       <div class="section-head"><h2>館内の各施設</h2><p>YOUR STAY, YOUR STORY</p></div>
-      <div class="notice">館内の各施設をお選びいただけます。</div>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -282,7 +308,10 @@
                 <button id="roomSceneNext" class="room-scene-arrow" type="button" aria-label="次の場所">›</button>
               </div>
               <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
-              <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
+              <div class="room-actions">
+                <button id="roomServiceOpen" class="room-service-open" type="button"><span>ルームサービス</span></button>
+                <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
+              </div>
             </div>
           </figure>
           <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday1.htmlと同じ場所にアップロードしてください。</p>
@@ -296,8 +325,8 @@
           </nav>
         </div>
         <div id="roomFallback" class="room-fallback hidden">
-          <h2 id="fallbackRoomName"></h2><p>この客室の写真は準備中です。会話はご利用いただけます。</p>
-          <button id="fallbackChatOpen" type="button">この客室で話す</button><button id="fallbackLeaveRoom" type="button">部屋から出る</button>
+          <h2 id="fallbackRoomName"></h2><p>この客室の写真は準備中です。ルームサービスと会話はご利用いただけます。</p>
+          <button id="fallbackRoomServiceOpen" type="button">ルームサービスを頼む</button><button id="fallbackChatOpen" type="button">この客室で話す</button><button id="fallbackLeaveRoom" type="button">部屋から出る</button>
         </div>
         <div id="roomChatToast" class="room-chat-toast" aria-live="polite"></div>
         <section id="chatSheet" class="room-chat-sheet" aria-hidden="true" aria-label="この客室の会話">
@@ -305,6 +334,30 @@
           <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
           <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
           <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
+        </section>
+        <section id="roomServiceSheet" class="room-service-sheet" aria-hidden="true" aria-label="ルームサービス">
+          <div class="chat-sheet-handle"></div>
+          <div class="service-sheet-head"><h3>ROOM SERVICE</h3><button id="roomServiceClose" class="service-sheet-close" type="button" aria-label="ルームサービスを閉じる">⌄</button></div>
+          <div class="service-body">
+            <div id="roomServiceMeta" class="service-room-meta"></div>
+            <div class="service-section-title">お食事</div>
+            <div class="service-menu">
+              <div class="service-item" data-service-item="クラブサンド"><div><strong>クラブサンド</strong><small>サンドイッチと軽食のセット</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="シーフードパスタ"><div><strong>シーフードパスタ</strong><small>魚介を使ったパスタ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="チキン＆ライス"><div><strong>チキン＆ライス</strong><small>温かいメインディッシュ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="フルーツプレート"><div><strong>フルーツプレート</strong><small>季節のフルーツ盛り合わせ</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+            </div>
+            <div class="service-section-title">お飲み物</div>
+            <div class="service-menu">
+              <div class="service-item" data-service-item="コーヒー"><div><strong>コーヒー</strong><small>HOT / ICE</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="紅茶"><div><strong>紅茶</strong><small>HOT / ICE</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="オレンジジュース"><div><strong>オレンジジュース</strong><small>CHILLED</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+              <div class="service-item" data-service-item="ミネラルウォーター"><div><strong>ミネラルウォーター</strong><small>STILL WATER</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
+            </div>
+            <div class="service-cart"><div class="service-cart-title">ご注文内容</div><div id="roomServiceCartList" class="service-cart-list">商品をお選びください。</div><button id="roomServiceOrder" class="service-order-btn" type="button" disabled>この内容で注文する</button><div id="roomServiceResult" class="service-result hidden" aria-live="polite"></div></div>
+            <div class="service-section-title">この客室の注文履歴</div>
+            <div id="roomServiceHistory" class="service-history"></div>
+          </div>
         </section>
       </div>
     </div>
@@ -574,6 +627,10 @@
     const roomSceneButtons=[...document.querySelectorAll('[data-room-scene]')], chatSheet=document.getElementById('chatSheet');
     const chatUnread=document.getElementById('chatUnread'), roomChatToast=document.getElementById('roomChatToast');
     const roomFallback=document.getElementById('roomFallback');
+    const roomServiceSheet=document.getElementById('roomServiceSheet'), roomServiceMeta=document.getElementById('roomServiceMeta');
+    const roomServiceCartList=document.getElementById('roomServiceCartList'), roomServiceOrder=document.getElementById('roomServiceOrder');
+    const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
+    let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
       window:['Deluxe_Ocean_Window.jpg','Deluxe_Ocean_Window_Sunset.jpg','Deluxe_Ocean_Window_Night.jpg'],
@@ -607,7 +664,7 @@
         desk:[[36,54],[36,54],[36,54]],
         phone:[[64,54],[64,54],[64,54]],
         closet:[[50,50],[50,50],[50,50]],
-        bathroom:[[44,50],[44,50],[44,50]]
+        bathroom:[[28,50],[28,50],[28,50]]
       }
     };
     function roomVisualConfig(room){
@@ -654,7 +711,7 @@
     document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
     roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
     roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
-    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
+    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
     roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
@@ -668,12 +725,44 @@
       chatLog.scrollTop=chatLog.scrollHeight;
     }
     function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
-    function openChatSheet(){roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
+    function openChatSheet(){closeRoomService();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
     function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
+    function roomServiceOrders(){try{return JSON.parse(localStorage.getItem(`spr-roomservice-${activeRoom}`)||'[]')}catch{return []}}
+    function renderRoomServiceCart(){
+      const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
+      roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
+      roomServiceOrder.disabled=!selected.length;
+      document.querySelectorAll('[data-service-item]').forEach(item=>{const name=item.dataset.serviceItem;item.querySelector('[data-service-qty]').textContent=String(roomServiceCart[name]||0)});
+    }
+    function renderRoomServiceHistory(){
+      roomServiceHistory.replaceChildren();const orders=roomServiceOrders();
+      if(!orders.length){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty);return}
+      orders.slice(-5).reverse().forEach(order=>{const item=document.createElement('div');item.className='service-history-item';const lines=order.items.map(v=>`${v.name} × ${v.qty}`).join(' ／ ');item.innerHTML=`<strong>${order.time}</strong><br>${lines}<br><small>注文番号 ${order.id}</small>`;roomServiceHistory.append(item)});
+    }
+    function openRoomService(){
+      if(!activeRoom)return;closeChatSheet();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');
+      roomServiceMeta.textContent=`${activeRoom}号室　／　${activeGuest}様`;roomServiceResult.classList.add('hidden');roomServiceResult.textContent='';
+      renderRoomServiceCart();renderRoomServiceHistory();roomServiceSheet.classList.add('open');roomServiceSheet.setAttribute('aria-hidden','false');
+    }
+    function closeRoomService(){roomServiceSheet.classList.remove('open');roomServiceSheet.setAttribute('aria-hidden','true')}
     function showChatToast(message){if(!message)return;clearTimeout(toastTimer);roomChatToast.textContent=`${message.name}「${message.text.slice(0,52)}${message.text.length>52?'…':''}」`;roomChatToast.classList.add('show');toastTimer=setTimeout(()=>roomChatToast.classList.remove('show'),4200)}
     document.getElementById('chatOpenButton').addEventListener('click',openChatSheet);
     document.getElementById('fallbackChatOpen').addEventListener('click',openChatSheet);
     document.getElementById('chatCloseButton').addEventListener('click',closeChatSheet);
+    document.getElementById('roomServiceOpen').addEventListener('click',openRoomService);
+    document.getElementById('fallbackRoomServiceOpen').addEventListener('click',openRoomService);
+    document.getElementById('roomServiceClose').addEventListener('click',closeRoomService);
+    document.querySelectorAll('[data-service-item]').forEach(item=>{
+      const name=item.dataset.serviceItem;roomServiceCart[name]=0;
+      item.querySelector('[data-service-minus]').addEventListener('click',()=>{roomServiceCart[name]=Math.max(0,(roomServiceCart[name]||0)-1);renderRoomServiceCart()});
+      item.querySelector('[data-service-plus]').addEventListener('click',()=>{roomServiceCart[name]=Math.min(9,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
+    });
+    roomServiceOrder.addEventListener('click',()=>{
+      if(!activeRoom)return;const items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
+      const now=new Date();const order={id:String(Date.now()).slice(-6),room:activeRoom,guest:activeGuest,items,time:now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
+      const orders=roomServiceOrders();orders.push(order);localStorage.setItem(`spr-roomservice-${activeRoom}`,JSON.stringify(orders.slice(-20)));
+      Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();renderRoomServiceHistory();roomServiceResult.textContent=`${activeRoom}号室のご注文を承りました。注文番号 ${order.id}`;roomServiceResult.classList.remove('hidden');
+    });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
     chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
@@ -688,7 +777,7 @@
       document.getElementById('fallbackRoomName').textContent=`${room}号室　／　${roomTypes[room]}`;
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
-      closeChatSheet();unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
+      closeChatSheet();closeRoomService();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
     });
     document.getElementById('chatForm').addEventListener('submit',event=>{
@@ -696,7 +785,7 @@
       const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
       localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
     });
-    function leaveActiveRoom(){closeChatSheet();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';closeView(roomView)}
+    function leaveActiveRoom(){closeChatSheet();closeRoomService();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}});
@@ -710,7 +799,7 @@
       gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
       galleries[name]=show;
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
   </script>
 </body>
 </html>
