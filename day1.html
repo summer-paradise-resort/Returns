@@ -106,7 +106,26 @@
     .action-panel button:disabled,.bet-panel button:disabled{opacity:.35;cursor:default}
     .casino-refill{width:100%;margin-top:10px;color:#f0d89d}
     .casino-note{text-align:center;font-size:10px;line-height:1.7;color:rgba(255,255,255,.58);padding:0 12px}
-    @media(max-width:520px){.casino-game-head{grid-template-columns:50px 1fr auto;padding-left:9px;padding-right:9px}.casino-game-title strong{font-size:13px}.blackjack-wrap{padding:12px 9px max(20px,env(safe-area-inset-bottom))}.casino-table{min-height:465px;border-radius:34% 34% 22px 22px / 13% 13% 22px 22px;padding:20px 10px 14px}.playing-card{width:54px;height:78px;font-size:16px}.playing-card .suit{font-size:23px}.cards-hand{min-height:82px}.action-panel{gap:6px}.action-panel button{font-size:12px}.casino-balance{min-width:78px}}
+    .casino-screen{width:min(760px,100%);min-height:calc(100dvh - 64px);margin:auto;padding:28px 16px max(30px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:18px}
+    .casino-screen-title{text-align:center;margin:0;font:24px Georgia,serif;letter-spacing:.14em;font-weight:400;color:#f0d89d}
+    .casino-screen-sub{text-align:center;margin:0;color:rgba(255,255,255,.72);font-size:12px;line-height:1.9;letter-spacing:.05em}
+    .casino-hub-grid,.casino-game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .casino-menu-card{min-height:170px;padding:22px 16px;border:1px solid rgba(221,191,119,.42);background:linear-gradient(145deg,rgba(21,54,77,.88),rgba(5,24,39,.92));color:#fff;text-align:center;box-shadow:0 14px 30px rgba(0,0,0,.24)}
+    .casino-menu-card strong{display:block;font:18px Georgia,serif;letter-spacing:.14em;color:#f1d99d;font-weight:400;margin-bottom:10px}
+    .casino-menu-card span{display:block;font-size:12px;line-height:1.8;color:rgba(255,255,255,.74)}
+    .casino-menu-card small{display:block;margin-top:14px;font:10px Georgia,serif;letter-spacing:.16em;color:#d7bc79}
+    .casino-prize-box{padding:26px 20px;border:1px solid rgba(221,191,119,.38);background:rgba(4,17,28,.82);text-align:center}
+    .casino-prize-box .prize-chips{font:11px Georgia,serif;letter-spacing:.18em;color:#d8bd79}
+    .casino-prize-box .prize-chips b{display:block;margin:8px 0 18px;font-size:30px;color:#fff;font-weight:400}
+    .casino-prize-box p{margin:0;color:rgba(255,255,255,.7);font-size:12px;line-height:1.9}
+    .casino-return{min-height:48px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;letter-spacing:.1em}
+    .hilo-wrap{width:min(760px,100%);min-height:calc(100dvh - 64px);margin:auto;padding:18px 14px max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+    .hilo-table{grid-template-rows:auto 1fr auto}
+    .hilo-versus{font:11px Georgia,serif;letter-spacing:.16em;color:#ead29a;text-align:center;margin:2px 0 6px}
+    .hilo-action-panel{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:13px;background:rgba(4,17,28,.86);border:1px solid rgba(221,191,119,.24);backdrop-filter:blur(8px)}
+    .hilo-action-panel button{min-height:52px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;font:14px Georgia,serif;letter-spacing:.12em}
+    .hilo-action-panel button:disabled{opacity:.35;cursor:default}
+    @media(max-width:520px){.casino-game-head{grid-template-columns:50px 1fr auto;padding-left:9px;padding-right:9px}.casino-game-title strong{font-size:13px}.blackjack-wrap,.hilo-wrap{padding:12px 9px max(20px,env(safe-area-inset-bottom))}.casino-hub-grid,.casino-game-grid{grid-template-columns:1fr}.casino-menu-card{min-height:130px}.casino-table{min-height:465px;border-radius:34% 34% 22px 22px / 13% 13% 22px 22px;padding:20px 10px 14px}.playing-card{width:54px;height:78px;font-size:16px}.playing-card .suit{font-size:23px}.cards-hand{min-height:82px}.action-panel{gap:6px}.action-panel button{font-size:12px}.casino-balance{min-width:78px}}
     .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
     .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
     .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
@@ -318,30 +337,51 @@
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
     <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
-    <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ブラックジャックのテーブルは、お一人でもすぐにお楽しみいただけます。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>BLACKJACK</h3><p>CPUディーラーとのブラックジャックです。<br>チップを賭けて、21に近づけてください。</p><button id="casinoEnter" class="casino-enter" type="button">テーブルに着く　›</button></div></div>
+    <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
+      <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="auto"></audio>
       <div class="casino-game-head">
-        <button id="casinoExit" class="casino-exit" type="button" aria-label="カジノロビーへ戻る">←</button>
-        <div class="casino-game-title"><strong>BLACKJACK</strong><small>CASINO BLUE SHELL</small></div>
+        <button id="casinoExit" class="casino-exit" type="button" aria-label="ひとつ前へ戻る">←</button>
+        <div class="casino-game-title"><strong id="casinoHeaderTitle">CASINO BLUE SHELL</strong><small id="casinoHeaderSub">CASINO FLOOR</small></div>
         <div class="casino-balance">YOUR CHIPS<b id="casinoChips">1,000</b></div>
       </div>
-      <div class="blackjack-wrap">
+
+      <div id="casinoHub" class="casino-screen">
+        <h2 class="casino-screen-title">CASINO BLUE SHELL</h2>
+        <p class="casino-screen-sub">ご希望の場所をお選びください。</p>
+        <div class="casino-hub-grid">
+          <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
+          <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
+        </div>
+        <div class="casino-note">カジノ滞在中はBGMが流れます。ブラウザの音量設定をご確認ください。</div>
+      </div>
+
+      <div id="casinoGameSelect" class="casino-screen hidden">
+        <h2 class="casino-screen-title">GAME TABLES</h2>
+        <p class="casino-screen-sub">遊ぶゲームをお選びください。</p>
+        <div class="casino-game-grid">
+          <button class="casino-menu-card" type="button" data-casino-game="blackjack"><strong>BLACKJACK</strong><span>21を超えないように、ディーラーより21へ近づけます。</span><small>PLAY BLACKJACK　›</small></button>
+          <button class="casino-menu-card" type="button" data-casino-game="hilo"><strong>HIGH &amp; LOW</strong><span>次のカードが高いか低いかを予想します。</span><small>PLAY HIGH &amp; LOW　›</small></button>
+        </div>
+        <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
+      </div>
+
+      <div id="casinoPrize" class="casino-screen hidden">
+        <h2 class="casino-screen-title">PRIZE COUNTER</h2>
+        <p class="casino-screen-sub">景品交換所</p>
+        <div class="casino-prize-box">
+          <div class="prize-chips">YOUR CHIPS<b id="prizeChips">1,000</b></div>
+          <p>景品のラインナップは準備中です。<br>獲得したチップはそのまま保存されます。</p>
+        </div>
+        <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
+      </div>
+
+      <div id="blackjackScreen" class="blackjack-wrap hidden">
         <div class="casino-table">
-          <div class="hand-zone dealer-zone">
-            <h3>DEALER</h3>
-            <div id="dealerScore" class="hand-score"></div>
-            <div id="dealerHand" class="cards-hand"></div>
-          </div>
-          <div class="casino-center">
-            <div id="casinoStatus" class="casino-status">BETを決めて、カードを配ってください。</div>
-            <div id="casinoBetIndicator" class="casino-bet-indicator">BET 100</div>
-          </div>
-          <div class="hand-zone player-zone">
-            <h3>YOU</h3>
-            <div id="playerScore" class="hand-score"></div>
-            <div id="playerHand" class="cards-hand"></div>
-          </div>
+          <div class="hand-zone"><h3>DEALER</h3><div id="dealerScore" class="hand-score"></div><div id="dealerHand" class="cards-hand"></div></div>
+          <div class="casino-center"><div id="casinoStatus" class="casino-status">BETを決めて、カードを配ってください。</div><div id="casinoBetIndicator" class="casino-bet-indicator">BET 100</div></div>
+          <div class="hand-zone"><h3>YOU</h3><div id="playerScore" class="hand-score"></div><div id="playerHand" class="cards-hand"></div></div>
         </div>
         <div class="casino-controls">
           <div id="betPanel" class="bet-panel">
@@ -350,13 +390,29 @@
             <button id="dealButton" class="deal-button" type="button">DEAL</button>
             <button id="casinoRefill" class="casino-refill hidden" type="button">1,000 CHIPを受け取る</button>
           </div>
-          <div id="actionPanel" class="action-panel hidden">
-            <button id="hitButton" type="button">HIT</button>
-            <button id="standButton" type="button">STAND</button>
-            <button id="doubleButton" type="button">DOUBLE</button>
-          </div>
+          <div id="actionPanel" class="action-panel hidden"><button id="hitButton" type="button">HIT</button><button id="standButton" type="button">STAND</button><button id="doubleButton" type="button">DOUBLE</button></div>
         </div>
+        <button class="casino-return" type="button" data-casino-return="games">ゲームを選び直す</button>
         <div class="casino-note">ゲーム内チップのみを使用します。実際のお金・換金機能はありません。</div>
+      </div>
+
+      <div id="hiloScreen" class="hilo-wrap hidden">
+        <div class="casino-table hilo-table">
+          <div class="hand-zone"><h3>CURRENT CARD</h3><div id="hiloCurrentScore" class="hand-score"></div><div id="hiloCurrentCard" class="cards-hand"></div></div>
+          <div class="casino-center"><div id="hiloStatus" class="casino-status">BETを決めて、STARTを押してください。</div><div id="hiloBetIndicator" class="casino-bet-indicator">BET 100</div></div>
+          <div class="hand-zone"><h3>NEXT CARD</h3><div class="hilo-versus">HIGH OR LOW ?</div><div id="hiloNextCard" class="cards-hand"></div></div>
+        </div>
+        <div class="casino-controls">
+          <div id="hiloBetPanel" class="bet-panel">
+            <div class="bet-row"><button id="hiloBetMinus" type="button">−</button><div class="bet-amount">BET<strong id="hiloBetAmount">100</strong></div><button id="hiloBetPlus" type="button">＋</button></div>
+            <div class="bet-quick"><button type="button" data-hilo-bet="50">50</button><button type="button" data-hilo-bet="100">100</button><button type="button" data-hilo-bet="500">500</button></div>
+            <button id="hiloStart" class="deal-button" type="button">START</button>
+            <button id="hiloRefill" class="casino-refill hidden" type="button">1,000 CHIPを受け取る</button>
+          </div>
+          <div id="hiloActionPanel" class="hilo-action-panel hidden"><button id="hiloHigh" type="button">HIGH</button><button id="hiloLow" type="button">LOW</button></div>
+        </div>
+        <button class="casino-return" type="button" data-casino-return="games">ゲームを選び直す</button>
+        <div class="casino-note">同じ数字が出た場合は引き分けとなり、BETしたチップが戻ります。</div>
       </div>
     </section>
   </section>
@@ -364,40 +420,82 @@
   <script>
     const views = [...document.querySelectorAll('.subview')];
     function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
-    function closeView(view){view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
 
-    // CASINO BLUE SHELL / BLACKJACK
+    // CASINO BLUE SHELL / LOBBY + BLACKJACK + HIGH & LOW
     const casinoGame=document.getElementById('casinoGame');
     const casinoEnter=document.getElementById('casinoEnter'), casinoExit=document.getElementById('casinoExit');
-    const casinoChipsEl=document.getElementById('casinoChips'), betAmountEl=document.getElementById('betAmount'), casinoBetIndicator=document.getElementById('casinoBetIndicator');
+    const casinoBgm=document.getElementById('casinoBgm');
+    const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize');
+    const blackjackScreen=document.getElementById('blackjackScreen'), hiloScreen=document.getElementById('hiloScreen');
+    const casinoHeaderTitle=document.getElementById('casinoHeaderTitle'), casinoHeaderSub=document.getElementById('casinoHeaderSub');
+    const casinoTableMenu=document.getElementById('casinoTableMenu'), casinoPrizeMenu=document.getElementById('casinoPrizeMenu');
+    const casinoChipsEl=document.getElementById('casinoChips'), prizeChips=document.getElementById('prizeChips');
+    const betAmountEl=document.getElementById('betAmount'), casinoBetIndicator=document.getElementById('casinoBetIndicator');
     const dealerHandEl=document.getElementById('dealerHand'), playerHandEl=document.getElementById('playerHand');
     const dealerScoreEl=document.getElementById('dealerScore'), playerScoreEl=document.getElementById('playerScore'), casinoStatus=document.getElementById('casinoStatus');
     const betPanel=document.getElementById('betPanel'), actionPanel=document.getElementById('actionPanel');
     const betMinus=document.getElementById('betMinus'), betPlus=document.getElementById('betPlus'), dealButton=document.getElementById('dealButton');
     const hitButton=document.getElementById('hitButton'), standButton=document.getElementById('standButton'), doubleButton=document.getElementById('doubleButton'), casinoRefill=document.getElementById('casinoRefill');
+    const hiloBetAmountEl=document.getElementById('hiloBetAmount'), hiloBetIndicator=document.getElementById('hiloBetIndicator');
+    const hiloCurrentCard=document.getElementById('hiloCurrentCard'), hiloNextCard=document.getElementById('hiloNextCard'), hiloStatus=document.getElementById('hiloStatus');
+    const hiloBetPanel=document.getElementById('hiloBetPanel'), hiloActionPanel=document.getElementById('hiloActionPanel');
+    const hiloBetMinus=document.getElementById('hiloBetMinus'), hiloBetPlus=document.getElementById('hiloBetPlus'), hiloStart=document.getElementById('hiloStart');
+    const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill');
+
     let casinoChips=Number(localStorage.getItem('spr-casino-chips')||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
+    let casinoLevel='hub';
     let blackjackBet=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
+    let hiloBet=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
     function casinoSave(){localStorage.setItem('spr-casino-chips',String(casinoChips))}
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
+    function syncCasinoBalances(){casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips)}
+    function startCasinoMusic(){casinoBgm.volume=.38;const promise=casinoBgm.play();if(promise&&promise.catch)promise.catch(()=>{})}
+    function stopCasinoMusic(){casinoBgm.pause();casinoBgm.currentTime=0}
+    function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
+    function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
+    function showCasinoLevel(level){
+      hideCasinoScreens();casinoLevel=level;syncCasinoBalances();
+      if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
+      else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
+      else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL')}
+      else if(level==='blackjack'){blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK','CASINO BLUE SHELL');updateCasinoHud();renderBlackjack()}
+      else if(level==='hilo'){hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','CASINO BLUE SHELL');updateHiloHud();renderHilo()}
+    }
+    function cancelActiveCasinoRound(){
+      if(bjActive){casinoChips+=blackjackBet;bjActive=false;dealerHidden=false;actionPanel.classList.add('hidden');betPanel.classList.remove('hidden');setCasinoStatus('ラウンドを終了しました。BETは返却されました。')}
+      if(hiloActive){casinoChips+=hiloBet;hiloActive=false;hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.remove('hidden');hiloStatus.textContent='ラウンドを終了しました。BETは返却されました。'}
+      casinoChips=Math.round(casinoChips);casinoSave();syncCasinoBalances();
+    }
+    function exitCasinoExperience(){cancelActiveCasinoRound();casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');stopCasinoMusic();document.body.style.overflow='hidden'}
+    function casinoBack(){
+      if(casinoLevel==='hub'){exitCasinoExperience();return}
+      if(casinoLevel==='games'||casinoLevel==='prize'){showCasinoLevel('hub');return}
+      if(casinoLevel==='blackjack'||casinoLevel==='hilo'){cancelActiveCasinoRound();showCasinoLevel('games')}
+    }
+
     function updateCasinoHud(){
-      casinoChipsEl.textContent=casinoMoney(casinoChips);betAmountEl.textContent=casinoMoney(blackjackBet);casinoBetIndicator.textContent=`BET ${casinoMoney(blackjackBet)}`;
+      syncCasinoBalances();betAmountEl.textContent=casinoMoney(blackjackBet);casinoBetIndicator.textContent=`BET ${casinoMoney(blackjackBet)}`;
       const disabled=bjActive;betMinus.disabled=disabled;betPlus.disabled=disabled;document.querySelectorAll('[data-bet]').forEach(b=>b.disabled=disabled);dealButton.disabled=disabled||casinoChips<10;
       casinoRefill.classList.toggle('hidden',casinoChips>=10||bjActive);
       if(blackjackBet>Math.max(10,casinoChips)&&!bjActive)blackjackBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
     }
     function makeBjDeck(){const deck=[];for(let d=0;d<4;d++)for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
+    function makeSingleDeck(){const deck=[];for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
     function bjValue(hand){let total=0,aces=0;for(const card of hand){if(card.rank==='A'){total+=11;aces++}else if(['J','Q','K'].includes(card.rank))total+=10;else total+=Number(card.rank)}while(total>21&&aces){total-=10;aces--}return total}
+    function rankValue(rank){return rank==='A'?1:rank==='J'?11:rank==='Q'?12:rank==='K'?13:Number(rank)}
     function cardHtml(card,hidden=false){if(hidden)return '<div class="playing-card back" aria-label="伏せ札"></div>';const red=card.suit==='♥'||card.suit==='♦';return `<div class="playing-card${red?' red':''}" aria-label="${card.rank}${card.suit}"><span>${card.rank}${card.suit}</span><span class="suit">${card.suit}</span><span class="rank-bottom">${card.rank}${card.suit}</span></div>`}
+
     function renderBlackjack(){
       dealerHandEl.innerHTML=dealerHand.map((c,i)=>cardHtml(c,dealerHidden&&i===1)).join('');playerHandEl.innerHTML=playerHand.map(c=>cardHtml(c)).join('');
       playerScoreEl.textContent=playerHand.length?`TOTAL ${bjValue(playerHand)}`:'';
       dealerScoreEl.textContent=dealerHand.length?(dealerHidden?`SHOW ${dealerHand[0].rank}${dealerHand[0].suit}`:`TOTAL ${bjValue(dealerHand)}`):'';
-      doubleButton.disabled=!bjActive||playerHand.length!==2||casinoChips<blackjackBet;
-      updateCasinoHud();
+      doubleButton.disabled=!bjActive||playerHand.length!==2||casinoChips<blackjackBet;updateCasinoHud();
     }
     function setCasinoStatus(text){casinoStatus.textContent=text}
     function finishRound(result){
@@ -408,30 +506,58 @@
       else setCasinoStatus(`LOSE　−${casinoMoney(blackjackBet)} CHIP`);
       casinoChips=Math.round(casinoChips);casinoSave();actionPanel.classList.add('hidden');betPanel.classList.remove('hidden');renderBlackjack();
     }
-    function dealerTurn(){
-      dealerHidden=false;renderBlackjack();
-      while(bjValue(dealerHand)<17)dealerHand.push(bjDeck.pop());
-      const p=bjValue(playerHand),d=bjValue(dealerHand);
-      if(d>21||p>d)finishRound('win');else if(p===d)finishRound('push');else finishRound('lose');
-    }
+    function dealerTurn(){dealerHidden=false;renderBlackjack();while(bjValue(dealerHand)<17)dealerHand.push(bjDeck.pop());const p=bjValue(playerHand),d=bjValue(dealerHand);if(d>21||p>d)finishRound('win');else if(p===d)finishRound('push');else finishRound('lose')}
     function startBlackjack(){
       if(bjActive||casinoChips<10)return;blackjackBet=Math.min(blackjackBet,Math.floor(casinoChips/10)*10);if(blackjackBet<10)return;
       casinoChips-=blackjackBet;casinoSave();bjDeck=makeBjDeck();playerHand=[bjDeck.pop(),bjDeck.pop()];dealerHand=[bjDeck.pop(),bjDeck.pop()];bjActive=true;dealerHidden=true;
       betPanel.classList.add('hidden');actionPanel.classList.remove('hidden');setCasinoStatus('HIT または STAND を選んでください。');renderBlackjack();
-      const p=bjValue(playerHand),d=bjValue(dealerHand);
-      if(p===21){dealerHidden=false;renderBlackjack();if(d===21)finishRound('push');else finishRound('blackjack')}
+      const p=bjValue(playerHand),d=bjValue(dealerHand);if(p===21){dealerHidden=false;renderBlackjack();if(d===21)finishRound('push');else finishRound('blackjack')}
     }
     function adjustBet(amount){if(bjActive)return;blackjackBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),blackjackBet+amount));updateCasinoHud()}
     function setBet(value){if(bjActive)return;blackjackBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),value));updateCasinoHud()}
-    casinoEnter.addEventListener('click',()=>{casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';updateCasinoHud();renderBlackjack()});
-    casinoExit.addEventListener('click',()=>{casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true')});
+
+    function updateHiloHud(){
+      syncCasinoBalances();hiloBetAmountEl.textContent=casinoMoney(hiloBet);hiloBetIndicator.textContent=`BET ${casinoMoney(hiloBet)}`;
+      const disabled=hiloActive;hiloBetMinus.disabled=disabled;hiloBetPlus.disabled=disabled;document.querySelectorAll('[data-hilo-bet]').forEach(b=>b.disabled=disabled);hiloStart.disabled=disabled||casinoChips<10;
+      hiloRefill.classList.toggle('hidden',casinoChips>=10||hiloActive);
+      if(hiloBet>Math.max(10,casinoChips)&&!hiloActive)hiloBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
+    }
+    function renderHilo(){
+      hiloCurrentCard.innerHTML=hiloFirst?cardHtml(hiloFirst):'';hiloNextCard.innerHTML=hiloSecond?cardHtml(hiloSecond):'';updateHiloHud();
+    }
+    function adjustHiloBet(amount){if(hiloActive)return;hiloBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),hiloBet+amount));updateHiloHud()}
+    function setHiloBet(value){if(hiloActive)return;hiloBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),value));updateHiloHud()}
+    function startHilo(){
+      if(hiloActive||casinoChips<10)return;hiloBet=Math.min(hiloBet,Math.floor(casinoChips/10)*10);if(hiloBet<10)return;
+      casinoChips-=hiloBet;casinoSave();hiloDeck=makeSingleDeck();hiloFirst=hiloDeck.pop();hiloSecond=null;hiloActive=true;
+      hiloBetPanel.classList.add('hidden');hiloActionPanel.classList.remove('hidden');hiloStatus.textContent='次のカードは HIGH？ LOW？';renderHilo();
+    }
+    function chooseHilo(choice){
+      if(!hiloActive)return;hiloSecond=hiloDeck.pop();const first=rankValue(hiloFirst.rank),second=rankValue(hiloSecond.rank);
+      hiloActive=false;
+      if(second===first){casinoChips+=hiloBet;hiloStatus.textContent='DRAW　同じ数字です。BETを返却します。'}
+      else{const correct=choice==='high'?second>first:second<first;if(correct){casinoChips+=hiloBet*2;hiloStatus.textContent=`WIN　＋${casinoMoney(hiloBet)} CHIP`}else hiloStatus.textContent=`LOSE　−${casinoMoney(hiloBet)} CHIP`}
+      casinoChips=Math.round(casinoChips);casinoSave();hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.remove('hidden');renderHilo();
+    }
+
+    casinoEnter.addEventListener('click',()=>{casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showCasinoLevel('hub');startCasinoMusic()});
+    casinoExit.addEventListener('click',casinoBack);
+    casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
+    casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
+    document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>showCasinoLevel(button.dataset.casinoGame)));
+    document.querySelectorAll('[data-casino-return]').forEach(button=>button.addEventListener('click',()=>{cancelActiveCasinoRound();showCasinoLevel(button.dataset.casinoReturn)}));
+
     betMinus.addEventListener('click',()=>adjustBet(-10));betPlus.addEventListener('click',()=>adjustBet(10));document.querySelectorAll('[data-bet]').forEach(button=>button.addEventListener('click',()=>setBet(Number(button.dataset.bet))));
     dealButton.addEventListener('click',startBlackjack);
     hitButton.addEventListener('click',()=>{if(!bjActive)return;playerHand.push(bjDeck.pop());renderBlackjack();const value=bjValue(playerHand);if(value>21)finishRound('lose');else if(value===21)dealerTurn()});
     standButton.addEventListener('click',()=>{if(bjActive)dealerTurn()});
     doubleButton.addEventListener('click',()=>{if(!bjActive||playerHand.length!==2||casinoChips<blackjackBet)return;casinoChips-=blackjackBet;blackjackBet*=2;casinoSave();playerHand.push(bjDeck.pop());renderBlackjack();if(bjValue(playerHand)>21)finishRound('lose');else dealerTurn()});
     casinoRefill.addEventListener('click',()=>{if(bjActive)return;casinoChips=1000;blackjackBet=100;casinoSave();setCasinoStatus('1,000 CHIPをご用意しました。');updateCasinoHud()});
-    updateCasinoHud();
+
+    hiloBetMinus.addEventListener('click',()=>adjustHiloBet(-10));hiloBetPlus.addEventListener('click',()=>adjustHiloBet(10));document.querySelectorAll('[data-hilo-bet]').forEach(button=>button.addEventListener('click',()=>setHiloBet(Number(button.dataset.hiloBet))));
+    hiloStart.addEventListener('click',startHilo);hiloHigh.addEventListener('click',()=>chooseHilo('high'));hiloLow.addEventListener('click',()=>chooseHilo('low'));
+    hiloRefill.addEventListener('click',()=>{if(hiloActive)return;casinoChips=1000;hiloBet=100;casinoSave();hiloStatus.textContent='1,000 CHIPをご用意しました。';updateHiloHud()});
+    syncCasinoBalances();updateCasinoHud();updateHiloHud();
 
     const roomTypes={
       101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
