@@ -126,6 +126,20 @@
     .hilo-action-panel button{min-height:52px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;font:14px Georgia,serif;letter-spacing:.12em}
     .hilo-action-panel button:disabled{opacity:.35;cursor:default}
     @media(max-width:520px){.casino-game-head{grid-template-columns:50px 1fr auto;padding-left:9px;padding-right:9px}.casino-game-title strong{font-size:13px}.blackjack-wrap,.hilo-wrap{padding:12px 9px max(20px,env(safe-area-inset-bottom))}.casino-hub-grid,.casino-game-grid{grid-template-columns:1fr}.casino-menu-card{min-height:130px}.casino-table{min-height:465px;border-radius:34% 34% 22px 22px / 13% 13% 22px 22px;padding:20px 10px 14px}.playing-card{width:54px;height:78px;font-size:16px}.playing-card .suit{font-size:23px}.cards-hand{min-height:82px}.action-panel{gap:6px}.action-panel button{font-size:12px}.casino-balance{min-width:78px}}
+    .resort-ticker{max-width:980px;margin:-8px auto 25px;border-top:1px solid rgba(168,123,47,.32);border-bottom:1px solid rgba(168,123,47,.32);background:#fff;display:grid;grid-template-columns:auto 1fr;align-items:center;min-height:38px;overflow:hidden;transition:.25s}
+    .ticker-label{align-self:stretch;display:flex;align-items:center;padding:0 11px;background:var(--navy);color:#fff;font:9px Georgia,serif;letter-spacing:.15em;white-space:nowrap}
+    .ticker-window{min-width:0;overflow:hidden;white-space:nowrap}
+    .ticker-track{display:inline-flex;width:max-content;align-items:center;animation:resortTicker 34s linear infinite;will-change:transform}
+    .ticker-copy{display:inline-block;padding-right:70px;font-size:11px;letter-spacing:.075em;color:#4c5661}
+    .resort-ticker.alert{border-color:rgba(166,37,31,.48);background:#fff7f6}
+    .resort-ticker.alert .ticker-label{background:#a6251f}
+    .resort-ticker.alert .ticker-copy{color:#a6251f;font-weight:700}
+    @keyframes resortTicker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .global-special-notice{position:fixed;z-index:95;left:0;right:0;top:72px;height:38px;display:grid;grid-template-columns:auto 1fr;align-items:center;background:#fff7f6;border-top:1px solid #bf4b45;border-bottom:1px solid #bf4b45;box-shadow:0 5px 18px rgba(52,12,10,.13);color:#a6251f}
+    .global-special-notice .ticker-label{background:#a6251f}
+    .global-special-notice .ticker-track{animation-duration:25s}
+    @media(max-width:520px){.resort-ticker{margin-top:-3px}.ticker-label{padding:0 8px;font-size:8px;letter-spacing:.1em}.ticker-copy{font-size:10px;padding-right:48px}.global-special-notice{top:64px}}
+    @media(prefers-reduced-motion:reduce){.ticker-track{animation:none}.ticker-window{overflow-x:auto}.ticker-copy{padding-right:28px}}
     .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
     .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
     .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
@@ -237,6 +251,10 @@
     <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
     <a class="home-link" href="index.html">RESORT TOP　↗</a>
   </header>
+  <div id="globalSpecialNotice" class="global-special-notice hidden" role="status" aria-live="assertive">
+    <div class="ticker-label">SPECIAL TABLE</div>
+    <div class="ticker-window"><div id="globalSpecialTrack" class="ticker-track"></div></div>
+  </div>
 
   <main id="day1Home">
     <section class="hero">
@@ -249,6 +267,10 @@
 
     <section class="section">
       <div class="section-head"><h2>館内の各施設</h2><p>YOUR STAY, YOUR STORY</p></div>
+      <div id="resortTicker" class="resort-ticker" aria-label="リゾートからのお知らせ">
+        <div class="ticker-label">RESORT INFO</div>
+        <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
+      </div>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -278,15 +300,14 @@
   <section class="subview" id="roomView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">YOUR PRIVATE ROOM</div><div></div></div>
     <div class="info"><h2>ROOM</h2><div class="jp">客室へ入る</div><div class="meta">ENTER YOUR ROOM NUMBER</div>
-      <p>ご宿泊の部屋番号を暗証番号として入力してください。同じ番号を入力した方は、同じ客室に入室できます。</p>
+      <p>セキュリティチェックでご宿泊者様の確認は完了しています。こちらでは部屋番号のみ入力してください。同じ番号を入力した方は、同じ客室に入室できます。</p>
       <div id="roomEntry" class="room-entry">
         <form id="roomEntryForm">
           <div class="field"><label for="roomPin">部屋番号（暗証番号）</label><input id="roomPin" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="例：101" required></div>
-          <div class="field"><label for="guestName">チャットで使うお名前</label><input id="guestName" maxlength="20" autocomplete="nickname" placeholder="お名前"></div>
           <button class="primary-btn" type="submit">客室に入る</button>
           <p id="roomError" class="room-error" aria-live="polite"></p>
         </form>
-        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜205：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
+        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜110：デラックスオーシャン<br>201〜205：ファミリー<br>301〜310：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
         <div id="roomScene" class="room-scene hidden">
@@ -471,11 +492,54 @@
   </section>
 
   <script>
+    // SECURITY CHECKで登録した名前をDay1全体で共有
+    const storedGuestName=(localStorage.getItem('spr-guest-name')||'').trim();
+    if(!storedGuestName){window.location.replace('security_check.html')}
+    const playerStorageId=encodeURIComponent(storedGuestName||'guest');
+    localStorage.setItem('spr-last-seen',String(Date.now()));
+
     const views = [...document.querySelectorAll('.subview')];
     function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
     function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+
+    // RESORT INFORMATION
+    // 今後、ここに「日付」「時間」「物語フラグ」の条件を追加すれば、不可思議なお知らせへ差し替えられます。
+    const resortTicker=document.getElementById('resortTicker'), resortTickerTrack=document.getElementById('resortTickerTrack');
+    const globalSpecialNotice=document.getElementById('globalSpecialNotice'), globalSpecialTrack=document.getElementById('globalSpecialTrack');
+    function tokyoDateLabel(){return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',month:'long',day:'numeric',weekday:'short'}).format(new Date())}
+    function tickerMarkup(message){
+      const safe=String(message).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      return `<span class="ticker-copy">${safe}</span><span class="ticker-copy" aria-hidden="true">${safe}</span>`
+    }
+    function setResortAnnouncement(message,{alert=false,global=false}={}){
+      resortTicker.classList.toggle('alert',alert);
+      resortTickerTrack.innerHTML=tickerMarkup(message);
+      if(global){globalSpecialTrack.innerHTML=tickerMarkup(message);globalSpecialNotice.classList.remove('hidden')}
+      else globalSpecialNotice.classList.add('hidden');
+    }
+    function normalResortAnnouncement(){
+      const date=tokyoDateLabel();
+      setResortAnnouncement(`${date}　｜　潮風の遊歩道、灯台、入り江など、島内の散策スポットをお楽しみください。　｜　レストラン・バー・カジノなど館内施設もご利用いただけます。`);
+    }
+    function activateSpecialTableAnnouncement(challenger=''){
+      const who=challenger?` 挑戦者：${challenger}。`:'';
+      const message=`SPECIAL GAME　｜　カジノ・ブルーシェルにスペシャルテーブルが出現しました。${who} 観客席よりご覧いただけます。`;
+      setResortAnnouncement(message,{alert:true,global:true});
+      localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message,createdAt:Date.now()}));
+    }
+    function restoreResortAnnouncement(){
+      try{
+        const saved=JSON.parse(localStorage.getItem('spr-resort-announcement')||'null');
+        if(saved&&saved.type==='special-table'&&Date.now()-Number(saved.createdAt||0)<30*60*1000){setResortAnnouncement(saved.message,{alert:true,global:true});return}
+      }catch{}
+      normalResortAnnouncement();
+    }
+    window.showSpecialTableAnnouncement=activateSpecialTableAnnouncement;
+    window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement()};
+    window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
+    restoreResortAnnouncement();
 
     // CASINO BLUE SHELL / LOBBY + BLACKJACK + HIGH & LOW
     const casinoGame=document.getElementById('casinoGame');
@@ -498,14 +562,24 @@
     const hiloBetMinus=document.getElementById('hiloBetMinus'), hiloBetPlus=document.getElementById('hiloBetPlus'), hiloStart=document.getElementById('hiloStart');
     const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill');
 
-    let casinoChips=Number(localStorage.getItem('spr-casino-chips')||1000);
+    const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
+    const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
+    let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
+    let previousCasinoChips=casinoChips;
     let casinoLevel='hub';
     let blackjackBet=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
     let hiloBet=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
-    function casinoSave(){localStorage.setItem('spr-casino-chips',String(casinoChips))}
+    function casinoSave(){
+      localStorage.setItem(casinoChipKey,String(casinoChips));
+      if(previousCasinoChips<20000&&casinoChips>=20000&&!localStorage.getItem(emilyAnnouncedKey)){
+        localStorage.setItem(emilyAnnouncedKey,'1');
+        activateSpecialTableAnnouncement(storedGuestName);
+      }
+      previousCasinoChips=casinoChips;
+    }
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
     function syncCasinoBalances(){casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips)}
     function startCasinoMusic(){casinoBgm.volume=.38;const promise=casinoBgm.play();if(promise&&promise.catch)promise.catch(()=>{})}
@@ -613,13 +687,13 @@
     syncCasinoBalances();updateCasinoHud();updateHiloHud();
 
     const roomTypes={
-      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
+      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',106:'デラックスオーシャン',107:'デラックスオーシャン',108:'デラックスオーシャン',109:'デラックスオーシャン',110:'デラックスオーシャン',
       201:'ファミリー',202:'ファミリー',203:'ファミリー',204:'ファミリー',205:'ファミリー',
-      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',
+      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',306:'オーシャンラグーン',307:'オーシャンラグーン',308:'オーシャンラグーン',309:'オーシャンラグーン',310:'オーシャンラグーン',
       401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
     };
-    let activeRoom='', activeGuest='ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
-    const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), guestName=document.getElementById('guestName'), roomError=document.getElementById('roomError');
+    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
+    const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), roomError=document.getElementById('roomError');
     const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
     const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto'), roomImageError=document.getElementById('roomImageError');
     const roomSceneNav=document.getElementById('roomSceneNav'), roomSceneMenuToggle=document.getElementById('roomSceneMenuToggle');
@@ -668,7 +742,7 @@
       }
     };
     function roomVisualConfig(room){
-      if(/^10[1-5]$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
+      if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
       if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
       return null;
     }
@@ -768,7 +842,7 @@
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
       event.preventDefault();const room=roomPin.value.trim();
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号を入力してください。';return;}
-      activeRoom=room;activeGuest=guestName.value.trim()||'ゲスト';roomError.textContent='';
+      activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
       const visualConfig=roomVisualConfig(room);
@@ -785,7 +859,7 @@
       const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
       localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
     });
-    function leaveActiveRoom(){closeChatSheet();closeRoomService();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';guestName.value='';closeView(roomView)}
+    function leaveActiveRoom(){closeChatSheet();closeRoomService();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}});
