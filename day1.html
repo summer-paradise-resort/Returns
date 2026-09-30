@@ -283,6 +283,19 @@
     .bar-order-result{margin-top:11px;padding:11px 12px;border:1px solid #d9c9a9;background:#fffaf0;color:#6b552d;font-size:11px;line-height:1.8;text-align:center}
     @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
 
+    /* BAR MENU LIGHTBOX */
+    .bar-menu-page{position:relative}
+    .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:pan-x;cursor:zoom-in}
+    .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
+    .bar-menu-hint strong{font-weight:500;color:var(--navy)}
+    .bar-menu-lightbox{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(2,10,18,.94);padding:56px 10px 22px;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s}
+    .bar-menu-lightbox.open{opacity:1;visibility:visible}
+    .bar-menu-lightbox-inner{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:auto;-webkit-overflow-scrolling:touch}
+    .bar-menu-lightbox img{display:block;width:auto;height:auto;max-width:96vw;max-height:calc(100% - 8px);object-fit:contain;box-shadow:0 18px 55px rgba(0,0,0,.42);touch-action:pinch-zoom}
+    .bar-menu-lightbox-close{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;z-index:2;width:44px;height:44px;border:1px solid rgba(255,255,255,.55);border-radius:50%;background:rgba(5,17,29,.72);color:#fff;font-size:25px;line-height:1;display:grid;place-items:center}
+    .bar-menu-lightbox-note{position:absolute;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2;color:rgba(255,255,255,.82);font-size:10px;letter-spacing:.08em;white-space:nowrap;text-shadow:0 1px 5px #000}
+
   </style>
 </head>
 <body>
@@ -456,15 +469,24 @@
         <div id="barPeriodCard" class="bar-period-card"></div>
         <div class="bar-menu-title">ORIGINAL DRINK MENU</div>
         <div class="bar-menu-pages" aria-label="シーサイドバーのメニュー表">
-          <figure class="bar-menu-page"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></figure>
-          <figure class="bar-menu-page"><img src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20"></figure>
+          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></button></figure>
+          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_02.jpg" aria-label="ドリンクメニュー 11〜20を拡大表示"><img src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20"></button></figure>
         </div>
-        <div class="bar-menu-hint">左右にスワイプしてメニュー表をご覧いただけます。</div>
+        <div class="bar-menu-hint">左右にスワイプしてメニュー表をご覧いただけます。<br><strong>メニュー表をタップすると拡大表示できます。</strong></div>
         <div id="barDrinkList" class="bar-drink-list"></div>
         <div class="bar-order-confirm-wrap"><div id="barSelection" class="bar-selection">ドリンクをお選びください。</div><button id="barOrderConfirm" class="bar-order-confirm" type="button" disabled>このドリンクを注文する</button><div id="barOrderResult" class="bar-order-result hidden" aria-live="polite"></div></div>
       </div>
     </section>
   </section>
+
+
+  <div id="barMenuLightbox" class="bar-menu-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="ドリンクメニュー拡大表示">
+    <button id="barMenuLightboxClose" class="bar-menu-lightbox-close" type="button" aria-label="拡大表示を閉じる">×</button>
+    <div class="bar-menu-lightbox-inner">
+      <img id="barMenuLightboxImage" src="" alt="拡大したシーサイドバーのドリンクメニュー">
+    </div>
+    <div class="bar-menu-lightbox-note">背景をタップして閉じる</div>
+  </div>
 
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
@@ -684,6 +706,37 @@
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
     restoreResortAnnouncement();
+
+
+    // BARメニュー表：タップで拡大表示
+    const barMenuLightbox=document.getElementById('barMenuLightbox');
+    const barMenuLightboxImage=document.getElementById('barMenuLightboxImage');
+    const barMenuLightboxClose=document.getElementById('barMenuLightboxClose');
+    let barMenuPreviousOverflow='';
+    function openBarMenuLightbox(src,alt){
+      barMenuLightboxImage.src=src;
+      barMenuLightboxImage.alt=alt||'拡大したシーサイドバーのドリンクメニュー';
+      barMenuPreviousOverflow=document.body.style.overflow;
+      document.body.style.overflow='hidden';
+      barMenuLightbox.classList.add('open');
+      barMenuLightbox.setAttribute('aria-hidden','false');
+      barMenuLightboxClose.focus();
+    }
+    function closeBarMenuLightbox(){
+      barMenuLightbox.classList.remove('open');
+      barMenuLightbox.setAttribute('aria-hidden','true');
+      document.body.style.overflow=barMenuPreviousOverflow;
+      setTimeout(()=>{barMenuLightboxImage.src=''},220);
+    }
+    document.querySelectorAll('[data-menu-zoom]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        const img=button.querySelector('img');
+        openBarMenuLightbox(button.dataset.menuZoom,img?img.alt:'');
+      });
+    });
+    barMenuLightboxClose.addEventListener('click',closeBarMenuLightbox);
+    barMenuLightbox.addEventListener('click',event=>{if(event.target===barMenuLightbox||event.target.classList.contains('bar-menu-lightbox-inner'))closeBarMenuLightbox()});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&barMenuLightbox.classList.contains('open'))closeBarMenuLightbox()});
 
     // CASINO BLUE SHELL / LOBBY + BLACKJACK + HIGH & LOW
     const casinoGame=document.getElementById('casinoGame');
