@@ -201,16 +201,16 @@
           <button class="primary-btn" type="submit">客室に入る</button>
           <p id="roomError" class="room-error" aria-live="polite"></p>
         </form>
-        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜202：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
+        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜105：デラックスオーシャン<br>201〜205：ファミリー<br>301〜305：オーシャンラグーン<br>401〜405：スイート<br>501：ヴィラ</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
         <div id="roomScene" class="room-scene hidden">
           <figure>
-            <div class="room-photo-area"><img id="roomPhoto" src="" alt="デラックスオーシャンの部屋全体"></div>
+            <div class="room-photo-area"><img id="roomPhoto" src="" alt="客室の部屋全体"></div>
             <div class="room-photo-shade"></div>
             <div class="room-overlay-top">
               <button id="leaveRoom" class="room-leave" type="button" aria-label="客室から出る">←</button>
-              <div class="room-identity"><strong id="roomNumberLabel"></strong><small>DELUXE OCEAN</small></div>
+              <div class="room-identity"><strong id="roomNumberLabel"></strong><small id="roomTypeLabel">DELUXE OCEAN</small></div>
               <time id="roomClock" class="room-clock"></time>
             </div>
             <div class="room-overlay-bottom">
@@ -290,7 +290,7 @@
 
     const roomTypes={
       101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',
-      201:'ファミリー',202:'ファミリー',
+      201:'ファミリー',202:'ファミリー',203:'ファミリー',204:'ファミリー',205:'ファミリー',
       301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',
       401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
     };
@@ -311,16 +311,39 @@
       closet:['Deluxe_Ocean_Closet.jpg','Deluxe_Ocean_Closet_Sunset.jpg','Deluxe_Ocean_Closet_Night.jpg'],
       bathroom:['Deluxe_Ocean_Bathroom.jpg','Deluxe_Ocean_Bathroom_Sunset.jpg','Deluxe_Ocean_Bathroom_Night.jpg']
     };
+    const familyScenes={
+      room:['family_room_main.jpg','family_room_main_evening(2).jpg','family_room_main_night(1).jpg'],
+      window:['family_room_window(1).jpg','family_room_window_evening(1).jpg','family_room_window_night(1).jpg'],
+      desk:['family_room_table(3).jpg','family_room_table_evening_corrected(2).jpg','family_room_table_night(1).jpg'],
+      phone:['family_room_phone(1).jpg','family_room_phone_evening(1).jpg','family_room_phone_night.jpg'],
+      closet:['family_room_closet(2).jpg','family_room_closet_evening(1).jpg','family_room_closet_night(1).jpg'],
+      bathroom:['family_bathroom(1).jpg','family_room_bathroom_evening(1).jpg','family_room_bathroom_night(1).jpg']
+    };
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
     const roomScenePositions={
-      room:[[64,50],[64,50],[64,50]],
-      window:[[48,50],[48,50],[48,50]],
-      desk:[[36,55],[36,55],[36,55]],
-      phone:[[86,65],[86,65],[86,65]],
-      closet:[[86,50],[86,50],[86,50]],
-      bathroom:[[65,50],[65,50],[65,50]]
+      deluxe:{
+        room:[[64,50],[64,50],[64,50]],
+        window:[[48,50],[48,50],[48,50]],
+        desk:[[36,55],[36,55],[36,55]],
+        phone:[[86,65],[86,65],[86,65]],
+        closet:[[86,50],[86,50],[86,50]],
+        bathroom:[[65,50],[65,50],[65,50]]
+      },
+      family:{
+        room:[[55,50],[55,50],[55,50]],
+        window:[[50,50],[50,50],[50,50]],
+        desk:[[36,54],[36,54],[36,54]],
+        phone:[[64,54],[64,54],[64,54]],
+        closet:[[50,50],[50,50],[50,50]],
+        bathroom:[[44,50],[44,50],[44,50]]
+      }
     };
+    function roomVisualConfig(room){
+      if(/^10[1-5]$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
+      if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
+      return null;
+    }
     const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
     const roomSceneOrder=['room','window','desk','phone','closet','bathroom'];
     const timeNames=['昼','夕暮れ','夜'];
@@ -330,7 +353,7 @@
       return hour>=7&&hour<16?0:hour>=16&&hour<20?1:2;
     }
     function updateRoomPhoto(force=false){
-      if(!/^10[1-5]$/.test(activeRoom))return;
+      const config=roomVisualConfig(activeRoom);if(!config)return;
       const time=roomTimeIndex();
       const now=new Date();
       document.getElementById('roomClock').textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
@@ -341,12 +364,12 @@
       roomLounge.classList.add(['time-day','time-sunset','time-night'][time]);
       roomImageError.classList.add('hidden');
       roomPhoto.style.opacity='.35';
-      roomPhoto.src=deluxeScenes[selectedRoomScene][time];
+      roomPhoto.src=config.scenes[selectedRoomScene][time];
       roomScene.dataset.scene=selectedRoomScene;
-      const focal=roomScenePositions[selectedRoomScene][time];
+      const focal=roomScenePositions[config.key][selectedRoomScene][time];
       roomScene.style.setProperty('--scene-x',focal[0]+'%');
       roomScene.style.setProperty('--scene-y',focal[1]+'%');
-      roomPhoto.alt=`デラックスオーシャンの${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
+      roomPhoto.alt=`${config.name}の${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
       roomSceneTitle.textContent=sceneNames[selectedRoomScene];
       const sceneIndex=roomSceneOrder.indexOf(selectedRoomScene);
       roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${roomSceneOrder.length}`;
@@ -388,10 +411,12 @@
       activeRoom=room;activeGuest=guestName.value.trim()||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
+      const visualConfig=roomVisualConfig(room);
+      document.getElementById('roomTypeLabel').textContent=visualConfig?visualConfig.label:roomTypes[room].toUpperCase();
       document.getElementById('chatSheetTitle').textContent=`${room}号室の会話`;
       document.getElementById('fallbackRoomName').textContent=`${room}号室　／　${roomTypes[room]}`;
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
-      const isDeluxe=/^10[1-5]$/.test(room);roomScene.classList.toggle('hidden',!isDeluxe);roomFallback.classList.toggle('hidden',isDeluxe);
+      const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
     });
