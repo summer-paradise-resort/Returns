@@ -554,6 +554,7 @@
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
+      <audio id="resortBgm" src="resort_waves.mp3" loop preload="auto"></audio>
       <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="auto"></audio>
       <div class="casino-game-head">
         <button id="casinoExit" class="casino-exit" type="button" aria-label="ひとつ前へ戻る">←</button>
@@ -568,7 +569,7 @@
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
         </div>
-        <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。ONにするとDay1内のどのページでも流れ続けます。</div>
+        <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。通常は波の音、カジノ滞在中はカジノBGMに切り替わります。</div>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -948,6 +949,7 @@
       const belongings=loadBelongings(),owned=Math.max(0,Math.floor(Number(belongings[key]||0)));casinoChips-=price;belongings[key]=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${owned+1}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     }
     const topBgmToggle=document.getElementById('topBgmToggle');
+    const resortBgm=document.getElementById('resortBgm');
     const storyMenu=document.getElementById('storyMenu');
     function renderTopBgmToggle(){const on=localStorage.getItem('spr-bgm-enabled')!=='off';topBgmToggle.classList.toggle('off',!on);topBgmToggle.setAttribute('aria-pressed',String(on));topBgmToggle.title=on?'BGM ON':'BGM OFF'}
     topBgmToggle.addEventListener('click',()=>{const next=localStorage.getItem('spr-bgm-enabled')==='off';localStorage.setItem('spr-bgm-enabled',next?'on':'off');renderTopBgmToggle();if(next)startResortMusic();else pauseResortMusic()});
@@ -955,10 +957,11 @@
     document.getElementById('storyMenuClose').addEventListener('click',()=>{storyMenu.classList.remove('open');storyMenu.setAttribute('aria-hidden','true')});
     storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
     renderTopBgmToggle();
-    function startResortMusic(){if(localStorage.getItem('spr-bgm-enabled')==='off')return;casinoBgm.volume=.38;const promise=casinoBgm.play();if(promise&&promise.catch)promise.catch(()=>{})}
-    function pauseResortMusic(){casinoBgm.pause()}
-    function startCasinoMusic(){startResortMusic()}
-    function stopCasinoMusic(){/* BGM is resort-wide; leaving the casino must not stop it. */}
+    function playAudio(audio,volume){if(localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
+    function startResortMusic(){casinoBgm.pause();playAudio(resortBgm,.42)}
+    function pauseResortMusic(){resortBgm.pause();casinoBgm.pause()}
+    function startCasinoMusic(){resortBgm.pause();playAudio(casinoBgm,.38)}
+    function stopCasinoMusic(){casinoBgm.pause();startResortMusic()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
