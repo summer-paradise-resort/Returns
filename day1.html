@@ -18,7 +18,22 @@
     .brand img{width:44px;height:44px;object-fit:contain}
     .brand-name{font:20px/1 Georgia,serif;color:var(--gold);white-space:nowrap}
     .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
-    .home-link{color:var(--navy);font:11px Georgia,serif;letter-spacing:.12em;text-decoration:none;padding:12px 4px}
+    .header-actions{display:flex;align-items:center;gap:5px}
+    .header-icon{width:42px;height:42px;border:0;background:transparent;color:var(--navy);display:grid;place-items:center;padding:0}
+    .music-toggle{font:24px Georgia,serif;position:relative}
+    .music-toggle.off{opacity:.38}
+    .menu-lines{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
+    .menu-lines i{display:block;height:1px;background:currentColor;width:100%}
+    .story-menu{position:fixed;inset:0;z-index:90;background:rgba(255,255,255,.985);overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s}
+    .story-menu.open{opacity:1;visibility:visible;transform:none}
+    .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:rgba(255,255,255,.97)}
+    .story-menu-close{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font-size:28px}
+    .story-menu-content{max-width:680px;margin:auto;padding:38px 22px 60px}
+    .story-menu-content>p{text-align:center;font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold)}
+    .story-menu-content>h2{text-align:center;font-size:25px;font-weight:500;letter-spacing:.12em;margin:8px 0 30px}
+    .story-item{border-top:1px solid #e7dfd1}.story-item:last-child{border-bottom:1px solid #e7dfd1}
+    .story-toggle{width:100%;padding:18px 4px;border:0;background:transparent;color:var(--navy);display:flex;justify-content:space-between;text-align:left;font-size:14px}
+    .story-copy{display:none;padding:0 4px 20px;color:#4c5661;font-size:12px;line-height:2}.story-item.open .story-copy{display:block}
     .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;transition:background-image .45s ease,background-position .45s ease}
     .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
     .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
@@ -71,7 +86,7 @@
     .casino-game{position:fixed;inset:0;z-index:70;background:#061421;color:#fff;overflow:auto;overscroll-behavior:contain}
     .casino-game::before{content:"";position:fixed;inset:0;background:linear-gradient(rgba(3,12,21,.80),rgba(3,12,21,.91)),url("blue_shell_casino_t.jpg") center/cover no-repeat;z-index:-2}
     .casino-game::after{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 36%,rgba(58,122,119,.20),transparent 38%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.32));z-index:-1;pointer-events:none}
-     .casino-game-head{position:sticky;top:0;z-index:3;min-height:64px;display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) 14px 8px;background:rgba(3,15,26,.88);border-bottom:1px solid rgba(221,191,119,.24);backdrop-filter:blur(12px)}
+    .casino-game-head{position:sticky;top:0;z-index:3;min-height:64px;display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:8px;padding:max(8px,env(safe-area-inset-top)) 14px 8px;background:rgba(3,15,26,.88);border-bottom:1px solid rgba(221,191,119,.24);backdrop-filter:blur(12px)}
     .casino-exit{width:46px;height:46px;border:1px solid rgba(255,255,255,.32);border-radius:50%;background:rgba(255,255,255,.05);color:#fff;font-size:20px}
     .casino-game-title{text-align:center;line-height:1.1}
     .casino-game-title strong{display:block;font:15px Georgia,serif;letter-spacing:.18em;font-weight:400;color:#f0d89d}
@@ -106,10 +121,6 @@
     .action-panel button:disabled,.bet-panel button:disabled{opacity:.35;cursor:default}
     .casino-refill{width:100%;margin-top:10px;color:#f0d89d}
     .casino-note{text-align:center;font-size:10px;line-height:1.7;color:rgba(255,255,255,.58);padding:0 12px}
-    .casino-bgm-toggle{width:100%;min-height:44px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#f0d89d;font:11px Georgia,serif;letter-spacing:.14em}
-    .casino-bgm-toggle[aria-pressed="true"]{background:#d2b56e;color:#071a2b}
-    .casino-refill:disabled{opacity:.45;cursor:default}
-    .casino-refill-note{margin-top:7px;text-align:center;font-size:10px;line-height:1.6;color:rgba(255,255,255,.62)}
     .casino-screen{width:min(760px,100%);min-height:calc(100dvh - 64px);margin:auto;padding:28px 16px max(30px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center;gap:18px}
     .casino-screen-title{text-align:center;margin:0;font:24px Georgia,serif;letter-spacing:.14em;font-weight:400;color:#f0d89d}
     .casino-screen-sub{text-align:center;margin:0;color:rgba(255,255,255,.72);font-size:12px;line-height:1.9;letter-spacing:.05em}
@@ -326,8 +337,22 @@
 <body>
   <header>
     <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
-    <a class="home-link" href="index.html">RESORT TOP　↗</a>
+    <div class="header-actions">
+      <button id="topBgmToggle" class="header-icon music-toggle" type="button" aria-label="BGM ON / OFF" title="BGM ON / OFF">♪</button>
+      <button id="storyMenuOpen" class="header-icon" type="button" aria-label="リゾートの歴史を開く"><span class="menu-lines" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    </div>
   </header>
+
+  <section id="storyMenu" class="story-menu" aria-hidden="true" aria-label="リゾート案内">
+    <div class="story-menu-top"><div class="brand-name">Summer Paradise<small>RESORT</small></div><button id="storyMenuClose" class="story-menu-close" type="button" aria-label="閉じる">×</button></div>
+    <div class="story-menu-content"><p>DISCOVER OUR STORY</p><h2>楽園を知る</h2>
+      <div class="story-item"><button class="story-toggle" type="button" aria-expanded="false">リゾートについて<span>＋</span></button><div class="story-copy"><p>青い海と空に抱かれたサマーパラダイスリゾートは、日常を離れ、心ほどける時間をお過ごしいただくための滞在地です。海を望む客室、この土地の恵みを味わうレストラン、島の景色と物語に触れる散策など、多彩な体験をご用意しています。移ろう光や潮風を感じながら、ここでしか出会えないひとときをお楽しみください。</p></div></div>
+      <div class="story-item"><button class="story-toggle" type="button" aria-expanded="false">島の歴史<span>＋</span></button><div class="story-copy"><p>この島は古くから、長い航海を続ける人々が風と波の静まる時を待つ、ささやかな休息地として知られてきました。海とともに暮らした島民たちは、入り江や灯台を大切に守り、訪れた旅人を迎えてきたといわれています。石造りの小径や古い建物、島の各所に残る言い伝えの中には、今も当時の面影が息づいています。</p></div></div>
+      <div class="story-item"><button class="story-toggle" type="button" aria-expanded="false">リゾート開発まで<span>＋</span></button><div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイです。</p></div></div>
+      <div class="story-item"><button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイ<span>＋</span></button><div class="story-copy"><p>アーサー・グレイは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div></div>
+      <div class="story-item"><button class="story-toggle" type="button" aria-expanded="false">人魚の祝福伝説<span>＋</span></button><div class="story-copy"><p>この島には古くから、人魚の姿を見た者には海の祝福が授けられるという伝説があります。その祝福を受けた旅人は、穏やかな航海と大切な人との再会に恵まれ、いつの日か再び島へ導かれると語り継がれてきました。夕暮れ時のサンセットテラスでは、波音と潮風の向こうから、人魚の歌声が聞こえてくるかもしれません。</p></div></div>
+    </div>
+  </section>
   <div id="globalSpecialNotice" class="global-special-notice hidden" role="status" aria-live="assertive">
     <div class="ticker-label">SPECIAL TABLE</div>
     <div class="ticker-window"><div id="globalSpecialTrack" class="ticker-track"></div></div>
@@ -486,7 +511,7 @@
       <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div><div class="slide"><img src="sunset_terrace1.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="sunset_terrace2.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div><div class="slide"><img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace 外観"></div><div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div><div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Marine Bloom Cafe ティーセット"></div>
     </div></div><div class="dots" data-dots="restaurant"></div>
     <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
-      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><div class="menu-item">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></div><div class="menu-item">Marine Bloom Cafe<small>CAFÉ &amp; SWEETS</small></div></div></div>
+      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><button class="menu-item tea-venue" type="button" data-tea-venue="The Pearl Terrace">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></button><button class="menu-item tea-venue" type="button" data-tea-venue="Marine Bloom Cafe">Marine Bloom Cafe<small>CAFÉ &amp; AFTERNOON TEA</small></button></div><p id="teaTicketMessage" class="bar-selection" aria-live="polite">アフタヌーンティーチケット（2名様用／4名様用）は、どちらの店舗でもご利用いただけます。</p></div>
     </div>
   </section>
 
@@ -501,6 +526,7 @@
       <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
       <div class="bar-order-content">
         <div id="barPeriodCard" class="bar-period-card"></div>
+        <div id="barExtraTicketBox" class="bar-order-confirm-wrap hidden"><div id="barExtraTicketStatus" class="bar-selection"></div><button id="useExtraDrinkTicket" class="bar-order-confirm" type="button">追加ドリンクチケットを使用する</button></div>
         <div class="bar-menu-title">ORIGINAL DRINK MENU</div>
         <div class="bar-menu-pages" aria-label="シーサイドバーのメニュー表">
           <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></button></figure>
@@ -528,7 +554,7 @@
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
-      <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="none"></audio>
+      <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="auto"></audio>
       <div class="casino-game-head">
         <button id="casinoExit" class="casino-exit" type="button" aria-label="ひとつ前へ戻る">←</button>
         <div class="casino-game-title"><strong id="casinoHeaderTitle">CASINO BLUE SHELL</strong><small id="casinoHeaderSub">CASINO FLOOR</small></div>
@@ -542,8 +568,7 @@
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
         </div>
-        <button id="casinoBgmToggle" class="casino-bgm-toggle" type="button" aria-pressed="false">BGM：OFF</button>
-        <div class="casino-note">BGMは自動では再生されません。必要なときだけ上のボタンでONにできます。</div>
+        <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。ONにするとDay1内のどのページでも流れ続けます。</div>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -563,8 +588,16 @@
           <div class="prize-chips">YOUR CHIPS<b id="prizeChips">1,000</b></div>
           <div class="prize-list">
             <div class="prize-item">
-              <div><strong>アフタヌーンティーチケット</strong><small>THE PEARL TERRACE / AFTERNOON TEA<br>1枚 500 CHIP・お一人様2枚まで</small></div>
-              <div class="prize-item-side"><b>500 CHIP</b><span id="afternoonTeaOwned">所持 0 / 2</span><button id="buyAfternoonTeaTicket" class="prize-exchange" type="button">交換する</button></div>
+              <div><strong>アフタヌーンティーチケット（2名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>所持数制限なし</small></div>
+              <div class="prize-item-side"><b>20,000 CHIP</b><span id="afternoonTea2Owned">所持 0</span><button id="buyAfternoonTea2Ticket" class="prize-exchange" type="button">交換する</button></div>
+            </div>
+            <div class="prize-item">
+              <div><strong>アフタヌーンティーチケット（4名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>所持数制限なし</small></div>
+              <div class="prize-item-side"><b>15,000 CHIP</b><span id="afternoonTea4Owned">所持 0</span><button id="buyAfternoonTea4Ticket" class="prize-exchange" type="button">交換する</button></div>
+            </div>
+            <div class="prize-item">
+              <div><strong>追加ドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>現在のドリンクと効能をリセットし、同じ時間帯に再注文できます。所持数制限なし</small></div>
+              <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
             </div>
           </div>
           <p id="prizeMessage" class="prize-message" aria-live="polite">チップを景品と交換できます。</p>
@@ -580,10 +613,10 @@
         </div>
         <div class="casino-controls">
           <div id="betPanel" class="bet-panel">
-            <div class="bet-row"><button id="betMinus" type="button">−100</button><div class="bet-amount">BET<strong id="betAmount">100</strong></div><button id="betPlus" type="button">＋100</button></div>
+            <div class="bet-row"><button id="betMinus" type="button">−</button><div class="bet-amount">BET<strong id="betAmount">100</strong></div><button id="betPlus" type="button">＋</button></div>
+            <div class="bet-quick"><button type="button" data-bet="50">50</button><button type="button" data-bet="100">100</button><button type="button" data-bet="500">500</button></div>
             <button id="dealButton" class="deal-button" type="button">DEAL</button>
-            <button id="casinoRefill" class="casino-refill hidden" type="button">1,000 CHIPで再スタート</button>
-            <div id="casinoRefillNote" class="casino-refill-note hidden"></div>
+            <button id="casinoRefill" class="casino-refill hidden" type="button">1,000 CHIPを受け取る</button>
           </div>
           <div id="actionPanel" class="action-panel hidden"><button id="hitButton" type="button">HIT</button><button id="standButton" type="button">STAND</button><button id="doubleButton" type="button">DOUBLE</button></div>
         </div>
@@ -599,10 +632,10 @@
         </div>
         <div class="casino-controls">
           <div id="hiloBetPanel" class="bet-panel">
-            <div class="bet-row"><button id="hiloBetMinus" type="button">−100</button><div class="bet-amount">BET<strong id="hiloBetAmount">100</strong></div><button id="hiloBetPlus" type="button">＋100</button></div>
+            <div class="bet-row"><button id="hiloBetMinus" type="button">−</button><div class="bet-amount">BET<strong id="hiloBetAmount">100</strong></div><button id="hiloBetPlus" type="button">＋</button></div>
+            <div class="bet-quick"><button type="button" data-hilo-bet="50">50</button><button type="button" data-hilo-bet="100">100</button><button type="button" data-hilo-bet="500">500</button></div>
             <button id="hiloStart" class="deal-button" type="button">START</button>
-            <button id="hiloRefill" class="casino-refill hidden" type="button">1,000 CHIPで再スタート</button>
-            <div id="hiloRefillNote" class="casino-refill-note hidden"></div>
+            <button id="hiloRefill" class="casino-refill hidden" type="button">1,000 CHIPを受け取る</button>
           </div>
           <div id="hiloActionPanel" class="hilo-action-panel hidden"><button id="hiloHigh" type="button">HIGH</button><button id="hiloLow" type="button">LOW</button></div>
         </div>
@@ -612,90 +645,17 @@
     </section>
   </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // SECURITY CHECKで登録した名前をDay1全体で共有
-    const SUPABASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_d4Uj3azYwSAIiwDK2UieGw_1Hp3LJfM';
-    const sprSupabase=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY) : null;
-
     const storedGuestName=(localStorage.getItem('spr-guest-name')||'').trim();
-    if(!storedGuestName){window.location.replace('security_check_supabase.html')}
-    let currentPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
+    if(!storedGuestName){window.location.replace('security_check.html')}
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
     const belongingsKey=`spr-belongings:${playerStorageId}`;
-    const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
-    const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
-    const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
-    const casinoRefillKey=`spr-casino-refill:${playerStorageId}`;
     const belongingsCatalog={
-      afternoonTeaTicket:{label:'アフタヌーンティーチケット',detail:'The Pearl Terraceのアフタヌーンティーにご利用いただけます。',max:2}
+      afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
+      afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
+      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity}
     };
-
-    function safeLocalJson(key,fallback){
-      try{const value=JSON.parse(localStorage.getItem(key)||'null');return value??fallback}catch{return fallback}
-    }
-    let belongingsCache=safeLocalJson(belongingsKey,{});
-    if(!belongingsCache||typeof belongingsCache!=='object'||Array.isArray(belongingsCache))belongingsCache={};
-    let barDrinkStateCache=safeLocalJson(barDrinkStorageKey,{});
-    if(!barDrinkStateCache||typeof barDrinkStateCache!=='object'||Array.isArray(barDrinkStateCache))barDrinkStateCache={};
-    let emilyAnnouncedCloud=localStorage.getItem(emilyAnnouncedKey)==='1';
-    let casinoRefillState=safeLocalJson(casinoRefillKey,{serviceDate:'',count:0});
-    let casinoSaveChain=Promise.resolve();
-    const roomMessagesCache=Object.create(null);
-    const roomServiceCache=Object.create(null);
-
-    async function ensureCloudPlayer(){
-      if(!sprSupabase)throw new Error('Supabase client is unavailable');
-      let player=null;
-      if(currentPlayerId){
-        const {data,error}=await sprSupabase.from('players').select('id,display_name,chips,current_location').eq('id',currentPlayerId).maybeSingle();
-        if(error)throw error;
-        player=data||null;
-      }
-      if(!player){
-        const nameKey=storedGuestName.trim().toLowerCase();
-        const {data,error}=await sprSupabase.from('players').select('id,display_name,chips,current_location').eq('name_key',nameKey).maybeSingle();
-        if(error)throw error;
-        player=data||null;
-      }
-      if(!player){
-        const {data,error}=await sprSupabase.from('players').insert({display_name:storedGuestName}).select('id,display_name,chips,current_location').single();
-        if(error)throw error;
-        player=data;
-      }
-      currentPlayerId=player.id;
-      localStorage.setItem('spr-player-id',player.id);
-      if(player.display_name)localStorage.setItem('spr-guest-name',player.display_name);
-      return player;
-    }
-
-    async function setPlayerFlag(flagKey,value){
-      if(!sprSupabase||!currentPlayerId)return;
-      const {error}=await sprSupabase.from('player_flags').upsert({player_id:currentPlayerId,flag_key:flagKey,flag_value:value,updated_at:new Date().toISOString()},{onConflict:'player_id,flag_key'});
-      if(error)console.error('player flag sync failed:',flagKey,error);
-    }
-    async function getPlayerFlags(keys){
-      if(!sprSupabase||!currentPlayerId)return {};
-      const {data,error}=await sprSupabase.from('player_flags').select('flag_key,flag_value').eq('player_id',currentPlayerId).in('flag_key',keys);
-      if(error)throw error;
-      return Object.fromEntries((data||[]).map(row=>[row.flag_key,row.flag_value]));
-    }
-    async function setGlobalFlag(flagKey,value){
-      if(!sprSupabase)return;
-      const {error}=await sprSupabase.from('global_flags').upsert({flag_key:flagKey,flag_value:value,updated_at:new Date().toISOString()},{onConflict:'flag_key'});
-      if(error)console.error('global flag sync failed:',flagKey,error);
-    }
-    async function getGlobalFlags(keys){
-      if(!sprSupabase)return {};
-      const {data,error}=await sprSupabase.from('global_flags').select('flag_key,flag_value').in('flag_key',keys);
-      if(error)throw error;
-      return Object.fromEntries((data||[]).map(row=>[row.flag_key,row.flag_value]));
-    }
-    function updatePlayerLocation(location){
-      if(!sprSupabase||!currentPlayerId)return;
-      void sprSupabase.from('players').update({current_location:location,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId).then(({error})=>{if(error)console.error('location sync failed:',error)});
-    }
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
       day:['summer_paradise_noon.jpg'],
@@ -736,13 +696,32 @@
       updateHeroBackground(true);
       setInterval(()=>updateHeroBackground(),60*1000);
     }
-    function loadBelongings(){return belongingsCache}
-    function saveBelongings(items){
-      belongingsCache={...items};
-      localStorage.setItem(belongingsKey,JSON.stringify(belongingsCache));
-      void setPlayerFlag('belongings',belongingsCache);
+    function loadBelongings(){
+      try{const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');return saved&&typeof saved==='object'?saved:{}}
+      catch{return {}}
     }
+    function saveBelongings(items){localStorage.setItem(belongingsKey,JSON.stringify(items))}
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
+    // 旧版のアフタヌーンティーチケットがある場合は2名様用へ引き継ぐ
+    {const b=loadBelongings();if(Number(b.afternoonTeaTicket||0)>0){b.afternoonTeaTicket2=Math.max(0,Math.floor(Number(b.afternoonTeaTicket2||0)))+Math.max(0,Math.floor(Number(b.afternoonTeaTicket||0)));delete b.afternoonTeaTicket;saveBelongings(b)}}
+    // アフタヌーンティーチケットは The Pearl Terrace / Marine Bloom Cafe のどちらでも使用可能
+    const teaTicketMessage=document.getElementById('teaTicketMessage');
+    document.querySelectorAll('[data-tea-venue]').forEach(button=>button.addEventListener('click',()=>{
+      const venue=button.dataset.teaVenue, tea2=belongingCount('afternoonTeaTicket2'), tea4=belongingCount('afternoonTeaTicket4');
+      if(!tea2&&!tea4){teaTicketMessage.textContent=`${venue} のアフタヌーンティーにはチケットが必要です。`;return}
+      let key='',label='';
+      if(tea2&&tea4){
+        const choice=window.prompt(`${venue} で使用するチケットを選んでください。\n2 = 2名様用（所持 ${tea2}）\n4 = 4名様用（所持 ${tea4}）`,'2');
+        if(choice===null)return;
+        if(String(choice).trim()==='4'){key='afternoonTeaTicket4';label='4名様用'}else if(String(choice).trim()==='2'){key='afternoonTeaTicket2';label='2名様用'}else{teaTicketMessage.textContent='2 または 4 を入力してください。';return}
+      }else if(tea2){key='afternoonTeaTicket2';label='2名様用'}else{key='afternoonTeaTicket4';label='4名様用'}
+      if(!window.confirm(`${venue} でアフタヌーンティーチケット（${label}）を1枚使用しますか？`))return;
+      const belongings=loadBelongings();
+      belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
+      teaTicketMessage.textContent=`${venue} でアフタヌーンティーチケット（${label}）を使用しました。どうぞお楽しみください。`;
+      if(typeof renderBelongings==='function')renderBelongings();
+      if(typeof renderPrizeCounter==='function')renderPrizeCounter();
+    }));
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const views = [...document.querySelectorAll('.subview')];
@@ -774,30 +753,18 @@
     function activateSpecialTableAnnouncement(challenger=''){
       const who=challenger?` 挑戦者：${challenger}。`:'';
       const message=`SPECIAL GAME　｜　カジノ・ブルーシェルにスペシャルテーブルが出現しました。${who} 観客席よりご覧いただけます。`;
-      const payload={type:'special-table',message,createdAt:Date.now()};
       setResortAnnouncement(message,{alert:true,global:true});
-      localStorage.setItem('spr-resort-announcement',JSON.stringify(payload));
-      void setGlobalFlag('special_table_announcement',payload);
+      localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message,createdAt:Date.now()}));
     }
-    async function restoreResortAnnouncement(){
-      let shown=false;
+    function restoreResortAnnouncement(){
       try{
         const saved=JSON.parse(localStorage.getItem('spr-resort-announcement')||'null');
-        if(saved&&saved.type==='special-table'&&Date.now()-Number(saved.createdAt||0)<30*60*1000){setResortAnnouncement(saved.message,{alert:true,global:true});shown=true}
+        if(saved&&saved.type==='special-table'&&Date.now()-Number(saved.createdAt||0)<30*60*1000){setResortAnnouncement(saved.message,{alert:true,global:true});return}
       }catch{}
-      try{
-        const flags=await getGlobalFlags(['special_table_announcement']);
-        const cloud=flags.special_table_announcement;
-        if(cloud&&cloud.type==='special-table'&&Date.now()-Number(cloud.createdAt||0)<30*60*1000){
-          localStorage.setItem('spr-resort-announcement',JSON.stringify(cloud));
-          setResortAnnouncement(cloud.message,{alert:true,global:true});
-          return;
-        }
-      }catch(error){console.error('announcement sync failed:',error)}
-      if(!shown)normalResortAnnouncement();
+      normalResortAnnouncement();
     }
     window.showSpecialTableAnnouncement=activateSpecialTableAnnouncement;
-    window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');void setGlobalFlag('special_table_announcement',false);normalResortAnnouncement()};
+    window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement()};
 
 
     // SEASIDE BAR / ドリンク注文
@@ -824,10 +791,12 @@
       {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー'},
       {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター'}
     ];
+    const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
     const barOrderSheet=document.getElementById('barOrderSheet'), barDrinkList=document.getElementById('barDrinkList');
     const barPeriodCard=document.getElementById('barPeriodCard'), barSelection=document.getElementById('barSelection');
     const barOrderConfirm=document.getElementById('barOrderConfirm'), barOrderResult=document.getElementById('barOrderResult');
     const barOrderStatusMini=document.getElementById('barOrderStatusMini');
+    const barExtraTicketBox=document.getElementById('barExtraTicketBox'), barExtraTicketStatus=document.getElementById('barExtraTicketStatus'), useExtraDrinkTicket=document.getElementById('useExtraDrinkTicket');
     let selectedBarDrink='';
 
     function japanClockParts(){
@@ -845,12 +814,8 @@
       const orderOpen=now.hour>=11||now.hour<5;
       return{id,label,hours,serviceDate,token:`${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
     }
-    function loadBarDrinkState(){return barDrinkStateCache}
-    function saveBarDrinkState(state){
-      barDrinkStateCache={...state};
-      localStorage.setItem(barDrinkStorageKey,JSON.stringify(barDrinkStateCache));
-      void setPlayerFlag('bar_drinks',barDrinkStateCache);
-    }
+    function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
+    function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
     function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
     window.getCurrentBarDrinkEffect=currentBarDrink;
 
@@ -861,6 +826,9 @@
     function renderBarOrderState(){
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null;
       const periodText=`${info.label}　${info.hours}`;
+      const extraTicketCount=belongingCount('extraDrinkTicket');
+      barExtraTicketBox.classList.toggle('hidden',!ordered);
+      if(ordered){barExtraTicketStatus.textContent=`追加ドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'追加ドリンクチケットを所持していません':'追加ドリンクチケットを使用する';}
       if(ordered){
         barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${info.label}の時間帯が終了するまで保持されます。</p>`;
         barOrderStatusMini.textContent=`${info.label}：${ordered.name} をご注文済みです。`;
@@ -885,6 +853,12 @@
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
       state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} のご注文を承りました。`;barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
+    });
+    useExtraDrinkTicket.addEventListener('click',()=>{
+      const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
+      if(!ordered||count<1){renderBarOrderState();return}
+      belongings.extraDrinkTicket=count-1;saveBelongings(belongings);delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
+      barOrderResult.textContent='追加ドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     });
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
@@ -924,25 +898,27 @@
     // CASINO BLUE SHELL / LOBBY + BLACKJACK + HIGH & LOW
     const casinoGame=document.getElementById('casinoGame');
     const casinoEnter=document.getElementById('casinoEnter'), casinoExit=document.getElementById('casinoExit');
-    const casinoBgm=document.getElementById('casinoBgm'), casinoBgmToggle=document.getElementById('casinoBgmToggle');
+    const casinoBgm=document.getElementById('casinoBgm');
     const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize');
     const blackjackScreen=document.getElementById('blackjackScreen'), hiloScreen=document.getElementById('hiloScreen');
     const casinoHeaderTitle=document.getElementById('casinoHeaderTitle'), casinoHeaderSub=document.getElementById('casinoHeaderSub');
     const casinoTableMenu=document.getElementById('casinoTableMenu'), casinoPrizeMenu=document.getElementById('casinoPrizeMenu');
     const casinoChipsEl=document.getElementById('casinoChips'), prizeChips=document.getElementById('prizeChips');
-    const afternoonTeaOwned=document.getElementById('afternoonTeaOwned'), buyAfternoonTeaTicket=document.getElementById('buyAfternoonTeaTicket'), prizeMessage=document.getElementById('prizeMessage');
+    const afternoonTea2Owned=document.getElementById('afternoonTea2Owned'), buyAfternoonTea2Ticket=document.getElementById('buyAfternoonTea2Ticket'), afternoonTea4Owned=document.getElementById('afternoonTea4Owned'), buyAfternoonTea4Ticket=document.getElementById('buyAfternoonTea4Ticket'), extraDrinkTicketOwned=document.getElementById('extraDrinkTicketOwned'), buyExtraDrinkTicket=document.getElementById('buyExtraDrinkTicket'), prizeMessage=document.getElementById('prizeMessage');
     const betAmountEl=document.getElementById('betAmount'), casinoBetIndicator=document.getElementById('casinoBetIndicator');
     const dealerHandEl=document.getElementById('dealerHand'), playerHandEl=document.getElementById('playerHand');
     const dealerScoreEl=document.getElementById('dealerScore'), playerScoreEl=document.getElementById('playerScore'), casinoStatus=document.getElementById('casinoStatus');
     const betPanel=document.getElementById('betPanel'), actionPanel=document.getElementById('actionPanel');
     const betMinus=document.getElementById('betMinus'), betPlus=document.getElementById('betPlus'), dealButton=document.getElementById('dealButton');
-    const hitButton=document.getElementById('hitButton'), standButton=document.getElementById('standButton'), doubleButton=document.getElementById('doubleButton'), casinoRefill=document.getElementById('casinoRefill'), casinoRefillNote=document.getElementById('casinoRefillNote');
+    const hitButton=document.getElementById('hitButton'), standButton=document.getElementById('standButton'), doubleButton=document.getElementById('doubleButton'), casinoRefill=document.getElementById('casinoRefill');
     const hiloBetAmountEl=document.getElementById('hiloBetAmount'), hiloBetIndicator=document.getElementById('hiloBetIndicator');
     const hiloCurrentCard=document.getElementById('hiloCurrentCard'), hiloNextCard=document.getElementById('hiloNextCard'), hiloStatus=document.getElementById('hiloStatus');
     const hiloBetPanel=document.getElementById('hiloBetPanel'), hiloActionPanel=document.getElementById('hiloActionPanel');
     const hiloBetMinus=document.getElementById('hiloBetMinus'), hiloBetPlus=document.getElementById('hiloBetPlus'), hiloStart=document.getElementById('hiloStart');
-    const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill'), hiloRefillNote=document.getElementById('hiloRefillNote');
+    const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill');
 
+    const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
+    const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
     let previousCasinoChips=casinoChips;
@@ -952,19 +928,9 @@
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
     function casinoSave(){
-      casinoChips=Math.max(0,Math.round(casinoChips));
       localStorage.setItem(casinoChipKey,String(casinoChips));
-      const snapshot=casinoChips;
-      if(sprSupabase&&currentPlayerId){
-        casinoSaveChain=casinoSaveChain.then(async()=>{
-          const {error}=await sprSupabase.from('players').update({chips:snapshot,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId);
-          if(error)console.error('chip sync failed:',error);
-        });
-      }
-      if(previousCasinoChips<20000&&casinoChips>=20000&&!emilyAnnouncedCloud){
-        emilyAnnouncedCloud=true;
+      if(previousCasinoChips<20000&&casinoChips>=20000&&!localStorage.getItem(emilyAnnouncedKey)){
         localStorage.setItem(emilyAnnouncedKey,'1');
-        void setPlayerFlag('emily_announced',true);
         activateSpecialTableAnnouncement(storedGuestName);
       }
       previousCasinoChips=casinoChips;
@@ -972,68 +938,27 @@
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
     function syncCasinoBalances(){casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips)}
     function renderPrizeCounter(message=''){
-      const owned=Math.min(2,belongingCount('afternoonTeaTicket'));
-      afternoonTeaOwned.textContent=`所持 ${owned} / 2`;
-      const reachedLimit=owned>=2, shortOnChips=casinoChips<500;
-      buyAfternoonTeaTicket.disabled=reachedLimit||shortOnChips;
-      buyAfternoonTeaTicket.textContent=reachedLimit?'上限に達しました':shortOnChips?'チップ不足':'交換する';
-      prizeMessage.textContent=message||(reachedLimit?'アフタヌーンティーチケットは2枚まで所持できます。':'チップを景品と交換できます。');
+      const tea2=belongingCount('afternoonTeaTicket2'), tea4=belongingCount('afternoonTeaTicket4'), extra=belongingCount('extraDrinkTicket');
+      afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;
+      [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
+      prizeMessage.textContent=message||'チケット系景品の所持数に制限はありません。';
     }
-    function buyTeaTicket(){
-      const belongings=loadBelongings(), owned=Math.min(2,Math.max(0,Math.floor(Number(belongings.afternoonTeaTicket||0))));
-      if(owned>=2){renderPrizeCounter('アフタヌーンティーチケットは2枚までです。');return}
-      if(casinoChips<500){renderPrizeCounter('交換には500 CHIP必要です。');return}
-      casinoChips-=500;belongings.afternoonTeaTicket=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`アフタヌーンティーチケットを1枚交換しました。所持 ${owned+1} / 2`);
-      if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+    function buyTicket(key,label,price){
+      if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
+      const belongings=loadBelongings(),owned=Math.max(0,Math.floor(Number(belongings[key]||0)));casinoChips-=price;belongings[key]=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${owned+1}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     }
-    let casinoMusicEnabled=false;
-    function syncCasinoMusicButton(){
-      if(!casinoBgmToggle)return;
-      casinoBgmToggle.textContent=casinoMusicEnabled?'BGM：ON':'BGM：OFF';
-      casinoBgmToggle.setAttribute('aria-pressed',casinoMusicEnabled?'true':'false');
-    }
-    function startCasinoMusic(){
-      casinoMusicEnabled=true;casinoBgm.muted=false;casinoBgm.volume=.38;syncCasinoMusicButton();
-      const promise=casinoBgm.play();
-      if(promise&&promise.catch)promise.catch(()=>{casinoMusicEnabled=false;syncCasinoMusicButton()});
-    }
-    function stopCasinoMusic(){casinoMusicEnabled=false;casinoBgm.pause();casinoBgm.currentTime=0;syncCasinoMusicButton()}
-    function casinoServiceDate(){
-      const now=japanClockParts();let key=dateKeyFromParts(now);
-      if(now.hour<7)key=addDaysToDateKey(key,-1);
-      return key;
-    }
-    function normalizeCasinoRefillState(){
-      const serviceDate=casinoServiceDate();
-      const count=Math.max(0,Math.min(3,Math.floor(Number(casinoRefillState?.count||0))));
-      if(!casinoRefillState||casinoRefillState.serviceDate!==serviceDate)casinoRefillState={serviceDate,count:0};
-      else casinoRefillState={serviceDate,count};
-      localStorage.setItem(casinoRefillKey,JSON.stringify(casinoRefillState));
-      return casinoRefillState;
-    }
-    function casinoRefillsRemaining(){return Math.max(0,3-normalizeCasinoRefillState().count)}
-    function saveCasinoRefillState(){
-      normalizeCasinoRefillState();
-      localStorage.setItem(casinoRefillKey,JSON.stringify(casinoRefillState));
-      void setPlayerFlag('casino_refill',casinoRefillState);
-    }
-    function updateRefillControl(button,note,active){
-      const state=normalizeCasinoRefillState(),remaining=Math.max(0,3-state.count),busted=casinoChips<100;
-      button.classList.toggle('hidden',!busted||active);
-      note.classList.toggle('hidden',!busted||active);
-      if(!busted||active)return;
-      if(remaining>0){button.disabled=false;button.textContent=`1,000 CHIPで再スタート（残り${remaining}回）`;note.textContent=`リゾート1日（7:00〜翌6:59）につき3回まで利用できます。 使用 ${state.count} / 3`;}
-      else{button.disabled=true;button.textContent='本日の再スタートは終了しました';note.textContent='本日の3回分を使い切りました。次の7:00に回数がリセットされます。';}
-    }
-    function useCasinoRefill(mode){
-      if((mode==='blackjack'&&bjActive)||(mode==='hilo'&&hiloActive)||casinoChips>=100)return;
-      const state=normalizeCasinoRefillState();if(state.count>=3){updateCasinoHud();updateHiloHud();return}
-      casinoRefillState={serviceDate:state.serviceDate,count:state.count+1};saveCasinoRefillState();
-      casinoChips=1000;blackjackBet=100;hiloBet=100;casinoSave();
-      if(mode==='blackjack')setCasinoStatus(`1,000 CHIPで再スタートしました。残り${casinoRefillsRemaining()}回です。`);
-      else hiloStatus.textContent=`1,000 CHIPで再スタートしました。残り${casinoRefillsRemaining()}回です。`;
-      updateCasinoHud();updateHiloHud();
-    }
+    const topBgmToggle=document.getElementById('topBgmToggle');
+    const storyMenu=document.getElementById('storyMenu');
+    function renderTopBgmToggle(){const on=localStorage.getItem('spr-bgm-enabled')!=='off';topBgmToggle.classList.toggle('off',!on);topBgmToggle.setAttribute('aria-pressed',String(on));topBgmToggle.title=on?'BGM ON':'BGM OFF'}
+    topBgmToggle.addEventListener('click',()=>{const next=localStorage.getItem('spr-bgm-enabled')==='off';localStorage.setItem('spr-bgm-enabled',next?'on':'off');renderTopBgmToggle();if(next)startResortMusic();else pauseResortMusic()});
+    document.getElementById('storyMenuOpen').addEventListener('click',()=>{storyMenu.classList.add('open');storyMenu.setAttribute('aria-hidden','false')});
+    document.getElementById('storyMenuClose').addEventListener('click',()=>{storyMenu.classList.remove('open');storyMenu.setAttribute('aria-hidden','true')});
+    storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
+    renderTopBgmToggle();
+    function startResortMusic(){if(localStorage.getItem('spr-bgm-enabled')==='off')return;casinoBgm.volume=.38;const promise=casinoBgm.play();if(promise&&promise.catch)promise.catch(()=>{})}
+    function pauseResortMusic(){casinoBgm.pause()}
+    function startCasinoMusic(){startResortMusic()}
+    function stopCasinoMusic(){/* BGM is resort-wide; leaving the casino must not stop it. */}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
@@ -1057,10 +982,10 @@
     }
 
     function updateCasinoHud(){
-      if(!bjActive){const maxBet=Math.floor(casinoChips/100)*100;if(maxBet>=100&&blackjackBet>maxBet)blackjackBet=maxBet;if(blackjackBet<100)blackjackBet=100}
       syncCasinoBalances();betAmountEl.textContent=casinoMoney(blackjackBet);casinoBetIndicator.textContent=`BET ${casinoMoney(blackjackBet)}`;
-      const disabled=bjActive;betMinus.disabled=disabled||blackjackBet<=100;betPlus.disabled=disabled||casinoChips<blackjackBet+100;dealButton.disabled=disabled||casinoChips<100||blackjackBet>casinoChips;
-      updateRefillControl(casinoRefill,casinoRefillNote,bjActive);
+      const disabled=bjActive;betMinus.disabled=disabled;betPlus.disabled=disabled;document.querySelectorAll('[data-bet]').forEach(b=>b.disabled=disabled);dealButton.disabled=disabled||casinoChips<10;
+      casinoRefill.classList.toggle('hidden',casinoChips>=10||bjActive);
+      if(blackjackBet>Math.max(10,casinoChips)&&!bjActive)blackjackBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
     }
     function makeBjDeck(){const deck=[];for(let d=0;d<4;d++)for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
     function makeSingleDeck(){const deck=[];for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
@@ -1085,25 +1010,27 @@
     }
     function dealerTurn(){dealerHidden=false;renderBlackjack();while(bjValue(dealerHand)<17)dealerHand.push(bjDeck.pop());const p=bjValue(playerHand),d=bjValue(dealerHand);if(d>21||p>d)finishRound('win');else if(p===d)finishRound('push');else finishRound('lose')}
     function startBlackjack(){
-      if(bjActive||casinoChips<100)return;blackjackBet=Math.min(blackjackBet,Math.floor(casinoChips/100)*100);if(blackjackBet<100)return;
+      if(bjActive||casinoChips<10)return;blackjackBet=Math.min(blackjackBet,Math.floor(casinoChips/10)*10);if(blackjackBet<10)return;
       casinoChips-=blackjackBet;casinoSave();bjDeck=makeBjDeck();playerHand=[bjDeck.pop(),bjDeck.pop()];dealerHand=[bjDeck.pop(),bjDeck.pop()];bjActive=true;dealerHidden=true;
       betPanel.classList.add('hidden');actionPanel.classList.remove('hidden');setCasinoStatus('HIT または STAND を選んでください。');renderBlackjack();
       const p=bjValue(playerHand),d=bjValue(dealerHand);if(p===21){dealerHidden=false;renderBlackjack();if(d===21)finishRound('push');else finishRound('blackjack')}
     }
-    function adjustBet(amount){if(bjActive)return;const maxBet=Math.floor(casinoChips/100)*100;if(maxBet<100){blackjackBet=100;updateCasinoHud();return}blackjackBet=Math.max(100,Math.min(maxBet,blackjackBet+amount));updateCasinoHud()}
+    function adjustBet(amount){if(bjActive)return;blackjackBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),blackjackBet+amount));updateCasinoHud()}
+    function setBet(value){if(bjActive)return;blackjackBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),value));updateCasinoHud()}
 
     function updateHiloHud(){
-      if(!hiloActive){const maxBet=Math.floor(casinoChips/100)*100;if(maxBet>=100&&hiloBet>maxBet)hiloBet=maxBet;if(hiloBet<100)hiloBet=100}
       syncCasinoBalances();hiloBetAmountEl.textContent=casinoMoney(hiloBet);hiloBetIndicator.textContent=`BET ${casinoMoney(hiloBet)}`;
-      const disabled=hiloActive;hiloBetMinus.disabled=disabled||hiloBet<=100;hiloBetPlus.disabled=disabled||casinoChips<hiloBet+100;hiloStart.disabled=disabled||casinoChips<100||hiloBet>casinoChips;
-      updateRefillControl(hiloRefill,hiloRefillNote,hiloActive);
+      const disabled=hiloActive;hiloBetMinus.disabled=disabled;hiloBetPlus.disabled=disabled;document.querySelectorAll('[data-hilo-bet]').forEach(b=>b.disabled=disabled);hiloStart.disabled=disabled||casinoChips<10;
+      hiloRefill.classList.toggle('hidden',casinoChips>=10||hiloActive);
+      if(hiloBet>Math.max(10,casinoChips)&&!hiloActive)hiloBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
     }
     function renderHilo(){
       hiloCurrentCard.innerHTML=hiloFirst?cardHtml(hiloFirst):'';hiloNextCard.innerHTML=hiloSecond?cardHtml(hiloSecond):'';updateHiloHud();
     }
-    function adjustHiloBet(amount){if(hiloActive)return;const maxBet=Math.floor(casinoChips/100)*100;if(maxBet<100){hiloBet=100;updateHiloHud();return}hiloBet=Math.max(100,Math.min(maxBet,hiloBet+amount));updateHiloHud()}
+    function adjustHiloBet(amount){if(hiloActive)return;hiloBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),hiloBet+amount));updateHiloHud()}
+    function setHiloBet(value){if(hiloActive)return;hiloBet=Math.max(10,Math.min(Math.max(10,Math.floor(casinoChips/10)*10),value));updateHiloHud()}
     function startHilo(){
-      if(hiloActive||casinoChips<100)return;hiloBet=Math.min(hiloBet,Math.floor(casinoChips/100)*100);if(hiloBet<100)return;
+      if(hiloActive||casinoChips<10)return;hiloBet=Math.min(hiloBet,Math.floor(casinoChips/10)*10);if(hiloBet<10)return;
       casinoChips-=hiloBet;casinoSave();hiloDeck=makeSingleDeck();hiloFirst=hiloDeck.pop();hiloSecond=null;hiloActive=true;
       hiloBetPanel.classList.add('hidden');hiloActionPanel.classList.remove('hidden');hiloStatus.textContent='次のカードは HIGH？ LOW？';renderHilo();
     }
@@ -1115,26 +1042,27 @@
       casinoChips=Math.round(casinoChips);casinoSave();hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.remove('hidden');renderHilo();
     }
 
-    casinoEnter.addEventListener('click',()=>{casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';stopCasinoMusic();showCasinoLevel('hub')});
+    casinoEnter.addEventListener('click',()=>{casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showCasinoLevel('hub');startCasinoMusic()});
     casinoExit.addEventListener('click',casinoBack);
-    casinoBgmToggle.addEventListener('click',()=>{if(casinoMusicEnabled)stopCasinoMusic();else startCasinoMusic()});
     casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
-    buyAfternoonTeaTicket.addEventListener('click',buyTeaTicket);
+    buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティーチケット（2名様用）',20000));
+    buyAfternoonTea4Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket4','アフタヌーンティーチケット（4名様用）',15000));
+    buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','追加ドリンクチケット',5000));
     document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>showCasinoLevel(button.dataset.casinoGame)));
     document.querySelectorAll('[data-casino-return]').forEach(button=>button.addEventListener('click',()=>{cancelActiveCasinoRound();showCasinoLevel(button.dataset.casinoReturn)}));
 
-    betMinus.addEventListener('click',()=>adjustBet(-100));betPlus.addEventListener('click',()=>adjustBet(100));
+    betMinus.addEventListener('click',()=>adjustBet(-10));betPlus.addEventListener('click',()=>adjustBet(10));document.querySelectorAll('[data-bet]').forEach(button=>button.addEventListener('click',()=>setBet(Number(button.dataset.bet))));
     dealButton.addEventListener('click',startBlackjack);
     hitButton.addEventListener('click',()=>{if(!bjActive)return;playerHand.push(bjDeck.pop());renderBlackjack();const value=bjValue(playerHand);if(value>21)finishRound('lose');else if(value===21)dealerTurn()});
     standButton.addEventListener('click',()=>{if(bjActive)dealerTurn()});
     doubleButton.addEventListener('click',()=>{if(!bjActive||playerHand.length!==2||casinoChips<blackjackBet)return;casinoChips-=blackjackBet;blackjackBet*=2;casinoSave();playerHand.push(bjDeck.pop());renderBlackjack();if(bjValue(playerHand)>21)finishRound('lose');else dealerTurn()});
-    casinoRefill.addEventListener('click',()=>useCasinoRefill('blackjack'));
+    casinoRefill.addEventListener('click',()=>{if(bjActive)return;casinoChips=1000;blackjackBet=100;casinoSave();setCasinoStatus('1,000 CHIPをご用意しました。');updateCasinoHud()});
 
-    hiloBetMinus.addEventListener('click',()=>adjustHiloBet(-100));hiloBetPlus.addEventListener('click',()=>adjustHiloBet(100));
+    hiloBetMinus.addEventListener('click',()=>adjustHiloBet(-10));hiloBetPlus.addEventListener('click',()=>adjustHiloBet(10));document.querySelectorAll('[data-hilo-bet]').forEach(button=>button.addEventListener('click',()=>setHiloBet(Number(button.dataset.hiloBet))));
     hiloStart.addEventListener('click',startHilo);hiloHigh.addEventListener('click',()=>chooseHilo('high'));hiloLow.addEventListener('click',()=>chooseHilo('low'));
-    hiloRefill.addEventListener('click',()=>useCasinoRefill('hilo'));
-    syncCasinoBalances();syncCasinoMusicButton();updateCasinoHud();updateHiloHud();renderPrizeCounter();
+    hiloRefill.addEventListener('click',()=>{if(hiloActive)return;casinoChips=1000;hiloBet=100;casinoSave();hiloStatus.textContent='1,000 CHIPをご用意しました。';updateHiloHud()});
+    syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();
 
     const roomTypes={
       101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',106:'デラックスオーシャン',107:'デラックスオーシャン',108:'デラックスオーシャン',109:'デラックスオーシャン',110:'デラックスオーシャン',
@@ -1241,19 +1169,7 @@
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
-    function roomMessages(){
-      if(!activeRoom)return [];
-      if(Array.isArray(roomMessagesCache[activeRoom]))return roomMessagesCache[activeRoom];
-      const local=safeLocalJson(`spr-room-${activeRoom}`,[]);
-      roomMessagesCache[activeRoom]=Array.isArray(local)?local:[];
-      return roomMessagesCache[activeRoom];
-    }
-    function saveRoomMessages(room,messages){
-      const trimmed=(messages||[]).slice(-100);
-      roomMessagesCache[room]=trimmed;
-      localStorage.setItem(`spr-room-${room}`,JSON.stringify(trimmed));
-      void setGlobalFlag(`room_chat_${room}`,trimmed);
-    }
+    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
     function renderChat(){
       if(!activeRoom)return;
       const messages=roomMessages(); chatLog.replaceChildren();
@@ -1264,47 +1180,7 @@
     function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
     function openChatSheet(){closeRoomService();closeRoomBelongings();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
     function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
-    function roomServiceOrders(){
-      if(!activeRoom)return [];
-      if(Array.isArray(roomServiceCache[activeRoom]))return roomServiceCache[activeRoom];
-      const local=safeLocalJson(`spr-roomservice-${activeRoom}`,[]);
-      roomServiceCache[activeRoom]=Array.isArray(local)?local:[];
-      return roomServiceCache[activeRoom];
-    }
-    function saveRoomServiceOrders(room,orders){
-      const trimmed=(orders||[]).slice(-20);
-      roomServiceCache[room]=trimmed;
-      localStorage.setItem(`spr-roomservice-${room}`,JSON.stringify(trimmed));
-      void setGlobalFlag(`room_service_${room}`,trimmed);
-    }
-    async function loadRoomSharedState(room,{notify=false}={}){
-      if(!room||!sprSupabase)return;
-      try{
-        const chatKey=`room_chat_${room}`, serviceKey=`room_service_${room}`;
-        const before=Array.isArray(roomMessagesCache[room])?roomMessagesCache[room]:safeLocalJson(`spr-room-${room}`,[]);
-        const flags=await getGlobalFlags([chatKey,serviceKey]);
-        if(Array.isArray(flags[chatKey])){
-          roomMessagesCache[room]=flags[chatKey].slice(-100);
-          localStorage.setItem(`spr-room-${room}`,JSON.stringify(roomMessagesCache[room]));
-        }else if(Array.isArray(before)&&before.length){saveRoomMessages(room,before)}
-        else roomMessagesCache[room]=[];
-        const localOrders=safeLocalJson(`spr-roomservice-${room}`,[]);
-        if(Array.isArray(flags[serviceKey])){
-          roomServiceCache[room]=flags[serviceKey].slice(-20);
-          localStorage.setItem(`spr-roomservice-${room}`,JSON.stringify(roomServiceCache[room]));
-        }else if(Array.isArray(localOrders)&&localOrders.length){saveRoomServiceOrders(room,localOrders)}
-        else roomServiceCache[room]=[];
-        if(activeRoom===room){
-          const after=roomMessagesCache[room];
-          if(notify&&after.length>(Array.isArray(before)?before.length:0)){
-            const latest=after[after.length-1];
-            if(latest&&latest.name!==activeGuest&&!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(latest)}
-          }
-          renderChat();
-          if(roomServiceSheet.classList.contains('open'))renderRoomServiceHistory();
-        }
-      }catch(error){console.error('room sync failed:',error)}
-    }
+    function roomServiceOrders(){try{return JSON.parse(localStorage.getItem(`spr-roomservice-${activeRoom}`)||'[]')}catch{return []}}
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
@@ -1318,7 +1194,7 @@
     }
     function renderRoomBelongings(){
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
-      Object.entries(belongingsCatalog).forEach(([key,item])=>{const count=Math.min(item.max,Math.max(0,Math.floor(Number(belongings[key]||0))));if(!count)return;hasAny=true;const row=document.createElement('div');row.className='belongings-item';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label;const detail=document.createElement('small');detail.textContent=item.detail;info.append(name,detail);const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(info,qty);roomBelongingsList.append(row)});
+      Object.entries(belongingsCatalog).forEach(([key,item])=>{const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;if(!count)return;hasAny=true;const row=document.createElement('div');row.className='belongings-item';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label;const detail=document.createElement('small');detail.textContent=item.detail;info.append(name,detail);const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(info,qty);roomBelongingsList.append(row)});
       if(!hasAny){const empty=document.createElement('div');empty.className='belongings-empty';empty.textContent='現在、所持品はありません。カジノの景品交換所などで手に入れた品物がここに表示されます。';roomBelongingsList.append(empty)}
     }
     function openRoomService(){
@@ -1349,7 +1225,7 @@
     roomServiceOrder.addEventListener('click',()=>{
       if(!activeRoom)return;const items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
       const now=new Date();const order={id:String(Date.now()).slice(-6),room:activeRoom,guest:activeGuest,items,time:now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
-      const orders=roomServiceOrders().slice();orders.push(order);saveRoomServiceOrders(activeRoom,orders);
+      const orders=roomServiceOrders();orders.push(order);localStorage.setItem(`spr-roomservice-${activeRoom}`,JSON.stringify(orders.slice(-20)));
       Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();renderRoomServiceHistory();roomServiceResult.textContent=`${activeRoom}号室のご注文を承りました。注文番号 ${order.id}`;roomServiceResult.classList.remove('hidden');
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
@@ -1367,89 +1243,17 @@
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();void loadRoomSharedState(room);updatePlayerLocation(`room:${room}`);
+      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
     });
     document.getElementById('chatForm').addEventListener('submit',event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
-      const messages=roomMessages().slice();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
-      saveRoomMessages(activeRoom,messages);input.value='';renderChat();input.focus();
+      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
     });
-    function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updatePlayerLocation('lobby');closeView(roomView)}
+    function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}});
-
-    async function bootstrapCloudState(){
-      if(!sprSupabase)return;
-      try{
-        const player=await ensureCloudPlayer();
-        const flags=await getPlayerFlags(['casino_initialized','belongings','bar_drinks','emily_announced','casino_refill']);
-        if(flags.casino_initialized===true){
-          const cloudChips=Number(player.chips);
-          casinoChips=Number.isFinite(cloudChips)&&cloudChips>=0?Math.round(cloudChips):0;
-        }else{
-          const localChips=Number(localStorage.getItem(casinoChipKey)||1000);
-          casinoChips=Number.isFinite(localChips)&&localChips>=0?Math.round(localChips):1000;
-          const {error}=await sprSupabase.from('players').update({chips:casinoChips,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId);
-          if(error)throw error;
-          await setPlayerFlag('casino_initialized',true);
-        }
-        previousCasinoChips=casinoChips;
-        localStorage.setItem(casinoChipKey,String(casinoChips));
-
-        if(flags.belongings&&typeof flags.belongings==='object'&&!Array.isArray(flags.belongings)){
-          belongingsCache=flags.belongings;
-          localStorage.setItem(belongingsKey,JSON.stringify(belongingsCache));
-        }else if(Object.keys(belongingsCache).length){await setPlayerFlag('belongings',belongingsCache)}
-        else await setPlayerFlag('belongings',{});
-
-        if(flags.bar_drinks&&typeof flags.bar_drinks==='object'&&!Array.isArray(flags.bar_drinks)){
-          barDrinkStateCache=flags.bar_drinks;
-          localStorage.setItem(barDrinkStorageKey,JSON.stringify(barDrinkStateCache));
-        }else if(Object.keys(barDrinkStateCache).length){await setPlayerFlag('bar_drinks',barDrinkStateCache)}
-        else await setPlayerFlag('bar_drinks',{});
-
-        emilyAnnouncedCloud=flags.emily_announced===true||emilyAnnouncedCloud;
-        if(emilyAnnouncedCloud)localStorage.setItem(emilyAnnouncedKey,'1');
-
-        if(flags.casino_refill&&typeof flags.casino_refill==='object'&&!Array.isArray(flags.casino_refill)){casinoRefillState=flags.casino_refill}
-        normalizeCasinoRefillState();saveCasinoRefillState();
-
-        syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();renderRoomBelongings();renderBarOrderState();
-        updatePlayerLocation(player.current_location||'lobby');
-        void restoreResortAnnouncement();
-      }catch(error){console.error('Initial Supabase sync failed:',error)}
-    }
-
-    async function refreshCloudPlayerState(){
-      if(!sprSupabase||!currentPlayerId)return;
-      try{
-        const [{data:player,error:playerError},flags]=await Promise.all([
-          sprSupabase.from('players').select('chips,current_location').eq('id',currentPlayerId).single(),
-          getPlayerFlags(['belongings','bar_drinks','emily_announced','casino_refill'])
-        ]);
-        if(playerError)throw playerError;
-        if(!bjActive&&!hiloActive){
-          const cloudChips=Number(player.chips);
-          if(Number.isFinite(cloudChips)&&cloudChips>=0&&Math.round(cloudChips)!==casinoChips){casinoChips=Math.round(cloudChips);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter()}
-        }
-        if(flags.belongings&&typeof flags.belongings==='object'&&!Array.isArray(flags.belongings)){
-          const next=JSON.stringify(flags.belongings),prev=JSON.stringify(belongingsCache);
-          if(next!==prev){belongingsCache=flags.belongings;localStorage.setItem(belongingsKey,next);renderRoomBelongings();renderPrizeCounter()}
-        }
-        if(flags.bar_drinks&&typeof flags.bar_drinks==='object'&&!Array.isArray(flags.bar_drinks)){
-          const next=JSON.stringify(flags.bar_drinks),prev=JSON.stringify(barDrinkStateCache);
-          if(next!==prev){barDrinkStateCache=flags.bar_drinks;localStorage.setItem(barDrinkStorageKey,next);if(barOrderSheet.classList.contains('open'))renderBarOrderState()}
-        }
-        if(flags.emily_announced===true&&!emilyAnnouncedCloud){emilyAnnouncedCloud=true;localStorage.setItem(emilyAnnouncedKey,'1')}
-        if(flags.casino_refill&&typeof flags.casino_refill==='object'&&!Array.isArray(flags.casino_refill)){const prev=JSON.stringify(casinoRefillState);casinoRefillState=flags.casino_refill;normalizeCasinoRefillState();if(JSON.stringify(casinoRefillState)!==prev){updateCasinoHud();updateHiloHud()}}
-      }catch(error){console.error('Supabase refresh failed:',error)}
-    }
-
-    void bootstrapCloudState();
-    setInterval(()=>{if(!document.hidden)void refreshCloudPlayerState()},5000);
-    setInterval(()=>{if(!document.hidden&&activeRoom)void loadRoomSharedState(activeRoom,{notify:true})},3000);
-    setInterval(()=>{if(!document.hidden)void restoreResortAnnouncement()},10000);
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
