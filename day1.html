@@ -339,7 +339,9 @@
     @media(max-width:520px){.special-line{font-size:17px}.special-choice{grid-template-columns:1fr}}
     .special-broadcast{position:fixed;inset:0;z-index:155;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,15,.58);backdrop-filter:blur(4px)}.special-broadcast.hidden{display:none}.special-broadcast-card{width:min(560px,94vw);background:rgba(5,20,34,.96);border:1px solid rgba(225,199,132,.55);box-shadow:0 24px 80px rgba(0,0,0,.48);padding:28px 22px;text-align:center;color:#fff}.special-broadcast-kicker{font:11px Georgia,serif;letter-spacing:.24em;color:#d8bd79}.special-broadcast-text{font:15px/2 Georgia,'Yu Mincho',serif;margin:18px 0;white-space:pre-line}.special-broadcast-count{font:24px Georgia,serif;color:#efd79a}.special-broadcast-actions{margin-top:18px}.special-broadcast-actions button{min-height:46px;padding:0 22px;border:1px solid rgba(225,199,132,.55);background:transparent;color:#fff;letter-spacing:.1em}.spectator-screen{position:fixed;inset:0;z-index:136;background:linear-gradient(rgba(2,10,18,.94),rgba(2,10,18,.98)),url("blue_shell_casino_t.jpg") center/cover;color:#fff;overflow:auto;padding:82px 18px 32px}.spectator-inner{width:min(760px,100%);margin:auto;text-align:center}.spectator-inner h2{font:26px Georgia,serif;letter-spacing:.18em;color:#efd79a}.spectator-status{font:13px/1.9;color:rgba(255,255,255,.72)}.spectator-stage{margin:24px auto;padding:22px;border:1px solid rgba(225,199,132,.3);background:rgba(4,18,31,.72);min-height:220px}.spectator-close{position:fixed;top:18px;right:18px;z-index:2;width:44px;height:44px;border:1px solid rgba(225,199,132,.45);border-radius:50%;background:rgba(3,15,27,.9);color:#fff;font-size:22px}
 
-  </style>
+  
+    .tea-salon-active::after{content:"AFTERNOON TEA SALON";position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(8,20,34,.76);color:#fff;letter-spacing:.28em;font-family:Georgia,serif;font-size:clamp(18px,4vw,34px);animation:teaSalonReveal 1.8s ease both;pointer-events:none}.tea-salon-venue{cursor:pointer}@keyframes teaSalonReveal{0%{opacity:0}25%{opacity:1}72%{opacity:1}100%{opacity:0}}
+</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -520,7 +522,34 @@
       <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div><div class="slide"><img src="sunset_terrace1.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="sunset_terrace2.jpg" alt="サンセットテラスの料理"></div><div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div><div class="slide"><img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace 外観"></div><div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div><div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Marine Bloom Cafe ティーセット"></div>
     </div></div><div class="dots" data-dots="restaurant"></div>
     <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
-      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご注文はこちらからお選びいただけます。</p><div class="menu-list"><div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div><button class="menu-item tea-venue" type="button" data-tea-venue="The Pearl Terrace">The Pearl Terrace<small>RESTAURANT &amp; AFTERNOON TEA</small></button><button class="menu-item tea-venue" type="button" data-tea-venue="Marine Bloom Cafe">Marine Bloom Cafe<small>CAFÉ &amp; AFTERNOON TEA</small></button></div><p id="teaTicketMessage" class="bar-selection" aria-live="polite">アフタヌーンティーチケット（2名様用／4名様用）は、どちらの店舗でもご利用いただけます。</p></div>
+      <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご利用方法をお選びください。</p>
+        <div class="menu-list">
+          <div class="menu-item">サンセットテラス<small>DINNER &amp; SEA VIEW</small></div>
+          <button class="menu-item cafe-entry" type="button" data-cafe-mode="normal">CAFE<small>カフェを利用する</small></button>
+          <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>チケットをお持ちのお客様</small></button>
+        </div>
+        <p id="teaTicketMessage" class="bar-selection" aria-live="polite">アフタヌーンティーチケット（2名様用／4名様用）は、The Pearl Terrace / Marine Bloom Cafe のどちらでもご利用いただけます。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="subview" id="teaSalonView" aria-hidden="true">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">AFTERNOON TEA SALON</div><div></div></div>
+    <div class="gallery" data-gallery="teaSalon"><div class="track">
+      <div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace"></div>
+      <div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe"></div>
+      <div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Afternoon Tea"></div>
+    </div></div><div class="dots" data-dots="teaSalon"></div>
+    <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES</div>
+      <p>チケットを使用して、特別なアフタヌーンティーのひとときをお楽しみいただけます。</p>
+      <div class="panel"><h3>ご利用案内</h3>
+        <div id="teaSalonTicketStatus" class="bar-selection"></div>
+        <div class="menu-list">
+          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="The Pearl Terrace" data-salon-key="tea:pearl-terrace">The Pearl Terrace<small>AFTERNOON TEA SALON</small></button>
+          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="Marine Bloom Cafe" data-salon-key="tea:marine-bloom">Marine Bloom Cafe<small>AFTERNOON TEA SALON</small></button>
+        </div>
+        <p id="teaSalonMessage" class="bar-selection" aria-live="polite">会場をお選びください。</p>
+      </div>
     </div>
   </section>
 
@@ -724,23 +753,48 @@
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     // 旧版のアフタヌーンティーチケットがある場合は2名様用へ引き継ぐ
     {const b=loadBelongings();if(Number(b.afternoonTeaTicket||0)>0){b.afternoonTeaTicket2=Math.max(0,Math.floor(Number(b.afternoonTeaTicket2||0)))+Math.max(0,Math.floor(Number(b.afternoonTeaTicket||0)));delete b.afternoonTeaTicket;saveBelongings(b)}}
-    // アフタヌーンティーチケットは The Pearl Terrace / Marine Bloom Cafe のどちらでも使用可能
+    // CAFE / AFTERNOON TEA SALON
     const teaTicketMessage=document.getElementById('teaTicketMessage');
-    document.querySelectorAll('[data-tea-venue]').forEach(button=>button.addEventListener('click',()=>{
-      const venue=button.dataset.teaVenue, tea2=belongingCount('afternoonTeaTicket2'), tea4=belongingCount('afternoonTeaTicket4');
-      if(!tea2&&!tea4){teaTicketMessage.textContent=`${venue} のアフタヌーンティーにはチケットが必要です。`;return}
-      let key='',label='';
-      if(tea2&&tea4){
-        const choice=window.prompt(`${venue} で使用するチケットを選んでください。\n2 = 2名様用（所持 ${tea2}）\n4 = 4名様用（所持 ${tea4}）`,'2');
+    const teaSalonMessage=document.getElementById('teaSalonMessage');
+    const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
+    function refreshTeaSalonStatus(){
+      const t2=belongingCount('afternoonTeaTicket2'),t4=belongingCount('afternoonTeaTicket4');
+      if(teaSalonTicketStatus)teaSalonTicketStatus.textContent=`2名様用：${t2}枚　｜　4名様用：${t4}枚`;
+      return {t2,t4};
+    }
+    document.querySelectorAll('[data-cafe-mode]').forEach(button=>button.addEventListener('click',()=>{
+      if(button.dataset.cafeMode==='salon'){
+        refreshTeaSalonStatus();openView('teaSalonView');
+      }else{
+        teaTicketMessage.textContent='通常のカフェ利用です。The Pearl Terrace / Marine Bloom Cafe を自由にお楽しみください。';
+      }
+    }));
+    document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',()=>{
+      const venue=button.dataset.salonVenue;
+      const {t2,t4}=refreshTeaSalonStatus();
+      if(!t2&&!t4){teaSalonMessage.textContent='AFTERNOON TEA SALONのご利用にはチケットが必要です。';return}
+      let key='',label='',capacity=0;
+      if(t2&&t4){
+        const choice=window.prompt(`${venue} で使用するチケットを選んでください。\n2 = 2名様用（所持 ${t2}）\n4 = 4名様用（所持 ${t4}）`,'2');
         if(choice===null)return;
-        if(String(choice).trim()==='4'){key='afternoonTeaTicket4';label='4名様用'}else if(String(choice).trim()==='2'){key='afternoonTeaTicket2';label='2名様用'}else{teaTicketMessage.textContent='2 または 4 を入力してください。';return}
-      }else if(tea2){key='afternoonTeaTicket2';label='2名様用'}else{key='afternoonTeaTicket4';label='4名様用'}
-      if(!window.confirm(`${venue} でアフタヌーンティーチケット（${label}）を1枚使用しますか？`))return;
-      const belongings=loadBelongings();
-      belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
-      teaTicketMessage.textContent=`${venue} でアフタヌーンティーチケット（${label}）を使用しました。どうぞお楽しみください。`;
-      if(typeof renderBelongings==='function')renderBelongings();
-      if(typeof renderPrizeCounter==='function')renderPrizeCounter();
+        if(String(choice).trim()==='4'){key='afternoonTeaTicket4';label='4名様用';capacity=4}
+        else if(String(choice).trim()==='2'){key='afternoonTeaTicket2';label='2名様用';capacity=2}
+        else{teaSalonMessage.textContent='2 または 4 を入力してください。';return}
+      }else if(t2){key='afternoonTeaTicket2';label='2名様用';capacity=2}else{key='afternoonTeaTicket4';label='4名様用';capacity=4}
+      const guestSlots=capacity-1;
+      const guests=window.prompt(`${label}を使用します。\n一緒にお茶をするお客様のお名前を入力してください。\n最大 ${guestSlots}名（複数の場合は「、」で区切ってください）`,'');
+      if(guests===null)return;
+      const names=String(guests).split(/[、,]/).map(v=>v.trim()).filter(Boolean).slice(0,guestSlots);
+      if(!names.length){teaSalonMessage.textContent='同席するお客様を1名以上入力してください。';return}
+      if(!window.confirm(`${venue} / ${label}\n${names.join('、')} 様をご招待します。\nチケットを1枚使用して30分間のティータイムを開始しますか？`))return;
+      const belongings=loadBelongings();belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
+      const session={venue,label,capacity,host:storedGuestName||'お客様',guests:names,startedAt:Date.now(),endsAt:Date.now()+30*60*1000};
+      localStorage.setItem('spr-tea-session',JSON.stringify(session));
+      teaSalonMessage.textContent=`${names.join('、')} 様をご招待しました。30分間のAFTERNOON TEA SALONを開始します。`;
+      refreshTeaSalonStatus();
+      if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
+      // 特別演出はここへ追加。会場・参加者・ドリンク等を条件に物語イベントへ接続できます。
+      document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
     }));
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
