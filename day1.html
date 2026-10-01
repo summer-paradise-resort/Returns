@@ -1014,7 +1014,7 @@
       await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();
       setTimeout(()=>{specialBroadcast.classList.add('hidden');specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialTableRule.textContent=`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　ゲームをお選びください。`;pushSpecialState({challenger:storedGuestName,message:'ゲーム選択中'},'open')},Math.max(0,new Date(startsAt).getTime()-Date.now()));
     }
-    async async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
+    async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial)return;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return;await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:user.id,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});}catch(e){console.warn('special announcement sync',e)}
     }
