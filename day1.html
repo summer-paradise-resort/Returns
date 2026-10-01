@@ -1023,7 +1023,15 @@
     async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial)return null;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return null;const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:user.id,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
-    function markSpecialChoice(game){specialSelectedGame=game;document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame===game));specialPlayArea.innerHTML=`<div class="special-result">${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} を選択しました。<br><small>開卓までこのままお待ちください。</small></div>`;pushSpecialState({challenger:storedGuestName,message:`${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} 選択済み・開卓待機中`},'countdown')}
+    function markSpecialChoice(game){
+      specialSelectedGame=game;
+      document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame===game));
+      const isOpenTime=specialStartsAt>0&&Date.now()>=specialStartsAt;
+      specialPlayArea.innerHTML=`<div class="special-result">${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} を選択しました。<br><small>${isOpenTime?'開卓します。':'開卓までこのままお待ちください。'}</small></div>`;
+      pushSpecialState({challenger:storedGuestName,message:isOpenTime?'SPECIAL TABLE 開卓':`${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} 選択済み・開卓待機中`},isOpenTime?'open':'countdown');
+      // 1分の開卓時刻をすでに過ぎてからゲームを選んだ場合も、その場で必ず開卓する。
+      if(isOpenTime){setTimeout(launchSelectedSpecialGame,250)}
+    }
     function launchSelectedSpecialGame(){if(!specialSelectedGame)return;clearInterval(specialCountdownTimer);specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';if(specialSelectedGame==='blackjack')startSpecialBlackjack();else startSpecialHilo()}
     async function acceptAllIn(){
       specialActions.innerHTML='';await specialSay('運のみぞ知る','───これで、後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんながお集まりになるのだもの。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800);
