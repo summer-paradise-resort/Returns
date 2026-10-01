@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2743">
+  <title>Security Check | Summer Paradise Resort</title>
+  <style>
+    :root{--navy:#0d2743;--gold:#b58b43;--cream:#f7f3eb;--text:#18283a}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:#071a2b;color:#fff}
+    body{min-height:100vh;min-height:100dvh;display:flex;align-items:stretch;justify-content:center}
+    .scene{position:relative;width:100%;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:28px 18px;background:linear-gradient(180deg,rgba(5,20,34,.48),rgba(5,20,34,.82)),url("summer_paradise_beach.jpg") center/cover no-repeat}
+    .panel{width:min(460px,100%);padding:32px 24px 28px;background:rgba(247,243,235,.96);color:var(--text);border:1px solid rgba(255,255,255,.48);backdrop-filter:blur(8px)}
+    .brand{text-align:center;margin-bottom:26px}
+    .brand img{width:56px;height:56px;object-fit:contain;margin-bottom:12px}
+    .brand strong{display:block;font:22px/1.1 Georgia,serif;color:var(--navy);font-weight:400;letter-spacing:.03em}
+    .brand small{display:block;margin-top:7px;font:9px Georgia,serif;letter-spacing:.36em;color:var(--gold)}
+    .eyebrow{text-align:center;margin:0 0 10px;font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold)}
+    h1{text-align:center;margin:0;font:29px Georgia,serif;font-weight:400;letter-spacing:.12em;color:var(--navy)}
+    .jp{text-align:center;margin:7px 0 22px;font-size:12px;letter-spacing:.12em;color:#6d7277}
+    .description{margin:0 0 24px;font-size:12px;line-height:1.9;text-align:center;color:#58616a}
+    label{display:block;margin-bottom:8px;font-size:11px;letter-spacing:.12em;color:#5d6670}
+    input{width:100%;min-height:50px;border:1px solid #d2c8b8;background:#fff;color:var(--navy);padding:11px 13px;font:16px inherit;outline:none;border-radius:0}
+    input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(181,139,67,.13)}
+    button{width:100%;min-height:52px;margin-top:14px;border:0;background:var(--navy);color:#fff;font:12px Georgia,serif;letter-spacing:.16em}
+    .note{margin:14px 0 0;text-align:center;font-size:10px;line-height:1.7;color:#7a7f83}
+    .error{min-height:1.4em;margin:9px 0 0;color:#a6251f;text-align:center;font-size:11px}
+    @media(max-width:520px){.scene{padding:18px 14px}.panel{padding:27px 19px 24px}}
+  </style>
+</head>
+<body>
+  <main class="scene">
+    <section class="panel" aria-labelledby="securityTitle">
+      <div class="brand"><img src="LOG.PNG" alt=""><strong>Summer Paradise</strong><small>RESORT</small></div>
+      <p class="eyebrow">GUEST VERIFICATION</p>
+      <h1 id="securityTitle">SECURITY CHECK</h1>
+      <div class="jp">ご宿泊者様の確認</div>
+      <p class="description">島内施設をご利用になるお客様のお名前を確認いたします。<br>ご宿泊者様のお名前をご入力ください。</p>
+      <form id="securityForm">
+        <label for="guestName">GUEST NAME</label>
+        <input id="guestName" maxlength="24" autocomplete="name" placeholder="お名前" required>
+        <button type="submit">ENTER THE RESORT</button>
+        <p id="securityError" class="error" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_d4Uj3azYwSAIiwDK2UieGw_1Hp3LJfM';
+
+    const form=document.getElementById('securityForm');
+    const input=document.getElementById('guestName');
+    const error=document.getElementById('securityError');
+    const submitButton=form.querySelector('button[type="submit"]');
+    const existing=(localStorage.getItem('spr-guest-name')||'').trim();
+    if(existing)input.value=existing;
+
+    let supabaseClient=null;
+    if(window.supabase?.createClient){
+      supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+    }
+
+    async function findOrCreatePlayer(name){
+      const nameKey=name.trim().toLowerCase();
+
+      let {data:player,error:findError}=await supabaseClient
+        .from('players')
+        .select('id,display_name,chips,current_location')
+        .eq('name_key',nameKey)
+        .maybeSingle();
+
+      if(findError)throw findError;
+
+      if(!player){
+        const {data:newPlayer,error:insertError}=await supabaseClient
+          .from('players')
+          .insert({display_name:name})
+          .select('id,display_name,chips,current_location')
+          .single();
+
+        if(insertError){
+          if(insertError.code==='23505'){
+            const {data:retryPlayer,error:retryError}=await supabaseClient
+              .from('players')
+              .select('id,display_name,chips,current_location')
+              .eq('name_key',nameKey)
+              .single();
+            if(retryError)throw retryError;
+            player=retryPlayer;
+          }else{
+            throw insertError;
+          }
+        }else{
+          player=newPlayer;
+        }
+      }else{
+        const {error:updateError}=await supabaseClient
+          .from('players')
+          .update({last_seen_at:new Date().toISOString()})
+          .eq('id',player.id);
+        if(updateError)throw updateError;
+      }
+
+      return player;
+    }
+
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      error.textContent='';
+
+      const name=input.value.trim();
+      if(!name){
+        error.textContent='お名前を入力してください。';
+        input.focus();
+        return;
+      }
+
+      if(!supabaseClient){
+        error.textContent='接続の準備に失敗しました。通信環境をご確認ください。';
+        return;
+      }
+
+      submitButton.disabled=true;
+      submitButton.textContent='CHECKING...';
+
+      try{
+        const player=await findOrCreatePlayer(name);
+
+        localStorage.setItem('spr-guest-name',player.display_name||name);
+        localStorage.setItem('spr-player-id',player.id);
+        localStorage.setItem('spr-last-seen',String(Date.now()));
+
+        window.location.href='day1.html';
+      }catch(err){
+        console.error('Supabase player check failed:',err);
+        error.textContent='お名前の確認に失敗しました。少し時間をおいて、もう一度お試しください。';
+        submitButton.disabled=false;
+        submitButton.textContent='ENTER THE RESORT';
+      }
+    });
+  </script>
+</body>
+</html>
