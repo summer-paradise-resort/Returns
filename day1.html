@@ -1028,7 +1028,7 @@
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:true});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
       const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
-      await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();
+      await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
       const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((new Date(startsAt).getTime()-Date.now())/1000));specialTableRule.textContent=left?`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　ゲームをお選びください。`:`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　ゲームをお選びください。`;if(!left){clearInterval(challengerCountdown);pushSpecialState({challenger:storedGuestName,message:'ゲーム選択中'},'open')}};
       updateChallengerCountdown();const challengerCountdown=setInterval(updateChallengerCountdown,1000);
@@ -1044,7 +1044,7 @@
     }
     function finishSpecial(win){
       const stake=Number(specialTableScreen.dataset.stake||0);if(win){casinoChips=stake*2;specialPlayArea.innerHTML=`<div class="special-result">WIN<br>${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP</div>`}else{casinoChips=0;specialPlayArea.innerHTML=`<div class="special-result">LOSE</div>${grantSpecialLossReward()}`}
-      casinoSave();syncCasinoBalances();specialGameChoice.classList.add('hidden');specialTableRule.textContent=win?'勝者には、賭け金と同額のCHIPが加算されます。':'賭けたCHIPは失われました。';pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
+      casinoSave();syncCasinoBalances();specialGameChoice.classList.add('hidden');specialTableRule.textContent=win?'勝者には、賭け金と同額のCHIPが加算されます。':'賭けたCHIPは失われました。';specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
     }
     function startSpecialBlackjack(){
       const stake=casinoChips;specialTableScreen.dataset.stake=stake;specialGameChoice.classList.add('hidden');casinoChips=0;syncCasinoBalances();
