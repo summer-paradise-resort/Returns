@@ -19,7 +19,7 @@
     .brand-name{font:20px/1 Georgia,serif;color:var(--gold);white-space:nowrap}
     .brand-name small{display:block;font-size:9px;letter-spacing:.42em;margin-top:7px;text-align:center}
     .home-link{color:var(--navy);font:11px Georgia,serif;letter-spacing:.12em;text-decoration:none;padding:12px 4px}
-    .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat}
+    .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;transition:background-image .45s ease,background-position .45s ease}
     .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
     .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
     h1{font-size:clamp(31px,8vw,48px);font-weight:500;letter-spacing:.08em;line-height:1.35;margin:0 0 14px}
@@ -330,7 +330,7 @@
   </div>
 
   <main id="day1Home">
-    <section class="hero">
+    <section class="hero" id="heroSection">
       <div class="hero-copy">
         <p class="eyebrow">サマーパラダイスリゾート　/　DAY1</p>
         <h1>島で過ごす。</h1>
@@ -616,6 +616,46 @@
     const belongingsCatalog={
       afternoonTeaTicket:{label:'アフタヌーンティーチケット',detail:'The Pearl Terraceのアフタヌーンティーにご利用いただけます。',max:2}
     };
+    const heroSection=document.getElementById('heroSection');
+    const heroTimeBackgrounds={
+      day:['summer_paradise_noon.jpg'],
+      sunset:['summer_paradise_sunset.jpg'],
+      night:['summer_paradise_night.jpg']
+    };
+    let heroBackgroundToken='';
+    function currentTokyoPeriod(){
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
+    }
+    function buildHeroBackground(imageName){
+      return `linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("${imageName}") center 48%/cover no-repeat`;
+    }
+    function preloadImage(src){
+      return new Promise(resolve=>{
+        const img=new Image();
+        img.onload=()=>resolve(src);
+        img.onerror=()=>resolve('');
+        img.src=src;
+      });
+    }
+    async function updateHeroBackground(force=false){
+      if(!heroSection)return;
+      const period=currentTokyoPeriod();
+      if(!force&&heroBackgroundToken===period)return;
+      const candidates=(heroTimeBackgrounds[period]||[]).concat(heroTimeBackgrounds.day||[]);
+      let selected='summer_paradise_noon.jpg';
+      for(const candidate of candidates){
+        const ok=await preloadImage(candidate);
+        if(ok){selected=ok;break}
+      }
+      heroSection.style.background=buildHeroBackground(selected);
+      heroBackgroundToken=period;
+      heroSection.dataset.heroPeriod=period;
+    }
+    function scheduleHeroBackgroundRefresh(){
+      updateHeroBackground(true);
+      setInterval(()=>updateHeroBackground(),60*1000);
+    }
     function loadBelongings(){
       try{const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');return saved&&typeof saved==='object'?saved:{}}
       catch{return {}}
@@ -629,6 +669,7 @@
     function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+    scheduleHeroBackgroundRefresh();
 
     // RESORT INFORMATION
     // 今後、ここに「日付」「時間」「物語フラグ」の条件を追加すれば、不可思議なお知らせへ差し替えられます。
