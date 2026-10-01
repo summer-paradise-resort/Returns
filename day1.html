@@ -346,6 +346,12 @@
 
     .special-line .slide-char{display:inline-block;opacity:0;filter:blur(2px);transition:opacity .34s ease,filter .42s ease;will-change:opacity,filter}
     .special-line .slide-char.in{opacity:1;filter:blur(0)}
+
+/* SPECIAL TABLE FIX 2026-10-01:
+   Keep the resort announcement clear of the opponent name/table content. */
+body:has(#casinoGame:not(.hidden)) .global-special-notice{top:64px}
+body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1067,8 +1073,8 @@
         blackjackScreen.querySelector('.casino-return').classList.add('hidden');
       }else{
         hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','SPECIAL TABLE');
-        hiloScreen.querySelector('.hand-zone h3').textContent='YOUR CARD';
-        hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='運のみぞ知る';
+        hiloScreen.querySelector('.hand-zone h3').textContent='運のみぞ知る';
+        hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='YOUR CARD';
         hiloBetPanel.classList.add('hidden');hiloActionPanel.classList.remove('hidden');
         hiloScreen.querySelector('.casino-return').classList.add('hidden');
       }
@@ -1091,7 +1097,7 @@
     }
     function startSpecialHilo(){
       specialNormalTableSetup('hilo');casinoChips=0;syncCasinoBalances();let pw=0,ew=0,round=0,locked=false;
-      const play=()=>{locked=false;round++;const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML=cardHtml(a);hiloNextCard.innerHTML='<div class="playing-card back"></div>';hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')};play()
+      const play=()=>{locked=false;round++;const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')};play()
     }
     document.querySelectorAll('[data-special-game]').forEach(b=>b.addEventListener('click',()=>markSpecialChoice(b.dataset.specialGame)));
 
