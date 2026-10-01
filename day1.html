@@ -344,8 +344,8 @@
 
     .admin-event-tools{display:flex;justify-content:flex-end;margin:10px 0 0}.admin-reset-btn{border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.72);color:#6b7480;padding:7px 10px;font-size:9px;letter-spacing:.12em;border-radius:2px}.admin-reset-btn:active{transform:translateY(1px)}
 
-    .special-line .slide-char{display:inline-block;opacity:0;transform:translateX(-0.55em);filter:blur(1.5px);transition:opacity .24s ease,transform .32s cubic-bezier(.22,.75,.25,1),filter .28s ease;will-change:opacity,transform}
-    .special-line .slide-char.in{opacity:1;transform:translateX(0);filter:blur(0)}
+    .special-line .slide-char{display:inline-block;opacity:0;filter:blur(2px);transition:opacity .34s ease,filter .42s ease;will-change:opacity,filter}
+    .special-line .slide-char.in{opacity:1;filter:blur(0)}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1002,18 +1002,22 @@
     async function specialSay(speaker,line,delay=1550){
       specialSpeaker.textContent=speaker;specialLine.textContent='';
       const chars=[...line];
-      for(const ch of chars){
-        const span=document.createElement('span');span.className='slide-char';span.textContent=ch;specialLine.appendChild(span);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>span.classList.add('in')));
-        let wait=42;if(ch==='、')wait=150;else if(ch==='。'||ch==='？'||ch==='！')wait=280;else if(ch==='…')wait=180;else if(ch==='―'||ch==='─')wait=65;
+      const spans=chars.map(ch=>{const span=document.createElement('span');span.className='slide-char';span.textContent=ch;specialLine.appendChild(span);return span});
+      await new Promise(requestAnimationFrame);
+      for(let i=0;i<spans.length;i++){
+        spans[i].classList.add('in');
+        const ch=chars[i];let wait=48;if(ch==='、')wait=170;else if(ch==='。'||ch==='？'||ch==='！')wait=300;else if(ch==='…')wait=190;else if(ch==='―'||ch==='─')wait=70;
         await sleep(wait);
       }
       await sleep(Math.max(1900,delay));
     }
     async function triggerEmilyInvitation(){
-      if(!specialOverlay)return; casinoBgm.pause(); specialBgm.pause(); specialBgm.currentTime=0; specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
-      await sleep(1800);await specialSay('UNKNOWN',randomOpener(),2100);await specialSay('UNKNOWN','───ねえ。もう少しだけ、大きな賭けをしてみない？',2100);await specialSay('運のみぞ知る','あなたが今、手にしているもの。全部。',1900);playAudio(specialBgm,.42);
+      if(!specialOverlay)return; casinoBgm.pause(); specialBgm.pause(); specialBgm.currentTime=0;
+      if(localStorage.getItem('spr-bgm-enabled')!=='off'){specialBgm.volume=0;const unlock=specialBgm.play();if(unlock&&unlock.then)unlock.then(()=>{specialBgm.pause();specialBgm.currentTime=0;specialBgm.volume=.42}).catch(()=>{})}
+      specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
+      await sleep(1800);await specialSay('UNKNOWN',randomOpener(),2100);await specialSay('UNKNOWN','───ねえ。もう少しだけ、大きな賭けをしてみない？',2100);await specialSay('運のみぞ知る','あなたが今、手にしているもの。全部。',1900);
       specialActions.innerHTML='<button id="acceptAllIn" type="button">オールイン勝負を受ける</button><button id="declineAllIn" type="button">受けない</button>';
+      playAudio(specialBgm,.42);
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
     async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial)return null;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return null;const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:user.id,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
@@ -1024,8 +1028,10 @@
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:true});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
       const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
-      await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();
-      setTimeout(()=>{specialBroadcast.classList.add('hidden');specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialTableRule.textContent=`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　ゲームをお選びください。`;pushSpecialState({challenger:storedGuestName,message:'ゲーム選択中'},'open')},Math.max(0,new Date(startsAt).getTime()-Date.now()));
+      await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();
+      specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
+      const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((new Date(startsAt).getTime()-Date.now())/1000));specialTableRule.textContent=left?`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　ゲームをお選びください。`:`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　ゲームをお選びください。`;if(!left){clearInterval(challengerCountdown);pushSpecialState({challenger:storedGuestName,message:'ゲーム選択中'},'open')}};
+      updateChallengerCountdown();const challengerCountdown=setInterval(updateChallengerCountdown,1000);
     }
     async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
