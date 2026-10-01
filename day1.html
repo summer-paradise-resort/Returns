@@ -1022,16 +1022,19 @@
     }
     async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial)return null;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return null;const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:user.id,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
+    let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
+    function markSpecialChoice(game){specialSelectedGame=game;document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame===game));specialPlayArea.innerHTML=`<div class="special-result">${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} を選択しました。<br><small>開卓までこのままお待ちください。</small></div>`;pushSpecialState({challenger:storedGuestName,message:`${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} 選択済み・開卓待機中`},'countdown')}
+    function launchSelectedSpecialGame(){if(!specialSelectedGame)return;clearInterval(specialCountdownTimer);specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';if(specialSelectedGame==='blackjack')startSpecialBlackjack();else startSpecialHilo()}
     async function acceptAllIn(){
       specialActions.innerHTML='';await specialSay('運のみぞ知る','───これで、後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんながお集まりになるのだもの。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800);
-      const startsAt=new Date(Date.now()+60000).toISOString();activeSpecialSessionId=await createSpecialSession(startsAt);
+      const startsAt=new Date(Date.now()+60000).toISOString();specialStartsAt=new Date(startsAt).getTime();specialStake=casinoChips;specialSelectedGame=null;activeSpecialSessionId=await createSpecialSession(startsAt);
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:true});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
       const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
       await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
-      const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((new Date(startsAt).getTime()-Date.now())/1000));specialTableRule.textContent=left?`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　ゲームをお選びください。`:`${casinoMoney(casinoChips)} CHIP ALL-IN　｜　ゲームをお選びください。`;if(!left){clearInterval(challengerCountdown);pushSpecialState({challenger:storedGuestName,message:'ゲーム選択中'},'open')}};
-      updateChallengerCountdown();const challengerCountdown=setInterval(updateChallengerCountdown,1000);
+      const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　${specialSelectedGame?'選択済み':'ゲームをお選びください。'}`;if(!left){clearInterval(specialCountdownTimer);if(specialSelectedGame){pushSpecialState({challenger:storedGuestName,message:'SPECIAL TABLE 開卓'},'open');launchSelectedSpecialGame()}else{specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　ゲームをお選びください。`}}};
+      updateChallengerCountdown();clearInterval(specialCountdownTimer);specialCountdownTimer=setInterval(updateChallengerCountdown,250);
     }
     async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
@@ -1046,16 +1049,43 @@
       const stake=Number(specialTableScreen.dataset.stake||0);if(win){casinoChips=stake*2;specialPlayArea.innerHTML=`<div class="special-result">WIN<br>${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP</div>`}else{casinoChips=0;specialPlayArea.innerHTML=`<div class="special-result">LOSE</div>${grantSpecialLossReward()}`}
       casinoSave();syncCasinoBalances();specialGameChoice.classList.add('hidden');specialTableRule.textContent=win?'勝者には、賭け金と同額のCHIPが加算されます。':'賭けたCHIPは失われました。';specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
     }
+    function specialNormalTableSetup(game){
+      hideCasinoScreens();casinoLevel=game;
+      if(game==='blackjack'){
+        blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK','SPECIAL TABLE');
+        blackjackScreen.querySelector('.hand-zone h3').textContent='運のみぞ知る';
+        blackjackScreen.querySelectorAll('.hand-zone h3')[1].textContent='YOU';
+        betPanel.classList.add('hidden');actionPanel.classList.remove('hidden');
+        blackjackScreen.querySelector('.casino-return').classList.add('hidden');
+      }else{
+        hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','SPECIAL TABLE');
+        hiloScreen.querySelector('.hand-zone h3').textContent='YOUR CARD';
+        hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='運のみぞ知る';
+        hiloBetPanel.classList.add('hidden');hiloActionPanel.classList.remove('hidden');
+        hiloScreen.querySelector('.casino-return').classList.add('hidden');
+      }
+    }
+    function finishSpecial(win){
+      const stake=specialStake;if(win){casinoChips=stake*2}else{casinoChips=0}
+      casinoSave();syncCasinoBalances();specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();
+      pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');
+      publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
+      if(specialSelectedGame==='blackjack'){actionPanel.classList.add('hidden');betPanel.classList.add('hidden');setCasinoStatus(win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。')}
+      else{hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.add('hidden');hiloStatus.textContent=win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。'}
+    }
     function startSpecialBlackjack(){
-      const stake=casinoChips;specialTableScreen.dataset.stake=stake;specialGameChoice.classList.add('hidden');casinoChips=0;syncCasinoBalances();
+      specialNormalTableSetup('blackjack');casinoChips=0;syncCasinoBalances();
       const deck=makeBjDeck(),p=[deck.pop(),deck.pop()],d=[deck.pop(),deck.pop()];let done=false;
-      const render=(reveal=false)=>{pushSpecialState({game:'blackjack',challenger:storedGuestName,player_value:bjValue(p),player_cards:p,dealer_public_cards:reveal?d:[],finished:reveal,message:reveal?'結果を確認しています。':'挑戦者の選択をお待ちください。'});specialPlayArea.innerHTML=`<div class="special-result">YOUR HAND　${bjValue(p)}<br>${p.map(cardHtml).join('')}<br><br>運のみぞ知る　${reveal?bjValue(d):'??'}<br>${reveal?d.map(cardHtml).join(''):'<span class="playing-card back"></span>'}</div>${done?'':'<div class="special-actions"><button id="spHit">HIT</button><button id="spStand">STAND</button></div>'}`;if(!done){document.getElementById('spHit').onclick=()=>{p.push(deck.pop());if(bjValue(p)>21){done=true;render(true);setTimeout(()=>finishSpecial(false),900)}else render(false)};document.getElementById('spStand').onclick=()=>{while(bjValue(d)<17)d.push(deck.pop());done=true;render(true);const pv=bjValue(p),dv=bjValue(d);setTimeout(()=>finishSpecial(pv<=21&&(dv>21||pv>dv)),900)}}};render(false)
+      const render=(reveal=false)=>{dealerHandEl.innerHTML=reveal?d.map(cardHtml).join(''):cardHtml(d[0])+cardHtml(d[1],true);playerHandEl.innerHTML=p.map(cardHtml).join('');dealerScoreEl.textContent=reveal?`TOTAL ${bjValue(d)}`:'SHOW '+d[0].rank+d[0].suit;playerScoreEl.textContent=`TOTAL ${bjValue(p)}`;casinoBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}`;setCasinoStatus(done?'勝負が決まりました。':'HIT または STAND を選んでください。');pushSpecialState({game:'blackjack',challenger:storedGuestName,player_value:bjValue(p),player_cards:p,dealer_public_cards:reveal?d:[],finished:reveal,message:reveal?'結果を確認しています。':'挑戦者の選択をお待ちください。'})};
+      hitButton.onclick=()=>{if(done)return;p.push(deck.pop());if(bjValue(p)>21){done=true;render(true);setTimeout(()=>finishSpecial(false),900)}else render(false)};
+      standButton.onclick=()=>{if(done)return;while(bjValue(d)<17)d.push(deck.pop());done=true;render(true);const pv=bjValue(p),dv=bjValue(d);setTimeout(()=>finishSpecial(pv<=21&&(dv>21||pv>dv)),900)};
+      doubleButton.classList.add('hidden');render(false)
     }
     function startSpecialHilo(){
-      const stake=casinoChips;specialTableScreen.dataset.stake=stake;specialGameChoice.classList.add('hidden');casinoChips=0;syncCasinoBalances();let pw=0,ew=0,round=0;
-      const play=()=>{round++;const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});specialPlayArea.innerHTML=`<div class="special-result">ROUND ${round}　｜　YOU ${pw} - ${ew} 運のみぞ知る<br><br>${cardHtml(a)}<br><br>次のカードは？</div><div class="special-actions"><button id="spHigh">HIGH</button><button id="spLow">LOW</button></div>`;const choose=c=>{const av=rankValue(a.rank),bv=rankValue(b.rank);let correct=bv!==av&&(c==='high'?bv>av:bv<av);if(bv===av){round--;specialPlayArea.innerHTML+=`<p>DRAW　もう一度。</p>`;setTimeout(play,900);return}if(correct)pw++;else ew++;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});specialPlayArea.innerHTML=`<div class="special-result">${correct?'YOU WIN':'運のみぞ知る WIN'}<br>${cardHtml(a)}　→　${cardHtml(b)}<br>YOU ${pw} - ${ew} 運のみぞ知る</div>`;if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};document.getElementById('spHigh').onclick=()=>choose('high');document.getElementById('spLow').onclick=()=>choose('low')};play()
+      specialNormalTableSetup('hilo');casinoChips=0;syncCasinoBalances();let pw=0,ew=0,round=0,locked=false;
+      const play=()=>{locked=false;round++;const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML=cardHtml(a);hiloNextCard.innerHTML='<div class="playing-card back"></div>';hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')};play()
     }
-    document.querySelectorAll('[data-special-game]').forEach(b=>b.addEventListener('click',()=>b.dataset.specialGame==='blackjack'?startSpecialBlackjack():startSpecialHilo()));
+    document.querySelectorAll('[data-special-game]').forEach(b=>b.addEventListener('click',()=>markSpecialChoice(b.dataset.specialGame)));
 
     // CASINO BLUE SHELL / LOBBY + BLACKJACK + HIGH & LOW
     const casinoGame=document.getElementById('casinoGame');
@@ -1236,13 +1266,13 @@
 
     betMinus.addEventListener('click',()=>adjustBet(-1));betPlus.addEventListener('click',()=>adjustBet(1));document.querySelectorAll('[data-bet]').forEach(button=>button.addEventListener('click',()=>setBetStep(Number(button.dataset.bet))));
     dealButton.addEventListener('click',startBlackjack);
-    hitButton.addEventListener('click',()=>{if(!bjActive)return;playerHand.push(bjDeck.pop());renderBlackjack();const value=bjValue(playerHand);if(value>21)finishRound('lose');else if(value===21)dealerTurn()});
+    hitButton.addEventListener('click',()=>{if(specialSelectedGame==='blackjack'&&casinoLevel==='blackjack')return;if(!bjActive)return;playerHand.push(bjDeck.pop());renderBlackjack();const value=bjValue(playerHand);if(value>21)finishRound('lose');else if(value===21)dealerTurn()});
     standButton.addEventListener('click',()=>{if(bjActive)dealerTurn()});
     doubleButton.addEventListener('click',()=>{if(!bjActive||playerHand.length!==2||casinoChips<blackjackBet)return;casinoChips-=blackjackBet;blackjackBet*=2;casinoSave();playerHand.push(bjDeck.pop());renderBlackjack();if(bjValue(playerHand)>21)finishRound('lose');else dealerTurn()});
     casinoRefill.addEventListener('click',()=>{if(bjActive)return;casinoChips=1000;blackjackBet=100;casinoSave();setCasinoStatus('1,000 CHIPをご用意しました。');updateCasinoHud()});
 
     hiloBetMinus.addEventListener('click',()=>adjustHiloBet(-1));hiloBetPlus.addEventListener('click',()=>adjustHiloBet(1));document.querySelectorAll('[data-hilo-bet]').forEach(button=>button.addEventListener('click',()=>setHiloBetStep(Number(button.dataset.hiloBet))));
-    hiloStart.addEventListener('click',startHilo);hiloHigh.addEventListener('click',()=>chooseHilo('high'));hiloLow.addEventListener('click',()=>chooseHilo('low'));
+    hiloStart.addEventListener('click',startHilo);hiloHigh.addEventListener('click',()=>{if(specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('high')});hiloLow.addEventListener('click',()=>{if(specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('low')});
     hiloRefill.addEventListener('click',()=>{if(hiloActive)return;casinoChips=1000;hiloBet=100;casinoSave();hiloStatus.textContent='1,000 CHIPをご用意しました。';updateHiloHud()});
     syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();
 
