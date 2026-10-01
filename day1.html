@@ -607,15 +607,88 @@
     </section>
   </section>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // SECURITY CHECKで登録した名前をDay1全体で共有
+    const SUPABASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_d4Uj3azYwSAIiwDK2UieGw_1Hp3LJfM';
+    const sprSupabase=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY) : null;
+
     const storedGuestName=(localStorage.getItem('spr-guest-name')||'').trim();
-    if(!storedGuestName){window.location.replace('security_check.html')}
+    if(!storedGuestName){window.location.replace('security_check_supabase.html')}
+    let currentPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
     const belongingsKey=`spr-belongings:${playerStorageId}`;
+    const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
+    const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
+    const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     const belongingsCatalog={
       afternoonTeaTicket:{label:'アフタヌーンティーチケット',detail:'The Pearl Terraceのアフタヌーンティーにご利用いただけます。',max:2}
     };
+
+    function safeLocalJson(key,fallback){
+      try{const value=JSON.parse(localStorage.getItem(key)||'null');return value??fallback}catch{return fallback}
+    }
+    let belongingsCache=safeLocalJson(belongingsKey,{});
+    if(!belongingsCache||typeof belongingsCache!=='object'||Array.isArray(belongingsCache))belongingsCache={};
+    let barDrinkStateCache=safeLocalJson(barDrinkStorageKey,{});
+    if(!barDrinkStateCache||typeof barDrinkStateCache!=='object'||Array.isArray(barDrinkStateCache))barDrinkStateCache={};
+    let emilyAnnouncedCloud=localStorage.getItem(emilyAnnouncedKey)==='1';
+    let casinoSaveChain=Promise.resolve();
+    const roomMessagesCache=Object.create(null);
+    const roomServiceCache=Object.create(null);
+
+    async function ensureCloudPlayer(){
+      if(!sprSupabase)throw new Error('Supabase client is unavailable');
+      let player=null;
+      if(currentPlayerId){
+        const {data,error}=await sprSupabase.from('players').select('id,display_name,chips,current_location').eq('id',currentPlayerId).maybeSingle();
+        if(error)throw error;
+        player=data||null;
+      }
+      if(!player){
+        const nameKey=storedGuestName.trim().toLowerCase();
+        const {data,error}=await sprSupabase.from('players').select('id,display_name,chips,current_location').eq('name_key',nameKey).maybeSingle();
+        if(error)throw error;
+        player=data||null;
+      }
+      if(!player){
+        const {data,error}=await sprSupabase.from('players').insert({display_name:storedGuestName}).select('id,display_name,chips,current_location').single();
+        if(error)throw error;
+        player=data;
+      }
+      currentPlayerId=player.id;
+      localStorage.setItem('spr-player-id',player.id);
+      if(player.display_name)localStorage.setItem('spr-guest-name',player.display_name);
+      return player;
+    }
+
+    async function setPlayerFlag(flagKey,value){
+      if(!sprSupabase||!currentPlayerId)return;
+      const {error}=await sprSupabase.from('player_flags').upsert({player_id:currentPlayerId,flag_key:flagKey,flag_value:value,updated_at:new Date().toISOString()},{onConflict:'player_id,flag_key'});
+      if(error)console.error('player flag sync failed:',flagKey,error);
+    }
+    async function getPlayerFlags(keys){
+      if(!sprSupabase||!currentPlayerId)return {};
+      const {data,error}=await sprSupabase.from('player_flags').select('flag_key,flag_value').eq('player_id',currentPlayerId).in('flag_key',keys);
+      if(error)throw error;
+      return Object.fromEntries((data||[]).map(row=>[row.flag_key,row.flag_value]));
+    }
+    async function setGlobalFlag(flagKey,value){
+      if(!sprSupabase)return;
+      const {error}=await sprSupabase.from('global_flags').upsert({flag_key:flagKey,flag_value:value,updated_at:new Date().toISOString()},{onConflict:'flag_key'});
+      if(error)console.error('global flag sync failed:',flagKey,error);
+    }
+    async function getGlobalFlags(keys){
+      if(!sprSupabase)return {};
+      const {data,error}=await sprSupabase.from('global_flags').select('flag_key,flag_value').in('flag_key',keys);
+      if(error)throw error;
+      return Object.fromEntries((data||[]).map(row=>[row.flag_key,row.flag_value]));
+    }
+    function updatePlayerLocation(location){
+      if(!sprSupabase||!currentPlayerId)return;
+      void sprSupabase.from('players').update({current_location:location,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId).then(({error})=>{if(error)console.error('location sync failed:',error)});
+    }
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
       day:['summer_paradise_noon.jpg'],
@@ -656,11 +729,12 @@
       updateHeroBackground(true);
       setInterval(()=>updateHeroBackground(),60*1000);
     }
-    function loadBelongings(){
-      try{const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');return saved&&typeof saved==='object'?saved:{}}
-      catch{return {}}
+    function loadBelongings(){return belongingsCache}
+    function saveBelongings(items){
+      belongingsCache={...items};
+      localStorage.setItem(belongingsKey,JSON.stringify(belongingsCache));
+      void setPlayerFlag('belongings',belongingsCache);
     }
-    function saveBelongings(items){localStorage.setItem(belongingsKey,JSON.stringify(items))}
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
@@ -693,18 +767,30 @@
     function activateSpecialTableAnnouncement(challenger=''){
       const who=challenger?` 挑戦者：${challenger}。`:'';
       const message=`SPECIAL GAME　｜　カジノ・ブルーシェルにスペシャルテーブルが出現しました。${who} 観客席よりご覧いただけます。`;
+      const payload={type:'special-table',message,createdAt:Date.now()};
       setResortAnnouncement(message,{alert:true,global:true});
-      localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message,createdAt:Date.now()}));
+      localStorage.setItem('spr-resort-announcement',JSON.stringify(payload));
+      void setGlobalFlag('special_table_announcement',payload);
     }
-    function restoreResortAnnouncement(){
+    async function restoreResortAnnouncement(){
+      let shown=false;
       try{
         const saved=JSON.parse(localStorage.getItem('spr-resort-announcement')||'null');
-        if(saved&&saved.type==='special-table'&&Date.now()-Number(saved.createdAt||0)<30*60*1000){setResortAnnouncement(saved.message,{alert:true,global:true});return}
+        if(saved&&saved.type==='special-table'&&Date.now()-Number(saved.createdAt||0)<30*60*1000){setResortAnnouncement(saved.message,{alert:true,global:true});shown=true}
       }catch{}
-      normalResortAnnouncement();
+      try{
+        const flags=await getGlobalFlags(['special_table_announcement']);
+        const cloud=flags.special_table_announcement;
+        if(cloud&&cloud.type==='special-table'&&Date.now()-Number(cloud.createdAt||0)<30*60*1000){
+          localStorage.setItem('spr-resort-announcement',JSON.stringify(cloud));
+          setResortAnnouncement(cloud.message,{alert:true,global:true});
+          return;
+        }
+      }catch(error){console.error('announcement sync failed:',error)}
+      if(!shown)normalResortAnnouncement();
     }
     window.showSpecialTableAnnouncement=activateSpecialTableAnnouncement;
-    window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement()};
+    window.clearSpecialTableAnnouncement=()=>{localStorage.removeItem('spr-resort-announcement');void setGlobalFlag('special_table_announcement',false);normalResortAnnouncement()};
 
 
     // SEASIDE BAR / ドリンク注文
@@ -731,7 +817,6 @@
       {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー'},
       {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター'}
     ];
-    const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
     const barOrderSheet=document.getElementById('barOrderSheet'), barDrinkList=document.getElementById('barDrinkList');
     const barPeriodCard=document.getElementById('barPeriodCard'), barSelection=document.getElementById('barSelection');
     const barOrderConfirm=document.getElementById('barOrderConfirm'), barOrderResult=document.getElementById('barOrderResult');
@@ -753,8 +838,12 @@
       const orderOpen=now.hour>=11||now.hour<5;
       return{id,label,hours,serviceDate,token:`${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
     }
-    function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
-    function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
+    function loadBarDrinkState(){return barDrinkStateCache}
+    function saveBarDrinkState(state){
+      barDrinkStateCache={...state};
+      localStorage.setItem(barDrinkStorageKey,JSON.stringify(barDrinkStateCache));
+      void setPlayerFlag('bar_drinks',barDrinkStateCache);
+    }
     function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
     window.getCurrentBarDrinkEffect=currentBarDrink;
 
@@ -847,8 +936,6 @@
     const hiloBetMinus=document.getElementById('hiloBetMinus'), hiloBetPlus=document.getElementById('hiloBetPlus'), hiloStart=document.getElementById('hiloStart');
     const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill');
 
-    const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
-    const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
     let previousCasinoChips=casinoChips;
@@ -858,9 +945,19 @@
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
     function casinoSave(){
+      casinoChips=Math.max(0,Math.round(casinoChips));
       localStorage.setItem(casinoChipKey,String(casinoChips));
-      if(previousCasinoChips<20000&&casinoChips>=20000&&!localStorage.getItem(emilyAnnouncedKey)){
+      const snapshot=casinoChips;
+      if(sprSupabase&&currentPlayerId){
+        casinoSaveChain=casinoSaveChain.then(async()=>{
+          const {error}=await sprSupabase.from('players').update({chips:snapshot,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId);
+          if(error)console.error('chip sync failed:',error);
+        });
+      }
+      if(previousCasinoChips<20000&&casinoChips>=20000&&!emilyAnnouncedCloud){
+        emilyAnnouncedCloud=true;
         localStorage.setItem(emilyAnnouncedKey,'1');
+        void setPlayerFlag('emily_announced',true);
         activateSpecialTableAnnouncement(storedGuestName);
       }
       previousCasinoChips=casinoChips;
@@ -1092,7 +1189,19 @@
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
-    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
+    function roomMessages(){
+      if(!activeRoom)return [];
+      if(Array.isArray(roomMessagesCache[activeRoom]))return roomMessagesCache[activeRoom];
+      const local=safeLocalJson(`spr-room-${activeRoom}`,[]);
+      roomMessagesCache[activeRoom]=Array.isArray(local)?local:[];
+      return roomMessagesCache[activeRoom];
+    }
+    function saveRoomMessages(room,messages){
+      const trimmed=(messages||[]).slice(-100);
+      roomMessagesCache[room]=trimmed;
+      localStorage.setItem(`spr-room-${room}`,JSON.stringify(trimmed));
+      void setGlobalFlag(`room_chat_${room}`,trimmed);
+    }
     function renderChat(){
       if(!activeRoom)return;
       const messages=roomMessages(); chatLog.replaceChildren();
@@ -1103,7 +1212,47 @@
     function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
     function openChatSheet(){closeRoomService();closeRoomBelongings();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
     function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
-    function roomServiceOrders(){try{return JSON.parse(localStorage.getItem(`spr-roomservice-${activeRoom}`)||'[]')}catch{return []}}
+    function roomServiceOrders(){
+      if(!activeRoom)return [];
+      if(Array.isArray(roomServiceCache[activeRoom]))return roomServiceCache[activeRoom];
+      const local=safeLocalJson(`spr-roomservice-${activeRoom}`,[]);
+      roomServiceCache[activeRoom]=Array.isArray(local)?local:[];
+      return roomServiceCache[activeRoom];
+    }
+    function saveRoomServiceOrders(room,orders){
+      const trimmed=(orders||[]).slice(-20);
+      roomServiceCache[room]=trimmed;
+      localStorage.setItem(`spr-roomservice-${room}`,JSON.stringify(trimmed));
+      void setGlobalFlag(`room_service_${room}`,trimmed);
+    }
+    async function loadRoomSharedState(room,{notify=false}={}){
+      if(!room||!sprSupabase)return;
+      try{
+        const chatKey=`room_chat_${room}`, serviceKey=`room_service_${room}`;
+        const before=Array.isArray(roomMessagesCache[room])?roomMessagesCache[room]:safeLocalJson(`spr-room-${room}`,[]);
+        const flags=await getGlobalFlags([chatKey,serviceKey]);
+        if(Array.isArray(flags[chatKey])){
+          roomMessagesCache[room]=flags[chatKey].slice(-100);
+          localStorage.setItem(`spr-room-${room}`,JSON.stringify(roomMessagesCache[room]));
+        }else if(Array.isArray(before)&&before.length){saveRoomMessages(room,before)}
+        else roomMessagesCache[room]=[];
+        const localOrders=safeLocalJson(`spr-roomservice-${room}`,[]);
+        if(Array.isArray(flags[serviceKey])){
+          roomServiceCache[room]=flags[serviceKey].slice(-20);
+          localStorage.setItem(`spr-roomservice-${room}`,JSON.stringify(roomServiceCache[room]));
+        }else if(Array.isArray(localOrders)&&localOrders.length){saveRoomServiceOrders(room,localOrders)}
+        else roomServiceCache[room]=[];
+        if(activeRoom===room){
+          const after=roomMessagesCache[room];
+          if(notify&&after.length>(Array.isArray(before)?before.length:0)){
+            const latest=after[after.length-1];
+            if(latest&&latest.name!==activeGuest&&!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(latest)}
+          }
+          renderChat();
+          if(roomServiceSheet.classList.contains('open'))renderRoomServiceHistory();
+        }
+      }catch(error){console.error('room sync failed:',error)}
+    }
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
@@ -1148,7 +1297,7 @@
     roomServiceOrder.addEventListener('click',()=>{
       if(!activeRoom)return;const items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
       const now=new Date();const order={id:String(Date.now()).slice(-6),room:activeRoom,guest:activeGuest,items,time:now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
-      const orders=roomServiceOrders();orders.push(order);localStorage.setItem(`spr-roomservice-${activeRoom}`,JSON.stringify(orders.slice(-20)));
+      const orders=roomServiceOrders().slice();orders.push(order);saveRoomServiceOrders(activeRoom,orders);
       Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();renderRoomServiceHistory();roomServiceResult.textContent=`${activeRoom}号室のご注文を承りました。注文番号 ${order.id}`;roomServiceResult.classList.remove('hidden');
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
@@ -1166,17 +1315,85 @@
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
+      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();void loadRoomSharedState(room);updatePlayerLocation(`room:${room}`);
     });
     document.getElementById('chatForm').addEventListener('submit',event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
-      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
-      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
+      const messages=roomMessages().slice();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
+      saveRoomMessages(activeRoom,messages);input.value='';renderChat();input.focus();
     });
-    function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
+    function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updatePlayerLocation('lobby');closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}});
+
+    async function bootstrapCloudState(){
+      if(!sprSupabase)return;
+      try{
+        const player=await ensureCloudPlayer();
+        const flags=await getPlayerFlags(['casino_initialized','belongings','bar_drinks','emily_announced']);
+        if(flags.casino_initialized===true){
+          const cloudChips=Number(player.chips);
+          casinoChips=Number.isFinite(cloudChips)&&cloudChips>=0?Math.round(cloudChips):0;
+        }else{
+          const localChips=Number(localStorage.getItem(casinoChipKey)||1000);
+          casinoChips=Number.isFinite(localChips)&&localChips>=0?Math.round(localChips):1000;
+          const {error}=await sprSupabase.from('players').update({chips:casinoChips,last_seen_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('id',currentPlayerId);
+          if(error)throw error;
+          await setPlayerFlag('casino_initialized',true);
+        }
+        previousCasinoChips=casinoChips;
+        localStorage.setItem(casinoChipKey,String(casinoChips));
+
+        if(flags.belongings&&typeof flags.belongings==='object'&&!Array.isArray(flags.belongings)){
+          belongingsCache=flags.belongings;
+          localStorage.setItem(belongingsKey,JSON.stringify(belongingsCache));
+        }else if(Object.keys(belongingsCache).length){await setPlayerFlag('belongings',belongingsCache)}
+        else await setPlayerFlag('belongings',{});
+
+        if(flags.bar_drinks&&typeof flags.bar_drinks==='object'&&!Array.isArray(flags.bar_drinks)){
+          barDrinkStateCache=flags.bar_drinks;
+          localStorage.setItem(barDrinkStorageKey,JSON.stringify(barDrinkStateCache));
+        }else if(Object.keys(barDrinkStateCache).length){await setPlayerFlag('bar_drinks',barDrinkStateCache)}
+        else await setPlayerFlag('bar_drinks',{});
+
+        emilyAnnouncedCloud=flags.emily_announced===true||emilyAnnouncedCloud;
+        if(emilyAnnouncedCloud)localStorage.setItem(emilyAnnouncedKey,'1');
+
+        syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();renderRoomBelongings();renderBarOrderState();
+        updatePlayerLocation(player.current_location||'lobby');
+        void restoreResortAnnouncement();
+      }catch(error){console.error('Initial Supabase sync failed:',error)}
+    }
+
+    async function refreshCloudPlayerState(){
+      if(!sprSupabase||!currentPlayerId)return;
+      try{
+        const [{data:player,error:playerError},flags]=await Promise.all([
+          sprSupabase.from('players').select('chips,current_location').eq('id',currentPlayerId).single(),
+          getPlayerFlags(['belongings','bar_drinks','emily_announced'])
+        ]);
+        if(playerError)throw playerError;
+        if(!bjActive&&!hiloActive){
+          const cloudChips=Number(player.chips);
+          if(Number.isFinite(cloudChips)&&cloudChips>=0&&Math.round(cloudChips)!==casinoChips){casinoChips=Math.round(cloudChips);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter()}
+        }
+        if(flags.belongings&&typeof flags.belongings==='object'&&!Array.isArray(flags.belongings)){
+          const next=JSON.stringify(flags.belongings),prev=JSON.stringify(belongingsCache);
+          if(next!==prev){belongingsCache=flags.belongings;localStorage.setItem(belongingsKey,next);renderRoomBelongings();renderPrizeCounter()}
+        }
+        if(flags.bar_drinks&&typeof flags.bar_drinks==='object'&&!Array.isArray(flags.bar_drinks)){
+          const next=JSON.stringify(flags.bar_drinks),prev=JSON.stringify(barDrinkStateCache);
+          if(next!==prev){barDrinkStateCache=flags.bar_drinks;localStorage.setItem(barDrinkStorageKey,next);if(barOrderSheet.classList.contains('open'))renderBarOrderState()}
+        }
+        if(flags.emily_announced===true&&!emilyAnnouncedCloud){emilyAnnouncedCloud=true;localStorage.setItem(emilyAnnouncedKey,'1')}
+      }catch(error){console.error('Supabase refresh failed:',error)}
+    }
+
+    void bootstrapCloudState();
+    setInterval(()=>{if(!document.hidden)void refreshCloudPlayerState()},5000);
+    setInterval(()=>{if(!document.hidden&&activeRoom)void loadRoomSharedState(activeRoom,{notify:true})},3000);
+    setInterval(()=>{if(!document.hidden)void restoreResortAnnouncement()},10000);
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
