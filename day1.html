@@ -395,6 +395,31 @@ body.special-table-playing .special-comment-overlay{display:block}
     .admin-master-panel{margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ===== CAFE EMBEDDED IN DAY1 ===== */
+#cafeEmbeddedRoot{position:fixed;inset:0;z-index:145;background:#fff;overflow:auto;-webkit-overflow-scrolling:touch}
+#cafeEmbeddedRoot.hidden{display:none!important}
+.cafe-embedded-page{min-height:100%;background:#fff}
+.cafe-embedded-page.hidden{display:none!important}
+#cafeEmbeddedRoot .embedded-back{cursor:pointer}
+
+#cafeEmbeddedRoot{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:#0d2743;background:#fff url("cafe_floor.jpg") center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:#0d2743}.title{text-align:center;font:12px Georgia,serif;letter-spacing:.18em;color:#a87b2f}.wrap{max-width:760px;margin:auto;padding:42px 18px 80px;min-height:calc(100vh - 66px);background:rgba(255,255,255,.20);backdrop-filter:blur(1px)}.lead{text-align:center;line-height:2;color:#24394e;font-size:13px;text-shadow:0 1px 8px rgba(255,255,255,.95)}.venues{display:grid;gap:14px;margin-top:25px}.venue{border:1px solid rgba(168,123,47,.38);background:rgba(255,252,245,.90);padding:26px 22px;text-align:center;color:#0d2743;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;box-shadow:0 8px 24px rgba(13,39,67,.08)}.venue strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:21px;font-weight:400;letter-spacing:.12em}.venue small{display:block;margin-top:9px;color:#a87b2f;font-family:Georgia,"Times New Roman",serif;font-size:10px;letter-spacing:.20em}
+:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}#cafeEmbeddedRoot{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url("the_pearl_terrace_i.jpg") center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,"Times New Roman",serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:0 18px max(9vh,42px);background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:"";position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}
+
+.cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
+#useCafeDrinkTicket{padding:13px 20px;background:#173a5e;color:white;border:0;font-family:inherit}#useCafeDrinkTicket:disabled{opacity:.38}
+.c14,.cz{position:fixed;inset:0;z-index:9998;background:rgba(7,18,29,.58);display:none;align-items:center;justify-content:center;padding:18px}.c14.show,.cz.show{display:flex}
+.c14box{position:relative;width:min(92vw,620px);max-height:88vh;overflow:auto;background:#fff;padding:28px 18px;text-align:center}.x{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:28px}
+.c14grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0}.c14grid button{border:0;background:none;padding:0}.c14grid img{width:100%;display:block}.cz{z-index:10000}.cz img{max-width:88vw;max-height:82vh;object-fit:contain}
+
+:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}#cafeEmbeddedRoot{margin:0;font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url("marine_bloom_cafe_i.jpg") center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,"Times New Roman",serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:0 18px max(9vh,42px);background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:"";position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}
+
+.cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
+#useCafeDrinkTicket{padding:13px 20px;background:#173a5e;color:white;border:0;font-family:inherit}#useCafeDrinkTicket:disabled{opacity:.38}
+.c14,.cz{position:fixed;inset:0;z-index:9998;background:rgba(7,18,29,.58);display:none;align-items:center;justify-content:center;padding:18px}.c14.show,.cz.show{display:flex}
+.c14box{position:relative;width:min(92vw,620px);max-height:88vh;overflow:auto;background:#fff;padding:28px 18px;text-align:center}.x{position:absolute;right:12px;top:8px;border:0;background:transparent;font-size:28px}
+.c14grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0}.c14grid button{border:0;background:none;padding:0}.c14grid img{width:100%;display:block}.cz{z-index:10000}.cz img{max-width:88vw;max-height:82vh;object-fit:contain}
+</style>
 </head>
 <body>
   <header>
@@ -951,7 +976,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const cafeMenu=document.getElementById('cafeMenu'),cafeMealResult=document.getElementById('cafeMealResult');
     document.querySelectorAll('[data-cafe-mode]').forEach(button=>button.addEventListener('click',()=>{
       if(button.dataset.cafeMode==='salon'){refreshTeaSalonStatus();openView('teaSalonView');loadTeaParties()}
-      else { window.location.href='cafe.html'; }
+      else { window.window.enterEmbeddedCafe?window.enterEmbeddedCafe():location.href='cafe.html'; }
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
@@ -1943,5 +1968,73 @@ body.special-table-playing .special-comment-overlay{display:block}
   function startRuntime(){syncCurrentDay(true);const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();window.refreshHernandoBarGlobalOpen();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(startRuntime,350));else setTimeout(startRuntime,350);
 })();
-</script>\n</body>
+</script>\n
+<div id="cafeEmbeddedRoot" class="hidden" aria-hidden="true">
+  <audio id="embeddedCafeBgm" src="cafe_bgm.mp3" loop preload="auto"></audio>
+  <div id="cafeEmbeddedHome" class="cafe-embedded-page"><header><button class="back" onclick="location.href="#" data-cafe-exit="1"">← BACK</button><div class="title">CAFE</div><div></div></header><main class="wrap"><h1 style="text-align:center;font-weight:400;letter-spacing:.12em">CAFE</h1><p class="lead">ご利用になるカフェをお選びください。<br>各カフェは別ページでご案内します。</p><div class="venues"><button class="venue" onclick="location.href="#" data-cafe-venue="pearl""><strong>The Pearl Terrace</strong><small>THE PEARL TERRACE</small></button><button class="venue" onclick="location.href="#" data-cafe-venue="marine""><strong>Marine Bloom Cafe</strong><small>MARINE BLOOM CAFE</small></button></div></main></div>
+  <div id="cafeEmbeddedPearl" class="cafe-embedded-page hidden"><header><button class="back" onclick="location.href="#" data-cafe-home="1"">← BACK</button><div class="title">THE PEARL TERRACE</div><div></div></header><main><h1>The Pearl Terrace</h1><div class="sub">LUNCH &amp; CAFE</div><h2>お食事</h2><div class="grid" id="meals"><button class="item" data-value="ラボ・デ・トロ">ラボ・デ・トロ</button><button class="item" data-value="シーフード・パエリアプレート">シーフード・パエリアプレート</button><button class="item" data-value="地中海デリプレート">地中海デリプレート</button><button class="item" data-value="レモンチキンプレート">レモンチキンプレート</button></div><h2>ドリンク</h2><div class="grid" id="drinks"><button class="item" data-value="ブレンドコーヒー">ブレンドコーヒー<small>CAFE DRINK</small></button><button class="item" data-value="アールグレイ">アールグレイ<small>CAFE DRINK</small></button><button class="item" data-value="アイスティー">アイスティー<small>CAFE DRINK</small></button><button class="item" data-value="カフェラテ">カフェラテ<small>CAFE DRINK</small></button><button class="item" data-value="レモネード">レモネード<small>CAFE DRINK</small></button><button class="item" data-value="オレンジジュース">オレンジジュース<small>CAFE DRINK</small></button></div><div id="staff" class="staff"><span class="staff-name">STAFF</span><span id="staffText"></span></div><button id="order" class="order" disabled>注文する</button><div id="status" class="status">食事とドリンクをお選びください。</div><div id="coasterModal" class="modal" aria-hidden="true"><div class="modal-card"><button id="coasterClose" class="modal-close" aria-label="閉じる">×</button><div class="modal-label">COMPLIMENTARY COASTER</div><img id="coasterImage" alt="ランダムコースター"><p id="coasterFile"></p></div></div><div id="staffDialogue" class="staff-dialogue" aria-hidden="true"><div class="staff-dialogue-box"><div class="staff-dialogue-name">STAFF</div><div id="staffDialogueText" class="staff-dialogue-text"></div><button id="staffDialogueClose" class="staff-dialogue-next" type="button">CLOSE　×</button></div></div>
+<section class="cafe-ticket-panel"><h3>CAFE DRINK TICKET</h3>
+<p>CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。</p>
+<button id="useCafeDrinkTicket" type="button">CAFEドリンクチケットを使用する</button><p id="cafeDrinkTicketStatus"></p></section>
+<div id="coaster14Modal" class="c14"><div class="c14box"><button id="coaster14Close" class="x">×</button><h3>COASTER COLLECTION</h3><div id="coaster14Grid" class="c14grid"></div><small>タップすると拡大できます。</small></div></div>
+<div id="coasterZoomModal" class="cz"><button id="coasterZoomClose" class="x">×</button><img id="coasterZoomImage"></div>
+</main></div>
+  <div id="cafeEmbeddedMarine" class="cafe-embedded-page hidden"><header><button class="back" onclick="location.href="#" data-cafe-home="1"">← BACK</button><div class="title">MARINE BLOOM CAFE</div><div></div></header><main><h1>Marine Bloom Cafe</h1><div class="sub">LUNCH &amp; CAFE</div><h2>お食事</h2><div class="grid" id="meals"><button class="item" data-value="ラボ・デ・トロ">ラボ・デ・トロ</button><button class="item" data-value="シーフード・パエリアプレート">シーフード・パエリアプレート</button><button class="item" data-value="地中海デリプレート">地中海デリプレート</button><button class="item" data-value="レモンチキンプレート">レモンチキンプレート</button></div><h2>ドリンク</h2><div class="grid" id="drinks"><button class="item" data-value="ブレンドコーヒー">ブレンドコーヒー<small>CAFE DRINK</small></button><button class="item" data-value="アールグレイ">アールグレイ<small>CAFE DRINK</small></button><button class="item" data-value="アイスティー">アイスティー<small>CAFE DRINK</small></button><button class="item" data-value="カフェラテ">カフェラテ<small>CAFE DRINK</small></button><button class="item" data-value="レモネード">レモネード<small>CAFE DRINK</small></button><button class="item" data-value="オレンジジュース">オレンジジュース<small>CAFE DRINK</small></button></div><div id="staff" class="staff"><span class="staff-name">STAFF</span><span id="staffText"></span></div><button id="order" class="order" disabled>注文する</button><div id="status" class="status">食事とドリンクをお選びください。</div><div id="coasterModal" class="modal" aria-hidden="true"><div class="modal-card"><button id="coasterClose" class="modal-close" aria-label="閉じる">×</button><div class="modal-label">COMPLIMENTARY COASTER</div><img id="coasterImage" alt="ランダムコースター"><p id="coasterFile"></p></div></div><div id="staffDialogue" class="staff-dialogue" aria-hidden="true"><div class="staff-dialogue-box"><div class="staff-dialogue-name">STAFF</div><div id="staffDialogueText" class="staff-dialogue-text"></div><button id="staffDialogueClose" class="staff-dialogue-next" type="button">CLOSE　×</button></div></div>
+<section class="cafe-ticket-panel"><h3>CAFE DRINK TICKET</h3>
+<p>CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。</p>
+<button id="useCafeDrinkTicket" type="button">CAFEドリンクチケットを使用する</button><p id="cafeDrinkTicketStatus"></p></section>
+<div id="coaster14Modal" class="c14"><div class="c14box"><button id="coaster14Close" class="x">×</button><h3>COASTER COLLECTION</h3><div id="coaster14Grid" class="c14grid"></div><small>タップすると拡大できます。</small></div></div>
+<div id="coasterZoomModal" class="cz"><button id="coasterZoomClose" class="x">×</button><img id="coasterZoomImage"></div>
+</main></div>
+</div>
+
+
+<script>
+(()=>{
+  const root=document.getElementById('cafeEmbeddedRoot');
+  const home=document.getElementById('cafeEmbeddedHome');
+  const pearl=document.getElementById('cafeEmbeddedPearl');
+  const marine=document.getElementById('cafeEmbeddedMarine');
+  const bgm=document.getElementById('embeddedCafeBgm');
+  if(!root||!home||!pearl||!marine||!bgm)return;
+
+  function showCafePage(which='home'){
+    home.classList.toggle('hidden',which!=='home');
+    pearl.classList.toggle('hidden',which!=='pearl');
+    marine.classList.toggle('hidden',which!=='marine');
+    root.scrollTop=0;
+  }
+  async function enterCafe(){
+    root.classList.remove('hidden'); root.setAttribute('aria-hidden','false');
+    showCafePage('home'); document.body.style.overflow='hidden';
+    try{ bgm.currentTime=0; await bgm.play(); }catch{}
+  }
+  function exitCafe(){
+    root.classList.add('hidden'); root.setAttribute('aria-hidden','true');
+    try{bgm.pause();bgm.currentTime=0}catch{}
+    document.body.style.overflow='';
+  }
+
+  root.addEventListener('click',e=>{
+    const venue=e.target.closest('[data-cafe-venue]');
+    const backHome=e.target.closest('[data-cafe-home]');
+    const exit=e.target.closest('[data-cafe-exit]');
+    if(venue){e.preventDefault();showCafePage(venue.dataset.cafeVenue);return}
+    if(backHome){e.preventDefault();showCafePage('home');return}
+    if(exit){e.preventDefault();exitCafe();return}
+  });
+
+  // Catch the existing DAY1 CAFE navigation before it leaves day1.html.
+  document.addEventListener('click',e=>{
+    if(!root.classList.contains('hidden'))return;
+    const a=e.target.closest('a[href="cafe.html"],button[data-view="cafe"],[data-cafe-enter]');
+    if(a){e.preventDefault();e.stopPropagation();enterCafe()}
+  },true);
+
+  window.enterEmbeddedCafe=enterCafe;
+  window.exitEmbeddedCafe=exitCafe;
+})();
+</script>
+
+</body>
 </html>
