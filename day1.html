@@ -1016,7 +1016,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const specialBroadcast=document.getElementById('specialBroadcast'),specialBroadcastText=document.getElementById('specialBroadcastText'),specialBroadcastCount=document.getElementById('specialBroadcastCount'),specialBroadcastClose=document.getElementById('specialBroadcastClose');
     const spectatorScreen=document.getElementById('spectatorScreen'),spectatorStatus=document.getElementById('spectatorStatus'),spectatorStage=document.getElementById('spectatorStage'),spectatorClose=document.getElementById('spectatorClose'),spectatorBack=document.getElementById('spectatorBack'),casinoSpectatorMenu=document.getElementById('casinoSpectatorMenu');
     let activeSpectatorChallenger='';
-    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}}
+    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     async function refreshCasinoSpectatorMenu(){
       if(!casinoSpectatorMenu||!window.supabaseClientSpecial)return;
@@ -1085,7 +1085,17 @@ body.special-table-playing .special-comment-overlay{display:block}
         window.__sprSpectatorCountdown=setInterval(()=>{const el=spectatorStage.querySelector('[data-spectator-countdown]');if(!el){clearInterval(window.__sprSpectatorCountdown);return}const n=Math.max(0,Math.ceil((new Date(state.starts_at).getTime()-Date.now())/1000));el.textContent=n?`開卓まで ${n} 秒`:'開卓をお待ちください。';if(!n)clearInterval(window.__sprSpectatorCountdown)},500);
       }else spectatorStage.innerHTML=`${matchup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
-    async function openSpectator(sessionId,challenger=''){specialBroadcast.classList.add('hidden');spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';renderSpectatorState({...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-spectator-${sessionId}-${storedPlayerId||Date.now()}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'});if(p.new.status==='finished')refreshCasinoSpectatorMenu()}).on('broadcast',{event:'gallery-comment'},()=>{}).subscribe()}
+    async function openSpectator(sessionId,challenger=''){specialBroadcast.classList.add('hidden');
+      try{stopCasinoMusic()}catch{}
+      try{specialBgm.currentTime=0;await specialBgm.play()}catch(e){
+        const unlockSpecialBgm=async()=>{try{await specialBgm.play()}catch{}};
+        spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
+      }
+      spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';renderSpectatorState({...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'});if(p.new.status==='finished')refreshCasinoSpectatorMenu()}).on('broadcast',{event:'gallery-comment'},({payload})=>{
+        const t=String(payload?.text||'').slice(0,60),n=String(payload?.name||'GALLERY').slice(0,24);
+        const note=document.querySelector('.spectator-comment-note');
+        if(t&&note)note.textContent=`${n}：${t}`;
+      }).subscribe()}
     if(window.supabaseClientSpecial){
       window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const m=r.metadata||{},state=m.state;if(state==='finished'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}refreshCasinoSpectatorMenu();return}setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now()}));if(state==='countdown'){if(casinoSpectatorMenu&&m.session_id){casinoSpectatorMenu.dataset.sessionId=m.session_id;casinoSpectatorMenu.dataset.challenger=m.challenger||'';casinoSpectatorMenu.classList.remove('hidden')}showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,500)}}}).subscribe();
       refreshCasinoSpectatorMenu();
@@ -1304,13 +1314,15 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
     function markSpecialChoice(game){
-      specialSelectedGame=game;
-      document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame===game));
-      const isOpenTime=specialStartsAt>0&&Date.now()>=specialStartsAt;
-      specialPlayArea.innerHTML=`<div class="special-result">${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} を選択しました。<br><small>${isOpenTime?'開卓します。':'開卓までこのままお待ちください。'}</small></div>`;
-      pushSpecialState({challenger:storedGuestName,message:isOpenTime?'SPECIAL TABLE 開卓':`${game==='blackjack'?'BLACKJACK':'HIGH & LOW'} 選択済み・開卓待機中`},isOpenTime?'open':'countdown');
-      // 1分の開卓時刻をすでに過ぎてからゲームを選んだ場合も、その場で必ず開卓する。
-      if(isOpenTime){setTimeout(launchSelectedSpecialGame,250)}
+      // エミリーとのSPECIAL TABLEは HIGH & LOW のみ。
+      if(game!=='hilo')return;
+      specialSelectedGame='hilo';
+      document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame==='hilo'));
+      const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));
+      specialPlayArea.innerHTML=`<div class="special-result">HIGH & LOW を選択しました。<br><small>観戦者をお待ちください。開卓まで ${left} 秒</small></div>`;
+      pushSpecialState({challenger:storedGuestName,game:'hilo',phase:'countdown',starts_at:new Date(specialStartsAt).toISOString(),message:'HIGH & LOW 選択済み・開卓待機中'},'countdown');
+      // ゲーム選択後も1分カウントは継続。0秒になった時点でゲームテーブルへ移動する。
+      if(specialStartsAt>0&&Date.now()>=specialStartsAt){setTimeout(launchSelectedSpecialGame,80)}
     }
     function launchSelectedSpecialGame(){if(!specialSelectedGame)return;clearInterval(specialCountdownTimer);specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.body.classList.add('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','false');connectChallengerComments(activeSpecialSessionId);if(specialSelectedGame==='blackjack')startSpecialBlackjack();else startSpecialHilo()}
     async function acceptAllIn(){
@@ -1323,8 +1335,8 @@ body.special-table-playing .special-comment-overlay{display:block}
       refreshCasinoSpectatorMenu();
       await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
-      document.querySelectorAll('[data-special-game]').forEach(b=>{b.classList.toggle('hidden',seriousEmilyMode&&b.dataset.specialGame!=='hilo')});
-      if(seriousEmilyMode){specialTableRule.textContent='本気のエミリーとの勝負は HIGH & LOW のみです。';}
+      document.querySelectorAll('[data-special-game]').forEach(b=>{b.classList.toggle('hidden',b.dataset.specialGame!=='hilo')});
+      specialTableRule.textContent='運のみぞ知るとの勝負は HIGH & LOW のみです。';
       const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　${specialSelectedGame?'選択済み':'ゲームをお選びください。'}`;if(!left){clearInterval(specialCountdownTimer);if(specialSelectedGame){pushSpecialState({challenger:storedGuestName,message:'SPECIAL TABLE 開卓'},'open');launchSelectedSpecialGame()}else{specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　ゲームをお選びください。`}}};
       updateChallengerCountdown();clearInterval(specialCountdownTimer);specialCountdownTimer=setInterval(updateChallengerCountdown,250);
     }
