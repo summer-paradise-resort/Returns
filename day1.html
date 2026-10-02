@@ -1090,18 +1090,36 @@ body.special-table-playing .special-comment-overlay{display:block}
           .select('id,challenger_id,challenger_player_id,challenger_name,stake,status,starts_at,created_at,public_state')
           .in('status',['countdown','open','playing'])
           .order('created_at',{ascending:false})
-          .limit(1);
+          .limit(10);
         if(!error&&Array.isArray(data)&&data.length){
-          const row=data[0];
-          if(isOwnSpecialSession(row,identity)){
-            // BAND→Safariなどブラウザが変わっても、同じplayers.idなら挑戦者として復元。
-            await restoreOwnSpecialSession(row);
+          const now=Date.now();
+          let row=null;
+          for(const candidate of data){
+            const starts=new Date(candidate.starts_at||candidate.created_at||0).getTime();
+            // countdown は開卓予定から5分、open/playing は開卓から30分を超えたら放置セッション扱い。
+            const stale=(candidate.status==='countdown' && starts && now>starts+5*60*1000)
+              || ((candidate.status==='open'||candidate.status==='playing') && starts && now>starts+30*60*1000);
+            if(stale){
+              try{
+                await window.supabaseClientSpecial.from('special_table_sessions')
+                  .update({status:'finished',public_state:{...(candidate.public_state||{}),finished:true,message:'セッション終了'}})
+                  .eq('id',candidate.id);
+              }catch{}
+              continue;
+            }
+            row=candidate;
+            break;
+          }
+          if(row){
+            if(isOwnSpecialSession(row,identity)){
+              await restoreOwnSpecialSession(row);
+              return;
+            }
+            casinoSpectatorMenu.dataset.sessionId=row.id;
+            casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
+            casinoSpectatorMenu.classList.remove('hidden');
             return;
           }
-          casinoSpectatorMenu.dataset.sessionId=row.id;
-          casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
-          casinoSpectatorMenu.classList.remove('hidden');
-          return;
         }
         casinoSpectatorMenu.classList.add('hidden');
         casinoSpectatorMenu.dataset.sessionId='';
