@@ -403,6 +403,9 @@ body.special-table-playing .special-comment-overlay{display:block}
 #integratedCafeShell iframe.active{display:block}
 </style>
 
+<style>
+#specialGameChoice [data-special-game="blackjack"]{display:none!important}
+</style>
 </head>
 <body>
   <header>
@@ -1322,17 +1325,57 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
     function markSpecialChoice(game){
-      // エミリーとのSPECIAL TABLEは HIGH & LOW のみ。
       if(game!=='hilo')return;
       specialSelectedGame='hilo';
       document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('selected',b.dataset.specialGame==='hilo'));
-      const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));
-      specialPlayArea.innerHTML=`<div class="special-result">HIGH & LOW を選択しました。<br><small>観戦者をお待ちください。開卓まで ${left} 秒</small></div>`;
-      pushSpecialState({challenger:storedGuestName,game:'hilo',phase:'countdown',starts_at:new Date(specialStartsAt).toISOString(),message:'HIGH & LOW 選択済み・開卓待機中'},'countdown');
-      // ゲーム選択後も1分カウントは継続。0秒になった時点でゲームテーブルへ移動する。
-      if(specialStartsAt>0&&Date.now()>=specialStartsAt){setTimeout(launchSelectedSpecialGame,80)}
+
+      // 選択した瞬間にゲーム卓へ移動。ただし開卓時刻まではカードを配らない。
+      specialTableScreen.classList.add('hidden');
+      specialTableScreen.setAttribute('aria-hidden','true');
+      casinoGame.classList.remove('hidden');
+      casinoGame.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+      document.body.classList.add('special-table-playing');
+      specialCommentOverlay?.setAttribute('aria-hidden','false');
+      connectChallengerComments(activeSpecialSessionId);
+
+      showCasinoLevel('hilo');
+      hiloScreen.querySelector('.hand-zone h3').textContent='CURRENT CARD';
+      hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='NEXT CARD';
+      hiloScreen.querySelector('.casino-return').classList.add('hidden');
+      hiloActionPanel.classList.add('hidden');
+      hiloBetPanel.classList.add('hidden');
+
+      const renderWaiting=()=>{
+        const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));
+        hiloStatus.textContent=left?`観戦者をお待ちください。開卓まで ${left} 秒`:'SPECIAL TABLE OPEN';
+        if(left<=0){
+          clearInterval(specialCountdownTimer);
+          pushSpecialState({challenger:storedGuestName,game:'hilo',message:'SPECIAL TABLE 開卓'},'open');
+          startSpecialHilo();
+        }
+      };
+
+      pushSpecialState({
+        challenger:storedGuestName,
+        game:'hilo',
+        phase:'countdown',
+        starts_at:new Date(specialStartsAt).toISOString(),
+        message:'HIGH & LOW 選択済み・開卓待機中'
+      },'countdown');
+
+      clearInterval(specialCountdownTimer);
+      renderWaiting();
+      specialCountdownTimer=setInterval(renderWaiting,250);
     }
-    function launchSelectedSpecialGame(){if(!specialSelectedGame)return;clearInterval(specialCountdownTimer);specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';document.body.classList.add('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','false');connectChallengerComments(activeSpecialSessionId);if(specialSelectedGame==='blackjack')startSpecialBlackjack();else startSpecialHilo()}
+
+    function launchSelectedSpecialGame(){
+      if(specialSelectedGame!=='hilo')return;
+      // 既にゲーム卓へ移動済み。0秒到達時のみ実ゲームを開始する。
+      if(specialStartsAt>0&&Date.now()<specialStartsAt)return;
+      clearInterval(specialCountdownTimer);
+      startSpecialHilo();
+    }
     async function acceptAllIn(){
       specialActions.innerHTML='';await specialSay('運のみぞ知る','───これで後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんなが集まってくれるのよ。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800);
       const startsAt=new Date(Date.now()+60000).toISOString();specialStartsAt=new Date(startsAt).getTime();specialStake=casinoChips;specialSelectedGame=null;activeSpecialSessionId=await createSpecialSession(startsAt);
