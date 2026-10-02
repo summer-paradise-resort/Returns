@@ -1142,7 +1142,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       playAudio(specialBgm,.42);
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
-    async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial)return null;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return null;const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:user.id,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
+    async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial||!storedPlayerId){console.warn('special session create: player id missing');return null}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:storedPlayerId,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
     function markSpecialChoice(game){
@@ -1170,7 +1170,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
-      try{if(!window.supabaseClientSpecial)return;const {data:{user}}=await window.supabaseClientSpecial.auth.getUser();if(!user)return;await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:user.id,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});}catch(e){console.warn('special announcement sync',e)}
+      try{if(!window.supabaseClientSpecial||!storedPlayerId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:storedPlayerId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
     }
     function grantSpecialLossReward(){
       const b=loadBelongings();const globalJokers=Math.max(0,Number(localStorage.getItem('spr-joker-issued')||0));const jokerAvailable=globalJokers<4;const joker=jokerAvailable&&Math.random()<0.45;
