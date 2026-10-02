@@ -2089,65 +2089,54 @@ document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;
 })();
 
 })();&lt;/script&gt;
-&lt;script&gt;
-(()=&gt;{
-  let selectedMeal=&#x27;&#x27;,selectedDrink=&#x27;&#x27;;
-  const mealButtons=[...document.querySelectorAll(&#x27;#meals .item&#x27;)];
-  const drinkButtons=[...document.querySelectorAll(&#x27;#drinks .item&#x27;)];
-  function bindCafeChoice(buttons,type){
-    buttons.forEach(btn=&gt;{
-      btn.addEventListener(&#x27;click&#x27;,()=&gt;{
-        buttons.forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
-        btn.classList.add(&#x27;selected&#x27;);
-        if(type===&#x27;meal&#x27;) selectedMeal=btn.dataset.value||btn.textContent.trim();
-        else selectedDrink=btn.dataset.value||btn.textContent.trim();
-      });
-    });
-  }
-  bindCafeChoice(mealButtons,&#x27;meal&#x27;);
-  bindCafeChoice(drinkButtons,&#x27;drink&#x27;);
-})();
-&lt;/script&gt;
 
-&lt;script&gt;
-(()=&gt;{
-  function ensureCafeChoices(id){
-    const box=document.getElementById(id);
-    if(!box)return;
-    box.addEventListener(&#x27;click&#x27;,e=&gt;{
-      const item=e.target.closest(&#x27;.item&#x27;);
-      if(!item||!box.contains(item))return;
-      box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
-      item.classList.add(&#x27;selected&#x27;);
-    });
-  }
-  ensureCafeChoices(&#x27;meals&#x27;);
-  ensureCafeChoices(&#x27;drinks&#x27;);
-})();
-&lt;/script&gt;
+
+
+
+
+
 
 
 &lt;script&gt;
 (()=&gt;{
-  const meals=document.getElementById(&#x27;meals&#x27;);
-  const drinks=document.getElementById(&#x27;drinks&#x27;);
-  const order=document.getElementById(&#x27;order&#x27;);
+  const mealsBox=document.getElementById(&#x27;meals&#x27;);
+  const drinksBox=document.getElementById(&#x27;drinks&#x27;);
+  const orderBtn=document.getElementById(&#x27;order&#x27;);
   const status=document.getElementById(&#x27;status&#x27;);
-  if(!meals||!drinks||!order)return;
+  if(!mealsBox||!drinksBox||!orderBtn)return;
 
-  function syncOrderButton(){
-    const meal=meals.querySelector(&#x27;.item.selected&#x27;);
-    const drink=drinks.querySelector(&#x27;.item.selected&#x27;);
-    order.disabled=!(meal&amp;&amp;drink);
-    if(status){
-      status.textContent=(meal&amp;&amp;drink)
-        ? `${meal.dataset.value||meal.textContent.trim()} ＋ ${drink.dataset.value||drink.textContent.trim()} を注文できます。`
-        : &#x27;食事とドリンクをお選びください。&#x27;;
-    }
+  let meal=&#x27;&#x27;,drink=&#x27;&#x27;;
+
+  function choose(box,item,type){
+    box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
+    item.classList.add(&#x27;selected&#x27;);
+    if(type===&#x27;meal&#x27;) meal=item.dataset.value||item.textContent.trim();
+    else drink=item.dataset.value||item.textContent.trim();
+    orderBtn.disabled=!(meal&amp;&amp;drink);
+    orderBtn.removeAttribute(&#x27;aria-disabled&#x27;);
+    if(status) status.textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;;
   }
-  meals.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
-  drinks.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
-  syncOrderButton();
+
+  mealsBox.addEventListener(&#x27;click&#x27;,e=&gt;{
+    const item=e.target.closest(&#x27;.item&#x27;); if(!item)return;
+    e.preventDefault(); choose(mealsBox,item,&#x27;meal&#x27;);
+  },true);
+  drinksBox.addEventListener(&#x27;click&#x27;,e=&gt;{
+    const item=e.target.closest(&#x27;.item&#x27;); if(!item)return;
+    e.preventDefault(); choose(drinksBox,item,&#x27;drink&#x27;);
+  },true);
+
+  // Capture the click before any older listener can block it.
+  orderBtn.addEventListener(&#x27;click&#x27;,e=&gt;{
+    if(!meal||!drink){e.preventDefault();e.stopImmediatePropagation();return}
+    // Let the original order handler run, but make sure it sees its own selected values:
+    // trigger the original item onclick handlers once, then keep the button enabled.
+    const mb=[...mealsBox.querySelectorAll(&#x27;.item&#x27;)].find(x=&gt;(x.dataset.value||x.textContent.trim())===meal);
+    const db=[...drinksBox.querySelectorAll(&#x27;.item&#x27;)].find(x=&gt;(x.dataset.value||x.textContent.trim())===drink);
+    if(mb&amp;&amp;typeof mb.onclick===&#x27;function&#x27;) mb.onclick();
+    if(db&amp;&amp;typeof db.onclick===&#x27;function&#x27;) db.onclick();
+    orderBtn.disabled=false;
+  },true);
 })();
 &lt;/script&gt;
 
@@ -2191,65 +2180,54 @@ document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;
 })();
 
 })();&lt;/script&gt;
-&lt;script&gt;
-(()=&gt;{
-  let selectedMeal=&#x27;&#x27;,selectedDrink=&#x27;&#x27;;
-  const mealButtons=[...document.querySelectorAll(&#x27;#meals .item&#x27;)];
-  const drinkButtons=[...document.querySelectorAll(&#x27;#drinks .item&#x27;)];
-  function bindCafeChoice(buttons,type){
-    buttons.forEach(btn=&gt;{
-      btn.addEventListener(&#x27;click&#x27;,()=&gt;{
-        buttons.forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
-        btn.classList.add(&#x27;selected&#x27;);
-        if(type===&#x27;meal&#x27;) selectedMeal=btn.dataset.value||btn.textContent.trim();
-        else selectedDrink=btn.dataset.value||btn.textContent.trim();
-      });
-    });
-  }
-  bindCafeChoice(mealButtons,&#x27;meal&#x27;);
-  bindCafeChoice(drinkButtons,&#x27;drink&#x27;);
-})();
-&lt;/script&gt;
 
-&lt;script&gt;
-(()=&gt;{
-  function ensureCafeChoices(id){
-    const box=document.getElementById(id);
-    if(!box)return;
-    box.addEventListener(&#x27;click&#x27;,e=&gt;{
-      const item=e.target.closest(&#x27;.item&#x27;);
-      if(!item||!box.contains(item))return;
-      box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
-      item.classList.add(&#x27;selected&#x27;);
-    });
-  }
-  ensureCafeChoices(&#x27;meals&#x27;);
-  ensureCafeChoices(&#x27;drinks&#x27;);
-})();
-&lt;/script&gt;
+
+
+
+
+
 
 
 &lt;script&gt;
 (()=&gt;{
-  const meals=document.getElementById(&#x27;meals&#x27;);
-  const drinks=document.getElementById(&#x27;drinks&#x27;);
-  const order=document.getElementById(&#x27;order&#x27;);
+  const mealsBox=document.getElementById(&#x27;meals&#x27;);
+  const drinksBox=document.getElementById(&#x27;drinks&#x27;);
+  const orderBtn=document.getElementById(&#x27;order&#x27;);
   const status=document.getElementById(&#x27;status&#x27;);
-  if(!meals||!drinks||!order)return;
+  if(!mealsBox||!drinksBox||!orderBtn)return;
 
-  function syncOrderButton(){
-    const meal=meals.querySelector(&#x27;.item.selected&#x27;);
-    const drink=drinks.querySelector(&#x27;.item.selected&#x27;);
-    order.disabled=!(meal&amp;&amp;drink);
-    if(status){
-      status.textContent=(meal&amp;&amp;drink)
-        ? `${meal.dataset.value||meal.textContent.trim()} ＋ ${drink.dataset.value||drink.textContent.trim()} を注文できます。`
-        : &#x27;食事とドリンクをお選びください。&#x27;;
-    }
+  let meal=&#x27;&#x27;,drink=&#x27;&#x27;;
+
+  function choose(box,item,type){
+    box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
+    item.classList.add(&#x27;selected&#x27;);
+    if(type===&#x27;meal&#x27;) meal=item.dataset.value||item.textContent.trim();
+    else drink=item.dataset.value||item.textContent.trim();
+    orderBtn.disabled=!(meal&amp;&amp;drink);
+    orderBtn.removeAttribute(&#x27;aria-disabled&#x27;);
+    if(status) status.textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;;
   }
-  meals.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
-  drinks.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
-  syncOrderButton();
+
+  mealsBox.addEventListener(&#x27;click&#x27;,e=&gt;{
+    const item=e.target.closest(&#x27;.item&#x27;); if(!item)return;
+    e.preventDefault(); choose(mealsBox,item,&#x27;meal&#x27;);
+  },true);
+  drinksBox.addEventListener(&#x27;click&#x27;,e=&gt;{
+    const item=e.target.closest(&#x27;.item&#x27;); if(!item)return;
+    e.preventDefault(); choose(drinksBox,item,&#x27;drink&#x27;);
+  },true);
+
+  // Capture the click before any older listener can block it.
+  orderBtn.addEventListener(&#x27;click&#x27;,e=&gt;{
+    if(!meal||!drink){e.preventDefault();e.stopImmediatePropagation();return}
+    // Let the original order handler run, but make sure it sees its own selected values:
+    // trigger the original item onclick handlers once, then keep the button enabled.
+    const mb=[...mealsBox.querySelectorAll(&#x27;.item&#x27;)].find(x=&gt;(x.dataset.value||x.textContent.trim())===meal);
+    const db=[...drinksBox.querySelectorAll(&#x27;.item&#x27;)].find(x=&gt;(x.dataset.value||x.textContent.trim())===drink);
+    if(mb&amp;&amp;typeof mb.onclick===&#x27;function&#x27;) mb.onclick();
+    if(db&amp;&amp;typeof db.onclick===&#x27;function&#x27;) db.onclick();
+    orderBtn.disabled=false;
+  },true);
 })();
 &lt;/script&gt;
 
