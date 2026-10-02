@@ -973,9 +973,44 @@ body.special-table-playing .special-comment-overlay{display:block}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     async function refreshCasinoSpectatorMenu(){
       if(!casinoSpectatorMenu||!window.supabaseClientSpecial)return;
-      const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('id,challenger_name,status,starts_at,created_at').in('status',['countdown','open','playing']).order('created_at',{ascending:false}).limit(1).maybeSingle();
-      if(error||!data){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';return}
-      casinoSpectatorMenu.dataset.sessionId=data.id;casinoSpectatorMenu.dataset.challenger=data.challenger_name||'';casinoSpectatorMenu.classList.remove('hidden');
+      try{
+        // 1) 開催中セッションを直接確認（Realtimeを取り逃しても復元できる）
+        const {data,error}=await window.supabaseClientSpecial
+          .from('special_table_sessions')
+          .select('id,challenger_name,status,starts_at,created_at')
+          .in('status',['countdown','open','playing'])
+          .order('created_at',{ascending:false})
+          .limit(1);
+        if(!error&&Array.isArray(data)&&data.length){
+          const row=data[0];
+          casinoSpectatorMenu.dataset.sessionId=row.id;
+          casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
+          casinoSpectatorMenu.classList.remove('hidden');
+          return;
+        }
+
+        // 2) セッション検索が一時的に失敗しても、SPECIAL ANNOUNCEMENTの
+        //    metadata.session_id から観戦先を復元する。
+        const {data:ann,error:annError}=await window.supabaseClientSpecial
+          .from('resort_announcements')
+          .select('metadata,expires_at,created_at')
+          .eq('announcement_type','special-table')
+          .gt('expires_at',new Date().toISOString())
+          .order('created_at',{ascending:false})
+          .limit(1);
+        const meta=(!annError&&Array.isArray(ann)&&ann.length)?(ann[0].metadata||{}):{};
+        if(meta.session_id&&meta.state!=='finished'){
+          casinoSpectatorMenu.dataset.sessionId=String(meta.session_id);
+          casinoSpectatorMenu.dataset.challenger=String(meta.challenger||'');
+          casinoSpectatorMenu.classList.remove('hidden');
+          return;
+        }
+        casinoSpectatorMenu.classList.add('hidden');
+        casinoSpectatorMenu.dataset.sessionId='';
+        casinoSpectatorMenu.dataset.challenger='';
+      }catch(e){
+        console.warn('spectator menu refresh',e);
+      }
     }
     if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
@@ -992,7 +1027,11 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function openSpectator(sessionId,challenger=''){specialBroadcast.classList.add('hidden');spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';renderSpectatorState({...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-spectator-${sessionId}-${storedPlayerId||Date.now()}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'});if(p.new.status==='finished')refreshCasinoSpectatorMenu()}).on('broadcast',{event:'gallery-comment'},()=>{}).subscribe()}
     if(window.supabaseClientSpecial){
       window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const m=r.metadata||{},state=m.state;if(state==='finished'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}refreshCasinoSpectatorMenu();return}setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now()}));if(state==='countdown'){if(casinoSpectatorMenu&&m.session_id){casinoSpectatorMenu.dataset.sessionId=m.session_id;casinoSpectatorMenu.dataset.challenger=m.challenger||'';casinoSpectatorMenu.classList.remove('hidden')}showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,500)}}}).subscribe();
-      refreshCasinoSpectatorMenu().then(()=>{if(casinoSpectatorMenu?.classList.contains('hidden')){try{const saved=JSON.parse(localStorage.getItem('spr-resort-announcement')||'null');if(saved?.type==='special-table'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement()}}catch{}}});
+      refreshCasinoSpectatorMenu();
+      // 別端末がRealtime通知の瞬間に開いていなくても、開催中は自動検出する。
+      window.__sprSpectatorMenuPoll=setInterval(refreshCasinoSpectatorMenu,2000);
+      document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCasinoSpectatorMenu()});
+      window.addEventListener('focus',refreshCasinoSpectatorMenu);
     }
 
 
