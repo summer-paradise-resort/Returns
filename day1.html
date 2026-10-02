@@ -824,17 +824,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const teaSalonMessage=document.getElementById('teaSalonMessage');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
     const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
-    let storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
-    async function ensureStoredPlayerId(){
-      if(storedPlayerId)return storedPlayerId;
-      if(!window.supabaseClientSpecial||!storedGuestName)return '';
-      try{
-        const {data,error}=await window.supabaseClientSpecial.from('players').select('id,display_name').eq('display_name',storedGuestName).order('last_seen_at',{ascending:false}).limit(1).maybeSingle();
-        if(error)throw error;
-        if(data?.id){storedPlayerId=String(data.id);localStorage.setItem('spr-player-id',storedPlayerId);return storedPlayerId}
-      }catch(e){console.warn('player id recovery',e)}
-      return '';
-    }
+    const storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
     let activeTeaPartyId='',teaPartyChannel=null;
 
     function refreshTeaSalonStatus(){
@@ -1166,7 +1156,27 @@ body.special-table-playing .special-comment-overlay{display:block}
       specialBgm.currentTime=0; specialBgm.muted=false; specialBgm.volume=.42;
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
-    async function createSpecialSession(startsAt){try{if(!window.supabaseClientSpecial){console.warn('special session create: supabase unavailable');return null}const playerId=await ensureStoredPlayerId();if(!playerId){console.warn('special session create: player id could not be recovered');return null}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:playerId,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{challenger:storedGuestName,phase:'countdown',starts_at:startsAt,stake:casinoChips,message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();if(error)throw error;return data.id}catch(e){console.warn('special session create',e);return null}}
+    async function resolveSpecialPlayerId(){
+      if(storedPlayerId)return storedPlayerId;
+      if(!window.supabaseClientSpecial||!storedGuestName)return null;
+      try{
+        const {data,error}=await window.supabaseClientSpecial.from('players').select('id').eq('display_name',storedGuestName).order('last_seen_at',{ascending:false}).limit(1).maybeSingle();
+        if(error)throw error;
+        const id=String(data?.id||'').trim();
+        if(id)localStorage.setItem('spr-player-id',id);
+        return id||null;
+      }catch(e){console.warn('special player resolve',e);return null}
+    }
+    async function createSpecialSession(startsAt){
+      try{
+        if(!window.supabaseClientSpecial){console.warn('special session create: supabase unavailable');return null}
+        const challengerId=await resolveSpecialPlayerId();
+        if(!challengerId){console.warn('special session create: player id could not be resolved for',storedGuestName);return null}
+        const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:challengerId,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{challenger:storedGuestName,phase:'countdown',starts_at:startsAt,stake:casinoChips,message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();
+        if(error)throw error;
+        return data?.id||null;
+      }catch(e){console.warn('special session create',e);return null}
+    }
     async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
     function markSpecialChoice(game){
@@ -1182,7 +1192,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function acceptAllIn(){
       specialActions.innerHTML='';await specialSay('運のみぞ知る','───これで後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんなが集まってくれるのよ。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800);
       const startsAt=new Date(Date.now()+60000).toISOString();specialStartsAt=new Date(startsAt).getTime();specialStake=casinoChips;specialSelectedGame=null;activeSpecialSessionId=await createSpecialSession(startsAt);
-      if(!activeSpecialSessionId){console.error('SPECIAL TABLE session was not created');specialTableRule.textContent='SPECIAL TABLEの同期に失敗しました。SECURITY CHECKから入り直して、もう一度お試しください。';}
+      if(!activeSpecialSessionId){specialActions.innerHTML='<div style="max-width:520px;margin:0 auto;line-height:2">SPECIAL TABLEの観戦接続を開始できませんでした。<br>SECURITY CHECKから入り直して、もう一度お試しください。</div><button id="specialRetryClose" type="button">閉じる</button>';document.getElementById('specialRetryClose').onclick=()=>{specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()};return}
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
       const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
@@ -1196,7 +1206,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
-      try{if(!window.supabaseClientSpecial){console.warn('special announcement sync: supabase unavailable');return}const playerId=await ensureStoredPlayerId();if(!playerId){console.warn('special announcement sync: player id could not be recovered');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:playerId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
+      try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
     }
     function grantSpecialLossReward(){
       const b=loadBelongings();const globalJokers=Math.max(0,Number(localStorage.getItem('spr-joker-issued')||0));const jokerAvailable=globalJokers<4;const joker=jokerAvailable&&Math.random()<0.45;
