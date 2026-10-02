@@ -352,6 +352,26 @@
 body:has(#casinoGame:not(.hidden)) .global-special-notice{top:64px}
 body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
 
+
+/* AFTERNOON TEA / shared salon */
+.tea-party-box{margin-top:18px;padding:16px;border:1px solid #e1d4bd;background:#fbf8f1}
+.tea-party-box h3{margin:0 0 10px;font-size:15px;font-weight:500;letter-spacing:.08em}
+.tea-party-picker{display:grid;gap:8px;margin:12px 0}
+.tea-party-person{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #ddd3c3;background:#fff;font-size:13px}
+.tea-party-person input{width:18px;height:18px;min-height:0}
+.tea-party-actions{display:grid;gap:8px;margin-top:12px}
+.tea-party-actions button{min-height:46px;border:0;background:var(--navy);color:#fff;letter-spacing:.08em}
+.tea-party-actions button:disabled{opacity:.4}
+.tea-party-log{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;margin-top:12px;padding:10px;background:#fff;border:1px solid #e7dfd1}
+.tea-party-msg{padding:9px 10px;background:#f7f3eb;border-left:2px solid var(--gold)}
+.tea-party-msg small{display:block;color:#8a795f;font-size:10px;margin-bottom:3px}
+.tea-party-msg p{margin:0!important;font-size:13px!important;line-height:1.65!important;color:#37495a!important}
+.tea-party-compose{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.tea-party-compose input{min-height:44px;border:1px solid #d8cfbf;background:#fff;padding:9px 10px;font:16px inherit}
+.tea-party-compose button{min-width:72px;border:0;background:var(--gold);color:#fff}
+.tea-party-compose.hidden{display:none}
+.tea-party-note{font-size:11px;line-height:1.7;color:#776e60;margin-top:8px}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -561,6 +581,21 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
           <button class="menu-item tea-salon-venue" type="button" data-salon-venue="Marine Bloom Cafe" data-salon-key="tea:marine-bloom">Marine Bloom Cafe<small>AFTERNOON TEA SALON</small></button>
         </div>
         <p id="teaSalonMessage" class="bar-selection" aria-live="polite">会場をお選びください。</p>
+        <div id="teaPartyBox" class="tea-party-box">
+          <h3>開催中のお茶会</h3>
+          <div id="teaPartyPublicStatus" class="tea-party-note">お茶会を読み込んでいます。</div>
+          <div id="teaPartyList"></div>
+          <div id="teaPartyChat" class="hidden">
+            <div id="teaPartyChatMeta" class="tea-party-note"></div>
+            <div id="teaPartyLog" class="tea-party-log"></div>
+            <div id="teaPartyCompose" class="tea-party-compose hidden">
+              <input id="teaPartyInput" maxlength="300" placeholder="メッセージ">
+              <button id="teaPartySend" type="button">送信</button>
+            </div>
+            <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会は閲覧できますが、発言できるのは招待されたメンバーのみです。</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -769,44 +804,105 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
     const teaTicketMessage=document.getElementById('teaTicketMessage');
     const teaSalonMessage=document.getElementById('teaSalonMessage');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
+    const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
+    const storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
+    let activeTeaPartyId='',teaPartyChannel=null;
+
     function refreshTeaSalonStatus(){
       const t2=belongingCount('afternoonTeaTicket2'),t4=belongingCount('afternoonTeaTicket4');
       if(teaSalonTicketStatus)teaSalonTicketStatus.textContent=`2名様用：${t2}枚　｜　4名様用：${t4}枚`;
       return {t2,t4};
     }
+    async function recentTeaPlayers(){
+      if(!window.supabaseClientSpecial)return [];
+      const cutoff=new Date(Date.now()-24*60*60*1000).toISOString();
+      const {data,error}=await window.supabaseClientSpecial.from('players').select('id,display_name,last_seen_at').gte('last_seen_at',cutoff).order('display_name');
+      if(error){console.error(error);return []}
+      return (data||[]).filter(p=>p.id!==storedPlayerId);
+    }
+    async function chooseTeaGuests(capacity,venue,label){
+      const players=await recentTeaPlayers(),max=capacity-1;
+      if(!players.length){teaSalonMessage.textContent='現在、選択できる宿泊者がいません。';return null}
+      return new Promise(resolve=>{
+        const wrap=document.createElement('div');wrap.className='tea-party-box';
+        wrap.innerHTML=`<h3>${venue} / ${label}</h3><div class="tea-party-note">一緒にお茶をする方を ${max}名まで選択してください。</div><div class="tea-party-picker">${players.map(p=>`<label class="tea-party-person"><input type="checkbox" value="${p.id}" data-name="${String(p.display_name||'').replace(/"/g,'&quot;')}"><span>${p.display_name}</span></label>`).join('')}</div><div class="tea-party-actions"><button type="button" data-confirm>このメンバーを招待する</button><button type="button" data-cancel>キャンセル</button></div>`;
+        teaPartyList.prepend(wrap);
+        const checks=[...wrap.querySelectorAll('input[type=checkbox]')];
+        checks.forEach(c=>c.addEventListener('change',()=>{if(checks.filter(x=>x.checked).length>max)c.checked=false}));
+        wrap.querySelector('[data-cancel]').onclick=()=>{wrap.remove();resolve(null)};
+        wrap.querySelector('[data-confirm]').onclick=()=>{
+          const chosen=checks.filter(x=>x.checked).map(x=>({id:x.value,name:x.dataset.name}));
+          if(!chosen.length){teaSalonMessage.textContent='同席するお客様を1名以上選択してください。';return}
+          wrap.remove();resolve(chosen);
+        };
+      });
+    }
+    async function createTeaParty(venue,label,capacity,key,guests){
+      if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
+      const endsAt=new Date(Date.now()+30*60*1000).toISOString();
+      const {data:party,error}=await window.supabaseClientSpecial.from('tea_parties').insert({venue,host_player_id:storedPlayerId,host_name:storedGuestName,ticket_type:capacity,ends_at:endsAt}).select('id').single();
+      if(error){console.error(error);teaSalonMessage.textContent='お茶会の作成に失敗しました。Supabase設定をご確認ください。';return}
+      const members=[{party_id:party.id,player_id:storedPlayerId,display_name:storedGuestName,is_host:true},...guests.map(g=>({party_id:party.id,player_id:g.id,display_name:g.name,is_host:false}))];
+      const {error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').insert(members);
+      if(memberError){console.error(memberError);await window.supabaseClientSpecial.from('tea_parties').delete().eq('id',party.id);teaSalonMessage.textContent='招待メンバーの登録に失敗しました。';return}
+      const belongings=loadBelongings();belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
+      teaSalonMessage.textContent=`${guests.map(g=>g.name).join('、')} 様をご招待しました。30分間のAFTERNOON TEA SALONを開始します。`;
+      refreshTeaSalonStatus();if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
+      document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
+      await loadTeaParties();await openTeaParty(party.id);
+    }
+    async function loadTeaParties(){
+      if(!window.supabaseClientSpecial)return;
+      const {data,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ends_at,created_at').gt('ends_at',new Date().toISOString()).order('created_at',{ascending:false});
+      if(error){teaPartyPublicStatus.textContent='お茶会を読み込めません。';console.error(error);return}
+      teaPartyPublicStatus.textContent=data?.length?'開催中のお茶会は、どなたでも会話をご覧いただけます。':'現在開催中のお茶会はありません。';
+      teaPartyList.innerHTML=(data||[]).map(p=>`<button class="menu-item" type="button" data-tea-party="${p.id}">${p.venue}<small>${p.host_name}様のお茶会　｜　会話を見る</small></button>`).join('');
+      teaPartyList.querySelectorAll('[data-tea-party]').forEach(b=>b.onclick=()=>openTeaParty(b.dataset.teaParty));
+    }
+    async function openTeaParty(id){
+      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');
+      const [{data:party},{data:members},{data:messages}]=await Promise.all([
+        window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ends_at').eq('id',id).single(),
+        window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host').eq('party_id',id),
+        window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at')
+      ]);
+      const member=(members||[]).some(m=>m.player_id===storedPlayerId);
+      teaPartyChatMeta.textContent=`${party?.venue||''}　｜　参加者：${(members||[]).map(m=>m.display_name).join('、')}`;
+      teaPartyCompose.classList.toggle('hidden',!member);teaPartyReadOnly.classList.toggle('hidden',member);
+      renderTeaMessages(messages||[]);
+      if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);
+      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>appendTeaMessage(p.new)).subscribe();
+    }
+    function renderTeaMessages(rows){teaPartyLog.innerHTML='';rows.forEach(appendTeaMessage);if(!rows.length)teaPartyLog.innerHTML='<div class="tea-party-note">まだ会話はありません。</div>'}
+    function appendTeaMessage(m){
+      if(teaPartyLog.querySelector(`[data-message-id="${m.id}"]`))return;
+      if(teaPartyLog.querySelector('.tea-party-note'))teaPartyLog.innerHTML='';
+      const d=document.createElement('div');d.className='tea-party-msg';d.dataset.messageId=m.id;
+      const sm=document.createElement('small');sm.textContent=m.display_name||'GUEST';
+      const p=document.createElement('p');p.textContent=m.body||'';d.append(sm,p);teaPartyLog.appendChild(d);teaPartyLog.scrollTop=teaPartyLog.scrollHeight;
+    }
+    teaPartySend.onclick=async()=>{
+      const body=teaPartyInput.value.trim();if(!body||!activeTeaPartyId)return;
+      teaPartySend.disabled=true;
+      const {error}=await window.supabaseClientSpecial.rpc('post_tea_message',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_body:body});
+      teaPartySend.disabled=false;if(error){console.error(error);teaSalonMessage.textContent='メッセージを送信できませんでした。';return}
+      teaPartyInput.value='';
+    };
     document.querySelectorAll('[data-cafe-mode]').forEach(button=>button.addEventListener('click',()=>{
-      if(button.dataset.cafeMode==='salon'){
-        refreshTeaSalonStatus();openView('teaSalonView');
-      }else{
-        teaTicketMessage.textContent='通常のカフェ利用です。The Pearl Terrace / Marine Bloom Cafe を自由にお楽しみください。';
-      }
+      if(button.dataset.cafeMode==='salon'){refreshTeaSalonStatus();openView('teaSalonView');loadTeaParties()}
+      else teaTicketMessage.textContent='通常のカフェ利用です。The Pearl Terrace / Marine Bloom Cafe を自由にお楽しみください。';
     }));
-    document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',()=>{
-      const venue=button.dataset.salonVenue;
-      const {t2,t4}=refreshTeaSalonStatus();
+    document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',async()=>{
+      const venue=button.dataset.salonVenue,{t2,t4}=refreshTeaSalonStatus();
       if(!t2&&!t4){teaSalonMessage.textContent='AFTERNOON TEA SALONのご利用にはチケットが必要です。';return}
       let key='',label='',capacity=0;
       if(t2&&t4){
-        const choice=window.prompt(`${venue} で使用するチケットを選んでください。\n2 = 2名様用（所持 ${t2}）\n4 = 4名様用（所持 ${t4}）`,'2');
-        if(choice===null)return;
-        if(String(choice).trim()==='4'){key='afternoonTeaTicket4';label='4名様用';capacity=4}
-        else if(String(choice).trim()==='2'){key='afternoonTeaTicket2';label='2名様用';capacity=2}
-        else{teaSalonMessage.textContent='2 または 4 を入力してください。';return}
+        const use4=window.confirm(`${venue}\nOK：4名様用チケットを使う\nキャンセル：2名様用チケットを使う`);
+        if(use4){key='afternoonTeaTicket4';label='4名様用';capacity=4}else{key='afternoonTeaTicket2';label='2名様用';capacity=2}
       }else if(t2){key='afternoonTeaTicket2';label='2名様用';capacity=2}else{key='afternoonTeaTicket4';label='4名様用';capacity=4}
-      const guestSlots=capacity-1;
-      const guests=window.prompt(`${label}を使用します。\n一緒にお茶をするお客様のお名前を入力してください。\n最大 ${guestSlots}名（複数の場合は「、」で区切ってください）`,'');
-      if(guests===null)return;
-      const names=String(guests).split(/[、,]/).map(v=>v.trim()).filter(Boolean).slice(0,guestSlots);
-      if(!names.length){teaSalonMessage.textContent='同席するお客様を1名以上入力してください。';return}
-      if(!window.confirm(`${venue} / ${label}\n${names.join('、')} 様をご招待します。\nチケットを1枚使用して30分間のティータイムを開始しますか？`))return;
-      const belongings=loadBelongings();belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
-      const session={venue,label,capacity,host:storedGuestName||'お客様',guests:names,startedAt:Date.now(),endsAt:Date.now()+30*60*1000};
-      localStorage.setItem('spr-tea-session',JSON.stringify(session));
-      teaSalonMessage.textContent=`${names.join('、')} 様をご招待しました。30分間のAFTERNOON TEA SALONを開始します。`;
-      refreshTeaSalonStatus();
-      if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
-      // 特別演出はここへ追加。会場・参加者・ドリンク等を条件に物語イベントへ接続できます。
-      document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
+      const guests=await chooseTeaGuests(capacity,venue,label);if(!guests)return;
+      if(!window.confirm(`${venue} / ${label}\n${guests.map(g=>g.name).join('、')} 様をご招待します。\nチケットを1枚使用して30分間のティータイムを開始しますか？`))return;
+      await createTeaParty(venue,label,capacity,key,guests);
     }));
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
@@ -861,7 +957,7 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
     function renderSpectatorState(state={}){spectatorStatus.textContent=state.challenger?`${state.challenger}様の勝負`:'SPECIAL TABLE';if(state.game==='blackjack'){spectatorStage.innerHTML=`<div class="special-result">BLACKJACK<br><br>${state.challenger||'CHALLENGER'}　${state.player_value??''}<br>${(state.player_cards||[]).map(spectatorCard).join('')}<br><br>運のみぞ知る<br><span class="playing-card back"></span>${state.finished&&state.dealer_public_cards?(state.dealer_public_cards||[]).map(spectatorCard).join(''):''}<br><br>${state.message||''}</div>`}else if(state.game==='hilo'){spectatorStage.innerHTML=`<div class="special-result">HIGH &amp; LOW　ROUND ${state.round||1}<br>${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る<br><br>${state.visible_card?spectatorCard(state.visible_card):''}<br><br>${state.message||'挑戦者の選択をお待ちください。'}</div>`}else spectatorStage.innerHTML=`<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`}
     async function openSpectator(sessionId,challenger=''){specialBroadcast.classList.add('hidden');spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger}様の勝負`;activeSpecialSessionId=sessionId;if(!window.supabaseClientSpecial)return;const {data}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(data)renderSpectatorState({...data.public_state,challenger:data.challenger_name});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-table-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'})).subscribe()}
     if(window.supabaseClientSpecial){
-      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){setResortAnnouncement(r.message,{alert:true,global:true});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:r.message,createdAt:Date.now()}));if((r.metadata||{}).state==='countdown')showSpecialBroadcast(r);}}).subscribe();
+      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const state=(r.metadata||{}).state;if(state==='finished'){globalSpecialNotice.classList.add('hidden');localStorage.removeItem('spr-resort-announcement');return}setResortAnnouncement(r.message,{alert:true,global:true});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:r.message,createdAt:Date.now()}));if(state==='countdown')showSpecialBroadcast(r);}}).subscribe();
     }
 
 
@@ -994,7 +1090,7 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&barMenuLightbox.classList.contains('open'))closeBarMenuLightbox()});
 
 
-    // SPECIAL TABLE / 20,000 CHIP EVENT
+    // SPECIAL TABLE / 50,000 CHIP EVENT
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule');
     const emilyOpeners=[
@@ -1079,11 +1175,35 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
         hiloScreen.querySelector('.casino-return').classList.add('hidden');
       }
     }
-    function finishSpecial(win){
-      const stake=specialStake;if(win){casinoChips=stake*2}else{casinoChips=0}
+    const emilyVictoryLines=[
+      ['ふふ……最後まで運を手放さなかったのね。','おめでとう。今くらいは、勝者の気分に浸っていてもいいんじゃないかしら？'],
+      ['あら、本当に勝ってしまったのね。','いいわ。その得意そうな顔――もう少し見せて頂戴。'],
+      ['まあ……あの勝負をものにするなんて、大したものね。','おめでとう。少しくらい調子に乗っても、今夜だけは笑って許してあげる。'],
+      ['あら、運まであなたに味方するのね。','ふふ……いいわ。そこまで愛されているなら、どこまで続くのか見せて頂戴。']
+    ];
+    function clearSpecialTicker(){
+      globalSpecialNotice.classList.add('hidden');
+      localStorage.removeItem('spr-resort-announcement');
+    }
+    async function showEmilyVictory(){
+      const pair=emilyVictoryLines[Math.floor(Math.random()*emilyVictoryLines.length)];
+      specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
+      specialActions.innerHTML='';
+      await sleep(450);
+      await specialSay('エミリー',pair[0],1850);
+      await specialSay('エミリー',pair[1],2100);
+      await sleep(450);
+      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
+    }
+    async function finishSpecial(win){
+      const stake=specialStake;
+      clearSpecialTicker();
+      if(win)await showEmilyVictory();
+      if(win){casinoChips=stake*2}else{casinoChips=0}
       casinoSave();syncCasinoBalances();specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();
       pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');
       publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
+      clearSpecialTicker();
       if(specialSelectedGame==='blackjack'){actionPanel.classList.add('hidden');betPanel.classList.add('hidden');setCasinoStatus(win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。')}
       else{hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.add('hidden');hiloStatus.textContent=win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。'}
     }
@@ -1135,7 +1255,7 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
 
     function casinoSave(){
       localStorage.setItem(casinoChipKey,String(casinoChips));
-      if(previousCasinoChips<20000&&casinoChips>=20000&&!localStorage.getItem(emilyAnnouncedKey)){
+      if(previousCasinoChips<50000&&casinoChips>=50000&&!localStorage.getItem(emilyAnnouncedKey)){
         localStorage.setItem(emilyAnnouncedKey,'1');
         triggerEmilyInvitation();
       }
@@ -1143,10 +1263,10 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
     }
     const adminEventReset=document.getElementById('adminEventReset');
     if(adminEventReset)adminEventReset.addEventListener('click',()=>{
-      if(!confirm('管理人用：運のみぞ知るイベントをリセットし、カジノチップを19,900 CHIPにします。よろしいですか？'))return;
+      if(!confirm('管理人用：運のみぞ知るイベントをリセットし、カジノチップを49,900 CHIPにします。よろしいですか？'))return;
       localStorage.removeItem(emilyAnnouncedKey);
       localStorage.removeItem('spr-resort-announcement');
-      casinoChips=19900;previousCasinoChips=19900;
+      casinoChips=49900;previousCasinoChips=49900;
       localStorage.setItem(casinoChipKey,String(casinoChips));
       activeSpecialSessionId=null;
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
@@ -1155,7 +1275,7 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
       specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';
       syncCasinoBalances();normalResortAnnouncement();
-      alert('イベントをリセットしました。カジノチップ：19,900 CHIP');
+      alert('イベントをリセットしました。カジノチップ：49,900 CHIP');
     });
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
