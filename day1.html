@@ -1029,46 +1029,84 @@ body.special-table-playing .special-comment-overlay{display:block}
     let activeSpectatorChallenger='';
     function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
+    async function currentSpecialIdentity(){
+      const id=await resolveSpecialPlayerId();
+      return {id:String(id||'').trim(),name:String(storedGuestName||'').trim()};
+    }
+    function isOwnSpecialSession(row,identity){
+      const pid=String(row?.challenger_player_id||row?.public_state?.challenger_player_id||'').trim();
+      const cname=String(row?.challenger_name||row?.public_state?.challenger||'').trim();
+      // 新構造はplayers.id(UUID)で本人判定。UUIDの無い旧セッションだけ名前で後方互換。
+      return !!((identity.id&&pid&&identity.id===pid)||(!pid&&identity.name&&cname===identity.name));
+    }
+    async function restoreOwnSpecialSession(row){
+      activeSpecialSessionId=row.id;
+      specialStartsAt=new Date(row.starts_at||row.public_state?.starts_at||Date.now()).getTime();
+      specialStake=Number(row.stake||0);
+      const st=row.public_state||{};
+      specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
+      if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
+      specialBroadcast.classList.add('hidden');
+      try{stopCasinoMusic()}catch{}
+      try{specialBgm.volume=.42;if(specialBgm.paused)await specialBgm.play()}catch{}
+      if(specialSelectedGame){
+        specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
+        casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');
+        document.body.style.overflow='hidden';document.body.classList.add('special-table-playing');
+        specialCommentOverlay?.setAttribute('aria-hidden','false');connectChallengerComments(activeSpecialSessionId);
+        showCasinoLevel('hilo');
+        hiloScreen.querySelector('.casino-return')?.classList.add('hidden');
+        hiloBetPanel.classList.add('hidden');
+        // Supabase public_stateからラウンド・勝敗・公開カードを復元。
+        const round=Number(st.round||0),pw=Number(st.player_wins||0),ew=Number(st.enemy_wins||0);
+        if(st.visible_card)hiloNextCard.innerHTML=cardHtml(st.visible_card);
+        else hiloNextCard.innerHTML='<div class="playing-card back"></div>';
+        hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';
+        hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　ROUND ${round||1}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;
+        if(row.status==='countdown'){
+          const renderRestoreWait=()=>{
+            const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));
+            hiloStatus.textContent=left?`観戦者をお待ちください。開卓まで ${left} 秒`:'SPECIAL TABLE OPEN';
+            if(left<=0){clearInterval(specialCountdownTimer);startSpecialHilo({round,pw,ew,resume:true})}
+          };
+          clearInterval(specialCountdownTimer);renderRestoreWait();specialCountdownTimer=setInterval(renderRestoreWait,250);
+        }else{
+          hiloStatus.textContent=st.message||'挑戦者の選択をお待ちください。';
+          // playing中は保存済みラウンドから操作可能な卓を再構成する。
+          startSpecialHilo({round,pw,ew,resume:true,visibleCard:st.visible_card||null});
+        }
+      }else{
+        specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');
+        document.querySelectorAll('[data-special-game]').forEach(b=>b.classList.toggle('hidden',b.dataset.specialGame!=='hilo'));
+        specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　HIGH & LOWをお選びください。`;
+      }
+    }
     async function refreshCasinoSpectatorMenu(){
       if(!casinoSpectatorMenu||!window.supabaseClientSpecial)return;
       try{
-        // 1) 開催中セッションを直接確認（Realtimeを取り逃しても復元できる）
+        const identity=await currentSpecialIdentity();
         const {data,error}=await window.supabaseClientSpecial
           .from('special_table_sessions')
-          .select('id,challenger_name,status,starts_at,created_at')
+          .select('id,challenger_id,challenger_player_id,challenger_name,stake,status,starts_at,created_at,public_state')
           .in('status',['countdown','open','playing'])
           .order('created_at',{ascending:false})
           .limit(1);
         if(!error&&Array.isArray(data)&&data.length){
           const row=data[0];
+          if(isOwnSpecialSession(row,identity)){
+            // BAND→Safariなどブラウザが変わっても、同じplayers.idなら挑戦者として復元。
+            await restoreOwnSpecialSession(row);
+            return;
+          }
           casinoSpectatorMenu.dataset.sessionId=row.id;
           casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
-          casinoSpectatorMenu.classList.remove('hidden');
-          return;
-        }
-
-        // 2) セッション検索が一時的に失敗しても、SPECIAL ANNOUNCEMENTの
-        //    metadata.session_id から観戦先を復元する。
-        const {data:ann,error:annError}=await window.supabaseClientSpecial
-          .from('resort_announcements')
-          .select('metadata,expires_at,created_at')
-          .eq('announcement_type','special-table')
-          .gt('expires_at',new Date().toISOString())
-          .order('created_at',{ascending:false})
-          .limit(1);
-        const meta=(!annError&&Array.isArray(ann)&&ann.length)?(ann[0].metadata||{}):{};
-        if(meta.session_id&&meta.state!=='finished'){
-          casinoSpectatorMenu.dataset.sessionId=String(meta.session_id);
-          casinoSpectatorMenu.dataset.challenger=String(meta.challenger||'');
           casinoSpectatorMenu.classList.remove('hidden');
           return;
         }
         casinoSpectatorMenu.classList.add('hidden');
         casinoSpectatorMenu.dataset.sessionId='';
         casinoSpectatorMenu.dataset.challenger='';
-      }catch(e){
-        console.warn('spectator menu refresh',e);
-      }
+      }catch(e){console.warn('spectator menu refresh',e)}
     }
     if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
@@ -1313,16 +1351,30 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function createSpecialSession(startsAt){
       try{
         if(!window.supabaseClientSpecial){console.warn('special session create: supabase unavailable');return null}
-        // SPECIAL TABLEでは SECURITY CHECK で入力した名前そのものをプレイヤーIDとして使う。
-        // special_table_sessions.challenger_id は Supabase 側で text 型へ変更済み。
-        const challengerId=String(storedGuestName||'').trim();
-        if(!challengerId){console.warn('special session create: guest name is empty');return null}
-        const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:challengerId,challenger_name:challengerId,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{challenger:challengerId,phase:'countdown',starts_at:startsAt,stake:casinoChips,message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();
+        const challengerId=await resolveSpecialPlayerId();
+        if(!challengerId){console.warn('special session create: player id unavailable');return null}
+        const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({
+          challenger_id:storedGuestName,
+          challenger_player_id:challengerId,
+          challenger_name:storedGuestName,
+          stake:casinoChips,
+          status:'countdown',
+          starts_at:startsAt,
+          public_state:{challenger:storedGuestName,challenger_player_id:challengerId,phase:'countdown',starts_at:startsAt,message:'開卓をお待ちください。'}
+        }).select('id').single();
         if(error)throw error;
         return data?.id||null;
       }catch(e){console.warn('special session create',e);return null}
     }
-    async function pushSpecialState(patch,status='playing'){if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;try{await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:patch,status}).eq('id',activeSpecialSessionId)}catch(e){console.warn('special state sync',e)}}
+    async function pushSpecialState(patch,status='playing'){
+      if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;
+      try{
+        const playerId=await resolveSpecialPlayerId();
+        const {data:cur}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state').eq('id',activeSpecialSessionId).maybeSingle();
+        const merged={...(cur?.public_state||{}),...patch,challenger:storedGuestName,challenger_player_id:playerId||cur?.public_state?.challenger_player_id||null};
+        await window.supabaseClientSpecial.from('special_table_sessions').update({public_state:merged,status,challenger_player_id:playerId||null}).eq('id',activeSpecialSessionId);
+      }catch(e){console.warn('special state sync',e)}
+    }
     let specialSelectedGame=null,specialStartsAt=0,specialStake=0,specialCountdownTimer=null;
     function markSpecialChoice(game){
       if(game!=='hilo')return;
@@ -1450,8 +1502,8 @@ body.special-table-playing .special-comment-overlay{display:block}
       standButton.onclick=()=>{if(done)return;while(bjValue(d)<17)d.push(deck.pop());done=true;render(true);const pv=bjValue(p),dv=bjValue(d);setTimeout(()=>finishSpecial(pv<=21&&(dv>21||pv>dv)),900)};
       doubleButton.classList.add('hidden');render(false)
     }
-    function startSpecialHilo(){
-      specialNormalTableSetup('hilo');casinoChips=0;syncCasinoBalances();let pw=0,ew=0,round=0,locked=false;
+    function startSpecialHilo(resumeState={}){
+      specialNormalTableSetup('hilo');casinoChips=0;syncCasinoBalances();let pw=Number(resumeState.pw||0),ew=Number(resumeState.ew||0),round=Number(resumeState.round||0),locked=false;
       const play=()=>{
         locked=false;round++;
         if(seriousEmilyMode){
@@ -2010,7 +2062,10 @@ body.special-table-playing .special-comment-overlay{display:block}
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
-&lt;/main&gt;&lt;script&gt;const VENUE=&#x27;The Pearl Terrace&#x27;,KEY=&#x27;pearl&#x27;,COASTERS=[&#x27;coaster00.PNG&#x27;, &#x27;coaster01.PNG&#x27;, &#x27;coaster02.PNG&#x27;, &#x27;coaster03.PNG&#x27;, &#x27;coaster04.PNG&#x27;, &#x27;coaster05.PNG&#x27;, &#x27;coaster06.PNG&#x27;, &#x27;coaster07.PNG&#x27;, &#x27;coaster08.PNG&#x27;, &#x27;coaster09.PNG&#x27;, &#x27;coaster10.PNG&#x27;, &#x27;coaster11.PNG&#x27;, &#x27;coaster12.PNG&#x27;, &#x27;coaster13.PNG&#x27;, &#x27;coaster14.PNG&#x27;, &#x27;coaster15.PNG&#x27;, &#x27;coaster16.PNG&#x27;, &#x27;coaster17.PNG&#x27;, &#x27;coaster18.PNG&#x27;, &#x27;coaster19.PNG&#x27;, &#x27;coaster20.PNG&#x27;, &#x27;coaster21.PNG&#x27;, &#x27;coaster22.PNG&#x27;, &#x27;coaster23.PNG&#x27;, &#x27;coaster24.PNG&#x27;, &#x27;coaster25.PNG&#x27;, &#x27;coaster26.PNG&#x27;, &#x27;coaster27.PNG&#x27;, &#x27;coaster28.PNG&#x27;, &#x27;coaster29.PNG&#x27;, &#x27;coaster30.PNG&#x27;, &#x27;coaster31.PNG&#x27;, &#x27;coaster32.PNG&#x27;, &#x27;coaster33.PNG&#x27;, &#x27;coaster34.PNG&#x27;, &#x27;coaster35.PNG&#x27;, &#x27;coaster36.PNG&#x27;, &#x27;coaster37.PNG&#x27;, &#x27;coaster38.PNG&#x27;, &#x27;coaster39.PNG&#x27;, &#x27;coaster40.PNG&#x27;, &#x27;coaster41.PNG&#x27;, &#x27;coaster42.PNG&#x27;, &#x27;coaster43.PNG&#x27;, &#x27;coaster44.PNG&#x27;, &#x27;coaster45.PNG&#x27;, &#x27;coaster46.PNG&#x27;, &#x27;coaster47.PNG&#x27;, &#x27;coaster48.PNG&#x27;, &#x27;coaster49.PNG&#x27;, &#x27;coaster50.PNG&#x27;, &#x27;coaster51.PNG&#x27;, &#x27;coaster52.PNG&#x27;];let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;function bind(id,setter){document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(b=&gt;b.onclick=()=&gt;{document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));b.classList.add(&#x27;selected&#x27;);setter(b.dataset.value);refresh()})}function refresh(){document.getElementById(&#x27;order&#x27;).disabled=!(meal&amp;&amp;drink);document.getElementById(&#x27;status&#x27;).textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;}bind(&#x27;meals&#x27;,v=&gt;meal=v);bind(&#x27;drinks&#x27;,v=&gt;drink=v);document.getElementById(&#x27;order&#x27;).onclick=()=&gt;{if(!meal||!drink)return;const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];const invKey=&#x27;spr-cafe-coasters&#x27;;let inv=[];try{inv=JSON.parse(localStorage.getItem(invKey)||&#x27;[]&#x27;)}catch{}inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});localStorage.setItem(invKey,JSON.stringify(inv));const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;const isFirst=!localStorage.getItem(firstKey);document.getElementById(&#x27;status&#x27;).textContent=`${meal} と ${drink} を注文しました。`;firstDialogue=isFirst;if(isFirst)localStorage.setItem(firstKey,&#x27;1&#x27;)document.getElementById(&#x27;coasterImage&#x27;).src=file;document.getElementById(&#x27;coasterFile&#x27;).textContent=file;document.getElementById(&#x27;coasterModal&#x27;).classList.add(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);};document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{document.getElementById(&#x27;coasterModal&#x27;).classList.remove(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);if(firstDialogue){setTimeout(()=&gt;{document.getElementById(&#x27;staffDialogueText&#x27;).textContent=&#x27;あら、初めてでしたか？でしたら、こちらもどうぞ。ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;;const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.add(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;)},260)}};document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};document.getElementById(&#x27;coasterModal&#x27;).onclick=e=&gt;{if(e.target.id===&#x27;coasterModal&#x27;)document.getElementById(&#x27;coasterClose&#x27;).click()};&lt;/script&gt;&lt;script&gt;
+&lt;/main&gt;&lt;script&gt;(()=&gt;{
+const VENUE=&#x27;The Pearl Terrace&#x27;,KEY=&#x27;pearl&#x27;,COASTERS=[&#x27;coaster00.PNG&#x27;, &#x27;coaster01.PNG&#x27;, &#x27;coaster02.PNG&#x27;, &#x27;coaster03.PNG&#x27;, &#x27;coaster04.PNG&#x27;, &#x27;coaster05.PNG&#x27;, &#x27;coaster06.PNG&#x27;, &#x27;coaster07.PNG&#x27;, &#x27;coaster08.PNG&#x27;, &#x27;coaster09.PNG&#x27;, &#x27;coaster10.PNG&#x27;, &#x27;coaster11.PNG&#x27;, &#x27;coaster12.PNG&#x27;, &#x27;coaster13.PNG&#x27;, &#x27;coaster14.PNG&#x27;, &#x27;coaster15.PNG&#x27;, &#x27;coaster16.PNG&#x27;, &#x27;coaster17.PNG&#x27;, &#x27;coaster18.PNG&#x27;, &#x27;coaster19.PNG&#x27;, &#x27;coaster20.PNG&#x27;, &#x27;coaster21.PNG&#x27;, &#x27;coaster22.PNG&#x27;, &#x27;coaster23.PNG&#x27;, &#x27;coaster24.PNG&#x27;, &#x27;coaster25.PNG&#x27;, &#x27;coaster26.PNG&#x27;, &#x27;coaster27.PNG&#x27;, &#x27;coaster28.PNG&#x27;, &#x27;coaster29.PNG&#x27;, &#x27;coaster30.PNG&#x27;, &#x27;coaster31.PNG&#x27;, &#x27;coaster32.PNG&#x27;, &#x27;coaster33.PNG&#x27;, &#x27;coaster34.PNG&#x27;, &#x27;coaster35.PNG&#x27;, &#x27;coaster36.PNG&#x27;, &#x27;coaster37.PNG&#x27;, &#x27;coaster38.PNG&#x27;, &#x27;coaster39.PNG&#x27;, &#x27;coaster40.PNG&#x27;, &#x27;coaster41.PNG&#x27;, &#x27;coaster42.PNG&#x27;, &#x27;coaster43.PNG&#x27;, &#x27;coaster44.PNG&#x27;, &#x27;coaster45.PNG&#x27;, &#x27;coaster46.PNG&#x27;, &#x27;coaster47.PNG&#x27;, &#x27;coaster48.PNG&#x27;, &#x27;coaster49.PNG&#x27;, &#x27;coaster50.PNG&#x27;, &#x27;coaster51.PNG&#x27;, &#x27;coaster52.PNG&#x27;];let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;function bind(id,setter){document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(b=&gt;b.onclick=()=&gt;{document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));b.classList.add(&#x27;selected&#x27;);setter(b.dataset.value);refresh()})}function refresh(){document.getElementById(&#x27;order&#x27;).disabled=!(meal&amp;&amp;drink);document.getElementById(&#x27;status&#x27;).textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;}bind(&#x27;meals&#x27;,v=&gt;meal=v);bind(&#x27;drinks&#x27;,v=&gt;drink=v);document.getElementById(&#x27;order&#x27;).onclick=()=&gt;{if(!meal||!drink)return;const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];const invKey=&#x27;spr-cafe-coasters&#x27;;let inv=[];try{inv=JSON.parse(localStorage.getItem(invKey)||&#x27;[]&#x27;)}catch{}inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});localStorage.setItem(invKey,JSON.stringify(inv));const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;const isFirst=!localStorage.getItem(firstKey);document.getElementById(&#x27;status&#x27;).textContent=`${meal} と ${drink} を注文しました。`;firstDialogue=isFirst;if(isFirst)localStorage.setItem(firstKey,&#x27;1&#x27;)document.getElementById(&#x27;coasterImage&#x27;).src=file;document.getElementById(&#x27;coasterFile&#x27;).textContent=file;document.getElementById(&#x27;coasterModal&#x27;).classList.add(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);};document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{document.getElementById(&#x27;coasterModal&#x27;).classList.remove(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);if(firstDialogue){setTimeout(()=&gt;{document.getElementById(&#x27;staffDialogueText&#x27;).textContent=&#x27;あら、初めてでしたか？でしたら、こちらもどうぞ。ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;;const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.add(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;)},260)}};document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};document.getElementById(&#x27;coasterModal&#x27;).onclick=e=&gt;{if(e.target.id===&#x27;coasterModal&#x27;)document.getElementById(&#x27;coasterClose&#x27;).click()};
+})();&lt;/script&gt;&lt;script&gt;(()=&gt;{
+
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const date=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;}).format(new Date());
@@ -2032,7 +2087,28 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 });
 document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;button&#x27;);if(!b||b.id===&#x27;useCafeDrinkTicket&#x27;)return;if(/注文/.test(b.textContent||&#x27;&#x27;)&amp;&amp;!b.disabled){if(localStorage.getItem(orderKey)===&#x27;1&#x27;){e.preventDefault();e.stopImmediatePropagation();alert(&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;);}else localStorage.setItem(orderKey,&#x27;1&#x27;)}},true);
 })();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+
+})();&lt;/script&gt;
+&lt;script&gt;
+(()=&gt;{
+  let selectedMeal=&#x27;&#x27;,selectedDrink=&#x27;&#x27;;
+  const mealButtons=[...document.querySelectorAll(&#x27;#meals .item&#x27;)];
+  const drinkButtons=[...document.querySelectorAll(&#x27;#drinks .item&#x27;)];
+  function bindCafeChoice(buttons,type){
+    buttons.forEach(btn=&gt;{
+      btn.addEventListener(&#x27;click&#x27;,()=&gt;{
+        buttons.forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
+        btn.classList.add(&#x27;selected&#x27;);
+        if(type===&#x27;meal&#x27;) selectedMeal=btn.dataset.value||btn.textContent.trim();
+        else selectedDrink=btn.dataset.value||btn.textContent.trim();
+      });
+    });
+  }
+  bindCafeChoice(mealButtons,&#x27;meal&#x27;);
+  bindCafeChoice(drinkButtons,&#x27;drink&#x27;);
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
   <iframe id="integratedCafeMarine" title="Marine Bloom Cafe" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;Marine Bloom Cafe | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;marine_bloom_cafe_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:0 18px max(9vh,42px);background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
 .cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
 #useCafeDrinkTicket{padding:13px 20px;background:#173a5e;color:white;border:0;font-family:inherit}#useCafeDrinkTicket:disabled{opacity:.38}
@@ -2045,7 +2121,10 @@ document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
-&lt;/main&gt;&lt;script&gt;const VENUE=&#x27;Marine Bloom Cafe&#x27;,KEY=&#x27;marine&#x27;,COASTERS=[&#x27;coaster53.PNG&#x27;, &#x27;coaster54.PNG&#x27;, &#x27;coaster55.PNG&#x27;, &#x27;coaster56.PNG&#x27;, &#x27;coaster57.PNG&#x27;, &#x27;coaster58.PNG&#x27;, &#x27;coaster59.PNG&#x27;, &#x27;coaster60.PNG&#x27;, &#x27;coaster61.PNG&#x27;, &#x27;coaster62.PNG&#x27;, &#x27;coaster63.PNG&#x27;, &#x27;coaster64.PNG&#x27;, &#x27;coaster65.PNG&#x27;, &#x27;coaster66.PNG&#x27;, &#x27;coaster67.PNG&#x27;, &#x27;coaster68.PNG&#x27;, &#x27;coaster69.PNG&#x27;, &#x27;coaster70.PNG&#x27;, &#x27;coaster71.PNG&#x27;, &#x27;coaster72.PNG&#x27;, &#x27;coaster73.PNG&#x27;, &#x27;coaster74.PNG&#x27;, &#x27;coaster75.PNG&#x27;, &#x27;coaster76.PNG&#x27;, &#x27;coaster77.PNG&#x27;, &#x27;coaster78.PNG&#x27;, &#x27;coaster79.PNG&#x27;, &#x27;coaster80.PNG&#x27;, &#x27;coaster81.PNG&#x27;, &#x27;coaster82.PNG&#x27;, &#x27;coaster83.PNG&#x27;, &#x27;coaster84.PNG&#x27;, &#x27;coaster85.PNG&#x27;, &#x27;coaster86.PNG&#x27;, &#x27;coaster87.PNG&#x27;, &#x27;coaster88.PNG&#x27;];let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;function bind(id,setter){document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(b=&gt;b.onclick=()=&gt;{document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));b.classList.add(&#x27;selected&#x27;);setter(b.dataset.value);refresh()})}function refresh(){document.getElementById(&#x27;order&#x27;).disabled=!(meal&amp;&amp;drink);document.getElementById(&#x27;status&#x27;).textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;}bind(&#x27;meals&#x27;,v=&gt;meal=v);bind(&#x27;drinks&#x27;,v=&gt;drink=v);document.getElementById(&#x27;order&#x27;).onclick=()=&gt;{if(!meal||!drink)return;const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];const invKey=&#x27;spr-cafe-coasters&#x27;;let inv=[];try{inv=JSON.parse(localStorage.getItem(invKey)||&#x27;[]&#x27;)}catch{}inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});localStorage.setItem(invKey,JSON.stringify(inv));const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;const isFirst=!localStorage.getItem(firstKey);document.getElementById(&#x27;status&#x27;).textContent=`${meal} と ${drink} を注文しました。`;firstDialogue=isFirst;if(isFirst)localStorage.setItem(firstKey,&#x27;1&#x27;)document.getElementById(&#x27;coasterImage&#x27;).src=file;document.getElementById(&#x27;coasterFile&#x27;).textContent=file;document.getElementById(&#x27;coasterModal&#x27;).classList.add(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);};document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{document.getElementById(&#x27;coasterModal&#x27;).classList.remove(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);if(firstDialogue){setTimeout(()=&gt;{document.getElementById(&#x27;staffDialogueText&#x27;).textContent=&#x27;あら、初めてでしたか？でしたら、こちらもどうぞ。ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;;const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.add(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;)},260)}};document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};document.getElementById(&#x27;coasterModal&#x27;).onclick=e=&gt;{if(e.target.id===&#x27;coasterModal&#x27;)document.getElementById(&#x27;coasterClose&#x27;).click()};&lt;/script&gt;&lt;script&gt;
+&lt;/main&gt;&lt;script&gt;(()=&gt;{
+const VENUE=&#x27;Marine Bloom Cafe&#x27;,KEY=&#x27;marine&#x27;,COASTERS=[&#x27;coaster53.PNG&#x27;, &#x27;coaster54.PNG&#x27;, &#x27;coaster55.PNG&#x27;, &#x27;coaster56.PNG&#x27;, &#x27;coaster57.PNG&#x27;, &#x27;coaster58.PNG&#x27;, &#x27;coaster59.PNG&#x27;, &#x27;coaster60.PNG&#x27;, &#x27;coaster61.PNG&#x27;, &#x27;coaster62.PNG&#x27;, &#x27;coaster63.PNG&#x27;, &#x27;coaster64.PNG&#x27;, &#x27;coaster65.PNG&#x27;, &#x27;coaster66.PNG&#x27;, &#x27;coaster67.PNG&#x27;, &#x27;coaster68.PNG&#x27;, &#x27;coaster69.PNG&#x27;, &#x27;coaster70.PNG&#x27;, &#x27;coaster71.PNG&#x27;, &#x27;coaster72.PNG&#x27;, &#x27;coaster73.PNG&#x27;, &#x27;coaster74.PNG&#x27;, &#x27;coaster75.PNG&#x27;, &#x27;coaster76.PNG&#x27;, &#x27;coaster77.PNG&#x27;, &#x27;coaster78.PNG&#x27;, &#x27;coaster79.PNG&#x27;, &#x27;coaster80.PNG&#x27;, &#x27;coaster81.PNG&#x27;, &#x27;coaster82.PNG&#x27;, &#x27;coaster83.PNG&#x27;, &#x27;coaster84.PNG&#x27;, &#x27;coaster85.PNG&#x27;, &#x27;coaster86.PNG&#x27;, &#x27;coaster87.PNG&#x27;, &#x27;coaster88.PNG&#x27;];let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;function bind(id,setter){document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(b=&gt;b.onclick=()=&gt;{document.querySelectorAll(&#x27;#&#x27;+id+&#x27; .item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));b.classList.add(&#x27;selected&#x27;);setter(b.dataset.value);refresh()})}function refresh(){document.getElementById(&#x27;order&#x27;).disabled=!(meal&amp;&amp;drink);document.getElementById(&#x27;status&#x27;).textContent=meal&amp;&amp;drink?`${meal} ＋ ${drink} を注文できます。`:&#x27;食事とドリンクをお選びください。&#x27;}bind(&#x27;meals&#x27;,v=&gt;meal=v);bind(&#x27;drinks&#x27;,v=&gt;drink=v);document.getElementById(&#x27;order&#x27;).onclick=()=&gt;{if(!meal||!drink)return;const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];const invKey=&#x27;spr-cafe-coasters&#x27;;let inv=[];try{inv=JSON.parse(localStorage.getItem(invKey)||&#x27;[]&#x27;)}catch{}inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});localStorage.setItem(invKey,JSON.stringify(inv));const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;const isFirst=!localStorage.getItem(firstKey);document.getElementById(&#x27;status&#x27;).textContent=`${meal} と ${drink} を注文しました。`;firstDialogue=isFirst;if(isFirst)localStorage.setItem(firstKey,&#x27;1&#x27;)document.getElementById(&#x27;coasterImage&#x27;).src=file;document.getElementById(&#x27;coasterFile&#x27;).textContent=file;document.getElementById(&#x27;coasterModal&#x27;).classList.add(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);};document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{document.getElementById(&#x27;coasterModal&#x27;).classList.remove(&#x27;show&#x27;);document.getElementById(&#x27;coasterModal&#x27;).setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);if(firstDialogue){setTimeout(()=&gt;{document.getElementById(&#x27;staffDialogueText&#x27;).textContent=&#x27;あら、初めてでしたか？でしたら、こちらもどうぞ。ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;;const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.add(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;)},260)}};document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};document.getElementById(&#x27;coasterModal&#x27;).onclick=e=&gt;{if(e.target.id===&#x27;coasterModal&#x27;)document.getElementById(&#x27;coasterClose&#x27;).click()};
+})();&lt;/script&gt;&lt;script&gt;(()=&gt;{
+
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const date=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;}).format(new Date());
@@ -2067,7 +2146,28 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 });
 document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;button&#x27;);if(!b||b.id===&#x27;useCafeDrinkTicket&#x27;)return;if(/注文/.test(b.textContent||&#x27;&#x27;)&amp;&amp;!b.disabled){if(localStorage.getItem(orderKey)===&#x27;1&#x27;){e.preventDefault();e.stopImmediatePropagation();alert(&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;);}else localStorage.setItem(orderKey,&#x27;1&#x27;)}},true);
 })();
-&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+
+})();&lt;/script&gt;
+&lt;script&gt;
+(()=&gt;{
+  let selectedMeal=&#x27;&#x27;,selectedDrink=&#x27;&#x27;;
+  const mealButtons=[...document.querySelectorAll(&#x27;#meals .item&#x27;)];
+  const drinkButtons=[...document.querySelectorAll(&#x27;#drinks .item&#x27;)];
+  function bindCafeChoice(buttons,type){
+    buttons.forEach(btn=&gt;{
+      btn.addEventListener(&#x27;click&#x27;,()=&gt;{
+        buttons.forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
+        btn.classList.add(&#x27;selected&#x27;);
+        if(type===&#x27;meal&#x27;) selectedMeal=btn.dataset.value||btn.textContent.trim();
+        else selectedDrink=btn.dataset.value||btn.textContent.trim();
+      });
+    });
+  }
+  bindCafeChoice(mealButtons,&#x27;meal&#x27;);
+  bindCafeChoice(drinkButtons,&#x27;drink&#x27;);
+})();
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"></iframe>
 </div>
 
 
