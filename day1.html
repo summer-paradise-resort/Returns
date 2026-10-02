@@ -742,7 +742,8 @@ body.special-table-playing .special-comment-overlay{display:block}
               <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
             </div>
           </div>
-          <p id="prizeMessage" class="prize-message" aria-live="polite">チップを景品と交換できます。</p>
+          <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク14杯＋ランダムコースター14枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
+<p id="prizeMessage" class="prize-message" aria-live="polite">チップを景品と交換できます。</p>
         </div>
         <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
       </div>
@@ -802,7 +803,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
-      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity}
+      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
