@@ -1091,7 +1091,6 @@ body.special-table-playing .special-comment-overlay{display:block}
       const st=row.public_state||{};
       specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
-      specialBroadcast.classList.add('hidden');
       try{stopCasinoMusic()}catch{}
       try{specialBgm.volume=.42;if(specialBgm.paused)await specialBgm.play()}catch{}
       if(specialSelectedGame){
@@ -1170,7 +1169,10 @@ body.special-table-playing .special-comment-overlay{display:block}
           }
           if(row){
             if(isOwnSpecialSession(row,identity)){
-              await restoreOwnSpecialSession(row);
+              const sameActiveSession=String(activeSpecialSessionId||'')===String(row.id||'');
+              const localFlowAlreadyOpen=sameActiveSession&&(specialOverlay.classList.contains('open')||!specialTableScreen.classList.contains('hidden')||document.body.classList.contains('special-table-playing'));
+              if(!localFlowAlreadyOpen)await restoreOwnSpecialSession(row);
+              if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
               return;
             }
             casinoSpectatorMenu.dataset.sessionId=row.id;
@@ -1186,14 +1188,15 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
+    let specialBroadcastSessionId='',specialBroadcastDismissedSessionId='';
     const specialCommentOverlay=document.getElementById('specialCommentOverlay'),specialCommentLanes=[...document.querySelectorAll('.special-comment-lane')],spectatorCommentInput=document.getElementById('spectatorCommentInput'),spectatorCommentSend=document.getElementById('spectatorCommentSend');
     function flySpecialComment(text,name=''){if(!text||!specialCommentLanes.length)return;const lane=specialCommentLanes[specialCommentLaneCursor++%3],el=document.createElement('div');el.className='special-flying-comment';el.textContent=name?`${name}：${text}`:text;el.style.animationDuration=`${Math.max(7,Math.min(13,8+el.textContent.length*.08))}s`;lane.appendChild(el);el.addEventListener('animationend',()=>el.remove())}
     function connectChallengerComments(sessionId){if(!window.supabaseClientSpecial||!sessionId)return;if(challengerCommentChannel)window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('broadcast',{event:'gallery-comment'},({payload})=>flySpecialComment(String(payload?.text||'').slice(0,60),String(payload?.name||'GALLERY').slice(0,24))).subscribe()}
     async function sendSpectatorComment(){const text=String(spectatorCommentInput?.value||'').trim().slice(0,60);if(!text||!activeSpecialSessionId||!spectatorChannel)return;spectatorCommentInput.value='';await spectatorChannel.send({type:'broadcast',event:'gallery-comment',payload:{text,name:storedGuestName||'GALLERY'}})}
     if(spectatorCommentSend)spectatorCommentSend.onclick=sendSpectatorComment;if(spectatorCommentInput)spectatorCommentInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendSpectatorComment()}});
-    function showSpecialBroadcast(row){const m=row?.metadata||{};activeSpecialSessionId=m.session_id||activeSpecialSessionId;specialBroadcastText.textContent=row.message||'';specialBroadcast.classList.remove('hidden');if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();clearInterval(broadcastTimer);const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};tick();broadcastTimer=setInterval(tick,1000)}
+    function showSpecialBroadcast(row){const m=row?.metadata||{};const incomingSession=String(m.session_id||activeSpecialSessionId||'');activeSpecialSessionId=incomingSession||activeSpecialSessionId;specialBroadcastSessionId=incomingSession;if(incomingSession&&specialBroadcastDismissedSessionId===incomingSession)return;specialBroadcastText.textContent=row.message||'';specialBroadcast.classList.remove('hidden');if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();clearInterval(broadcastTimer);const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};tick();broadcastTimer=setInterval(tick,1000)}
     function showSpectatorInvite(sessionId,challenger){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger)}
-    specialBroadcastClose.onclick=()=>specialBroadcast.classList.add('hidden');spectatorClose.onclick=closeSpectator;
+    specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId||String(activeSpecialSessionId||'');specialBroadcast.classList.add('hidden');clearInterval(broadcastTimer)};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
     function renderSpectatorState(state={}){
       if(spectatorBack)spectatorBack.classList.toggle('hidden',!state.finished);
@@ -1510,7 +1513,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       if(!activeSpecialSessionId){specialActions.innerHTML='<div style="max-width:520px;margin:0 auto;line-height:2">SPECIAL TABLEの観戦接続を開始できませんでした。<br>通信状態をご確認のうえ、もう一度お試しください。</div><button id="specialRetryClose" type="button">閉じる</button>';document.getElementById('specialRetryClose').onclick=()=>{specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()};return}
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
-      const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
+      specialBroadcastDismissedSessionId='';const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
       refreshCasinoSpectatorMenu();
       await sleep(1200);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
