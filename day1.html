@@ -2255,7 +2255,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
     if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
   };
-  document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{};d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};
+  // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
@@ -2437,7 +2437,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
     if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
   };
-  document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{};d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};
+  // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
