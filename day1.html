@@ -207,7 +207,8 @@
     .room-chat-open,.room-service-open,.room-belongings-open{width:100%;min-height:52px;border:0;font-size:14px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 8px}
     .room-chat-open{background:#f6f0e5;color:#0d2743}
     .room-service-open{background:#a87b2f;color:#fff}
-    .room-belongings-open{grid-column:1/-1;min-height:43px;background:rgba(7,21,35,.72);color:#fff;border:1px solid rgba(255,255,255,.34)}
+    .room-belongings-open{min-height:43px;background:rgba(7,21,35,.72);color:#fff;border:1px solid rgba(255,255,255,.34)}
+    .room-collection-open{min-height:43px;background:rgba(7,21,35,.72);color:#fff;border:1px solid rgba(255,255,255,.34);font-family:Georgia,serif;letter-spacing:.08em}.room-collection-open.hidden{display:none}
     .room-context-action{grid-column:1/-1;min-height:48px;border:1px solid rgba(240,216,157,.72);background:rgba(168,123,47,.92);color:#fff;font-size:13px;letter-spacing:.1em;padding:10px 12px}
     .room-context-action.hidden{display:none!important}
     .room-explore-result{grid-column:1/-1;padding:10px 12px;background:rgba(7,21,35,.78);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:11px;line-height:1.8;letter-spacing:.03em}
@@ -265,6 +266,8 @@
     .belongings-item small{display:block;margin-top:5px;color:var(--sheet-muted);font-size:10px;line-height:1.65}
     .belongings-count{min-width:54px;text-align:center;font:19px Georgia,serif;color:var(--gold)}
     .belongings-empty{padding:24px 15px;text-align:center;color:var(--sheet-muted);font-size:12px;line-height:1.9;background:var(--message-bg);border:1px solid rgba(130,110,76,.16)}
+    .collection-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.collection-card{min-width:0;padding:7px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18);text-align:center}.collection-card.missing{opacity:.42}.collection-card img{display:block;width:100%;aspect-ratio:1;object-fit:contain}.collection-card strong{display:block;margin-top:5px;font:11px Georgia,serif}.collection-card small{display:block;margin-top:2px;font-size:9px;color:var(--sheet-muted)}
+    .tea-exchange{margin-top:18px;padding:14px;border:1px solid #e1d4bd;background:#fbf8f1}.tea-exchange h4{margin:0 0 7px;font:500 13px Georgia,serif;letter-spacing:.08em}.tea-exchange-note{font-size:11px;line-height:1.8;color:#6f675c}.tea-exchange-list{display:grid;gap:7px;margin-top:10px}.tea-exchange-item{display:flex;justify-content:space-between;gap:12px;padding:10px;background:#fff;border:1px solid #e7dfd1;font-size:12px}.tea-exchange-empty{padding:10px;text-align:center;font-size:11px;color:#7a7063}
     .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
     .room-fallback h2{font-size:25px;font-weight:400;letter-spacing:.08em;margin:0}
     .room-fallback p{font-size:13px;line-height:1.9;color:rgba(255,255,255,.75);margin:0 0 8px}
@@ -498,7 +501,7 @@ body.special-table-playing .special-comment-overlay{display:block}
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
                 <div id="roomExploreResult" class="room-explore-result hidden" aria-live="polite"></div>
-                <button id="roomBelongingsOpen" class="room-belongings-open" type="button"><span>所持品</span></button>
+                <button id="roomBelongingsOpen" class="room-belongings-open" type="button"><span>所持品</span></button><button id="roomCollectionOpen" class="room-collection-open hidden" type="button"><span>Collection</span></button>
               </div>
             </div>
           </figure>
@@ -557,6 +560,11 @@ body.special-table-playing .special-comment-overlay{display:block}
             <div id="roomBelongingsList" class="belongings-list"></div>
           </div>
         </section>
+        <section id="roomCollectionSheet" class="room-belongings-sheet" aria-hidden="true" aria-label="コースターコレクション">
+          <div class="chat-sheet-handle"></div>
+          <div class="service-sheet-head"><h3>COLLECTION</h3><button id="roomCollectionClose" class="service-sheet-close" type="button" aria-label="コレクションを閉じる">⌄</button></div>
+          <div class="belongings-body"><p id="collectionProgress" class="belongings-intro"></p><div id="roomCollectionGrid" class="collection-grid"></div></div>
+        </section>
       </div>
     </div>
   </section>
@@ -610,7 +618,7 @@ body.special-table-playing .special-comment-overlay{display:block}
           <button class="menu-item tea-salon-venue" type="button" data-salon-venue="Marine Bloom Cafe" data-salon-key="tea:marine-bloom">Marine Bloom Cafe<small>AFTERNOON TEA SALON</small></button>
         </div>
         <p id="teaSalonMessage" class="bar-selection" aria-live="polite">会場をお選びください。</p>
-        <div id="teaPartyBox" class="tea-party-box">
+        <div class="tea-exchange"><h4>COASTER EXCHANGE</h4><div class="tea-exchange-note">交換に出せるのは、同じ絵柄を2枚以上持っている場合の余剰分のみです。</div><div id="teaExchangeList" class="tea-exchange-list"></div></div><div id="teaPartyBox" class="tea-party-box">
           <h3>開催中のお茶会</h3>
           <div id="teaPartyPublicStatus" class="tea-party-note">お茶会を読み込んでいます。</div>
           <div id="teaPartyList"></div>
@@ -788,6 +796,9 @@ body.special-table-playing .special-comment-overlay{display:block}
     if(!storedGuestName){window.location.replace('security_check.html')}
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
     const belongingsKey=`spr-belongings:${playerStorageId}`;
+    const coasterInventoryKey='spr-cafe-coasters';
+    function loadCoasterInventory(){try{const v=JSON.parse(localStorage.getItem(coasterInventoryKey)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
+    function coasterCounts(){const c=Array(89).fill(0);loadCoasterInventory().forEach(x=>{const m=String(x?.file||'').match(/coaster(\d{2})\.PNG/i);if(m){const n=Number(m[1]);if(n>=0&&n<=88)c[n]++}});return c}
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
@@ -844,6 +855,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     // CAFE / AFTERNOON TEA SALON
     const teaTicketMessage=document.getElementById('teaTicketMessage');
     const teaSalonMessage=document.getElementById('teaSalonMessage');
+    const teaExchangeList=document.getElementById('teaExchangeList');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
     const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
     const storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
@@ -851,7 +863,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 
     function refreshTeaSalonStatus(){
       const t2=belongingCount('afternoonTeaTicket2'),t4=belongingCount('afternoonTeaTicket4');
-      if(teaSalonTicketStatus)teaSalonTicketStatus.textContent=`2名様用：${t2}枚　｜　4名様用：${t4}枚`;
+      if(teaSalonTicketStatus)teaSalonTicketStatus.textContent=`2名様用：${t2}枚　｜　4名様用：${t4}枚`;if(typeof renderTeaExchange==='function')renderTeaExchange();
       return {t2,t4};
     }
     async function recentTeaPlayers(){
@@ -877,6 +889,12 @@ body.special-table-playing .special-comment-overlay{display:block}
           wrap.remove();resolve(chosen);
         };
       });
+    }
+    function renderTeaExchange(){
+      if(!teaExchangeList)return;const counts=coasterCounts();const rows=counts.map((count,n)=>({n,count,extra:Math.max(0,count-1)})).filter(x=>x.extra>0);
+      teaExchangeList.replaceChildren();
+      if(!rows.length){const e=document.createElement('div');e.className='tea-exchange-empty';e.textContent='現在、交換に出せるダブりはありません。';teaExchangeList.append(e);return}
+      rows.forEach(({n,count,extra})=>{const row=document.createElement('div');row.className='tea-exchange-item';const name=document.createElement('span');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('span');qty.textContent=`所持 ${count}枚 ／ 交換可能 ${extra}枚`;row.append(name,qty);teaExchangeList.append(row)});
     }
     async function createTeaParty(venue,label,capacity,key,guests){
       if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
@@ -1790,7 +1808,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       chatLog.scrollTop=chatLog.scrollHeight;
     }
     function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
-    function openChatSheet(){closeRoomService();closeRoomBelongings();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
+    function openChatSheet(){closeRoomService();closeRoomBelongings();closeRoomCollection();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
     function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
     function roomServiceOrders(){try{return JSON.parse(localStorage.getItem(`spr-roomservice-${activeRoom}`)||'[]')}catch{return []}}
     function renderRoomServiceCart(){
@@ -1804,17 +1822,25 @@ body.special-table-playing .special-comment-overlay{display:block}
       if(!orders.length){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty);return}
       orders.slice(-5).reverse().forEach(order=>{const item=document.createElement('div');item.className='service-history-item';const lines=order.items.map(v=>`${v.name} × ${v.qty}`).join(' ／ ');item.innerHTML=`<strong>${order.time}</strong><br>${lines}<br><small>注文番号 ${order.id}</small>`;roomServiceHistory.append(item)});
     }
+    function updateCollectionButton(){const btn=document.getElementById('roomCollectionOpen');if(btn)btn.classList.toggle('hidden',loadCoasterInventory().length===0)}
+    function renderRoomCollection(){
+      const grid=document.getElementById('roomCollectionGrid'),progress=document.getElementById('collectionProgress');if(!grid)return;const counts=coasterCounts();const unique=counts.filter(Boolean).length,total=counts.reduce((a,b)=>a+b,0);
+      if(progress)progress.textContent=`${unique} / 89 COLLECTION　｜　所持 ${total}枚`;grid.replaceChildren();
+      counts.forEach((count,n)=>{const card=document.createElement('div');card.className='collection-card'+(count?'':' missing');const img=document.createElement('img');img.src=count?`coaster${String(n).padStart(2,'0')}.PNG`:'';img.alt=`No.${String(n).padStart(2,'0')}`;if(!count){img.style.visibility='hidden'}const name=document.createElement('strong');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('small');qty.textContent=count?`× ${count}`:'未入手';card.append(img,name,qty);grid.append(card)});
+    }
     function renderRoomBelongings(){
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
       Object.entries(belongingsCatalog).forEach(([key,item])=>{const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;if(!count)return;hasAny=true;const row=document.createElement('div');row.className='belongings-item';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label;const detail=document.createElement('small');detail.textContent=item.detail;info.append(name,detail);const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(info,qty);roomBelongingsList.append(row)});
       if(!hasAny){const empty=document.createElement('div');empty.className='belongings-empty';empty.textContent='現在、所持品はありません。カジノの景品交換所などで手に入れた品物がここに表示されます。';roomBelongingsList.append(empty)}
     }
     function openRoomService(){
-      if(!activeRoom)return;closeChatSheet();closeRoomBelongings();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');
+      if(!activeRoom)return;closeChatSheet();closeRoomBelongings();closeRoomCollection();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');
       roomServiceMeta.textContent=`${activeRoom}号室　／　${activeGuest}様`;roomServiceResult.classList.add('hidden');roomServiceResult.textContent='';
       renderRoomServiceCart();renderRoomServiceHistory();roomServiceSheet.classList.add('open');roomServiceSheet.setAttribute('aria-hidden','false');
     }
     function closeRoomService(){roomServiceSheet.classList.remove('open');roomServiceSheet.setAttribute('aria-hidden','true')}
+    function openRoomCollection(){if(!activeRoom)return;closeChatSheet();closeRoomService();closeRoomBelongings();renderRoomCollection();document.getElementById('roomCollectionSheet').classList.add('open');document.getElementById('roomCollectionSheet').setAttribute('aria-hidden','false')}
+    function closeRoomCollection(){const s=document.getElementById('roomCollectionSheet');if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true')}}
     function openRoomBelongings(){
       if(!activeRoom)return;closeChatSheet();closeRoomService();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');renderRoomBelongings();roomBelongingsSheet.classList.add('open');roomBelongingsSheet.setAttribute('aria-hidden','false');
     }
@@ -1828,7 +1854,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     document.getElementById('roomServiceClose').addEventListener('click',closeRoomService);
     document.getElementById('roomBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('fallbackBelongingsOpen').addEventListener('click',openRoomBelongings);
-    document.getElementById('roomBelongingsClose').addEventListener('click',closeRoomBelongings);
+    document.getElementById('roomBelongingsClose').addEventListener('click',closeRoomBelongings);document.getElementById('roomCollectionOpen').addEventListener('click',openRoomCollection);document.getElementById('roomCollectionClose').addEventListener('click',closeRoomCollection);updateCollectionButton();
     document.querySelectorAll('[data-service-item]').forEach(item=>{
       const name=item.dataset.serviceItem;roomServiceCart[name]=0;
       item.querySelector('[data-service-minus]').addEventListener('click',()=>{roomServiceCart[name]=Math.max(0,(roomServiceCart[name]||0)-1);renderRoomServiceCart()});
@@ -1865,7 +1891,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
-    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}});
+    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}});
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
