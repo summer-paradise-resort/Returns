@@ -1231,9 +1231,11 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function createSpecialSession(startsAt){
       try{
         if(!window.supabaseClientSpecial){console.warn('special session create: supabase unavailable');return null}
-        const challengerId=await resolveSpecialPlayerId();
-        if(!challengerId){console.warn('special session create: player id could not be resolved for',storedGuestName);return null}
-        const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:challengerId,challenger_name:storedGuestName,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{challenger:storedGuestName,phase:'countdown',starts_at:startsAt,stake:casinoChips,message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();
+        // SPECIAL TABLEでは SECURITY CHECK で入力した名前そのものをプレイヤーIDとして使う。
+        // special_table_sessions.challenger_id は Supabase 側で text 型へ変更済み。
+        const challengerId=String(storedGuestName||'').trim();
+        if(!challengerId){console.warn('special session create: guest name is empty');return null}
+        const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').insert({challenger_id:challengerId,challenger_name:challengerId,stake:casinoChips,status:'countdown',starts_at:startsAt,public_state:{challenger:challengerId,phase:'countdown',starts_at:startsAt,stake:casinoChips,message:'SPECIAL TABLE 開卓準備中'}}).select('id').single();
         if(error)throw error;
         return data?.id||null;
       }catch(e){console.warn('special session create',e);return null}
@@ -1253,7 +1255,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function acceptAllIn(){
       specialActions.innerHTML='';await specialSay('運のみぞ知る','───これで後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんなが集まってくれるのよ。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800);
       const startsAt=new Date(Date.now()+60000).toISOString();specialStartsAt=new Date(startsAt).getTime();specialStake=casinoChips;specialSelectedGame=null;activeSpecialSessionId=await createSpecialSession(startsAt);
-      if(!activeSpecialSessionId){specialActions.innerHTML='<div style="max-width:520px;margin:0 auto;line-height:2">SPECIAL TABLEの観戦接続を開始できませんでした。<br>SECURITY CHECKから入り直して、もう一度お試しください。</div><button id="specialRetryClose" type="button">閉じる</button>';document.getElementById('specialRetryClose').onclick=()=>{specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()};return}
+      if(!activeSpecialSessionId){specialActions.innerHTML='<div style="max-width:520px;margin:0 auto;line-height:2">SPECIAL TABLEの観戦接続を開始できませんでした。<br>通信状態をご確認のうえ、もう一度お試しください。</div><button id="specialRetryClose" type="button">閉じる</button>';document.getElementById('specialRetryClose').onclick=()=>{specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()};return}
       const msg=`SPECIAL ANNOUNCEMENT\n\nただいま BLUE SHELL CASINO にて、${storedGuestName}様が特別な勝負への招待を受けられました。\n\n1分後、通常は開かれることのない「SPECIAL TABLE」を開卓いたします。\nこの一局の行方は、観客席よりご覧いただけます。\n\nどうぞ、幸運の行方を最後までお見届けください。`;
       setResortAnnouncement(msg.replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:msg,createdAt:Date.now()}));
       const localRow={message:msg,metadata:{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId}};showSpecialBroadcast(localRow);publishSpecialAnnouncement(msg,{challenger:storedGuestName,starts_at:startsAt,state:'countdown',session_id:activeSpecialSessionId});
