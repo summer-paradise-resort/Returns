@@ -33,9 +33,66 @@ document.addEventListener('DOMContentLoaded',()=>{
 document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b||b.id==='useCafeDrinkTicket')return;if(/注文/.test(b.textContent||'')&&!b.disabled){if(localStorage.getItem(orderKey)==='1'){e.preventDefault();e.stopImmediatePropagation();alert('本日のCAFEのご注文はすでにご利用いただいています。');}else localStorage.setItem(orderKey,'1')}},true);
 })();
 </script><script>
-(()=>{const a=document.getElementById('cafeBgm'),K='spr-cafe-bgm-state';if(!a)return;
-const load=()=>{try{return JSON.parse(sessionStorage.getItem(K)||'{}')||{}}catch{return {}}};
-const save=()=>{try{sessionStorage.setItem(K,JSON.stringify({time:a.currentTime||0,playing:!a.paused}))}catch{}};
-async function play(){let s=load();if(Number.isFinite(Number(s.time)))try{a.currentTime=Number(s.time)||0}catch{};try{await a.play();save()}catch{}}
-play();document.addEventListener('pointerdown',()=>{if(a.paused)play()},{passive:true});setInterval(save,1000);addEventListener('pagehide',save);
-})();</script></body></html>
+(()=>{
+  const audio=document.getElementById('cafeBgm');
+  if(!audio)return;
+
+  const STATE_KEY='spr-cafe-bgm-state-v2';
+  const load=()=>{
+    try{return JSON.parse(localStorage.getItem(STATE_KEY)||'{}')||{}}
+    catch{return {}}
+  };
+  const save=()=>{
+    try{
+      localStorage.setItem(STATE_KEY,JSON.stringify({
+        time:Number(audio.currentTime)||0,
+        playing:!audio.paused,
+        savedAt:Date.now()
+      }));
+    }catch{}
+  };
+
+  async function resumeCafeBgm(){
+    const s=load();
+    let t=Number(s.time)||0;
+
+    // Approximate continuous playback while navigating between CAFE pages.
+    if(s.playing && s.savedAt){
+      t += Math.max(0,(Date.now()-Number(s.savedAt))/1000);
+    }
+
+    const applyTime=()=>{
+      if(Number.isFinite(t) && t>=0){
+        try{
+          if(Number.isFinite(audio.duration) && audio.duration>0) t=t%audio.duration;
+          audio.currentTime=t;
+        }catch{}
+      }
+    };
+
+    if(audio.readyState>=1) applyTime();
+    else audio.addEventListener('loadedmetadata',applyTime,{once:true});
+
+    try{
+      await audio.play();
+      save();
+    }catch{}
+  }
+
+  resumeCafeBgm();
+
+  // iOS/Safari fallback if autoplay is temporarily blocked.
+  const unlock=()=>{
+    if(audio.paused) resumeCafeBgm();
+  };
+  document.addEventListener('pointerdown',unlock,{passive:true});
+  document.addEventListener('touchstart',unlock,{passive:true});
+
+  // Save frequently enough that page navigation resumes almost seamlessly.
+  const timer=setInterval(save,250);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') save(); });
+  addEventListener('pagehide',save);
+  addEventListener('beforeunload',save);
+  addEventListener('pageshow',()=>{ if(audio.paused) resumeCafeBgm(); });
+})();
+</script></body></html>
