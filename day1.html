@@ -406,6 +406,45 @@ body.special-table-playing .special-comment-overlay{display:block}
 <style>
 #specialGameChoice [data-special-game="blackjack"]{display:none!important}
 </style>
+<style>
+/* COLLECTION: show from much higher on the room screen */
+#roomCollectionSheet{
+  height:min(82%,780px);
+  z-index:24;
+}
+/* Owned coaster cards are tappable; missing cards remain inert. */
+.collection-card:not(.missing){cursor:pointer}
+.collection-card:not(.missing):active{transform:scale(.985)}
+/* Coaster enlargement modal */
+.collection-preview{
+  position:absolute;inset:0;z-index:40;
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+  background:rgba(2,10,18,.76);
+  backdrop-filter:blur(5px);
+}
+.collection-preview.open{display:flex}
+.collection-preview-card{
+  position:relative;
+  width:min(88vw,520px);
+  padding:48px 18px 22px;
+  background:rgba(247,243,235,.98);
+  border:1px solid rgba(201,165,91,.58);
+  box-shadow:0 22px 70px rgba(0,0,0,.46);
+  text-align:center;
+}
+.collection-preview-img{
+  display:block;width:100%;max-height:68vh;object-fit:contain;margin:auto;
+}
+.collection-preview-title{
+  margin-top:12px;font:15px Georgia,serif;letter-spacing:.12em;color:#0d2743;
+}
+.collection-preview-close{
+  position:absolute;right:10px;top:8px;
+  width:42px;height:42px;border:0;background:transparent;
+  color:#0d2743;font:30px/1 Georgia,serif;cursor:pointer;
+}
+</style>
 </head>
 <body>
   <header>
@@ -575,7 +614,13 @@ body.special-table-playing .special-comment-overlay{display:block}
           <div class="chat-sheet-handle"></div>
           <div class="service-sheet-head"><h3>COLLECTION</h3><button id="roomCollectionClose" class="service-sheet-close" type="button" aria-label="コレクションを閉じる">⌄</button></div>
           <div class="belongings-body"><p id="collectionProgress" class="belongings-intro"></p><div id="roomCollectionGrid" class="collection-grid"></div></div>
-        </section>
+        </section><div id="collectionPreview" class="collection-preview" aria-hidden="true">
+  <div class="collection-preview-card" role="dialog" aria-modal="true" aria-label="コースター拡大表示">
+    <button id="collectionPreviewClose" class="collection-preview-close" type="button" aria-label="閉じる">×</button>
+    <img id="collectionPreviewImage" class="collection-preview-img" src="" alt="">
+    <div id="collectionPreviewTitle" class="collection-preview-title"></div>
+  </div>
+</div>
       </div>
     </div>
   </section>
@@ -1107,6 +1152,19 @@ body.special-table-playing .special-comment-overlay{display:block}
               }catch{}
               continue;
             }
+            const st=candidate.public_state||{};
+            const phase=String(st.phase||'').trim();
+            const explicitlyLive=(phase==='countdown'||phase==='playing'||phase==='open'||st.game==='hilo'||st.game==='hilo-serious')
+              && st.finished!==true;
+            if(!explicitlyLive){
+              // statusだけ残っている不完全/旧セッションは観戦席の根拠にしない。
+              try{
+                await window.supabaseClientSpecial.from('special_table_sessions')
+                  .update({status:'finished',public_state:{...st,finished:true,message:'セッション終了'}})
+                  .eq('id',candidate.id);
+              }catch{}
+              continue;
+            }
             row=candidate;
             break;
           }
@@ -1164,7 +1222,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         if(t&&note)note.textContent=`${n}：${t}`;
       }).subscribe()}
     if(window.supabaseClientSpecial){
-      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const m=r.metadata||{},state=m.state;if(state==='finished'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}refreshCasinoSpectatorMenu();return}setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now()}));if(state==='countdown'){if(casinoSpectatorMenu&&m.session_id){casinoSpectatorMenu.dataset.sessionId=m.session_id;casinoSpectatorMenu.dataset.challenger=m.challenger||'';casinoSpectatorMenu.classList.remove('hidden')}showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,500)}}}).subscribe();
+      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const m=r.metadata||{},state=m.state;if(state==='finished'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}refreshCasinoSpectatorMenu();return}setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now()}));if(state==='countdown'){showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,150)}}}).subscribe();
       refreshCasinoSpectatorMenu();
       // 別端末がRealtime通知の瞬間に開いていなくても、開催中は自動検出する。
       window.__sprSpectatorMenuPoll=setInterval(refreshCasinoSpectatorMenu,2000);
@@ -1621,7 +1679,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     function buyTicket(key,label,price){
       if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
-      const belongings=loadBelongings(),owned=Math.max(0,Math.floor(Number(belongings[key]||0)));casinoChips-=price;belongings[key]=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${owned+1}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      const belongings=loadBelongings(),owned=Math.max(0,Math.floor(Number(belongings[key]||0)));casinoChips-=price;belongings[key]=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${owned+1}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(key==='cafeDrinkTicket'&&typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
     }
     const topBgmToggle=document.getElementById('topBgmToggle');
     const storyMenu=document.getElementById('storyMenu');
@@ -1729,6 +1787,38 @@ body.special-table-playing .special-comment-overlay{display:block}
     buyAfternoonTea4Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket4','アフタヌーンティーチケット（4名様用）',15000));
     buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','追加ドリンクチケット',5000));
     buyCafeDrinkTicket.addEventListener('click',()=>buyTicket('cafeDrinkTicket','CAFEドリンクチケット',100000));
+    // CAFE iframe と DAY1 の所持品を同期する。srcdoc 側のlocalStorageに依存しない。
+    window.addEventListener('message',e=>{
+      const d=e.data||{};
+      if(d.type==='spr-cafe-request-inventory'){
+        const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')]
+          .find(f=>f&&f.contentWindow===e.source);
+        if(frame)frame.contentWindow.postMessage({type:'spr-cafe-inventory',cafeDrinkTicket:belongingCount('cafeDrinkTicket')},'*');
+        return;
+      }
+      if(d.type==='spr-cafe-coasters-updated'){
+        updateCollectionButton();return;
+      }
+      if(d.type==='spr-cafe-consume-ticket'){
+        const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')]
+          .find(f=>f&&f.contentWindow===e.source);
+        if(!frame)return;
+        const inv=loadBelongings(),owned=Math.max(0,Math.floor(Number(inv.cafeDrinkTicket||0)));
+        if(owned<1){
+          frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:false,count:0},'*');return;
+        }
+        inv.cafeDrinkTicket=owned-1;saveBelongings(inv);
+        renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+        frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:true,count:owned-1},'*');
+      }
+    });
+    function syncCafeTicketFrames(){
+      const count=belongingCount('cafeDrinkTicket');
+      [document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].forEach(f=>{
+        try{f?.contentWindow?.postMessage({type:'spr-cafe-inventory',cafeDrinkTicket:count},'*')}catch{}
+      });
+    }
+
     document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>{
       // 通常卓へ入る時は、過去のSPECIAL TABLE選択状態を通常ゲームへ持ち込まない
       specialSelectedGame=null;
@@ -1961,7 +2051,14 @@ body.special-table-playing .special-comment-overlay{display:block}
     function renderRoomCollection(){
       const grid=document.getElementById('roomCollectionGrid'),progress=document.getElementById('collectionProgress');if(!grid)return;const counts=coasterCounts();const unique=counts.filter(Boolean).length,total=counts.reduce((a,b)=>a+b,0);
       if(progress)progress.textContent=`${unique} / 89 COLLECTION　｜　所持 ${total}枚`;grid.replaceChildren();
-      counts.forEach((count,n)=>{const card=document.createElement('div');card.className='collection-card'+(count?'':' missing');const img=document.createElement('img');img.src=count?`coaster${String(n).padStart(2,'0')}.PNG`:'';img.alt=`No.${String(n).padStart(2,'0')}`;if(!count){img.style.visibility='hidden'}const name=document.createElement('strong');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('small');qty.textContent=count?`× ${count}`:'未入手';card.append(img,name,qty);grid.append(card)});
+      counts.forEach((count,n)=>{const card=document.createElement('div');card.className='collection-card'+(count?'':' missing');const img=document.createElement('img');img.src=count?`coaster${String(n).padStart(2,'0')}.PNG`:'';img.alt=`No.${String(n).padStart(2,'0')}`;if(!count){img.style.visibility='hidden'}const name=document.createElement('strong');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('small');qty.textContent=count?`× ${count}`:'未入手';card.append(img,name,qty);
+        if(count){
+          card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`${img.alt}を拡大表示`);
+          const openPreview=()=>openCollectionPreview(img.src,img.alt);
+          card.addEventListener('click',openPreview);
+          card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPreview()}});
+        }
+        grid.append(card)});
     }
     function renderRoomBelongings(){
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
@@ -1987,6 +2084,23 @@ body.special-table-playing .special-comment-overlay{display:block}
     document.getElementById('roomServiceOpen').addEventListener('click',openRoomService);
     document.getElementById('fallbackRoomServiceOpen').addEventListener('click',openRoomService);
     document.getElementById('roomServiceClose').addEventListener('click',closeRoomService);
+    const collectionPreview=document.getElementById('collectionPreview'),
+      collectionPreviewImage=document.getElementById('collectionPreviewImage'),
+      collectionPreviewTitle=document.getElementById('collectionPreviewTitle'),
+      collectionPreviewClose=document.getElementById('collectionPreviewClose');
+    function openCollectionPreview(src,title){
+      if(!collectionPreview)return;
+      collectionPreviewImage.src=src;collectionPreviewImage.alt=title||'コースター';
+      collectionPreviewTitle.textContent=title||'';
+      collectionPreview.classList.add('open');collectionPreview.setAttribute('aria-hidden','false');
+    }
+    function closeCollectionPreview(){
+      if(!collectionPreview)return;
+      collectionPreview.classList.remove('open');collectionPreview.setAttribute('aria-hidden','true');
+      collectionPreviewImage.src='';
+    }
+    collectionPreviewClose?.addEventListener('click',closeCollectionPreview);
+    collectionPreview?.addEventListener('click',e=>{if(e.target===collectionPreview)closeCollectionPreview()});
     document.getElementById('roomBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('fallbackBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('roomBelongingsClose').addEventListener('click',closeRoomBelongings);document.getElementById('roomCollectionOpen').addEventListener('click',openRoomCollection);document.getElementById('roomCollectionClose').addEventListener('click',closeRoomCollection);updateCollectionButton();
@@ -2152,31 +2266,50 @@ body.special-table-playing .special-comment-overlay{display:block}
   };
   document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};
 })();
-&lt;/script&gt;&lt;script&gt;(()=&gt;{
-
+&lt;/script&gt;&lt;script&gt;
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const date=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;}).format(new Date());
-const orderKey=`spr-cafe-order:${pid}:${date}`,useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,belKey=`spr-belongings:${pid}`,coKey=`spr-coasters:${pid}`;
-const load=k=&gt;{try{return JSON.parse(localStorage.getItem(k)||&#x27;{}&#x27;)||{}}catch{return {}}},save=(k,v)=&gt;localStorage.setItem(k,JSON.stringify(v));
-const count=()=&gt;Math.max(0,Number(load(belKey).cafeDrinkTicket||0));
-function refresh(){let b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;if(!b)return;b.disabled=used||count()&lt;1;document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${count()}枚`;}
-document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
- refresh();
- document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
-  if(count()&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;)return;
-  let inv=load(belKey);inv.cafeDrinkTicket=Number(inv.cafeDrinkTicket||0)-1;save(belKey,inv);localStorage.setItem(useKey,&#x27;1&#x27;);
-  let nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(52-0+1))+0),cs=load(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
-  nums.forEach(n=&gt;{let k=String(n).padStart(2,&#x27;0&#x27;);cs[k]=Number(cs[k]||0)+1;let bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=`coaster${k}.PNG`;im.alt=`No.${k}`;bt.appendChild(im);bt.onclick=()=&gt;{document.getElementById(&#x27;coasterZoomImage&#x27;).src=im.src;document.getElementById(&#x27;coasterZoomModal&#x27;).classList.add(&#x27;show&#x27;)};g.appendChild(bt)});
-  save(coKey,cs);document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
- });
- document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
- document.getElementById(&#x27;coasterZoomClose&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coasterZoomModal&#x27;).classList.remove(&#x27;show&#x27;));
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=&#x27;spr-cafe-coasters&#x27;;
+let parentTicketCount=0,consumePending=false;
+const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
+function refresh(){
+  const b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;
+  if(!b)return;
+  b.disabled=used||parentTicketCount&lt;1||consumePending;
+  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
+}
+function requestInventory(){parent.postMessage({type:&#x27;spr-cafe-request-inventory&#x27;},&#x27;*&#x27;)}
+window.addEventListener(&#x27;message&#x27;,e=&gt;{
+  const d=e.data||{};
+  if(d.type===&#x27;spr-cafe-inventory&#x27;){parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
+  if(d.type===&#x27;spr-cafe-consume-result&#x27;){
+    consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
+    if(!d.ok){refresh();return}
+    localStorage.setItem(useKey,&#x27;1&#x27;);
+    const nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(52-0+1))+0);
+    const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
+    nums.forEach(n=&gt;{
+      const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
+      cs.push({venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
+      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.append(im);bt.onclick=()=&gt;{const z=document.getElementById(&#x27;coasterZoom&#x27;);z.querySelector(&#x27;img&#x27;).src=file;z.classList.add(&#x27;show&#x27;)};g.append(bt);
+    });
+    localStorage.setItem(coKey,JSON.stringify(cs));
+    document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+  }
 });
-
+document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
+  refresh();requestInventory();
+  document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
+    if(parentTicketCount&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;||consumePending)return;
+    consumePending=true;refresh();parent.postMessage({type:&#x27;spr-cafe-consume-ticket&#x27;},&#x27;*&#x27;);
+  });
+  document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
+  document.getElementById(&#x27;coasterZoom&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coasterZoom&#x27;).classList.remove(&#x27;show&#x27;));
+});
 })();
-
-})();&lt;/script&gt;
+&lt;/script&gt;
 
 
 
@@ -2271,31 +2404,50 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   };
   document.getElementById(&#x27;staffDialogueClose&#x27;).onclick=()=&gt;{const d=document.getElementById(&#x27;staffDialogue&#x27;);d.classList.remove(&#x27;show&#x27;);d.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;)};
 })();
-&lt;/script&gt;&lt;script&gt;(()=&gt;{
-
+&lt;/script&gt;&lt;script&gt;
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const date=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;}).format(new Date());
-const orderKey=`spr-cafe-order:${pid}:${date}`,useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,belKey=`spr-belongings:${pid}`,coKey=`spr-coasters:${pid}`;
-const load=k=&gt;{try{return JSON.parse(localStorage.getItem(k)||&#x27;{}&#x27;)||{}}catch{return {}}},save=(k,v)=&gt;localStorage.setItem(k,JSON.stringify(v));
-const count=()=&gt;Math.max(0,Number(load(belKey).cafeDrinkTicket||0));
-function refresh(){let b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;if(!b)return;b.disabled=used||count()&lt;1;document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${count()}枚`;}
-document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
- refresh();
- document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
-  if(count()&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;)return;
-  let inv=load(belKey);inv.cafeDrinkTicket=Number(inv.cafeDrinkTicket||0)-1;save(belKey,inv);localStorage.setItem(useKey,&#x27;1&#x27;);
-  let nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(88-53+1))+53),cs=load(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
-  nums.forEach(n=&gt;{let k=String(n).padStart(2,&#x27;0&#x27;);cs[k]=Number(cs[k]||0)+1;let bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=`coaster${k}.PNG`;im.alt=`No.${k}`;bt.appendChild(im);bt.onclick=()=&gt;{document.getElementById(&#x27;coasterZoomImage&#x27;).src=im.src;document.getElementById(&#x27;coasterZoomModal&#x27;).classList.add(&#x27;show&#x27;)};g.appendChild(bt)});
-  save(coKey,cs);document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
- });
- document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
- document.getElementById(&#x27;coasterZoomClose&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coasterZoomModal&#x27;).classList.remove(&#x27;show&#x27;));
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=&#x27;spr-cafe-coasters&#x27;;
+let parentTicketCount=0,consumePending=false;
+const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
+function refresh(){
+  const b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;
+  if(!b)return;
+  b.disabled=used||parentTicketCount&lt;1||consumePending;
+  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
+}
+function requestInventory(){parent.postMessage({type:&#x27;spr-cafe-request-inventory&#x27;},&#x27;*&#x27;)}
+window.addEventListener(&#x27;message&#x27;,e=&gt;{
+  const d=e.data||{};
+  if(d.type===&#x27;spr-cafe-inventory&#x27;){parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
+  if(d.type===&#x27;spr-cafe-consume-result&#x27;){
+    consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
+    if(!d.ok){refresh();return}
+    localStorage.setItem(useKey,&#x27;1&#x27;);
+    const nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(88-53+1))+53);
+    const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
+    nums.forEach(n=&gt;{
+      const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
+      cs.push({venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
+      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.append(im);bt.onclick=()=&gt;{const z=document.getElementById(&#x27;coasterZoom&#x27;);z.querySelector(&#x27;img&#x27;).src=file;z.classList.add(&#x27;show&#x27;)};g.append(bt);
+    });
+    localStorage.setItem(coKey,JSON.stringify(cs));
+    document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+  }
 });
-
+document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
+  refresh();requestInventory();
+  document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
+    if(parentTicketCount&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;||consumePending)return;
+    consumePending=true;refresh();parent.postMessage({type:&#x27;spr-cafe-consume-ticket&#x27;},&#x27;*&#x27;);
+  });
+  document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
+  document.getElementById(&#x27;coasterZoom&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coasterZoom&#x27;).classList.remove(&#x27;show&#x27;));
+});
 })();
-
-})();&lt;/script&gt;
+&lt;/script&gt;
 
 
 
