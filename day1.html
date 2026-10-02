@@ -578,7 +578,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご利用方法をお選びください。</p>
         <div class="menu-list">
           <button id="sunsetTerraceOpen" class="menu-item" type="button">サンセットテラス<small>DINNER &amp; SEA VIEW / MENU</small></button>
-          <button class="menu-item cafe-entry" type="button" data-cafe-mode="normal">CAFE<small>カフェを利用する</small></button>
+          <button class="menu-item cafe-entry" type="button" data-cafe-mode="normal">CAFE<small>The Pearl Terrace / Marine Bloom Cafe</small></button>
           <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>チケットをお持ちのお客様</small></button>
         </div>
 
@@ -932,7 +932,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const cafeMenu=document.getElementById('cafeMenu'),cafeMealResult=document.getElementById('cafeMealResult');
     document.querySelectorAll('[data-cafe-mode]').forEach(button=>button.addEventListener('click',()=>{
       if(button.dataset.cafeMode==='salon'){refreshTeaSalonStatus();openView('teaSalonView');loadTeaParties()}
-      else {cafeMenu?.classList.toggle('hidden');teaTicketMessage.textContent='通常のカフェメニューです。お食事をお選びください。';}
+      else { window.location.href='cafe.html'; }
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
