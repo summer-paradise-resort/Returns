@@ -2126,6 +2126,31 @@ document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;
 })();
 &lt;/script&gt;
 
+
+&lt;script&gt;
+(()=&gt;{
+  const meals=document.getElementById(&#x27;meals&#x27;);
+  const drinks=document.getElementById(&#x27;drinks&#x27;);
+  const order=document.getElementById(&#x27;order&#x27;);
+  const status=document.getElementById(&#x27;status&#x27;);
+  if(!meals||!drinks||!order)return;
+
+  function syncOrderButton(){
+    const meal=meals.querySelector(&#x27;.item.selected&#x27;);
+    const drink=drinks.querySelector(&#x27;.item.selected&#x27;);
+    order.disabled=!(meal&amp;&amp;drink);
+    if(status){
+      status.textContent=(meal&amp;&amp;drink)
+        ? `${meal.dataset.value||meal.textContent.trim()} ＋ ${drink.dataset.value||drink.textContent.trim()} を注文できます。`
+        : &#x27;食事とドリンクをお選びください。&#x27;;
+    }
+  }
+  meals.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
+  drinks.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
+  syncOrderButton();
+})();
+&lt;/script&gt;
+
 &lt;/body&gt;&lt;/html&gt;"></iframe>
   <iframe id="integratedCafeMarine" title="Marine Bloom Cafe" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;Marine Bloom Cafe | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;marine_bloom_cafe_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;padding:0 18px max(9vh,42px);background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
 .cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
@@ -2200,6 +2225,31 @@ document.addEventListener(&#x27;click&#x27;,e=&gt;{let b=e.target.closest(&#x27;
   }
   ensureCafeChoices(&#x27;meals&#x27;);
   ensureCafeChoices(&#x27;drinks&#x27;);
+})();
+&lt;/script&gt;
+
+
+&lt;script&gt;
+(()=&gt;{
+  const meals=document.getElementById(&#x27;meals&#x27;);
+  const drinks=document.getElementById(&#x27;drinks&#x27;);
+  const order=document.getElementById(&#x27;order&#x27;);
+  const status=document.getElementById(&#x27;status&#x27;);
+  if(!meals||!drinks||!order)return;
+
+  function syncOrderButton(){
+    const meal=meals.querySelector(&#x27;.item.selected&#x27;);
+    const drink=drinks.querySelector(&#x27;.item.selected&#x27;);
+    order.disabled=!(meal&amp;&amp;drink);
+    if(status){
+      status.textContent=(meal&amp;&amp;drink)
+        ? `${meal.dataset.value||meal.textContent.trim()} ＋ ${drink.dataset.value||drink.textContent.trim()} を注文できます。`
+        : &#x27;食事とドリンクをお選びください。&#x27;;
+    }
+  }
+  meals.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
+  drinks.addEventListener(&#x27;click&#x27;,()=&gt;setTimeout(syncOrderButton,0));
+  syncOrderButton();
 })();
 &lt;/script&gt;
 
