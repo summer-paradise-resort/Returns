@@ -1534,7 +1534,27 @@ body.special-table-playing .special-comment-overlay{display:block}
     buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティーチケット（2名様用）',20000));
     buyAfternoonTea4Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket4','アフタヌーンティーチケット（4名様用）',15000));
     buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','追加ドリンクチケット',5000));
-    document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>showCasinoLevel(button.dataset.casinoGame)));
+    document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>{
+      // 通常卓へ入る時は、過去のSPECIAL TABLE選択状態を通常ゲームへ持ち込まない
+      specialSelectedGame=null;
+      seriousEmilyMode=false;
+      document.body.classList.remove('special-table-playing');
+      const game=button.dataset.casinoGame;
+      if(game==='hilo'){
+        hiloScreen.querySelector('.hand-zone h3').textContent='CURRENT CARD';
+        hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='NEXT CARD';
+        hiloScreen.querySelector('.casino-return').classList.remove('hidden');
+        hiloActionPanel.classList.add('hidden');
+        hiloBetPanel.classList.remove('hidden');
+      }else if(game==='blackjack'){
+        blackjackScreen.querySelector('.hand-zone h3').textContent='DEALER';
+        blackjackScreen.querySelectorAll('.hand-zone h3')[1].textContent='YOU';
+        blackjackScreen.querySelector('.casino-return').classList.remove('hidden');
+        actionPanel.classList.add('hidden');
+        betPanel.classList.remove('hidden');
+      }
+      showCasinoLevel(game);
+    }));
     document.querySelectorAll('[data-casino-return]').forEach(button=>button.addEventListener('click',()=>{cancelActiveCasinoRound();showCasinoLevel(button.dataset.casinoReturn)}));
 
     betMinus.addEventListener('click',()=>adjustBet(-1));betPlus.addEventListener('click',()=>adjustBet(1));document.querySelectorAll('[data-bet]').forEach(button=>button.addEventListener('click',()=>setBetStep(Number(button.dataset.bet))));
@@ -1545,7 +1565,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     casinoRefill.addEventListener('click',()=>{if(bjActive)return;casinoChips=1000;blackjackBet=100;casinoSave();setCasinoStatus('1,000 CHIPをご用意しました。');updateCasinoHud()});
 
     hiloBetMinus.addEventListener('click',()=>adjustHiloBet(-1));hiloBetPlus.addEventListener('click',()=>adjustHiloBet(1));document.querySelectorAll('[data-hilo-bet]').forEach(button=>button.addEventListener('click',()=>setHiloBetStep(Number(button.dataset.hiloBet))));
-    hiloStart.addEventListener('click',startHilo);hiloHigh.addEventListener('click',()=>{if(specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('high')});hiloLow.addEventListener('click',()=>{if(specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('low')});
+    hiloStart.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();startHilo()});hiloHigh.addEventListener('click',()=>{if(document.body.classList.contains('special-table-playing')&&specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('high')});hiloLow.addEventListener('click',()=>{if(document.body.classList.contains('special-table-playing')&&specialSelectedGame==='hilo'&&casinoLevel==='hilo')return;chooseHilo('low')});
     hiloRefill.addEventListener('click',()=>{if(hiloActive)return;casinoChips=1000;hiloBet=100;casinoSave();hiloStatus.textContent='1,000 CHIPをご用意しました。';updateHiloHud()});
     syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();
 
