@@ -849,15 +849,22 @@ body.special-table-playing .special-comment-overlay{display:block}
     const SUPABASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY='sb_publishable_d4Uj3azYwSAIiwDK2UieGw_1Hp3LJfM';
     window.supabaseClientSpecial=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
-    // BAND内ブラウザ→Safari等へ切り替えても本人情報を引き継げるよう、
-    // SECURITY CHECKから渡されたURLパラメータをこのブラウザのlocalStorageへ復元する。
+    // BAND内ブラウザ→Safari等へ切り替えても同一人物を確実に識別する。
+    // day1 は SECURITY CHECK がURLへ付与した pid + guest を正本とし、
+    // 別ブラウザに残っている古いlocalStorageのIDを本人情報として再利用しない。
     const handoffParams=new URLSearchParams(window.location.search);
     const handoffPlayerId=(handoffParams.get('pid')||'').trim();
     const handoffGuestName=(handoffParams.get('guest')||'').trim();
+    if(!handoffPlayerId||!handoffGuestName){
+      // ブラウザ切替時にURLパラメータが落ちた場合は、古い端末情報を使わず再認証する。
+      window.location.replace('security_check.html');
+    }
     if(handoffPlayerId)localStorage.setItem('spr-player-id',handoffPlayerId);
     if(handoffGuestName)localStorage.setItem('spr-guest-name',handoffGuestName);
-    const storedGuestName=(localStorage.getItem('spr-guest-name')||'').trim();
-    if(!storedGuestName){window.location.replace('security_check.html')}
+    const storedGuestName=handoffGuestName;
+    const identityQuery=(handoffPlayerId&&handoffGuestName)
+      ? `?pid=${encodeURIComponent(handoffPlayerId)}&guest=${encodeURIComponent(handoffGuestName)}`
+      : '';
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
     const belongingsKey=`spr-belongings:${playerStorageId}`;
     const coasterInventoryKey=`spr-cafe-coasters:${playerStorageId}`;
@@ -926,25 +933,42 @@ body.special-table-playing .special-comment-overlay{display:block}
     const teaExchangeList=document.getElementById('teaExchangeList');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
     const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
-    let storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
+    let storedPlayerId=handoffPlayerId;
+    let storedIdentityVerified=false;
+    let storedIdentityVerifyPromise=null;
     async function ensureStoredPlayerId(){
-      if(storedPlayerId)return storedPlayerId;
-      if(!window.supabaseClientSpecial||!storedGuestName)return '';
-      try{
-        const nameKey=storedGuestName.trim().toLowerCase();
-        const {data,error}=await window.supabaseClientSpecial
-          .from('players')
-          .select('id')
-          .eq('name_key',nameKey)
-          .maybeSingle();
-        if(error)throw error;
-        const id=String(data?.id||'').trim();
-        if(id){storedPlayerId=id;localStorage.setItem('spr-player-id',id)}
-        return id;
-      }catch(error){
-        console.warn('player identity restore failed',error);
-        return '';
-      }
+      if(storedIdentityVerified&&storedPlayerId)return storedPlayerId;
+      if(storedIdentityVerifyPromise)return storedIdentityVerifyPromise;
+      if(!window.supabaseClientSpecial||!storedPlayerId||!storedGuestName)return '';
+      storedIdentityVerifyPromise=(async()=>{
+        try{
+          const expectedNameKey=storedGuestName.trim().toLowerCase();
+          const {data,error}=await window.supabaseClientSpecial
+            .from('players')
+            .select('id,display_name,name_key')
+            .eq('id',storedPlayerId)
+            .maybeSingle();
+          if(error)throw error;
+          const actualId=String(data?.id||'').trim();
+          const actualNameKey=String(data?.name_key||data?.display_name||'').trim().toLowerCase();
+          if(!actualId||actualId!==storedPlayerId||actualNameKey!==expectedNameKey){
+            localStorage.removeItem('spr-player-id');
+            localStorage.removeItem('spr-guest-name');
+            window.location.replace('security_check.html');
+            return '';
+          }
+          storedIdentityVerified=true;
+          localStorage.setItem('spr-player-id',actualId);
+          localStorage.setItem('spr-guest-name',String(data?.display_name||storedGuestName));
+          return actualId;
+        }catch(error){
+          console.warn('player identity verification failed',error);
+          return '';
+        }finally{
+          storedIdentityVerifyPromise=null;
+        }
+      })();
+      return storedIdentityVerifyPromise;
     }
     let windowSprFlagCache={};
     function sprSafeUuid(){if(window.crypto?.randomUUID)return window.crypto.randomUUID();return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})}
@@ -2475,7 +2499,7 @@ body.special-table-playing .special-comment-overlay{display:block}
   async function creator(){try{return await resolveSpecialPlayerId()}catch(e){return null}}
   async function latestMarker(type){const c=client();if(!c)return null;const {data,error}=await c.from('resort_announcements').select('id,message,created_at').eq('announcement_type',type).order('created_at',{ascending:false}).limit(1);if(error)throw error;return data&&data[0]?data[0]:null}
   async function publishMarker(type,message){const c=client();if(!c)throw new Error('Supabaseに接続できません。');const created_by=await creator();if(!created_by)throw new Error('プレイヤー情報を確認できません。SECURITY CHECKから入ってください。');const {error}=await c.from('resort_announcements').insert({announcement_type:type,message,created_by,expires_at:'2099-12-31T23:59:59+00:00'});if(error)throw error}
-  function goDay(day){const target='day'+day+'.html';const here=(location.pathname.split('/').pop()||'').toLowerCase();if(here!==target)location.replace(target)}
+  function goDay(day){const base='day'+day+'.html';const target=base+(typeof identityQuery==='string'?identityQuery:'');const here=(location.pathname.split('/').pop()||'').toLowerCase();if(here!==base)location.replace(target)}
   async function syncCurrentDay(redirect=true){try{const m=await latestMarker(DAY_TYPE);const day=m?Number(String(m.message).replace(/\D/g,'')):1;const safe=(day>=1&&day<=7)?day:1;setDayUI(safe);if(redirect&&safe!==THIS_DAY)goDay(safe)}catch(e){console.warn('day sync',e)}}
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
   function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));}
