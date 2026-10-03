@@ -1683,16 +1683,62 @@ body.special-table-playing .special-comment-overlay{display:block}
     let seriousEmilyMode=false;
     function tokyoDateKey(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
     function hasEncoreTonight(){const h=tokyoHour();return (h>=20||h<7)&&localStorage.getItem(encoreMealDateKey)===tokyoDateKey()}
+    // CHIPの正本はSupabase players.chips。localStorageは通信不能時の表示用キャッシュとしてのみ使用する。
     let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
     let previousCasinoChips=casinoChips;
+    let casinoChipSyncChain=Promise.resolve();
+    let casinoChipRefreshPromise=null;
     let casinoLevel='hub';
     let blackjackBet=100, blackjackBetStep=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
     let hiloBet=100, hiloBetStep=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
+    function queueCasinoChipSync(value=casinoChips){
+      const chips=Math.max(0,Math.round(Number(value)||0));
+      localStorage.setItem(casinoChipKey,String(chips));
+      if(!window.supabaseClientSpecial||!storedPlayerId)return casinoChipSyncChain;
+      casinoChipSyncChain=casinoChipSyncChain
+        .catch(()=>{})
+        .then(async()=>{
+          const {error}=await window.supabaseClientSpecial
+            .from('players')
+            .update({chips,last_seen_at:new Date().toISOString()})
+            .eq('id',storedPlayerId);
+          if(error)throw error;
+        })
+        .catch(error=>{console.warn('casino chip sync failed',error)});
+      return casinoChipSyncChain;
+    }
+    async function refreshCasinoChipsFromSupabase(){
+      if(casinoChipRefreshPromise)return casinoChipRefreshPromise;
+      casinoChipRefreshPromise=(async()=>{
+        if(!window.supabaseClientSpecial||!storedPlayerId)return casinoChips;
+        // 直前の自端末からの更新があれば、先に送信完了させてから読み直す。
+        try{await casinoChipSyncChain}catch{}
+        const {data,error}=await window.supabaseClientSpecial
+          .from('players')
+          .select('chips')
+          .eq('id',storedPlayerId)
+          .maybeSingle();
+        if(error)throw error;
+        const remote=Number(data?.chips);
+        if(Number.isFinite(remote)&&remote>=0){
+          casinoChips=Math.round(remote);
+          previousCasinoChips=casinoChips;
+          localStorage.setItem(casinoChipKey,String(casinoChips));
+          if(typeof syncCasinoBalances==='function')syncCasinoBalances();
+          if(typeof renderPrizeCounter==='function'&&casinoLevel==='prize')renderPrizeCounter();
+          if(typeof updateCasinoHud==='function'&&casinoLevel==='blackjack')updateCasinoHud();
+          if(typeof updateHiloHud==='function'&&casinoLevel==='hilo')updateHiloHud();
+        }
+        return casinoChips;
+      })().catch(error=>{console.warn('casino chip refresh failed',error);return casinoChips}).finally(()=>{casinoChipRefreshPromise=null});
+      return casinoChipRefreshPromise;
+    }
     function casinoSave(){
-      localStorage.setItem(casinoChipKey,String(casinoChips));
+      casinoChips=Math.max(0,Math.round(Number(casinoChips)||0));
+      queueCasinoChipSync(casinoChips);
       if(previousCasinoChips<50000&&casinoChips>=50000&&!localStorage.getItem(emilyAnnouncedKey)){
         localStorage.setItem(emilyAnnouncedKey,'1');
         seriousEmilyMode=false;
@@ -1711,7 +1757,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     function resetEmilyTest(chips,serious=false){
       localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');
       if(serious)localStorage.setItem(encoreMealDateKey,tokyoDateKey());
-      casinoChips=chips;previousCasinoChips=chips;localStorage.setItem(casinoChipKey,String(casinoChips));activeSpecialSessionId=null;seriousEmilyMode=false;
+      casinoChips=chips;previousCasinoChips=chips;queueCasinoChipSync(casinoChips);activeSpecialSessionId=null;seriousEmilyMode=false;
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');hideSpecialBroadcast('reset');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';syncCasinoBalances();normalResortAnnouncement();
       alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。':'通常エミリー確認用：49,900 CHIPに設定しました。');
@@ -1829,8 +1875,11 @@ body.special-table-playing .special-comment-overlay{display:block}
       casinoChips=Math.round(casinoChips);casinoSave();hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.remove('hidden');renderHilo();
     }
 
-    casinoEnter.addEventListener('click',()=>{casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showCasinoLevel('hub');refreshCasinoSpectatorMenu();startCasinoMusic()});
+    casinoEnter.addEventListener('click',async()=>{await refreshCasinoChipsFromSupabase();casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';showCasinoLevel('hub');refreshCasinoSpectatorMenu();startCasinoMusic()});
     casinoExit.addEventListener('click',casinoBack);
+    refreshCasinoChipsFromSupabase();
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCasinoChipsFromSupabase()});
+    window.addEventListener('focus',()=>{refreshCasinoChipsFromSupabase()});
     casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
     buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティーチケット（2名様用）',20000));
@@ -2222,22 +2271,10 @@ body.special-table-playing .special-comment-overlay{display:block}
   async function syncCurrentDay(redirect=true){try{const m=await latestMarker(DAY_TYPE);const day=m?Number(String(m.message).replace(/\D/g,'')):1;const safe=(day>=1&&day<=7)?day:1;setDayUI(safe);if(redirect&&safe!==THIS_DAY)goDay(safe)}catch(e){console.warn('day sync',e)}}
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
   function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));}
-  function resetCafeRuntime(){
-    // CAFE は srcdoc iframe 内にも「本日使用済み」のUI状態を持つため、
-    // localStorage を消すだけでは開いている iframe の表示が更新されない。
-    // iframe を再読込して useKey / consumePending / モーダル状態を初期化する。
-    ['integratedCafePearl','integratedCafeMarine'].forEach(id=>{
-      const f=document.getElementById(id);if(!f)return;
-      try{const src=f.getAttribute('srcdoc');if(src!==null)f.setAttribute('srcdoc',src)}catch(e){console.warn('cafe runtime reset',id,e)}
-    });
-    // 親側の所持品表示も即時更新する。
-    try{if(typeof renderPrizeCounter==='function')renderPrizeCounter()}catch{}
-    try{if(typeof renderRoomBelongings==='function')renderRoomBelongings()}catch{}
-  }
-  if(resetBtn)resetBtn.addEventListener('click',async()=>{if(!confirm('本番用にDAY1〜DAY7のギミック状態を初期化します。\n参加者の名前／プレイヤーIDは残します。\n\nこの操作を実行しますか？'))return;if(!confirm('最終確認です。全ギミックを初期状態へ戻しますか？'))return;try{resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミックを初期化中…';await publishMarker(RESET_TYPE,'RESET:'+Date.now());try{const c=client();if(c)await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing'])}catch(e){console.warn('special table reset',e)}await publishMarker(DAY_TYPE,'DAY:1');clearLocalGimmicks();resetCafeRuntime();localStorage.setItem('spr-hernando-bar-global-open','0');if(statusEl)statusEl.textContent='初期化完了。DAY1へ戻ります。';setTimeout(()=>goDay(1),350)}catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}finally{resetBtn.disabled=false}});
+  if(resetBtn)resetBtn.addEventListener('click',async()=>{if(!confirm('本番用にDAY1〜DAY7のギミック状態を初期化します。\n参加者の名前／プレイヤーIDは残します。\n\nこの操作を実行しますか？'))return;if(!confirm('最終確認です。全ギミックを初期状態へ戻しますか？'))return;try{resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミックを初期化中…';await publishMarker(RESET_TYPE,'RESET:'+Date.now());try{const c=client();if(c)await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing'])}catch(e){console.warn('special table reset',e)}await publishMarker(DAY_TYPE,'DAY:1');clearLocalGimmicks();localStorage.setItem('spr-hernando-bar-global-open','0');if(statusEl)statusEl.textContent='初期化完了。DAY1へ戻ります。';setTimeout(()=>goDay(1),350)}catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}finally{resetBtn.disabled=false}});
   // A discovery only counts if it happened after the latest world reset.
   window.refreshHernandoBarGlobalOpen=async function(){try{const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
-  function onShared(payload){const row=payload&&payload.new;if(!row)return;if(row.announcement_type===DAY_TYPE){const d=Number(String(row.message).replace(/\D/g,''));if(d>=1&&d<=7){setDayUI(d);if(d!==THIS_DAY)goDay(d)}}if(row.announcement_type===RESET_TYPE){clearLocalGimmicks();resetCafeRuntime();hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();}}
+  function onShared(payload){const row=payload&&payload.new;if(!row)return;if(row.announcement_type===DAY_TYPE){const d=Number(String(row.message).replace(/\D/g,''));if(d>=1&&d<=7){setDayUI(d);if(d!==THIS_DAY)goDay(d)}}if(row.announcement_type===RESET_TYPE){clearLocalGimmicks();hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();}}
   function startRuntime(){syncCurrentDay(true);const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();window.refreshHernandoBarGlobalOpen();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(startRuntime,350));else setTimeout(startRuntime,350);
 })();
@@ -2273,7 +2310,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div id=&quot;coasterZoomModalLegacy&quot; class=&quot;cz&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;button id=&quot;coasterZoomCloseLegacy&quot; class=&quot;x&quot; type=&quot;button&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImageLegacy&quot; alt=&quot;&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
   const VENUE=&#x27;The Pearl Terrace&#x27;,COASTERS=[&#x27;coaster00.PNG&#x27;,&#x27;coaster01.PNG&#x27;,&#x27;coaster02.PNG&#x27;,&#x27;coaster03.PNG&#x27;,&#x27;coaster04.PNG&#x27;,&#x27;coaster05.PNG&#x27;,&#x27;coaster06.PNG&#x27;,&#x27;coaster07.PNG&#x27;,&#x27;coaster08.PNG&#x27;,&#x27;coaster09.PNG&#x27;,&#x27;coaster10.PNG&#x27;,&#x27;coaster11.PNG&#x27;,&#x27;coaster12.PNG&#x27;,&#x27;coaster13.PNG&#x27;,&#x27;coaster14.PNG&#x27;,&#x27;coaster15.PNG&#x27;,&#x27;coaster16.PNG&#x27;,&#x27;coaster17.PNG&#x27;,&#x27;coaster18.PNG&#x27;,&#x27;coaster19.PNG&#x27;,&#x27;coaster20.PNG&#x27;,&#x27;coaster21.PNG&#x27;,&#x27;coaster22.PNG&#x27;,&#x27;coaster23.PNG&#x27;,&#x27;coaster24.PNG&#x27;,&#x27;coaster25.PNG&#x27;,&#x27;coaster26.PNG&#x27;,&#x27;coaster27.PNG&#x27;,&#x27;coaster28.PNG&#x27;,&#x27;coaster29.PNG&#x27;,&#x27;coaster30.PNG&#x27;,&#x27;coaster31.PNG&#x27;,&#x27;coaster32.PNG&#x27;,&#x27;coaster33.PNG&#x27;,&#x27;coaster34.PNG&#x27;,&#x27;coaster35.PNG&#x27;,&#x27;coaster36.PNG&#x27;,&#x27;coaster37.PNG&#x27;,&#x27;coaster38.PNG&#x27;,&#x27;coaster39.PNG&#x27;,&#x27;coaster40.PNG&#x27;,&#x27;coaster41.PNG&#x27;,&#x27;coaster42.PNG&#x27;,&#x27;coaster43.PNG&#x27;,&#x27;coaster44.PNG&#x27;,&#x27;coaster45.PNG&#x27;,&#x27;coaster46.PNG&#x27;,&#x27;coaster47.PNG&#x27;,&#x27;coaster48.PNG&#x27;,&#x27;coaster49.PNG&#x27;,&#x27;coaster50.PNG&#x27;,&#x27;coaster51.PNG&#x27;,&#x27;coaster52.PNG&#x27;];
@@ -2455,7 +2492,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div id=&quot;coasterZoomModalLegacy&quot; class=&quot;cz&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;button id=&quot;coasterZoomCloseLegacy&quot; class=&quot;x&quot; type=&quot;button&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImageLegacy&quot; alt=&quot;&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
   const VENUE=&#x27;Marine Bloom Cafe&#x27;,COASTERS=[&#x27;coaster53.PNG&#x27;,&#x27;coaster54.PNG&#x27;,&#x27;coaster55.PNG&#x27;,&#x27;coaster56.PNG&#x27;,&#x27;coaster57.PNG&#x27;,&#x27;coaster58.PNG&#x27;,&#x27;coaster59.PNG&#x27;,&#x27;coaster60.PNG&#x27;,&#x27;coaster61.PNG&#x27;,&#x27;coaster62.PNG&#x27;,&#x27;coaster63.PNG&#x27;,&#x27;coaster64.PNG&#x27;,&#x27;coaster65.PNG&#x27;,&#x27;coaster66.PNG&#x27;,&#x27;coaster67.PNG&#x27;,&#x27;coaster68.PNG&#x27;,&#x27;coaster69.PNG&#x27;,&#x27;coaster70.PNG&#x27;,&#x27;coaster71.PNG&#x27;,&#x27;coaster72.PNG&#x27;,&#x27;coaster73.PNG&#x27;,&#x27;coaster74.PNG&#x27;,&#x27;coaster75.PNG&#x27;,&#x27;coaster76.PNG&#x27;,&#x27;coaster77.PNG&#x27;,&#x27;coaster78.PNG&#x27;,&#x27;coaster79.PNG&#x27;,&#x27;coaster80.PNG&#x27;,&#x27;coaster81.PNG&#x27;,&#x27;coaster82.PNG&#x27;,&#x27;coaster83.PNG&#x27;,&#x27;coaster84.PNG&#x27;,&#x27;coaster85.PNG&#x27;,&#x27;coaster86.PNG&#x27;,&#x27;coaster87.PNG&#x27;,&#x27;coaster88.PNG&#x27;];
