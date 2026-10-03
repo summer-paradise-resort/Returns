@@ -154,9 +154,6 @@
     .casino-gallery-shade{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(2,11,19,.05),transparent 58%,rgba(2,11,19,.48))}
     .casino-gallery-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:rgba(255,255,255,.72);font-size:12px;line-height:2;letter-spacing:.05em}
     .casino-gallery-empty.hidden{display:none}
-    .casino-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:58px;border:1px solid rgba(240,216,157,.44);background:rgba(2,15,26,.54);color:#f0d89d;font-size:28px;line-height:1;backdrop-filter:blur(6px);z-index:2}
-    .casino-gallery-prev{left:10px}.casino-gallery-next{right:10px}
-    .casino-gallery-nav:disabled{opacity:.24}
     .casino-gallery-caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:12px;color:#fff}
     .casino-gallery-caption strong{font:15px Georgia,serif;letter-spacing:.16em;font-weight:400;color:#f0d89d}
     .casino-gallery-caption span{font:10px Georgia,serif;letter-spacing:.14em;color:rgba(255,255,255,.74)}
@@ -326,7 +323,7 @@
     .bar-period-card small{display:block;color:var(--gold);font:10px Georgia,serif;letter-spacing:.12em;margin-bottom:8px}
     .bar-period-card p{font-size:12px;line-height:1.85;color:#4c5a67;margin:0}
     .bar-menu-title{text-align:center;margin:24px 0 13px;font:13px Georgia,serif;letter-spacing:.22em;color:var(--gold)}
-    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x}
     .bar-menu-pages::-webkit-scrollbar{display:none}
     .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
     .bar-menu-page img{width:100%;height:auto;display:block}
@@ -799,8 +796,6 @@ body.special-table-playing .special-comment-overlay{display:block}
           <img id="casinoGalleryImage" src="" alt="カジノ館内">
           <div class="casino-gallery-shade"></div>
           <div id="casinoGalleryEmpty" class="casino-gallery-empty">館内写真を準備しています。<br><small>casino.gallery01.jpg から連番で読み込みます。</small></div>
-          <button id="casinoGalleryPrev" class="casino-gallery-nav casino-gallery-prev" type="button" aria-label="前の写真">‹</button>
-          <button id="casinoGalleryNext" class="casino-gallery-nav casino-gallery-next" type="button" aria-label="次の写真">›</button>
           <div class="casino-gallery-caption">
             <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
             <span id="casinoGalleryCounter">00 / 00</span>
@@ -2145,10 +2140,8 @@ body.special-table-playing .special-comment-overlay{display:block}
     const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
     const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
-    const casinoGalleryPrev=document.getElementById('casinoGalleryPrev');
-    const casinoGalleryNext=document.getElementById('casinoGalleryNext');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
-    let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
+    let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0,casinoGalleryTouchStartY=0,casinoGalleryTouchLock='';
 
     function probeCasinoGalleryFile(src){
       return new Promise(resolve=>{
@@ -2180,8 +2173,6 @@ body.special-table-playing .special-comment-overlay{display:block}
       const has=total>0;
       casinoGalleryEmpty.classList.toggle('hidden',has);
       casinoGalleryImage.classList.remove('ready');
-      casinoGalleryPrev.disabled=!has||total<2;
-      casinoGalleryNext.disabled=!has||total<2;
       casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'00 / 00';
       casinoGalleryDots.replaceChildren();
       if(!has){
@@ -2208,12 +2199,24 @@ body.special-table-playing .special-comment-overlay{display:block}
       casinoGalleryIndex=(casinoGalleryIndex+amount+casinoGalleryFiles.length)%casinoGalleryFiles.length;
       renderCasinoGallery();
     }
-    casinoGalleryPrev.addEventListener('click',()=>stepCasinoGallery(-1));
-    casinoGalleryNext.addEventListener('click',()=>stepCasinoGallery(1));
-    casinoGalleryStage.addEventListener('touchstart',e=>{casinoGalleryTouchStart=e.touches[0].clientX},{passive:true});
+    casinoGalleryStage.addEventListener('touchstart',e=>{
+      casinoGalleryTouchStart=e.touches[0].clientX;
+      casinoGalleryTouchStartY=e.touches[0].clientY;
+      casinoGalleryTouchLock='';
+    },{passive:true});
+    casinoGalleryStage.addEventListener('touchmove',e=>{
+      if(!e.touches.length)return;
+      const dx=e.touches[0].clientX-casinoGalleryTouchStart;
+      const dy=e.touches[0].clientY-casinoGalleryTouchStartY;
+      if(!casinoGalleryTouchLock&&Math.max(Math.abs(dx),Math.abs(dy))>8){
+        casinoGalleryTouchLock=Math.abs(dx)>Math.abs(dy)*1.12?'horizontal':'vertical';
+      }
+      if(casinoGalleryTouchLock==='horizontal')e.preventDefault();
+    },{passive:false});
     casinoGalleryStage.addEventListener('touchend',e=>{
       const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
-      if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
+      if(casinoGalleryTouchLock==='horizontal'&&Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
+      casinoGalleryTouchLock='';
     },{passive:true});
     casinoGalleryMenu.addEventListener('click',async()=>{
       showCasinoLevel('gallery');
@@ -2302,7 +2305,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',306:'オーシャンラグーン',307:'オーシャンラグーン',308:'オーシャンラグーン',309:'オーシャンラグーン',310:'オーシャンラグーン',
       401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
     };
-    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
+    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sceneTouchStartY=0, sceneTouchLock='', sheetTouchStart=0;
     const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), roomError=document.getElementById('roomError');
     const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
     const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto'), roomImageError=document.getElementById('roomImageError');
@@ -2460,8 +2463,26 @@ body.special-table-playing .special-comment-overlay{display:block}
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
     document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
     roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
-    roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
-    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
+    roomScene.addEventListener('touchstart',event=>{
+      sceneTouchStart=event.touches[0].clientX;
+      sceneTouchStartY=event.touches[0].clientY;
+      sceneTouchLock='';
+    },{passive:true});
+    roomScene.addEventListener('touchmove',event=>{
+      if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open')||!event.touches.length)return;
+      const dx=event.touches[0].clientX-sceneTouchStart;
+      const dy=event.touches[0].clientY-sceneTouchStartY;
+      if(!sceneTouchLock&&Math.max(Math.abs(dx),Math.abs(dy))>8){
+        sceneTouchLock=Math.abs(dx)>Math.abs(dy)*1.12?'horizontal':'vertical';
+      }
+      if(sceneTouchLock==='horizontal')event.preventDefault();
+    },{passive:false});
+    roomScene.addEventListener('touchend',event=>{
+      if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;
+      const diff=event.changedTouches[0].clientX-sceneTouchStart;
+      if(sceneTouchLock==='horizontal'&&Math.abs(diff)>45)stepRoomScene(diff<0?1:-1);
+      sceneTouchLock='';
+    },{passive:true});
     roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
@@ -2611,11 +2632,28 @@ body.special-table-playing .special-comment-overlay{display:block}
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
-      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
+      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0,startY=0,touchLock='';
       const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
       function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
-      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
-      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
+      gallery.addEventListener('touchstart',e=>{
+        startX=e.touches[0].clientX;
+        startY=e.touches[0].clientY;
+        touchLock='';
+      },{passive:true});
+      gallery.addEventListener('touchmove',e=>{
+        if(!e.touches.length)return;
+        const dx=e.touches[0].clientX-startX;
+        const dy=e.touches[0].clientY-startY;
+        if(!touchLock&&Math.max(Math.abs(dx),Math.abs(dy))>8){
+          touchLock=Math.abs(dx)>Math.abs(dy)*1.12?'horizontal':'vertical';
+        }
+        if(touchLock==='horizontal')e.preventDefault();
+      },{passive:false});
+      gallery.addEventListener('touchend',e=>{
+        const diff=e.changedTouches[0].clientX-startX;
+        if(touchLock==='horizontal'&&Math.abs(diff)>40)show(index+(diff<0?1:-1));
+        touchLock='';
+      },{passive:true});
       galleries[name]=show;
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
