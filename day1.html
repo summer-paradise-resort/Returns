@@ -853,14 +853,28 @@ body.special-table-playing .special-comment-overlay{display:block}
     // day1 は SECURITY CHECK がURLへ付与した pid + guest を正本とし、
     // 別ブラウザに残っている古いlocalStorageのIDを本人情報として再利用しない。
     const handoffParams=new URLSearchParams(window.location.search);
-    const handoffPlayerId=(handoffParams.get('pid')||'').trim();
-    const handoffGuestName=(handoffParams.get('guest')||'').trim();
+    const urlPlayerId=(handoffParams.get('pid')||'').trim();
+    const urlGuestName=(handoffParams.get('guest')||'').trim();
+
+    // SECURITY CHECK直後の同一ブラウザでは、旧版SECURITY CHECKが
+    // day1.htmlへURLパラメータなしで遷移してもログインループにしない。
+    // ただし古いブラウザ保存IDを誤採用しないよう、5分以内のログイン情報だけを許可する。
+    const lastSeenMs=Number(localStorage.getItem('spr-last-seen')||0);
+    const recentLocalLogin=Number.isFinite(lastSeenMs)&&lastSeenMs>0&&(Date.now()-lastSeenMs)<5*60*1000;
+    const recentLocalPlayerId=recentLocalLogin?(localStorage.getItem('spr-player-id')||'').trim():'';
+    const recentLocalGuestName=recentLocalLogin?(localStorage.getItem('spr-guest-name')||'').trim():'';
+
+    const handoffPlayerId=urlPlayerId||recentLocalPlayerId;
+    const handoffGuestName=urlGuestName||recentLocalGuestName;
+
     if(!handoffPlayerId||!handoffGuestName){
-      // ブラウザ切替時にURLパラメータが落ちた場合は、古い端末情報を使わず再認証する。
-      window.location.replace('security_check.html');
+      // 別ブラウザに残った古いIDは使わず、SECURITY CHECKへ戻す。
+      window.location.replace('security_check_supabase.html');
     }
     if(handoffPlayerId)localStorage.setItem('spr-player-id',handoffPlayerId);
     if(handoffGuestName)localStorage.setItem('spr-guest-name',handoffGuestName);
+    if(urlPlayerId&&urlGuestName)localStorage.setItem('spr-last-seen',String(Date.now()));
+
     const storedGuestName=handoffGuestName;
     const identityQuery=(handoffPlayerId&&handoffGuestName)
       ? `?pid=${encodeURIComponent(handoffPlayerId)}&guest=${encodeURIComponent(handoffGuestName)}`
@@ -954,7 +968,7 @@ body.special-table-playing .special-comment-overlay{display:block}
           if(!actualId||actualId!==storedPlayerId||actualNameKey!==expectedNameKey){
             localStorage.removeItem('spr-player-id');
             localStorage.removeItem('spr-guest-name');
-            window.location.replace('security_check.html');
+            window.location.replace('security_check_supabase.html');
             return '';
           }
           storedIdentityVerified=true;
