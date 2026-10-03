@@ -400,6 +400,12 @@
     .explore-action-message{max-width:620px;margin:14px auto 0;padding:14px 15px;border:1px solid rgba(231,207,148,.34);background:rgba(3,15,27,.86);color:#fff;font-size:12px;line-height:2;letter-spacing:.035em;backdrop-filter:blur(8px)}
     .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:7px;color:#e6cc8e;font:9px Georgia,serif;letter-spacing:.22em}
     @media(min-width:620px){.explore-location-actions{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){
+      .explore-location-sheet{padding-top:12px;max-height:64dvh}
+      .explore-location-kicker{margin-bottom:6px}
+      .explore-location-actions{gap:8px;margin-top:8px}
+      .explore-location-action{padding:11px 15px;line-height:1.55}
+    }
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
     .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
@@ -726,7 +732,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
       <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
-      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><h2>何をしますか？</h2><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"></div></div>
+      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"></div></div>
     </section>
   </section>
 
