@@ -379,13 +379,25 @@
     .bar-order-result{margin-top:11px;padding:11px 12px;border:1px solid #d9c9a9;background:#fffaf0;color:#6b552d;font-size:11px;line-height:1.8;text-align:center}
     @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
 
-    .explore-choice-grid,.explore-action-grid{display:grid;gap:10px;margin-top:14px}
-    .explore-choice-btn,.explore-action-btn{width:100%;padding:14px 15px;border:1px solid #e7dfd1;background:#fff;color:var(--navy);text-align:left;font-size:13px;line-height:1.7;letter-spacing:.04em}
-    .explore-choice-btn small,.explore-action-btn small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
-    .explore-choice-btn.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}
-    .explore-action-panel.hidden,.explore-action-result.hidden{display:none}
-    .explore-current-spot{font:12px Georgia,serif;letter-spacing:.14em;color:var(--gold);margin:0 0 8px}
-    .explore-action-result{margin-top:12px;padding:12px 13px;background:#fff;border:1px solid #e7dfd1;font-size:12px;line-height:1.9;color:#4c5661}
+    .explore-choice-grid,.explore-location-actions{display:grid;gap:10px;margin-top:14px}
+    .explore-choice-btn,.explore-location-action{width:100%;padding:14px 15px;border:1px solid #e7dfd1;background:#fff;color:var(--navy);text-align:left;font-size:13px;line-height:1.7;letter-spacing:.04em}
+    .explore-choice-btn small,.explore-location-action small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
+    .explore-destination-panel{margin-top:22px}
+    .explore-destination-panel>h3{margin-bottom:2px}
+    .explore-location-page{position:fixed;inset:0;z-index:96;background:#071a2b;color:#fff;overflow:hidden}
+    .explore-location-bg{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;transform:scale(1.01)}
+    .explore-location-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,15,27,.48) 0%,rgba(3,15,27,.12) 35%,rgba(3,15,27,.32) 58%,rgba(3,15,27,.88) 100%)}
+    .explore-location-head{position:absolute;z-index:2;top:0;left:0;right:0;min-height:72px;display:grid;grid-template-columns:70px 1fr 70px;align-items:center;padding:max(8px,env(safe-area-inset-top)) 14px 8px;background:linear-gradient(180deg,rgba(3,15,27,.72),transparent);color:#fff}
+    .explore-location-back{width:56px;height:44px;border:0;background:transparent;color:#fff;font:12px Georgia,serif;letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.75)}
+    .explore-location-title{text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75)}
+    .explore-location-title strong{display:block;font:16px Georgia,serif;letter-spacing:.18em;font-weight:400;color:#f0d89d}
+    .explore-location-title small{display:block;margin-top:5px;font-size:11px;letter-spacing:.1em;color:#fff}
+    .explore-location-sheet{position:absolute;z-index:2;left:0;right:0;bottom:0;padding:18px 16px max(20px,calc(16px + env(safe-area-inset-bottom)));background:linear-gradient(180deg,rgba(3,15,27,0),rgba(3,15,27,.78) 12%,rgba(3,15,27,.96) 34%);max-height:58dvh;overflow-y:auto}
+    .explore-location-kicker{text-align:center;font:10px Georgia,serif;letter-spacing:.22em;color:#e6cc8e;margin-bottom:8px}
+    .explore-location-sheet h2{text-align:center;margin:0 0 15px;font-size:23px;font-weight:400;letter-spacing:.12em;color:#fff}
+    .explore-location-actions{max-width:620px;margin:0 auto;grid-template-columns:1fr}
+    .explore-location-action{background:rgba(255,255,255,.94);border-color:rgba(231,223,209,.7);color:#0d2743;backdrop-filter:blur(4px)}
+    @media(min-width:620px){.explore-location-actions{grid-template-columns:repeat(2,1fr)}}
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
     .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
@@ -706,7 +718,13 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     <div class="gallery" data-gallery="explore"><div class="track">
       <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
     </div></div><div class="dots" data-dots="explore"></div>
-    <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel"><h3>島内の見どころ</h3><p>海辺、灯台、マーメイドの入り江を掲載しています。写真を左右にスワイプしてご覧ください。</p></div><div class="panel"><h3>行き先を選ぶ</h3><p>まずは、どこへ向かうかをお選びください。</p><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div><div id="exploreActionPanel" class="panel explore-action-panel hidden"><h3>探索する</h3><p id="exploreActionLead">行き先を選ぶと、この場所で行える探索行動が表示されます。</p><div id="exploreCurrentSpot" class="explore-current-spot"></div><div class="explore-action-grid"><button class="explore-action-btn" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-action-btn" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-action-btn" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-action-btn" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionResult" class="explore-action-result hidden" aria-live="polite"></div></div></div>
+    <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel explore-destination-panel"><h3>行き先を選ぶ</h3><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div></div>
+
+    <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
+      <div id="exploreLocationBg" class="explore-location-bg"></div>
+      <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
+      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><h2>何をしますか？</h2><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div></div>
+    </section>
   </section>
 
   <section class="subview" id="restaurantView" aria-hidden="true">
@@ -3605,44 +3623,40 @@ window.addEventListener('message',e=>{
 <script>
 (()=>{
   const exploreView=document.getElementById('exploreView');
-  if(!exploreView) return;
+  if(!exploreView)return;
+  const locationPage=document.getElementById('exploreLocationPage');
+  const locationBg=document.getElementById('exploreLocationBg');
+  const locationEn=document.getElementById('exploreLocationEn');
+  const locationJp=document.getElementById('exploreLocationJp');
+  const locationBack=document.getElementById('exploreLocationBack');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
-  const actionButtons=[...exploreView.querySelectorAll('[data-explore-action]')];
-  const actionPanel=document.getElementById('exploreActionPanel');
-  const actionLead=document.getElementById('exploreActionLead');
-  const currentSpot=document.getElementById('exploreCurrentSpot');
-  const actionResult=document.getElementById('exploreActionResult');
   const spots={
-    beach:{label:'ビーチ',en:'BEACH',description:'白い砂浜と穏やかな波音が続く海辺です。'},
-    lighthouse:{label:'灯台',en:'LIGHTHOUSE',description:'島の高台から遠くの海まで見渡せる場所です。'},
-    mermaids_cove:{label:'人魚の入り江',en:"MERMAID'S COVE",description:'静かな水面と神秘的な気配が漂う入り江です。'}
-  };
-  const actions={
-    camera:'カメラで撮影する',
-    telescope:'小型望遠鏡を使う',
-    fishing:'釣竿で釣りをする',
-    snorkel:'シュノーケルを使う'
+    beach:{label:'ビーチ',en:'BEACH',image:'summer_paradise_beach.jpg'},
+    lighthouse:{label:'灯台',en:'LIGHTHOUSE',image:'lighthouse.jpg'},
+    mermaids_cove:{label:'人魚の入り江',en:"MERMAID'S COVE",image:'mermaids_cove.jpg'}
   };
   let selectedSpot='';
-  function showSpot(spotKey){
+  function openLocation(spotKey){
     const spot=spots[spotKey];
-    if(!spot) return;
+    if(!spot)return;
     selectedSpot=spotKey;
-    choiceButtons.forEach(btn=>btn.classList.toggle('selected',btn.dataset.exploreSpot===spotKey));
-    actionPanel.classList.remove('hidden');
-    currentSpot.textContent=`CURRENT SPOT　｜　${spot.en}　｜　${spot.label}`;
-    actionLead.textContent=`${spot.label}を選択しました。${spot.description} この場所で行う探索行動をお選びください。`;
-    actionResult.classList.add('hidden');
-    actionResult.textContent='';
+    locationBg.style.backgroundImage=`url("${spot.image}")`;
+    locationEn.textContent=spot.en;
+    locationJp.textContent=spot.label;
+    locationPage.classList.remove('hidden');
+    locationPage.setAttribute('aria-hidden','false');
   }
-  function showAction(actionKey){
-    if(!selectedSpot || !spots[selectedSpot] || !actions[actionKey]) return;
-    const spot=spots[selectedSpot];
-    actionResult.textContent=`${spot.label}で「${actions[actionKey]}」を選択しました。ひとまず、この場所で選べる行動として登録しています。`;
-    actionResult.classList.remove('hidden');
+  function closeLocation(){
+    locationPage.classList.add('hidden');
+    locationPage.setAttribute('aria-hidden','true');
   }
-  choiceButtons.forEach(btn=>btn.addEventListener('click',()=>showSpot(btn.dataset.exploreSpot)));
-  actionButtons.forEach(btn=>btn.addEventListener('click',()=>showAction(btn.dataset.exploreAction)));
+  choiceButtons.forEach(btn=>btn.addEventListener('click',()=>openLocation(btn.dataset.exploreSpot)));
+  locationBack?.addEventListener('click',closeLocation);
+  exploreView.querySelector('[data-back]')?.addEventListener('click',closeLocation);
+  // 行動ボタンの効果は次の工程で追加する。場所だけは保持しておく。
+  exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
+    btn.dataset.selectedSpot=selectedSpot;
+  }));
 })();
 </script>
 </body>
