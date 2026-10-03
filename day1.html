@@ -146,7 +146,7 @@
     .prize-message{min-height:1.8em!important;color:#e9dcc0!important}
     .casino-return{min-height:48px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;letter-spacing:.1em}
     .casino-gallery-screen{justify-content:flex-start;padding-top:18px}
-    .casino-gallery-stage{touch-action:pan-y;position:relative;isolation:isolate;width:100%;min-height:min(68dvh,680px);background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:0 18px 38px rgba(0,0,0,.28);--casino-gallery-bg:none}
+    .casino-gallery-stage{position:relative;isolation:isolate;width:100%;min-height:min(68dvh,680px);background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:0 18px 38px rgba(0,0,0,.28);--casino-gallery-bg:none}
     .casino-gallery-stage::before{content:"";position:absolute;inset:-28px;z-index:-2;background-image:var(--casino-gallery-bg);background-position:center;background-size:cover;background-repeat:no-repeat;filter:blur(22px);transform:scale(1.10);opacity:.78}
     .casino-gallery-stage::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(1,10,18,.30);pointer-events:none}
     .casino-gallery-stage img{position:relative;z-index:1;display:block;width:100%;height:min(68dvh,680px);object-fit:contain;object-position:center;opacity:0;transition:opacity .35s ease;filter:drop-shadow(0 10px 26px rgba(0,0,0,.32))}
@@ -154,6 +154,9 @@
     .casino-gallery-shade{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(2,11,19,.05),transparent 58%,rgba(2,11,19,.48))}
     .casino-gallery-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:rgba(255,255,255,.72);font-size:12px;line-height:2;letter-spacing:.05em}
     .casino-gallery-empty.hidden{display:none}
+    .casino-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:58px;border:1px solid rgba(240,216,157,.44);background:rgba(2,15,26,.54);color:#f0d89d;font-size:28px;line-height:1;backdrop-filter:blur(6px);z-index:2}
+    .casino-gallery-prev{left:10px}.casino-gallery-next{right:10px}
+    .casino-gallery-nav:disabled{opacity:.24}
     .casino-gallery-caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:12px;color:#fff}
     .casino-gallery-caption strong{font:15px Georgia,serif;letter-spacing:.16em;font-weight:400;color:#f0d89d}
     .casino-gallery-caption span{font:10px Georgia,serif;letter-spacing:.14em;color:rgba(255,255,255,.74)}
@@ -323,7 +326,7 @@
     .bar-period-card small{display:block;color:var(--gold);font:10px Georgia,serif;letter-spacing:.12em;margin-bottom:8px}
     .bar-period-card p{font-size:12px;line-height:1.85;color:#4c5a67;margin:0}
     .bar-menu-title{text-align:center;margin:24px 0 13px;font:13px Georgia,serif;letter-spacing:.22em;color:var(--gold)}
-    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:auto}
+    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
     .bar-menu-pages::-webkit-scrollbar{display:none}
     .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
     .bar-menu-page img{width:100%;height:auto;display:block}
@@ -346,7 +349,7 @@
 
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
-    .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:auto;cursor:zoom-in}
+    .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:pan-x;cursor:zoom-in}
     .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
     .bar-menu-hint strong{font-weight:500;color:var(--navy)}
@@ -360,6 +363,7 @@
     .special-overlay{position:fixed;inset:0;z-index:140;background:rgba(2,7,13,.96);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 2.4s ease}
     .special-overlay.open{opacity:1;pointer-events:auto}.special-dialog{width:min(620px,100%);text-align:center}.special-speaker{font:11px Georgia,serif;letter-spacing:.28em;color:#d8bd79;margin-bottom:24px}.special-line{min-height:92px;font:20px/2 Georgia,'Yu Mincho',serif;letter-spacing:.06em;opacity:1;transform:translateX(0);filter:blur(0);transition:opacity .48s ease,transform .58s cubic-bezier(.22,.61,.36,1),filter .48s ease}.special-line.soft-enter{opacity:0;transform:translateY(8px);filter:blur(2px)}.special-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}.special-actions button{min-width:210px;min-height:50px;border:1px solid rgba(225,199,132,.55);background:transparent;color:#fff;letter-spacing:.1em}.special-actions button:hover{background:rgba(255,255,255,.08)}
     .special-table-screen{position:fixed;inset:0;z-index:135;background:linear-gradient(rgba(3,12,21,.92),rgba(3,12,21,.97)),url("blue_shell_casino_t.jpg") center/cover;color:#fff;overflow:auto;padding:90px 18px 30px}.special-table-inner{width:min(760px,100%);margin:auto;text-align:center}.special-table-inner h2{font:28px Georgia,serif;letter-spacing:.18em;color:#efd79a}.special-table-inner .rule{font-size:12px;line-height:1.9;color:rgba(255,255,255,.72)}.special-choice{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0}.special-choice button{min-height:120px;border:1px solid rgba(225,199,132,.5);background:rgba(9,34,53,.88);color:#fff;font:16px Georgia,serif;letter-spacing:.1em}.special-result{margin:22px 0;font:18px/1.9 Georgia,'Yu Mincho',serif}.joker-card{margin:18px auto;padding:24px;width:min(320px,90%);border:1px solid #d7bd79;background:#f4efe5;color:#0d2743;font:24px Georgia,serif;letter-spacing:.22em}.spectator-seat{margin-top:14px}.spectator-seat.hidden{display:none}
+    .special-loss-reward{width:min(520px,94vw);margin:8px auto 0;padding:18px 16px;border:1px solid rgba(225,199,132,.42);background:rgba(5,20,34,.74);text-align:center}.special-loss-hint-label{font:11px Georgia,serif;letter-spacing:.22em;color:#d8bd79;margin-bottom:10px}.special-loss-hint{font:14px/2 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.04em;color:#fff}.special-loss-joker{margin:18px auto 2px;padding-top:16px;border-top:1px solid rgba(225,199,132,.2)}.special-loss-joker img{display:block;width:min(210px,62vw);max-height:300px;object-fit:contain;margin:0 auto 10px}.special-loss-joker strong{display:block;font:13px Georgia,serif;letter-spacing:.18em;color:#efd79a}.belongings-main{display:flex;align-items:center;min-width:0}.belongings-item img.belonging-thumb{width:56px;height:76px;object-fit:contain;flex:0 0 auto;margin-right:10px}
     @media(max-width:520px){.special-line{font-size:17px}.special-choice{grid-template-columns:1fr}}
     .special-broadcast{position:fixed;inset:0;z-index:155;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,15,.58);backdrop-filter:blur(4px)}.special-broadcast.hidden{display:none}.special-broadcast-card{width:min(560px,94vw);background:rgba(5,20,34,.96);border:1px solid rgba(225,199,132,.55);box-shadow:0 24px 80px rgba(0,0,0,.48);padding:28px 22px;text-align:center;color:#fff}.special-broadcast-kicker{font:11px Georgia,serif;letter-spacing:.24em;color:#d8bd79}.special-broadcast-text{font:15px/2 Georgia,'Yu Mincho',serif;margin:18px 0;white-space:pre-line}.special-broadcast-count{font:24px Georgia,serif;color:#efd79a}.special-broadcast-actions{margin-top:18px}.special-broadcast-actions button{min-height:46px;padding:0 22px;border:1px solid rgba(225,199,132,.55);background:transparent;color:#fff;letter-spacing:.1em}.spectator-screen{position:fixed;inset:0;z-index:136;background:linear-gradient(rgba(2,10,18,.94),rgba(2,10,18,.98)),url("blue_shell_casino_t.jpg") center/cover;color:#fff;overflow:auto;padding:82px 18px 32px}.spectator-inner{width:min(760px,100%);margin:auto;text-align:center}.spectator-inner h2{font:26px Georgia,serif;letter-spacing:.18em;color:#efd79a}.spectator-status{font:13px/1.9;color:rgba(255,255,255,.72)}.spectator-stage{margin:24px auto;padding:22px;border:1px solid rgba(225,199,132,.3);background:rgba(4,18,31,.72);min-height:220px}.spectator-close{position:fixed;top:18px;right:18px;z-index:2;width:44px;height:44px;border:1px solid rgba(225,199,132,.45);border-radius:50%;background:rgba(3,15,27,.9);color:#fff;font-size:22px}
     /* spectator: show the same HIGH & LOW table design as the challenger */
@@ -380,9 +384,8 @@ body:has(#casinoGame:not(.hidden)) #casinoGame{padding-top:38px}
 /* SPECIAL TABLE中は横スクロール告知を挑戦者画面から完全に撤去 */
 body.special-table-playing .global-special-notice{display:none!important}
 body.special-table-playing #casinoGame{padding-top:0!important}
-.special-comment-overlay{position:fixed;z-index:160;left:0;right:0;top:50%;transform:translateY(-50%);height:132px;pointer-events:none;overflow:hidden;display:none}
-body.special-table-playing .special-comment-overlay,
-body.spectator-comments-active .special-comment-overlay{display:block}
+.special-comment-overlay{position:fixed;z-index:160;left:0;right:0;top:88px;height:132px;pointer-events:none;overflow:hidden;display:none}
+body.special-table-playing .special-comment-overlay{display:block}
 .special-comment-lane{position:absolute;left:0;right:0;height:40px;overflow:hidden}.special-comment-lane:nth-child(1){top:0}.special-comment-lane:nth-child(2){top:44px}.special-comment-lane:nth-child(3){top:88px}
 .special-flying-comment{position:absolute;left:100%;top:5px;white-space:nowrap;font-weight:700;font-size:16px;line-height:30px;color:#fff;text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.9);animation:specialCommentFly linear forwards;will-change:transform}
 @keyframes specialCommentFly{from{transform:translateX(0)}to{transform:translateX(calc(-100vw - 120%))}}
@@ -505,7 +508,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
         <div class="ticker-label">RESORT INFO</div>
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
-      <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 49,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + ENCORE</button></div>
+      <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 79,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + ENCORE</button></div>
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
@@ -783,7 +786,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
         <div class="casino-hub-grid">
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
-          <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内をご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
+          <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
         </div>
         <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
@@ -797,6 +800,8 @@ body.spectator-comments-active .special-comment-overlay{display:block}
           <img id="casinoGalleryImage" src="" alt="カジノ館内">
           <div class="casino-gallery-shade"></div>
           <div id="casinoGalleryEmpty" class="casino-gallery-empty">館内写真を準備しています。<br><small>casino.gallery01.jpg から連番で読み込みます。</small></div>
+          <button id="casinoGalleryPrev" class="casino-gallery-nav casino-gallery-prev" type="button" aria-label="前の写真">‹</button>
+          <button id="casinoGalleryNext" class="casino-gallery-nav casino-gallery-next" type="button" aria-label="次の写真">›</button>
           <div class="casino-gallery-caption">
             <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
             <span id="casinoGalleryCounter">00 / 00</span>
@@ -926,7 +931,8 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
-      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity}
+      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity},
+      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
@@ -1297,7 +1303,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     const specialBroadcast=document.getElementById('specialBroadcast'),specialBroadcastText=document.getElementById('specialBroadcastText'),specialBroadcastCount=document.getElementById('specialBroadcastCount'),specialBroadcastClose=document.getElementById('specialBroadcastClose');
     const spectatorScreen=document.getElementById('spectatorScreen'),spectatorStatus=document.getElementById('spectatorStatus'),spectatorStage=document.getElementById('spectatorStage'),spectatorClose=document.getElementById('spectatorClose'),spectatorBack=document.getElementById('spectatorBack'),casinoSpectatorMenu=document.getElementById('casinoSpectatorMenu');
     let activeSpectatorChallenger='';
-    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-comments-active');specialCommentOverlay?.setAttribute('aria-hidden','true');if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
+    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     async function currentSpecialIdentity(){
       const id=await resolveSpecialPlayerId();
@@ -1415,39 +1421,9 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
     let specialBroadcastSessionId='',specialBroadcastDismissedSessionId='';
     const specialCommentOverlay=document.getElementById('specialCommentOverlay'),specialCommentLanes=[...document.querySelectorAll('.special-comment-lane')],spectatorCommentInput=document.getElementById('spectatorCommentInput'),spectatorCommentSend=document.getElementById('spectatorCommentSend');
-    const shownSpecialCommentIds=new Set();
-    function specialCommentId(){return window.crypto?.randomUUID?window.crypto.randomUUID():`c-${Date.now()}-${Math.random().toString(36).slice(2)}`}
-    function flySpecialComment(text,name='',commentId=''){
-      if(!text||!specialCommentLanes.length)return;
-      if(commentId&&shownSpecialCommentIds.has(commentId))return;
-      if(commentId){shownSpecialCommentIds.add(commentId);setTimeout(()=>shownSpecialCommentIds.delete(commentId),20000)}
-      const lane=specialCommentLanes[specialCommentLaneCursor++%3],el=document.createElement('div');
-      el.className='special-flying-comment';
-      el.textContent=name?`${name}：${text}`:text;
-      // 以前より少し速く。短文は約5秒、長文でも8秒前後。
-      el.style.animationDuration=`${Math.max(4.8,Math.min(8.2,5.0+el.textContent.length*.045))}s`;
-      lane.appendChild(el);
-      el.addEventListener('animationend',()=>el.remove());
-    }
-    function connectChallengerComments(sessionId){
-      if(!window.supabaseClientSpecial||!sessionId)return;
-      if(challengerCommentChannel)window.supabaseClientSpecial.removeChannel(challengerCommentChannel);
-      challengerCommentChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`)
-        .on('broadcast',{event:'gallery-comment'},({payload})=>flySpecialComment(
-          String(payload?.text||'').slice(0,60),
-          String(payload?.name||'GALLERY').slice(0,24),
-          String(payload?.comment_id||'')
-        )).subscribe();
-    }
-    async function sendSpectatorComment(){
-      const text=String(spectatorCommentInput?.value||'').trim().slice(0,60);
-      if(!text||!activeSpecialSessionId||!spectatorChannel)return;
-      const payload={text,name:storedGuestName||'GALLERY',comment_id:specialCommentId()};
-      spectatorCommentInput.value='';
-      // 送信者自身の観戦画面にも、その場ですぐ流す。
-      flySpecialComment(payload.text,payload.name,payload.comment_id);
-      await spectatorChannel.send({type:'broadcast',event:'gallery-comment',payload});
-    }
+    function flySpecialComment(text,name=''){if(!text||!specialCommentLanes.length)return;const lane=specialCommentLanes[specialCommentLaneCursor++%3],el=document.createElement('div');el.className='special-flying-comment';el.textContent=name?`${name}：${text}`:text;el.style.animationDuration=`${Math.max(7,Math.min(13,8+el.textContent.length*.08))}s`;lane.appendChild(el);el.addEventListener('animationend',()=>el.remove())}
+    function connectChallengerComments(sessionId){if(!window.supabaseClientSpecial||!sessionId)return;if(challengerCommentChannel)window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('broadcast',{event:'gallery-comment'},({payload})=>flySpecialComment(String(payload?.text||'').slice(0,60),String(payload?.name||'GALLERY').slice(0,24))).subscribe()}
+    async function sendSpectatorComment(){const text=String(spectatorCommentInput?.value||'').trim().slice(0,60);if(!text||!activeSpecialSessionId||!spectatorChannel)return;spectatorCommentInput.value='';await spectatorChannel.send({type:'broadcast',event:'gallery-comment',payload:{text,name:storedGuestName||'GALLERY'}})}
     if(spectatorCommentSend)spectatorCommentSend.onclick=sendSpectatorComment;if(spectatorCommentInput)spectatorCommentInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendSpectatorComment()}});
     function showSpecialBroadcast(row){
       const m=row?.metadata||{};
@@ -1487,7 +1463,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       if(state.game==='blackjack'){
         spectatorStage.innerHTML=`${matchup}<div class="special-result">BLACKJACK<br><br>${state.challenger||'CHALLENGER'}　${state.player_value??''}<br>${(state.player_cards||[]).map(spectatorCard).join('')}<br><br>運のみぞ知る<br><small>HOUSE</small><br><span class="playing-card back"></span>${state.finished&&state.dealer_public_cards?(state.dealer_public_cards||[]).map(spectatorCard).join(''):''}<br><br>${state.message||''}</div>`;
       }else if(state.game==='hilo'||state.game==='hilo-serious'){
-        spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table"><div class="hand-zone"><h3>運のみぞ知る</h3><div class="cards-hand"><span class="playing-card back"></span></div></div><div class="casino-center"><div class="casino-status">${state.message||'挑戦者の選択をお待ちください。'}</div><div class="casino-bet-indicator">ROUND ${state.round||1}　｜　${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る</div></div><div class="hand-zone"><h3>CHALLENGER CARD</h3><div class="hilo-versus">HIGH OR LOW ?</div><div class="cards-hand">${state.visible_card?spectatorCard(state.visible_card):'<span class="playing-card back"></span>'}</div></div></div>`;
+        spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table"><div class="hand-zone"><h3>CURRENT CARD</h3><div class="cards-hand"><span class="playing-card back"></span></div></div><div class="casino-center"><div class="casino-status">${state.message||'挑戦者の選択をお待ちください。'}</div><div class="casino-bet-indicator">ROUND ${state.round||1}　｜　${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る</div></div><div class="hand-zone"><h3>NEXT CARD</h3><div class="hilo-versus">HIGH OR LOW ?</div><div class="cards-hand">${state.visible_card?spectatorCard(state.visible_card):''}</div></div></div>`;
       }else if(state.phase==='countdown'||state.starts_at){
         const left=Math.max(0,Math.ceil((new Date(state.starts_at).getTime()-Date.now())/1000));
         spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table spectator-waiting-table"><div class="hand-zone"><h3>CURRENT CARD</h3><div class="cards-hand"></div></div><div class="casino-center spectator-waiting-center"><div class="casino-status">カードはまだ配られていません</div><div class="casino-bet-indicator" data-spectator-countdown>開卓まで ${left} 秒</div></div><div class="hand-zone"><h3>NEXT CARD</h3><div class="hilo-versus">HIGH OR LOW ?</div><div class="cards-hand"></div></div></div>`;
@@ -1501,9 +1477,8 @@ body.spectator-comments-active .special-comment-overlay{display:block}
         const unlockSpecialBgm=async()=>{try{await specialBgm.play()}catch{}};
         spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
       }
-      spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');document.body.classList.add('spectator-comments-active');specialCommentOverlay?.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';renderSpectatorState({...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'});if(p.new.status==='finished')refreshCasinoSpectatorMenu()}).on('broadcast',{event:'gallery-comment'},({payload})=>{
-        const t=String(payload?.text||'').slice(0,60),n=String(payload?.name||'GALLERY').slice(0,24),cid=String(payload?.comment_id||'');
-        if(t)flySpecialComment(t,n,cid);
+      spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';renderSpectatorState({...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'});if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{renderSpectatorState({...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'});if(p.new.status==='finished')refreshCasinoSpectatorMenu()}).on('broadcast',{event:'gallery-comment'},({payload})=>{
+        const t=String(payload?.text||'').slice(0,60),n=String(payload?.name||'GALLERY').slice(0,24);
         const note=document.querySelector('.spectator-comment-note');
         if(t&&note)note.textContent=`${n}：${t}`;
       }).subscribe()}
@@ -1671,7 +1646,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&barMenuLightbox.classList.contains('open'))closeBarMenuLightbox()});
 
 
-    // SPECIAL TABLE / 20,000 CHIP EVENT
+    // SPECIAL TABLE / 80,000 CHIP EVENT
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule');
     const emilyOpeners=[
@@ -1791,6 +1766,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
         hiloStatus.textContent=left?`観戦者をお待ちください。開卓まで ${left} 秒`:'SPECIAL TABLE OPEN';
         if(left<=0){
           clearInterval(specialCountdownTimer);
+          pushSpecialState({challenger:storedGuestName,game:'hilo',message:'SPECIAL TABLE 開卓'},'open');
           startSpecialHilo();
         }
       };
@@ -1827,18 +1803,79 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       specialTableScreen.classList.remove('hidden');specialTableScreen.setAttribute('aria-hidden','false');specialGameChoice.classList.remove('hidden');specialPlayArea.innerHTML='';
       document.querySelectorAll('[data-special-game]').forEach(b=>{b.classList.toggle('hidden',b.dataset.specialGame!=='hilo')});
       specialTableRule.textContent='運のみぞ知るとの勝負は HIGH & LOW のみです。';
-      const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　${specialSelectedGame?'選択済み':'ゲームをお選びください。'}`;if(!left){clearInterval(specialCountdownTimer);if(specialSelectedGame){launchSelectedSpecialGame()}else{specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　ゲームをお選びください。`}}};
+      const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　${specialSelectedGame?'選択済み':'ゲームをお選びください。'}`;if(!left){clearInterval(specialCountdownTimer);if(specialSelectedGame){pushSpecialState({challenger:storedGuestName,message:'SPECIAL TABLE 開卓'},'open');launchSelectedSpecialGame()}else{specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　ゲームをお選びください。`}}};
       updateChallengerCountdown();clearInterval(specialCountdownTimer);specialCountdownTimer=setInterval(updateChallengerCountdown,250);
     }
     async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
     }
-    async function grantSpecialLossReward(){
-      if(Math.random()<0.45){
-        try{const playerId=await sprPlayerId();if(playerId&&window.supabaseClientSpecial){const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_joker',{p_player_id:playerId});if(error)throw error;if(data===true){const b=loadBelongings();b.jokerCard=Math.max(0,Number(b.jokerCard||0))+1;localStorage.setItem(belongingsKey,JSON.stringify(b));return '<div class="joker-card">JOKER CARD</div><p>「……あら。それを引くのね。」</p><p>「大切になさって。使い道は――いずれ分かるでしょう。」</p>'}}}catch(e){console.warn('joker claim sync',e)}
+    const emilyLossHints=[
+      '夜の一杯が、部屋に何かを招くこともある。グラスを空にしたなら、すぐに眠らず……少しだけ、部屋で待ってみるといいわ。',
+      '太陽と情熱の国、その味を楽しんだ夜には。部屋へ戻ったら、“閉ざされた扉の向こう”を覗いてみるといい。',
+      '真実は、いつだって目立つ場所にあるとは限らない。一冊の赤い本が、何かを知っているわ。',
+      '禁じられたものに触れても、海は二度までは見逃してくれる。けれど――三度目はない。その時、海は貴方を逃してはくれない。'
+    ];
+    const emilyHintEventType='emily-loss-hint';
+    const emilyHintFallbackKey='spr-emily-loss-hint-sequence';
+    async function claimNextEmilyHintNumber(){
+      const c=window.supabaseClientSpecial;
+      const playerId=await resolveSpecialPlayerId().catch(()=>null);
+      if(c&&playerId){
+        try{
+          const {data:resetRows,error:resetError}=await c.from('resort_announcements').select('created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1);
+          if(resetError)throw resetError;
+          const resetAt=resetRows&&resetRows[0]?.created_at?resetRows[0].created_at:null;
+          const insertRow={announcement_type:emilyHintEventType,message:'EMILY LOSS HINT',created_by:playerId,expires_at:'2099-12-31T23:59:59+00:00',metadata:{challenger:storedGuestName,session_id:activeSpecialSessionId||null}};
+          const {data:created,error:insertError}=await c.from('resort_announcements').insert(insertRow).select('id,created_at').single();
+          if(insertError)throw insertError;
+          let q=c.from('resort_announcements').select('id,created_at').eq('announcement_type',emilyHintEventType).order('created_at',{ascending:true});
+          if(resetAt)q=q.gt('created_at',resetAt);
+          const {data:rows,error:listError}=await q;
+          if(listError)throw listError;
+          const idx=(rows||[]).findIndex(r=>String(r.id)===String(created?.id));
+          if(idx>=0)return (idx%4)+1;
+        }catch(e){console.warn('emily hint sequence sync',e)}
       }
-      const hints=['灯台の合図は、運行情報が整ってから。','島の案内には、昼と夜で意味の変わる場所があるようです。','カジノの奥には、誰にでも開くわけではない扉があります。','飲み物が残すものは、味だけとは限りません。'];return `<p>「残念。幸運は、ここまでだったようね。」</p><p>「でも――手ぶらでお帰しするのも、少し味気ないでしょう？」</p><div class="joker-card" style="font-size:15px">HINT<br><small>${hints[Math.floor(Math.random()*hints.length)]}</small></div>`
+      const prev=Math.max(0,Number(localStorage.getItem(emilyHintFallbackKey)||0));
+      const next=(prev%4)+1;
+      localStorage.setItem(emilyHintFallbackKey,String(next));
+      return next;
+    }
+    async function tryGrantRandomJoker(){
+      // 既存仕様の45%抽選を維持。ヒントは必ず出し、JOKERは追加報酬として独立抽選する。
+      if(Math.random()>=0.45)return false;
+      try{
+        const playerId=await sprPlayerId();
+        if(playerId&&window.supabaseClientSpecial){
+          const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_joker',{p_player_id:playerId});
+          if(error)throw error;
+          if(data===true){
+            const b=loadBelongings();b.jokerCard=Math.min(4,Math.max(0,Number(b.jokerCard||0))+1);localStorage.setItem(belongingsKey,JSON.stringify(b));
+            if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+            return true;
+          }
+          return false;
+        }
+      }catch(e){console.warn('joker claim sync',e)}
+      const b=loadBelongings(),current=Math.max(0,Number(b.jokerCard||0));
+      if(current>=4)return false;
+      b.jokerCard=current+1;saveBelongings(b);if(typeof renderRoomBelongings==='function')renderRoomBelongings();return true;
+    }
+    async function grantSpecialLossReward(){
+      const hintNo=await claimNextEmilyHintNumber();
+      const hint=emilyLossHints[hintNo-1]||emilyLossHints[0];
+      const jokerGranted=await tryGrantRandomJoker();
+      return {hintNo,hint,jokerGranted};
+    }
+    function showSpecialLossReward(reward){
+      const circled=['①','②','③','④'][Math.max(0,Math.min(3,Number(reward?.hintNo||1)-1))];
+      specialActions.innerHTML=`<div class="special-loss-reward"><div class="special-loss-hint-label">HINT ${circled}</div><div class="special-loss-hint">「${reward?.hint||''}」</div>${reward?.jokerGranted?'<div class="special-loss-joker"><img src="casino.joker.PNG" alt="JOKER CARD" onerror="this.style.display=\'none\'"><strong>JOKER CARDを手に入れました。</strong></div>':''}</div><button id="specialLossRewardClose" type="button">受け取る</button>`;
+      return new Promise(resolve=>{
+        const btn=document.getElementById('specialLossRewardClose');
+        if(!btn){resolve();return}
+        btn.onclick=()=>resolve();
+      });
     }
     function specialNormalTableSetup(game){
       hideCasinoScreens();casinoLevel=game;
@@ -1878,6 +1915,15 @@ body.spectator-comments-active .special-comment-overlay{display:block}
         specialActions.innerHTML='';specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
         await sleep(650);await specialSay('運のみぞ知る',lines[0],1500);await specialSay('運のみぞ知る',lines[1],1900);
         specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
+      }else{
+        specialActions.innerHTML='';specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
+        await sleep(650);
+        await specialSay('運のみぞ知る','───残念。幸運は、ここまでだったようね。',1500);
+        await specialSay('運のみぞ知る','でも――手ぶらでお帰しするのも、少し味気ないでしょう？',1700);
+        const reward=await grantSpecialLossReward();
+        specialSpeaker.textContent='運のみぞ知る';specialLine.textContent='';
+        await showSpecialLossReward(reward);
+        specialActions.innerHTML='';specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       }
       specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null;}
       refreshCasinoSpectatorMenu();
@@ -1902,12 +1948,12 @@ body.spectator-comments-active .special-comment-overlay{display:block}
           hiloCurrentCard.innerHTML=cardHtml(a);hiloNextCard.innerHTML='<div class="playing-card back"></div>';
           hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 本気のエミリー`;
           hiloStatus.textContent=`ROUND ${round}　あなたのカードは ${a.rank}。HIGH？ LOW？`;
-          pushSpecialState({game:'hilo-serious',phase:'playing',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});
+          pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});
           const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.70:.30);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 本気のエミリー`;hiloStatus.textContent=win?'YOU WIN':'本気のエミリー WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'本気のエミリーがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};
           hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low');return;
         }
-        // 50,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
-        const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',phase:'playing',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')
+        // 80,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
+        const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')
       };play()
     }
     document.querySelectorAll('[data-special-game]').forEach(b=>b.addEventListener('click',()=>markSpecialChoice(b.dataset.specialGame)));
@@ -2005,7 +2051,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     function casinoSave(){
       casinoChips=Math.max(0,Math.round(Number(casinoChips)||0));
       queueCasinoChipSync(casinoChips);
-      if(previousCasinoChips<50000&&casinoChips>=50000&&!localStorage.getItem(emilyAnnouncedKey)){
+      if(previousCasinoChips<80000&&casinoChips>=80000&&!localStorage.getItem(emilyAnnouncedKey)){
         localStorage.setItem(emilyAnnouncedKey,'1');setRemoteFlag('emily-special-announced',true).catch(e=>console.warn('Emily flag sync',e));
         seriousEmilyMode=false;
         triggerEmilyInvitation();
@@ -2038,9 +2084,9 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');hideSpecialBroadcast('reset');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';syncCasinoBalances();normalResortAnnouncement();
       if(!remoteSaved){alert('CHIPは画面上で変更されましたが、Supabaseへの保存を確認できませんでした。通信またはSupabaseの権限設定を確認してください。');return}
-      alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。Supabase保存済みです。':'通常エミリー確認用：49,900 CHIPに設定しました。Supabase保存済みです。');
+      alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。Supabase保存済みです。':'通常エミリー確認用：79,900 CHIPに設定しました。Supabase保存済みです。');
     }
-    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('通常エミリー確認用に49,900 CHIPへリセットしますか？'))await resetEmilyTest(49900,false)});
+    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('通常エミリー確認用に79,900 CHIPへリセットしますか？'))await resetEmilyTest(79900,false)});
     if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(confirm('本気のエミリー確認用に999,900 CHIPへリセットし、本日のアンコール喫食フラグも付与しますか？'))await resetEmilyTest(999900,true)});
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
@@ -2171,8 +2217,10 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
     const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
+    const casinoGalleryPrev=document.getElementById('casinoGalleryPrev');
+    const casinoGalleryNext=document.getElementById('casinoGalleryNext');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
-    let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0,casinoGalleryTouchStartY=0,casinoGalleryTouchLock='';
+    let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
 
     function probeCasinoGalleryFile(src){
       return new Promise(resolve=>{
@@ -2186,13 +2234,9 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       const found=[];
       // 最大30枚。01から連続して存在する画像を読み込む。
       for(let i=1;i<=30;i++){
-        const base=`casino.gallery${String(i).padStart(2,'0')}`;
-        let src='';
-        for(const ext of ['.jpg','.JPG']){
-          const candidate=base+ext;
-          if(await probeCasinoGalleryFile(candidate)){src=candidate;break}
-        }
-        if(!src)break;
+        const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
+        const ok=await probeCasinoGalleryFile(src);
+        if(!ok)break;
         found.push(src);
       }
       casinoGalleryFiles=found;
@@ -2204,6 +2248,8 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       const has=total>0;
       casinoGalleryEmpty.classList.toggle('hidden',has);
       casinoGalleryImage.classList.remove('ready');
+      casinoGalleryPrev.disabled=!has||total<2;
+      casinoGalleryNext.disabled=!has||total<2;
       casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'00 / 00';
       casinoGalleryDots.replaceChildren();
       if(!has){
@@ -2230,14 +2276,12 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       casinoGalleryIndex=(casinoGalleryIndex+amount+casinoGalleryFiles.length)%casinoGalleryFiles.length;
       renderCasinoGallery();
     }
-    casinoGalleryStage.addEventListener('touchstart',e=>{
-      casinoGalleryTouchStart=e.touches[0].clientX;
-      casinoGalleryTouchStartY=e.touches[0].clientY;
-    },{passive:true});
+    casinoGalleryPrev.addEventListener('click',()=>stepCasinoGallery(-1));
+    casinoGalleryNext.addEventListener('click',()=>stepCasinoGallery(1));
+    casinoGalleryStage.addEventListener('touchstart',e=>{casinoGalleryTouchStart=e.touches[0].clientX},{passive:true});
     casinoGalleryStage.addEventListener('touchend',e=>{
-      const dx=e.changedTouches[0].clientX-casinoGalleryTouchStart;
-      const dy=e.changedTouches[0].clientY-casinoGalleryTouchStartY;
-      if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)stepCasinoGallery(dx<0?1:-1);
+      const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
+      if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
     },{passive:true});
     casinoGalleryMenu.addEventListener('click',async()=>{
       showCasinoLevel('gallery');
@@ -2326,7 +2370,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
       301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',306:'オーシャンラグーン',307:'オーシャンラグーン',308:'オーシャンラグーン',309:'オーシャンラグーン',310:'オーシャンラグーン',
       401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
     };
-    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sceneTouchStartY=0, sceneTouchLock='', sheetTouchStart=0;
+    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
     const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), roomError=document.getElementById('roomError');
     const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
     const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto'), roomImageError=document.getElementById('roomImageError');
@@ -2424,11 +2468,9 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     function setExploreMessage(text){roomExploreResult.textContent=text;roomExploreResult.classList.remove('hidden')}
     function updateRoomContextAction(){
       if(!roomContextAction)return;
-      const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.toggle('hidden',selectedRoomScene!=='phone');
+      const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.remove('hidden');
       roomContextAction.classList.add('hidden');roomExploreResult.classList.add('hidden');roomContextAction.onclick=null;
-      if(selectedRoomScene==='phone'){
-        roomContextAction.textContent='ルームサービスを頼む';roomContextAction.classList.remove('hidden');roomContextAction.onclick=openRoomService;
-      }else if(selectedRoomScene==='closet'){
+      if(selectedRoomScene==='closet'){
         const opened=localStorage.getItem(closetDoorKey())==='1';
         const canEnter=opened||hernandoBarGlobalOpen;
         roomContextAction.textContent=canEnter?'クローゼットの奥に入る':'クローゼットを調べる';roomContextAction.classList.remove('hidden');
@@ -2484,16 +2526,8 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
     document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
     roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
-    roomScene.addEventListener('touchstart',event=>{
-      sceneTouchStart=event.touches[0].clientX;
-      sceneTouchStartY=event.touches[0].clientY;
-    },{passive:true});
-    roomScene.addEventListener('touchend',event=>{
-      if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;
-      const dx=event.changedTouches[0].clientX-sceneTouchStart;
-      const dy=event.changedTouches[0].clientY-sceneTouchStartY;
-      if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.15)stepRoomScene(dx<0?1:-1);
-    },{passive:true});
+    roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
+    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
     roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
@@ -2560,7 +2594,7 @@ body.spectator-comments-active .special-comment-overlay{display:block}
     }
     function renderRoomBelongings(){
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
-      Object.entries(belongingsCatalog).forEach(([key,item])=>{const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;if(!count)return;hasAny=true;const row=document.createElement('div');row.className='belongings-item';const info=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label;const detail=document.createElement('small');detail.textContent=item.detail;info.append(name,detail);const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(info,qty);roomBelongingsList.append(row)});
+      Object.entries(belongingsCatalog).forEach(([key,item])=>{const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;if(!count)return;hasAny=true;const row=document.createElement('div');row.className='belongings-item';const main=document.createElement('div');main.className='belongings-main';if(item.image){const thumb=document.createElement('img');thumb.className='belonging-thumb';thumb.src=item.image;thumb.alt=item.label;thumb.onerror=()=>thumb.remove();main.append(thumb)}const info=document.createElement('div');const name=document.createElement('strong');name.textContent=item.label;const detail=document.createElement('small');detail.textContent=item.detail;info.append(name,detail);main.append(info);const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(main,qty);roomBelongingsList.append(row)});
       if(!hasAny){const empty=document.createElement('div');empty.className='belongings-empty';empty.textContent='現在、所持品はありません。カジノの景品交換所などで手に入れた品物がここに表示されます。';roomBelongingsList.append(empty)}
     }
     function openRoomService(){
@@ -2643,18 +2677,11 @@ body.spectator-comments-active .special-comment-overlay{display:block}
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
-      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0,startY=0,touchLock='';
+      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
       const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
       function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
-      gallery.addEventListener('touchstart',e=>{
-        startX=e.touches[0].clientX;
-        startY=e.touches[0].clientY;
-      },{passive:true});
-      gallery.addEventListener('touchend',e=>{
-        const dx=e.changedTouches[0].clientX-startX;
-        const dy=e.changedTouches[0].clientY-startY;
-        if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.15)show(index+(dx<0?1:-1));
-      },{passive:true});
+      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
+      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
       galleries[name]=show;
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
