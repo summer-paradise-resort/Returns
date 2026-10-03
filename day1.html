@@ -154,9 +154,6 @@
     .casino-gallery-shade{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(2,11,19,.05),transparent 58%,rgba(2,11,19,.48))}
     .casino-gallery-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:rgba(255,255,255,.72);font-size:12px;line-height:2;letter-spacing:.05em}
     .casino-gallery-empty.hidden{display:none}
-    .casino-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:58px;border:1px solid rgba(240,216,157,.44);background:rgba(2,15,26,.54);color:#f0d89d;font-size:28px;line-height:1;backdrop-filter:blur(6px);z-index:2}
-    .casino-gallery-prev{left:10px}.casino-gallery-next{right:10px}
-    .casino-gallery-nav:disabled{opacity:.24}
     .casino-gallery-caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:12px;color:#fff}
     .casino-gallery-caption strong{font:15px Georgia,serif;letter-spacing:.16em;font-weight:400;color:#f0d89d}
     .casino-gallery-caption span{font:10px Georgia,serif;letter-spacing:.14em;color:rgba(255,255,255,.74)}
@@ -800,8 +797,6 @@ body.special-table-playing .special-comment-overlay{display:block}
           <img id="casinoGalleryImage" src="" alt="カジノ館内">
           <div class="casino-gallery-shade"></div>
           <div id="casinoGalleryEmpty" class="casino-gallery-empty">館内写真を準備しています。<br><small>casino.gallery01.jpg から連番で読み込みます。</small></div>
-          <button id="casinoGalleryPrev" class="casino-gallery-nav casino-gallery-prev" type="button" aria-label="前の写真">‹</button>
-          <button id="casinoGalleryNext" class="casino-gallery-nav casino-gallery-next" type="button" aria-label="次の写真">›</button>
           <div class="casino-gallery-caption">
             <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
             <span id="casinoGalleryCounter">00 / 00</span>
@@ -2217,8 +2212,6 @@ body.special-table-playing .special-comment-overlay{display:block}
     const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
     const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
-    const casinoGalleryPrev=document.getElementById('casinoGalleryPrev');
-    const casinoGalleryNext=document.getElementById('casinoGalleryNext');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
 
@@ -2248,8 +2241,6 @@ body.special-table-playing .special-comment-overlay{display:block}
       const has=total>0;
       casinoGalleryEmpty.classList.toggle('hidden',has);
       casinoGalleryImage.classList.remove('ready');
-      casinoGalleryPrev.disabled=!has||total<2;
-      casinoGalleryNext.disabled=!has||total<2;
       casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'00 / 00';
       casinoGalleryDots.replaceChildren();
       if(!has){
@@ -2276,8 +2267,6 @@ body.special-table-playing .special-comment-overlay{display:block}
       casinoGalleryIndex=(casinoGalleryIndex+amount+casinoGalleryFiles.length)%casinoGalleryFiles.length;
       renderCasinoGallery();
     }
-    casinoGalleryPrev.addEventListener('click',()=>stepCasinoGallery(-1));
-    casinoGalleryNext.addEventListener('click',()=>stepCasinoGallery(1));
     casinoGalleryStage.addEventListener('touchstart',e=>{casinoGalleryTouchStart=e.touches[0].clientX},{passive:true});
     casinoGalleryStage.addEventListener('touchend',e=>{
       const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
