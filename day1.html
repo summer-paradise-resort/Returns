@@ -547,6 +547,7 @@ body.special-table-playing .special-comment-overlay{display:block}
               </div>
               <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="room-actions">
+                <button id="roomServiceOpen" class="room-service-open" type="button"><span>ルームサービス</span></button>
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
                 <div id="roomExploreResult" class="room-explore-result hidden" aria-live="polite"></div>
@@ -2130,7 +2131,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     document.getElementById('chatOpenButton').addEventListener('click',openChatSheet);
     document.getElementById('fallbackChatOpen').addEventListener('click',openChatSheet);
     document.getElementById('chatCloseButton').addEventListener('click',closeChatSheet);
-    document.getElementById('roomServiceOpen')?.addEventListener('click',openRoomService);
+    document.getElementById('roomServiceOpen').addEventListener('click',openRoomService);
     document.getElementById('fallbackRoomServiceOpen').addEventListener('click',openRoomService);
     document.getElementById('roomServiceClose').addEventListener('click',closeRoomService);
     const collectionPreview=document.getElementById('collectionPreview'),
@@ -2260,7 +2261,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;coasterZoomModalLegacy&quot; class=&quot;cz&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;button id=&quot;coasterZoomCloseLegacy&quot; class=&quot;x&quot; type=&quot;button&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImageLegacy&quot; alt=&quot;&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
   const VENUE=&#x27;The Pearl Terrace&#x27;,COASTERS=[&#x27;coaster00.PNG&#x27;,&#x27;coaster01.PNG&#x27;,&#x27;coaster02.PNG&#x27;,&#x27;coaster03.PNG&#x27;,&#x27;coaster04.PNG&#x27;,&#x27;coaster05.PNG&#x27;,&#x27;coaster06.PNG&#x27;,&#x27;coaster07.PNG&#x27;,&#x27;coaster08.PNG&#x27;,&#x27;coaster09.PNG&#x27;,&#x27;coaster10.PNG&#x27;,&#x27;coaster11.PNG&#x27;,&#x27;coaster12.PNG&#x27;,&#x27;coaster13.PNG&#x27;,&#x27;coaster14.PNG&#x27;,&#x27;coaster15.PNG&#x27;,&#x27;coaster16.PNG&#x27;,&#x27;coaster17.PNG&#x27;,&#x27;coaster18.PNG&#x27;,&#x27;coaster19.PNG&#x27;,&#x27;coaster20.PNG&#x27;,&#x27;coaster21.PNG&#x27;,&#x27;coaster22.PNG&#x27;,&#x27;coaster23.PNG&#x27;,&#x27;coaster24.PNG&#x27;,&#x27;coaster25.PNG&#x27;,&#x27;coaster26.PNG&#x27;,&#x27;coaster27.PNG&#x27;,&#x27;coaster28.PNG&#x27;,&#x27;coaster29.PNG&#x27;,&#x27;coaster30.PNG&#x27;,&#x27;coaster31.PNG&#x27;,&#x27;coaster32.PNG&#x27;,&#x27;coaster33.PNG&#x27;,&#x27;coaster34.PNG&#x27;,&#x27;coaster35.PNG&#x27;,&#x27;coaster36.PNG&#x27;,&#x27;coaster37.PNG&#x27;,&#x27;coaster38.PNG&#x27;,&#x27;coaster39.PNG&#x27;,&#x27;coaster40.PNG&#x27;,&#x27;coaster41.PNG&#x27;,&#x27;coaster42.PNG&#x27;,&#x27;coaster43.PNG&#x27;,&#x27;coaster44.PNG&#x27;,&#x27;coaster45.PNG&#x27;,&#x27;coaster46.PNG&#x27;,&#x27;coaster47.PNG&#x27;,&#x27;coaster48.PNG&#x27;,&#x27;coaster49.PNG&#x27;,&#x27;coaster50.PNG&#x27;,&#x27;coaster51.PNG&#x27;,&#x27;coaster52.PNG&#x27;];
@@ -2442,7 +2443,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
 &lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div id=&quot;coasterZoomModal&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
+&lt;div id=&quot;coasterZoomModalLegacy&quot; class=&quot;cz&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;button id=&quot;coasterZoomCloseLegacy&quot; class=&quot;x&quot; type=&quot;button&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImageLegacy&quot; alt=&quot;&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
   const VENUE=&#x27;Marine Bloom Cafe&#x27;,COASTERS=[&#x27;coaster53.PNG&#x27;,&#x27;coaster54.PNG&#x27;,&#x27;coaster55.PNG&#x27;,&#x27;coaster56.PNG&#x27;,&#x27;coaster57.PNG&#x27;,&#x27;coaster58.PNG&#x27;,&#x27;coaster59.PNG&#x27;,&#x27;coaster60.PNG&#x27;,&#x27;coaster61.PNG&#x27;,&#x27;coaster62.PNG&#x27;,&#x27;coaster63.PNG&#x27;,&#x27;coaster64.PNG&#x27;,&#x27;coaster65.PNG&#x27;,&#x27;coaster66.PNG&#x27;,&#x27;coaster67.PNG&#x27;,&#x27;coaster68.PNG&#x27;,&#x27;coaster69.PNG&#x27;,&#x27;coaster70.PNG&#x27;,&#x27;coaster71.PNG&#x27;,&#x27;coaster72.PNG&#x27;,&#x27;coaster73.PNG&#x27;,&#x27;coaster74.PNG&#x27;,&#x27;coaster75.PNG&#x27;,&#x27;coaster76.PNG&#x27;,&#x27;coaster77.PNG&#x27;,&#x27;coaster78.PNG&#x27;,&#x27;coaster79.PNG&#x27;,&#x27;coaster80.PNG&#x27;,&#x27;coaster81.PNG&#x27;,&#x27;coaster82.PNG&#x27;,&#x27;coaster83.PNG&#x27;,&#x27;coaster84.PNG&#x27;,&#x27;coaster85.PNG&#x27;,&#x27;coaster86.PNG&#x27;,&#x27;coaster87.PNG&#x27;,&#x27;coaster88.PNG&#x27;];
