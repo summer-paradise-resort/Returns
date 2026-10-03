@@ -719,6 +719,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
       <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
     </div></div><div class="dots" data-dots="explore"></div>
     <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel explore-destination-panel"><h3>行き先を選ぶ</h3><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div></div>
+    <audio id="exploreBgm" src="explore_bgm.mp3" loop preload="auto"></audio>
 
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
@@ -1343,8 +1344,8 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
     scheduleHeroBackgroundRefresh();
@@ -2312,6 +2313,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
       }catch(e){console.warn('prize exchange sync',e);renderPrizeCounter('景品交換を同期できませんでした。もう一度お試しください。')}
     }
     const topBgmToggle=document.getElementById('topBgmToggle');
+    const exploreBgm=document.getElementById('exploreBgm');
     const storyMenu=document.getElementById('storyMenu');
     function renderTopBgmToggle(){const on=localStorage.getItem('spr-bgm-enabled')!=='off';topBgmToggle.classList.toggle('off',!on);topBgmToggle.setAttribute('aria-pressed',String(on));topBgmToggle.title=on?'BGM ON':'BGM OFF'}
     topBgmToggle.addEventListener('click',()=>{const next=localStorage.getItem('spr-bgm-enabled')==='off';localStorage.setItem('spr-bgm-enabled',next?'on':'off');renderTopBgmToggle();if(next)startResortMusic();else pauseResortMusic()});
@@ -2319,10 +2321,16 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     document.getElementById('storyMenuClose').addEventListener('click',()=>{storyMenu.classList.remove('open');storyMenu.setAttribute('aria-hidden','true')});
     storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
     renderTopBgmToggle();
-    function playAudio(audio,volume){if(localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
-    function startResortMusic(){casinoBgm.pause()}
-    function pauseResortMusic(){casinoBgm.pause();const special=document.getElementById('specialBgm');if(special)special.pause()}
-    function startCasinoMusic(){playAudio(casinoBgm,.38)}
+    function playAudio(audio,volume){if(!audio||localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
+    function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();playAudio(exploreBgm,.34)}
+    function pauseExploreMusic(){if(exploreBgm)exploreBgm.pause()}
+    function stopExploreMusic(reset=false){if(!exploreBgm)return;exploreBgm.pause();if(reset){try{exploreBgm.currentTime=0}catch{}}}
+    function resumeExploreMusicAfterGimmick(){const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
+    window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
+    window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause()}
+    function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
@@ -3657,6 +3665,14 @@ window.addEventListener('message',e=>{
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
     btn.dataset.selectedSpot=selectedSpot;
   }));
+  // 今後、探索ギミックで動画が追加された場合も自動でBGMを一時停止する。
+  // 動画終了後は、探索画面を開いている間だけ同じ位置からBGMを再開する。
+  exploreView.addEventListener('play',e=>{
+    if(e.target instanceof HTMLVideoElement)window.__sprPauseExploreBgmForGimmick?.();
+  },true);
+  exploreView.addEventListener('ended',e=>{
+    if(e.target instanceof HTMLVideoElement)window.__sprResumeExploreBgmAfterGimmick?.();
+  },true);
 })();
 </script>
 </body>
