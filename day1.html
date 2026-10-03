@@ -813,7 +813,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         <div id="casinoGalleryStage" class="casino-gallery-stage">
           <img id="casinoGalleryImage" src="" alt="カジノ館内">
           <div class="casino-gallery-shade"></div>
-          <div id="casinoGalleryEmpty" class="casino-gallery-empty">館内写真を準備しています。<br><small>casino.gallery01.jpg から連番で読み込みます。</small></div>
+          <div id="casinoGalleryEmpty" class="casino-gallery-empty hidden" aria-hidden="true"></div>
           <div class="casino-gallery-caption">
             <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
             <span id="casinoGalleryCounter">00 / 00</span>
@@ -2332,6 +2332,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
+    let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false;
 
     function probeCasinoGalleryFile(src){
       return new Promise(resolve=>{
@@ -2342,35 +2343,46 @@ body.special-table-playing .special-comment-overlay{display:block}
       });
     }
     async function discoverCasinoGallery(){
-      const found=[];
-      // 最大30枚。01から連続して存在する画像を読み込む。
-      for(let i=1;i<=30;i++){
-        const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
-        const ok=await probeCasinoGalleryFile(src);
-        if(!ok)break;
-        found.push(src);
-      }
-      casinoGalleryFiles=found;
-      casinoGalleryIndex=Math.min(casinoGalleryIndex,Math.max(0,found.length-1));
-      renderCasinoGallery();
+      if(casinoGalleryDiscovered)return casinoGalleryFiles;
+      if(casinoGalleryDiscoveryPromise)return casinoGalleryDiscoveryPromise;
+      casinoGalleryDiscoveryPromise=(async()=>{
+        const found=[];
+        // 画面を開く前にバックグラウンドで読み込む。ファイル名などの準備表示は出さない。
+        for(let i=1;i<=30;i++){
+          const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
+          const ok=await probeCasinoGalleryFile(src);
+          if(!ok)break;
+          found.push(src);
+        }
+        casinoGalleryFiles=found;
+        casinoGalleryIndex=Math.min(casinoGalleryIndex,Math.max(0,found.length-1));
+        casinoGalleryDiscovered=true;
+        if(found.length)renderCasinoGallery();
+        return found;
+      })().finally(()=>{casinoGalleryDiscoveryPromise=null});
+      return casinoGalleryDiscoveryPromise;
     }
     function renderCasinoGallery(){
       const total=casinoGalleryFiles.length;
       const has=total>0;
-      casinoGalleryEmpty.classList.toggle('hidden',has);
-      casinoGalleryImage.classList.remove('ready');
-      casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'00 / 00';
+      casinoGalleryEmpty.classList.add('hidden');
+      casinoGalleryEmpty.setAttribute('aria-hidden','true');
+      casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'';
       casinoGalleryDots.replaceChildren();
       if(!has){
         casinoGalleryImage.removeAttribute('src');
-        casinoGalleryStage.style.setProperty('--casino-gallery-bg','none');
+        casinoGalleryImage.classList.remove('ready');
         return;
       }
       const src=casinoGalleryFiles[casinoGalleryIndex];
-      casinoGalleryStage.style.setProperty('--casino-gallery-bg',`url("${src}")`);
-      casinoGalleryImage.onload=()=>casinoGalleryImage.classList.add('ready');
-      casinoGalleryImage.src=src;
-      casinoGalleryImage.alt=`カジノ館内 ${casinoGalleryIndex+1}`;
+      // 現在の写真を残したまま次の写真を先読みし、読み込み完了後に差し替える。
+      const preload=new Image();
+      preload.onload=()=>{
+        casinoGalleryImage.src=src;
+        casinoGalleryImage.alt=`カジノ館内 ${casinoGalleryIndex+1}`;
+        casinoGalleryImage.classList.add('ready');
+      };
+      preload.src=src;
       casinoGalleryFiles.forEach((_,index)=>{
         const dot=document.createElement('button');
         dot.type='button';
@@ -2391,9 +2403,13 @@ body.special-table-playing .special-comment-overlay{display:block}
       if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
     },{passive:true});
     casinoGalleryMenu.addEventListener('click',async()=>{
-      showCasinoLevel('gallery');
+      // 読み込み中の画面を見せず、写真の準備ができてからギャラリーへ移動する。
       await discoverCasinoGallery();
+      showCasinoLevel('gallery');
+      renderCasinoGallery();
     });
+    // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
+    discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
 
     casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
@@ -2920,7 +2936,7 @@ body.special-table-playing .special-comment-overlay{display:block}
   async function startRuntime(){if(await enforceLatestResetSession())return;syncCurrentDay(true);const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();window.refreshHernandoBarGlobalOpen();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(startRuntime,350));else setTimeout(startRuntime,350);
 })();
-</script>\n
+</script>
 <div id="integratedCafeShell" aria-hidden="true">
   <audio id="integratedCafeBgm" src="cafe_bgm.mp3" preload="auto" loop></audio>
   <iframe id="integratedCafeHome" title="CAFE" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;CAFE | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:#0d2743;background:#fff url(&quot;cafe_floor.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:#0d2743}.title{text-align:center;font:12px Georgia,serif;letter-spacing:.18em;color:#a87b2f}.wrap{max-width:760px;margin:auto;padding:42px 18px 80px;min-height:calc(100vh - 66px);background:rgba(255,255,255,.20);backdrop-filter:blur(1px)}.lead{text-align:center;line-height:2;color:#24394e;font-size:13px;text-shadow:0 1px 8px rgba(255,255,255,.95)}.venues{display:grid;gap:14px;margin-top:25px}.venue{border:1px solid rgba(168,123,47,.38);background:rgba(255,252,245,.90);padding:26px 22px;text-align:center;color:#0d2743;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;box-shadow:0 8px 24px rgba(13,39,67,.08)}.venue strong{display:block;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:21px;font-weight:400;letter-spacing:.12em}.venue small{display:block;margin-top:9px;color:#a87b2f;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:10px;letter-spacing:.20em}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;exit&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main class=&quot;wrap&quot;&gt;&lt;h1 style=&quot;text-align:center;font-weight:400;letter-spacing:.12em&quot;&gt;CAFE&lt;/h1&gt;&lt;p class=&quot;lead&quot;&gt;ご利用になるカフェをお選びください。&lt;br&gt;営業時間　10:00〜翌3:00&lt;br&gt;各カフェは別ページでご案内します。&lt;/p&gt;&lt;div class=&quot;venues&quot;&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;pearl&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;The Pearl Terrace&lt;/strong&gt;&lt;small&gt;THE PEARL TERRACE&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;marine&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;Marine Bloom Cafe&lt;/strong&gt;&lt;small&gt;MARINE BLOOM CAFE&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
