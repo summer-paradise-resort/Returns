@@ -397,8 +397,11 @@
     .explore-location-sheet h2{text-align:center;margin:0 0 15px;font-size:23px;font-weight:400;letter-spacing:.12em;color:#fff}
     .explore-location-actions{max-width:620px;margin:0 auto;grid-template-columns:1fr}
     .explore-location-action{background:rgba(255,255,255,.94);border-color:rgba(231,223,209,.7);color:#0d2743;backdrop-filter:blur(4px)}
-    .explore-action-message{max-width:620px;margin:14px auto 0;padding:14px 15px;border:1px solid rgba(231,207,148,.34);background:rgba(3,15,27,.86);color:#fff;font-size:12px;line-height:2;letter-spacing:.035em;backdrop-filter:blur(8px)}
-    .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:7px;color:#e6cc8e;font:9px Georgia,serif;letter-spacing:.22em}
+    .explore-action-message{position:absolute;z-index:8;left:18px;right:18px;top:50%;transform:translateY(-50%);max-width:620px;margin:0 auto;padding:20px 18px 16px;border:1px solid rgba(199,164,93,.72);background:rgba(251,248,241,.97);color:var(--navy);font-size:13px;line-height:2;letter-spacing:.035em;box-shadow:0 18px 50px rgba(0,0,0,.38);backdrop-filter:blur(12px);max-height:72dvh;overflow-y:auto}
+    .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:9px;color:var(--gold);font:9px Georgia,serif;letter-spacing:.22em}
+    .explore-action-message-text{white-space:pre-wrap}
+    .explore-action-message-close{display:block;margin:15px 0 0 auto;min-width:78px;height:38px;border:1px solid rgba(168,123,47,.42);background:transparent;color:var(--gold);font:10px Georgia,serif;letter-spacing:.14em}
+    @media(max-width:520px){.explore-action-message{left:14px;right:14px;padding:18px 16px 14px;font-size:12px;line-height:1.95;max-height:68dvh}}
     @media(min-width:620px){.explore-location-actions{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:520px){
       .explore-location-sheet{padding-top:12px;max-height:64dvh}
@@ -732,7 +735,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
       <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
-      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"></div></div>
+      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"><div id="exploreActionMessageText" class="explore-action-message-text"></div><button id="exploreActionMessageClose" class="explore-action-message-close" type="button">CLOSE</button></div></div>
     </section>
   </section>
 
@@ -3632,6 +3635,9 @@ window.addEventListener('message',e=>{
    for(let i=0;i<spans.length;i++){if(mine!==token)return;spans[i].classList.add('in');const ch=chars[i];let d=82;if(ch==='、')d=260;else if(ch==='。'||ch==='？'||ch==='！')d=460;else if(ch==='…')d=320;await wait(d)}
  }
  function hide(){token++;o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+ // CAFE以外の館内イベントからも、同じスタッフ会話演出を呼び出せるようにする。
+ window.__sprShowStaffDialogue=(line)=>show(String(line||''));
+ window.__sprHideStaffDialogue=hide;
  c.addEventListener('click',hide);
  window.addEventListener('message',e=>{const d=e.data||{};if(d.type!=='spr-cafe-staff-dialogue')return;const ok=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].some(f=>f&&f.contentWindow===e.source);if(ok)show(String(d.text||''))});
 })();
@@ -3646,6 +3652,8 @@ window.addEventListener('message',e=>{
   const locationJp=document.getElementById('exploreLocationJp');
   const locationBack=document.getElementById('exploreLocationBack');
   const actionMessage=document.getElementById('exploreActionMessage');
+  const actionMessageText=document.getElementById('exploreActionMessageText');
+  const actionMessageClose=document.getElementById('exploreActionMessageClose');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
   const spots={
     beach:{label:'ビーチ',en:'BEACH',image:'summer_paradise_beach.jpg'},
@@ -3727,13 +3735,16 @@ window.addEventListener('message',e=>{
   }
   function clearActionMessage(){
     if(!actionMessage)return;
-    actionMessage.textContent='';
+    if(actionMessageText)actionMessageText.textContent='';
     actionMessage.classList.add('hidden');
   }
   function showFallback(actionKey){
     const period=explorePeriod();
     const message=fallbackMessages?.[selectedSpot]?.[actionKey]?.[period]||'特に変わったことは起こらなかった。';
-    if(actionMessage){actionMessage.textContent=message;actionMessage.classList.remove('hidden')}
+    if(actionMessage){
+      if(actionMessageText)actionMessageText.textContent=message;
+      actionMessage.classList.remove('hidden');
+    }
     return message;
   }
   window.__sprExploreFallbackMessage=(spotKey,actionKey,period=explorePeriod())=>fallbackMessages?.[spotKey]?.[actionKey]?.[period]||'';
@@ -3756,9 +3767,24 @@ window.addEventListener('message',e=>{
   choiceButtons.forEach(btn=>btn.addEventListener('click',()=>openLocation(btn.dataset.exploreSpot)));
   locationBack?.addEventListener('click',closeLocation);
   exploreView.querySelector('[data-back]')?.addEventListener('click',closeLocation);
+  actionMessageClose?.addEventListener('click',clearActionMessage);
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
+    const actionKey=btn.dataset.exploreAction;
     btn.dataset.selectedSpot=selectedSpot;
-    showFallback(btn.dataset.exploreAction);
+    // 灯台でシュノーケルを選んだ場合だけ、CAFEの初回コースター時と同じ
+    // スタッフ会話演出で注意される。通常の探索コメントカードは出さない。
+    if(selectedSpot==='lighthouse' && actionKey==='snorkel'){
+      clearActionMessage();
+      const period=explorePeriod();
+      const line=fallbackMessages.lighthouse.snorkel[period];
+      if(typeof window.__sprShowStaffDialogue==='function'){
+        window.__sprShowStaffDialogue(line);
+      }else{
+        showFallback(actionKey);
+      }
+      return;
+    }
+    showFallback(actionKey);
   }));
   // 今後、探索ギミックで動画が追加された場合も自動でBGMを一時停止する。
   // 動画終了後は、探索画面を開いている間だけ同じ位置からBGMを再開する。
