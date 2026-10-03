@@ -527,6 +527,111 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 #integratedCafeShell iframe.active{display:block}
 </style>
 
+
+<style id="sprGlobalNightTheme">
+/* GLOBAL NIGHT THEME: 20:00–06:59 (Asia/Tokyo)
+   The daytime / sunset design stays unchanged. */
+body.night-theme{
+  background:#071a2b;
+  color:#f6f2e8;
+}
+body.night-theme header,
+body.night-theme .story-menu,
+body.night-theme .story-menu-top,
+body.night-theme .subview,
+body.night-theme .subhead,
+body.night-theme .bar-order-sheet,
+body.night-theme .bar-order-head{
+  background:rgba(7,26,43,.985);
+  color:#f6f2e8;
+  border-color:rgba(199,164,93,.24);
+}
+body.night-theme .header-icon,
+body.night-theme .story-toggle,
+body.night-theme .story-menu-close,
+body.night-theme .back,
+body.night-theme .bar-order-close{
+  color:#f6f2e8;
+}
+body.night-theme .menu-lines i{background:#f6f2e8}
+body.night-theme footer{
+  background:#071a2b;
+  color:#cdbf9f;
+  border-color:rgba(199,164,93,.20);
+}
+body.night-theme .section-head h2,
+body.night-theme .card-title,
+body.night-theme .info h2,
+body.night-theme .panel h3{
+  color:#f6f2e8;
+}
+body.night-theme .card,
+body.night-theme .notice,
+body.night-theme .panel,
+body.night-theme .menu-item,
+body.night-theme .room-entry,
+body.night-theme .bar-period-card,
+body.night-theme .bar-drink-item,
+body.night-theme .bar-order-result,
+body.night-theme .explore-choice-btn,
+body.night-theme .explore-location-action,
+body.night-theme .tea-exchange,
+body.night-theme .tea-exchange-item,
+body.night-theme .tea-party-box,
+body.night-theme .tea-party-person,
+body.night-theme .tea-party-log,
+body.night-theme .admin-master-panel,
+body.night-theme .admin-day-grid button{
+  background:#0d2743;
+  color:#f6f2e8;
+  border-color:rgba(199,164,93,.28);
+}
+body.night-theme .card-desc,
+body.night-theme .info p,
+body.night-theme .room-mapping,
+body.night-theme .bar-period-card p,
+body.night-theme .bar-drink-item small,
+body.night-theme .bar-order-status-mini,
+body.night-theme .bar-selection,
+body.night-theme .tea-exchange-note,
+body.night-theme .tea-exchange-empty,
+body.night-theme .tea-party-note,
+body.night-theme .admin-master-panel summary,
+body.night-theme .admin-master-status,
+body.night-theme .story-copy{
+  color:#c9d1d8;
+}
+body.night-theme .resort-ticker:not(.alert){
+  background:#0d2743;
+  border-color:rgba(199,164,93,.32);
+}
+body.night-theme .resort-ticker:not(.alert) .ticker-copy{color:#e7dfcf}
+body.night-theme .bar-order-confirm-wrap{
+  background:rgba(7,26,43,.97);
+  border-color:rgba(199,164,93,.22);
+}
+body.night-theme .bar-drink-item.selected{
+  background:#132f4a;
+  border-color:var(--gold);
+}
+body.night-theme .bar-order-result{color:#ead7ad}
+body.night-theme .room-entry input,
+body.night-theme .chat-compose input,
+body.night-theme .tea-party-compose input{
+  background:#102d48;
+  color:#fff;
+  border-color:rgba(199,164,93,.28);
+}
+body.night-theme .room-entry input::placeholder,
+body.night-theme .chat-compose input::placeholder,
+body.night-theme .tea-party-compose input::placeholder{color:#aeb9c3}
+body.night-theme #integratedCafeShell,
+body.night-theme #integratedCafeShell iframe{
+  background:#071a2b;
+}
+/* Keep high-attention alert/special overlays and game tables in their existing design. */
+</style>
+
 <style>
 #specialGameChoice [data-special-game="blackjack"]{display:none!important}
 </style>
@@ -1102,6 +1207,61 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
     }
+    function applyGlobalNightTheme(period=currentTokyoPeriod()){
+      const night=period==='night';
+      document.body.classList.toggle('night-theme',night);
+      document.documentElement.classList.toggle('night-theme',night);
+
+      // CAFE is rendered in srcdoc iframes, so give those pages the same night palette too.
+      document.querySelectorAll('#integratedCafeShell iframe').forEach(frame=>{
+        const applyToFrame=()=>{
+          try{
+            const doc=frame.contentDocument;
+            if(!doc||!doc.documentElement)return;
+            doc.documentElement.classList.toggle('spr-night',night);
+            if(doc.body)doc.body.classList.toggle('spr-night',night);
+
+            let style=doc.getElementById('sprIframeNightTheme');
+            if(!style){
+              style=doc.createElement('style');
+              style.id='sprIframeNightTheme';
+              const bg=(frame.id==='integratedCafePearl')
+                ? 'linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("the_pearl_terrace_i.jpg") center/cover fixed no-repeat'
+                : (frame.id==='integratedCafeMarine')
+                  ? 'linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("marine_bloom_cafe_i.jpg") center/cover fixed no-repeat'
+                  : '#071a2b url("cafe_floor.jpg") center/cover fixed no-repeat';
+              style.textContent=`
+                html.spr-night,html.spr-night body{background-color:#071a2b!important;color:#f6f2e8!important}
+                html.spr-night body{background:${bg}!important}
+                html.spr-night header{background:#071a2b!important;border-color:rgba(199,164,93,.25)!important}
+                html.spr-night .back{color:#f6f2e8!important}
+                html.spr-night main,html.spr-night .wrap{background:rgba(7,26,43,.72)!important;color:#f6f2e8!important}
+                html.spr-night h1,html.spr-night h2,html.spr-night .lead{color:#f6f2e8!important;text-shadow:none!important}
+                html.spr-night .venue,
+                html.spr-night .item,
+                html.spr-night .status,
+                html.spr-night .cafe-ticket-panel,
+                html.spr-night .c14box,
+                html.spr-night .modal-card,
+                html.spr-night .staff-dialogue-box{
+                  background:#0d2743!important;
+                  color:#f6f2e8!important;
+                  border-color:rgba(199,164,93,.30)!important;
+                }
+                html.spr-night .item.selected{background:#14334f!important}
+                html.spr-night .item small,
+                html.spr-night .cafe-ticket-panel p,
+                html.spr-night .staff-dialogue-text{color:#d6dde3!important}
+                html.spr-night .staff-dialogue{background:rgba(3,13,23,.78)!important}
+                html.spr-night .modal-close{color:#f6f2e8!important}
+              `;
+              doc.head?.appendChild(style);
+            }
+          }catch(e){/* iframe may not be ready yet */}
+        };
+        applyToFrame();
+      });
+    }
     function buildHeroBackground(imageName){
       return `linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("${imageName}") center 48%/cover no-repeat`;
     }
@@ -1116,6 +1276,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     async function updateHeroBackground(force=false){
       if(!heroSection)return;
       const period=currentTokyoPeriod();
+      applyGlobalNightTheme(period);
       if(!force&&heroBackgroundToken===period)return;
       const candidates=(heroTimeBackgrounds[period]||[]).concat(heroTimeBackgrounds.day||[]);
       let selected='summer_paradise_noon.jpg';
@@ -3709,6 +3870,12 @@ const integratedCafeFrames={
   pearl:document.getElementById('integratedCafePearl'),
   marine:document.getElementById('integratedCafeMarine')
 };
+Object.values(integratedCafeFrames).forEach(frame=>{
+  if(!frame)return;
+  frame.addEventListener('load',()=>{
+    if(typeof applyGlobalNightTheme==='function')applyGlobalNightTheme(currentTokyoPeriod());
+  });
+});
 function showIntegratedCafePage(name){
   Object.entries(integratedCafeFrames).forEach(([k,f])=>f.classList.toggle('active',k===name));
 }
@@ -3725,6 +3892,7 @@ async function openIntegratedCafe(){
   integratedCafeShell.classList.add('open');
   integratedCafeShell.setAttribute('aria-hidden','false');
   showIntegratedCafePage('home');
+  if(typeof applyGlobalNightTheme==='function')applyGlobalNightTheme(currentTokyoPeriod());
   document.body.style.overflow='hidden';
   try{
     // This call occurs directly inside the user's CAFE button tap, like the casino BGM.
