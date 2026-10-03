@@ -849,11 +849,19 @@ body.special-table-playing .special-comment-overlay{display:block}
     const SUPABASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY='sb_publishable_d4Uj3azYwSAIiwDK2UieGw_1Hp3LJfM';
     window.supabaseClientSpecial=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY):null;
+    // BAND内ブラウザ→Safari等へ切り替えても本人情報を引き継げるよう、
+    // SECURITY CHECKから渡されたURLパラメータをこのブラウザのlocalStorageへ復元する。
+    const handoffParams=new URLSearchParams(window.location.search);
+    const handoffPlayerId=(handoffParams.get('pid')||'').trim();
+    const handoffGuestName=(handoffParams.get('guest')||'').trim();
+    if(handoffPlayerId)localStorage.setItem('spr-player-id',handoffPlayerId);
+    if(handoffGuestName)localStorage.setItem('spr-guest-name',handoffGuestName);
     const storedGuestName=(localStorage.getItem('spr-guest-name')||'').trim();
     if(!storedGuestName){window.location.replace('security_check.html')}
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
     const belongingsKey=`spr-belongings:${playerStorageId}`;
-    const coasterInventoryKey='spr-cafe-coasters';
+    const coasterInventoryKey=`spr-cafe-coasters:${playerStorageId}`;
+    if(!localStorage.getItem(coasterInventoryKey)&&localStorage.getItem('spr-cafe-coasters'))localStorage.setItem(coasterInventoryKey,localStorage.getItem('spr-cafe-coasters'));
     function loadCoasterInventory(){try{const v=JSON.parse(localStorage.getItem(coasterInventoryKey)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
     function coasterCounts(){const c=Array(89).fill(0);loadCoasterInventory().forEach(x=>{const m=String(x?.file||'').match(/coaster(\d{2})\.PNG/i);if(m){const n=Number(m[1]);if(n>=0&&n<=88)c[n]++}});return c}
     const belongingsCatalog={
@@ -905,7 +913,10 @@ body.special-table-playing .special-comment-overlay{display:block}
       try{const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');return saved&&typeof saved==='object'?saved:{}}
       catch{return {}}
     }
-    function saveBelongings(items){localStorage.setItem(belongingsKey,JSON.stringify(items))}
+    function saveBelongings(items){
+      localStorage.setItem(belongingsKey,JSON.stringify(items));
+      if(!window.__sprRemoteHydrating)persistInventorySnapshot(items).catch(e=>console.warn('inventory sync',e));
+    }
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     // 旧版のアフタヌーンティーチケットがある場合は2名様用へ引き継ぐ
     {const b=loadBelongings();if(Number(b.afternoonTeaTicket||0)>0){b.afternoonTeaTicket2=Math.max(0,Math.floor(Number(b.afternoonTeaTicket2||0)))+Math.max(0,Math.floor(Number(b.afternoonTeaTicket||0)));delete b.afternoonTeaTicket;saveBelongings(b)}}
@@ -915,7 +926,143 @@ body.special-table-playing .special-comment-overlay{display:block}
     const teaExchangeList=document.getElementById('teaExchangeList');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
     const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
-    const storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
+    let storedPlayerId=(localStorage.getItem('spr-player-id')||'').trim();
+    async function ensureStoredPlayerId(){
+      if(storedPlayerId)return storedPlayerId;
+      if(!window.supabaseClientSpecial||!storedGuestName)return '';
+      try{
+        const nameKey=storedGuestName.trim().toLowerCase();
+        const {data,error}=await window.supabaseClientSpecial
+          .from('players')
+          .select('id')
+          .eq('name_key',nameKey)
+          .maybeSingle();
+        if(error)throw error;
+        const id=String(data?.id||'').trim();
+        if(id){storedPlayerId=id;localStorage.setItem('spr-player-id',id)}
+        return id;
+      }catch(error){
+        console.warn('player identity restore failed',error);
+        return '';
+      }
+    }
+    let windowSprFlagCache={};
+    function sprSafeUuid(){if(window.crypto?.randomUUID)return window.crypto.randomUUID();return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})}
+    async function sprPlayerId(){return (await ensureStoredPlayerId())||''}
+    async function persistInventorySnapshot(items){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>({player_id:playerId,item_key,quantity:Math.max(0,Math.floor(Number(v)||0)),updated_at:new Date().toISOString()}));
+      if(!rows.length)return;
+      const {error}=await window.supabaseClientSpecial.from('spr_player_inventory').upsert(rows,{onConflict:'player_id,item_key'});if(error)throw error;
+    }
+    async function remoteInventoryAdjust(itemKey,delta){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return null;
+      const {data,error}=await window.supabaseClientSpecial.rpc('spr_inventory_adjust',{p_player_id:playerId,p_item_key:itemKey,p_delta:delta});
+      if(error)throw error;return Math.max(0,Number(data)||0);
+    }
+    async function setRemoteFlag(flagKey,value){
+      windowSprFlagCache[flagKey]=value;
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const {error}=await window.supabaseClientSpecial.from('spr_player_flags').upsert({player_id:playerId,flag_key:flagKey,value,updated_at:new Date().toISOString()},{onConflict:'player_id,flag_key'});if(error)throw error;
+    }
+    async function deleteRemoteFlag(flagKey){
+      delete windowSprFlagCache[flagKey];
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const {error}=await window.supabaseClientSpecial.from('spr_player_flags').delete().eq('player_id',playerId).eq('flag_key',flagKey);if(error)throw error;
+    }
+    function cafeServiceDate(){
+      const dp=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=>[p.type,p.value]));
+      const base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)<3)base.setUTCDate(base.getUTCDate()-1);
+      return `${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,'0')}-${String(base.getUTCDate()).padStart(2,'0')}`;
+    }
+    function applyRemoteFlagToLocal(flagKey,value){
+      const bool=v=>v===true||v===1||v==='1';
+      if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`)}
+      else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
+      else if(flagKey==='sunset-encore-date'){if(value)localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,String(value));else localStorage.removeItem(`spr-sunset-encore-date:${playerStorageId}`)}
+      else if(flagKey==='closet-food-key'){if(bool(value))localStorage.setItem('spr-closet-food-key','1');else localStorage.removeItem('spr-closet-food-key')}
+      else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
+      else if(flagKey.startsWith('cafe-order:')){const d=flagKey.slice('cafe-order:'.length),pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
+      else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
+      else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
+    }
+    function collectLocalFlags(){
+      const out={};
+      if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
+      if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
+      const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}`);if(encore)out['sunset-encore-date']=encore;
+      if(localStorage.getItem('spr-closet-food-key')==='1')out['closet-food-key']=true;
+      if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
+      const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
+      const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
+      const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`;
+      Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}});
+      return out;
+    }
+
+    async function persistBarOrderRemote(record){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial||!record)return;
+      const row={player_id:playerId,service_date:record.serviceDate,period:record.period,drink_no:Number(record.no)||null,drink_name:record.name,ingredients:record.ingredients||'',ordered_at:new Date(Number(record.orderedAt)||Date.now()).toISOString(),expires_at:new Date(Number(record.expiresAt)||Date.now()).toISOString(),record};
+      const {error}=await window.supabaseClientSpecial.from('spr_bar_orders').upsert(row,{onConflict:'player_id,service_date,period'});if(error)throw error;
+    }
+    async function deleteBarOrderRemote(serviceDate,period){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const {error}=await window.supabaseClientSpecial.from('spr_bar_orders').delete().eq('player_id',playerId).eq('service_date',serviceDate).eq('period',period);if(error)throw error;
+    }
+    async function syncCafeCoastersSnapshot(){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const inv=loadCoasterInventory();let changed=false;
+      inv.forEach(x=>{if(!x.client_id){x.client_id=sprSafeUuid();changed=true}});if(changed)localStorage.setItem(coasterInventoryKey,JSON.stringify(inv));
+      const rows=inv.map(x=>({client_id:x.client_id,player_id:playerId,venue:String(x.venue||''),file:String(x.file||''),meal:String(x.meal||''),drink:String(x.drink||''),acquired_at:x.at||new Date().toISOString()}));
+      if(rows.length){const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(rows,{onConflict:'client_id'});if(error)throw error}
+    }
+    async function hydratePersistentState(){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
+      try{
+        window.__sprRemoteHydrating=true;
+        const localBelongings=loadBelongings();
+        const localBarState=(()=>{try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}})();
+        const localCoasters=loadCoasterInventory();
+        const localFlags=collectLocalFlags();
+        const [invRes,flagRes,barRes,coRes]=await Promise.all([
+          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_player_flags').select('flag_key,value').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_bar_orders').select('record,service_date,period,expires_at').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at')
+        ]);
+        for(const r of [invRes,flagRes,barRes,coRes])if(r.error)throw r.error;
+
+        let belongings={};
+        if((invRes.data||[]).length){(invRes.data||[]).forEach(r=>belongings[r.item_key]=Math.max(0,Number(r.quantity)||0))}
+        else if(Object.values(localBelongings).some(v=>Number(v)>0)){
+          belongings={...localBelongings};await persistInventorySnapshot(belongings);
+        }
+        localStorage.setItem(belongingsKey,JSON.stringify(belongings));
+
+        windowSprFlagCache={};
+        if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)})}
+        else{
+          const rows=Object.entries(localFlags).map(([flag_key,value])=>({player_id:playerId,flag_key,value,updated_at:new Date().toISOString()}));
+          if(rows.length){const {error}=await window.supabaseClientSpecial.from('spr_player_flags').upsert(rows,{onConflict:'player_id,flag_key'});if(error)throw error;windowSprFlagCache={...localFlags}}
+        }
+
+        let barState={};
+        if((barRes.data||[]).length){(barRes.data||[]).forEach(r=>{const rec=r.record||{},token=`${r.service_date}:${r.period}`;barState[token]={...rec,serviceDate:r.service_date,period:r.period,expiresAt:new Date(r.expires_at).getTime()}})}
+        else if(Object.keys(localBarState).length){barState={...localBarState};for(const rec of Object.values(barState)){if(rec&&rec.serviceDate&&rec.period)await persistBarOrderRemote(rec)}}
+        localStorage.setItem(barDrinkStorageKey,JSON.stringify(barState));
+
+        let coasters=[];
+        if((coRes.data||[]).length){coasters=(coRes.data||[]).map(r=>({client_id:r.client_id,venue:r.venue,file:r.file,meal:r.meal,drink:r.drink,at:r.acquired_at}))}
+        else if(localCoasters.length){coasters=localCoasters.map(x=>({...x,client_id:x.client_id||sprSafeUuid()}));localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));await syncCafeCoastersSnapshot()}
+        localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
+
+        if(typeof renderPrizeCounter==='function')renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(typeof renderBarOrderState==='function')renderBarOrderState();if(typeof updateCollectionButton==='function')updateCollectionButton();if(typeof renderRoomCollection==='function'&&activeRoom)renderRoomCollection();if(typeof renderTeaExchange==='function')renderTeaExchange();if(typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
+        return true;
+      }catch(e){console.warn('persistent state hydrate failed',e);return false}
+      finally{window.__sprRemoteHydrating=false}
+    }
+
     let activeTeaPartyId='',teaPartyChannel=null;
 
     function refreshTeaSalonStatus(){
@@ -955,13 +1102,15 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     async function createTeaParty(venue,label,capacity,key,guests){
       if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
+      let remaining;
+      try{remaining=await remoteInventoryAdjust(key,-1)}catch(e){console.warn('tea ticket consume sync',e);teaSalonMessage.textContent='チケットを確認できません。別端末で使用済みでないかご確認ください。';await hydratePersistentState();return}
+      const belongings=loadBelongings();belongings[key]=remaining;localStorage.setItem(belongingsKey,JSON.stringify(belongings));
       const endsAt=new Date(Date.now()+30*60*1000).toISOString();
       const {data:party,error}=await window.supabaseClientSpecial.from('tea_parties').insert({venue,host_player_id:storedPlayerId,host_name:storedGuestName,ticket_type:capacity,ends_at:endsAt}).select('id').single();
-      if(error){console.error(error);teaSalonMessage.textContent='お茶会の作成に失敗しました。Supabase設定をご確認ください。';return}
+      if(error){console.error(error);await remoteInventoryAdjust(key,1).catch(()=>{});teaSalonMessage.textContent='お茶会の作成に失敗しました。Supabase設定をご確認ください。';await hydratePersistentState();return}
       const members=[{party_id:party.id,player_id:storedPlayerId,display_name:storedGuestName,is_host:true},...guests.map(g=>({party_id:party.id,player_id:g.id,display_name:g.name,is_host:false}))];
       const {error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').insert(members);
-      if(memberError){console.error(memberError);await window.supabaseClientSpecial.from('tea_parties').delete().eq('id',party.id);teaSalonMessage.textContent='招待メンバーの登録に失敗しました。';return}
-      const belongings=loadBelongings();belongings[key]=Math.max(0,Math.floor(Number(belongings[key]||0))-1);saveBelongings(belongings);
+      if(memberError){console.error(memberError);await window.supabaseClientSpecial.from('tea_parties').delete().eq('id',party.id);await remoteInventoryAdjust(key,1).catch(()=>{});teaSalonMessage.textContent='招待メンバーの登録に失敗しました。';await hydratePersistentState();return}
       teaSalonMessage.textContent=`${guests.map(g=>g.name).join('、')} 様をご招待しました。30分間のAFTERNOON TEA SALONを開始します。`;
       refreshTeaSalonStatus();if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
       document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
@@ -1011,7 +1160,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
-      if(button.dataset.closetKey==='1') localStorage.setItem('spr-closet-food-key','1');
+      if(button.dataset.closetKey==='1'){localStorage.setItem('spr-closet-food-key','1');setRemoteFlag('closet-food-key',true).catch(e=>console.warn('closet food flag sync',e));}
       if(cafeMealResult)cafeMealResult.textContent=`${meal} をお召し上がりいただきました。`;
     }));
     document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',async()=>{
@@ -1362,16 +1511,21 @@ body.special-table-playing .special-comment-overlay{display:block}
     function closeBarOrder(){barOrderSheet.classList.remove('open');barOrderSheet.setAttribute('aria-hidden','true')}
     document.getElementById('barOrderOpen').addEventListener('click',openBarOrder);
     document.getElementById('barOrderClose').addEventListener('click',closeBarOrder);
-    barOrderConfirm.addEventListener('click',()=>{
+    barOrderConfirm.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState();if(!selectedBarDrink||state[info.token]||!info.orderOpen){renderBarOrderState();return}
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
+      try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
       state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} のご注文を承りました。`;barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
-    useExtraDrinkTicket.addEventListener('click',()=>{
+    useExtraDrinkTicket.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
       if(!ordered||count<1){renderBarOrderState();return}
-      belongings.extraDrinkTicket=count-1;saveBelongings(belongings);delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
+      try{
+        const qty=await remoteInventoryAdjust('extraDrinkTicket',-1);if(qty===null)throw new Error('player id missing');
+        await deleteBarOrderRemote(info.serviceDate,info.id);
+        belongings.extraDrinkTicket=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
+      }catch(e){console.warn('extra drink ticket sync',e);barOrderResult.textContent='チケットの使用を同期できませんでした。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
       barOrderResult.textContent='追加ドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     });
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
@@ -1455,6 +1609,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         if(findError)throw findError;
         if(found?.id){
           const id=String(found.id).trim();
+          storedPlayerId=id;
           localStorage.setItem('spr-player-id',id);
           return id;
         }
@@ -1467,7 +1622,7 @@ body.special-table-playing .special-comment-overlay{display:block}
           .single();
         if(createError)throw createError;
         const id=String(created?.id||'').trim();
-        if(id)localStorage.setItem('spr-player-id',id);
+        if(id){storedPlayerId=id;localStorage.setItem('spr-player-id',id)}
         return id||null;
       }catch(e){
         console.warn('special player identity resolve/create failed',e);
@@ -1573,9 +1728,10 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
     }
-    function grantSpecialLossReward(){
-      const b=loadBelongings();const globalJokers=Math.max(0,Number(localStorage.getItem('spr-joker-issued')||0));const jokerAvailable=globalJokers<4;const joker=jokerAvailable&&Math.random()<0.45;
-      if(joker){b.jokerCard=Math.max(0,Number(b.jokerCard||0))+1;saveBelongings(b);localStorage.setItem('spr-joker-issued',String(globalJokers+1));return '<div class="joker-card">JOKER CARD</div><p>「……あら。それを引くのね。」</p><p>「大切になさって。使い道は――いずれ分かるでしょう。」</p>'}
+    async function grantSpecialLossReward(){
+      if(Math.random()<0.45){
+        try{const playerId=await sprPlayerId();if(playerId&&window.supabaseClientSpecial){const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_joker',{p_player_id:playerId});if(error)throw error;if(data===true){const b=loadBelongings();b.jokerCard=Math.max(0,Number(b.jokerCard||0))+1;localStorage.setItem(belongingsKey,JSON.stringify(b));return '<div class="joker-card">JOKER CARD</div><p>「……あら。それを引くのね。」</p><p>「大切になさって。使い道は――いずれ分かるでしょう。」</p>'}}}catch(e){console.warn('joker claim sync',e)}
+      }
       const hints=['灯台の合図は、運行情報が整ってから。','島の案内には、昼と夜で意味の変わる場所があるようです。','カジノの奥には、誰にでも開くわけではない扉があります。','飲み物が残すものは、味だけとは限りません。'];return `<p>「残念。幸運は、ここまでだったようね。」</p><p>「でも――手ぶらでお帰しするのも、少し味気ないでしょう？」</p><div class="joker-card" style="font-size:15px">HINT<br><small>${hints[Math.floor(Math.random()*hints.length)]}</small></div>`
     }
     function specialNormalTableSetup(game){
@@ -1674,7 +1830,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 
     const sunsetTerraceOpen=document.getElementById('sunsetTerraceOpen'),sunsetTerraceMenu=document.getElementById('sunsetTerraceMenu'),sunsetMealResult=document.getElementById('sunsetMealResult');
     if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>sunsetTerraceMenu.classList.toggle('hidden'));
-    document.querySelectorAll('.sunset-meal').forEach(button=>button.addEventListener('click',()=>{const meal=button.dataset.meal;if(meal==='アンコール')localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,tokyoDateKey());sunsetMealResult.textContent=`「${meal}」を注文しました。${meal==='アンコール'?' 今夜、特別な何かが起こるかもしれません。':''}`}));
+    document.querySelectorAll('.sunset-meal').forEach(button=>button.addEventListener('click',()=>{const meal=button.dataset.meal;if(meal==='アンコール'){localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,tokyoDateKey());setRemoteFlag('sunset-encore-date',tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));}sunsetMealResult.textContent=`「${meal}」を注文しました。${meal==='アンコール'?' 今夜、特別な何かが起こるかもしれません。':''}`}));
 
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
@@ -1697,14 +1853,16 @@ body.special-table-playing .special-comment-overlay{display:block}
     function queueCasinoChipSync(value=casinoChips){
       const chips=Math.max(0,Math.round(Number(value)||0));
       localStorage.setItem(casinoChipKey,String(chips));
-      if(!window.supabaseClientSpecial||!storedPlayerId)return casinoChipSyncChain;
+      if(!window.supabaseClientSpecial)return casinoChipSyncChain;
       casinoChipSyncChain=casinoChipSyncChain
         .catch(()=>{})
         .then(async()=>{
+          const playerId=await ensureStoredPlayerId();
+          if(!playerId)return;
           const {error}=await window.supabaseClientSpecial
             .from('players')
             .update({chips,last_seen_at:new Date().toISOString()})
-            .eq('id',storedPlayerId);
+            .eq('id',playerId);
           if(error)throw error;
         })
         .catch(error=>{console.warn('casino chip sync failed',error)});
@@ -1713,13 +1871,15 @@ body.special-table-playing .special-comment-overlay{display:block}
     async function refreshCasinoChipsFromSupabase(){
       if(casinoChipRefreshPromise)return casinoChipRefreshPromise;
       casinoChipRefreshPromise=(async()=>{
-        if(!window.supabaseClientSpecial||!storedPlayerId)return casinoChips;
+        if(!window.supabaseClientSpecial)return casinoChips;
+        const playerId=await ensureStoredPlayerId();
+        if(!playerId)return casinoChips;
         // 直前の自端末からの更新があれば、先に送信完了させてから読み直す。
         try{await casinoChipSyncChain}catch{}
         const {data,error}=await window.supabaseClientSpecial
           .from('players')
           .select('chips')
-          .eq('id',storedPlayerId)
+          .eq('id',playerId)
           .maybeSingle();
         if(error)throw error;
         const remote=Number(data?.chips);
@@ -1740,13 +1900,13 @@ body.special-table-playing .special-comment-overlay{display:block}
       casinoChips=Math.max(0,Math.round(Number(casinoChips)||0));
       queueCasinoChipSync(casinoChips);
       if(previousCasinoChips<50000&&casinoChips>=50000&&!localStorage.getItem(emilyAnnouncedKey)){
-        localStorage.setItem(emilyAnnouncedKey,'1');
+        localStorage.setItem(emilyAnnouncedKey,'1');setRemoteFlag('emily-special-announced',true).catch(e=>console.warn('Emily flag sync',e));
         seriousEmilyMode=false;
         triggerEmilyInvitation();
       }
       // 本気のエミリー：1,000,000 CHIP以上 + 当日サンセットテラスで「アンコール」喫食 + 夜のみ
       if(casinoChips>=1000000&&hasEncoreTonight()&&!localStorage.getItem(seriousEmilyKey)){
-        localStorage.setItem(seriousEmilyKey,'1');
+        localStorage.setItem(seriousEmilyKey,'1');setRemoteFlag('emily-serious-announced',true).catch(e=>console.warn('Serious Emily flag sync',e));
         seriousEmilyMode=true;
         triggerEmilyInvitation();
       }
@@ -1754,16 +1914,28 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     const adminEventReset=document.getElementById('adminEventReset');
     const adminSeriousReset=document.getElementById('adminSeriousReset');
-    function resetEmilyTest(chips,serious=false){
-      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');
-      if(serious)localStorage.setItem(encoreMealDateKey,tokyoDateKey());
-      casinoChips=chips;previousCasinoChips=chips;queueCasinoChipSync(casinoChips);activeSpecialSessionId=null;seriousEmilyMode=false;
+    async function resetEmilyTest(chips,serious=false){
+      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});
+      if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());await setRemoteFlag('sunset-encore-date',tokyoDateKey()).catch(()=>{})}
+      casinoChips=chips;previousCasinoChips=chips;activeSpecialSessionId=null;seriousEmilyMode=false;
+      await queueCasinoChipSync(casinoChips);
+      // テスト用リセットは、Supabaseへ実際に反映されたことを確認してから完了表示する。
+      let remoteSaved=false;
+      try{
+        const playerId=await ensureStoredPlayerId();
+        if(playerId&&window.supabaseClientSpecial){
+          const {data,error}=await window.supabaseClientSpecial.from('players').select('chips').eq('id',playerId).maybeSingle();
+          if(error)throw error;
+          remoteSaved=Number(data?.chips)===Number(chips);
+        }
+      }catch(error){console.warn('casino reset verification failed',error)}
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');hideSpecialBroadcast('reset');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';syncCasinoBalances();normalResortAnnouncement();
-      alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。':'通常エミリー確認用：49,900 CHIPに設定しました。');
+      if(!remoteSaved){alert('CHIPは画面上で変更されましたが、Supabaseへの保存を確認できませんでした。通信またはSupabaseの権限設定を確認してください。');return}
+      alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。Supabase保存済みです。':'通常エミリー確認用：49,900 CHIPに設定しました。Supabase保存済みです。');
     }
-    if(adminEventReset)adminEventReset.addEventListener('click',()=>{if(confirm('通常エミリー確認用に49,900 CHIPへリセットしますか？'))resetEmilyTest(49900,false)});
-    if(adminSeriousReset)adminSeriousReset.addEventListener('click',()=>{if(confirm('本気のエミリー確認用に999,900 CHIPへリセットし、本日のアンコール喫食フラグも付与しますか？'))resetEmilyTest(999900,true)});
+    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('通常エミリー確認用に49,900 CHIPへリセットしますか？'))await resetEmilyTest(49900,false)});
+    if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(confirm('本気のエミリー確認用に999,900 CHIPへリセットし、本日のアンコール喫食フラグも付与しますか？'))await resetEmilyTest(999900,true)});
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
     function syncCasinoBalances(){casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips)}
@@ -1773,9 +1945,14 @@ body.special-table-playing .special-comment-overlay{display:block}
       [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
       prizeMessage.textContent=message||'チケット系景品の所持数に制限はありません。';
     }
-    function buyTicket(key,label,price){
+    async function buyTicket(key,label,price){
       if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
-      const belongings=loadBelongings(),owned=Math.max(0,Math.floor(Number(belongings[key]||0)));casinoChips-=price;belongings[key]=owned+1;saveBelongings(belongings);casinoSave();syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${owned+1}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(key==='cafeDrinkTicket'&&typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
+      try{
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_exchange_prize',{p_player_id:playerId,p_item_key:key,p_price:price});if(error)throw error;
+        casinoChips=Math.max(0,Number(data?.chips)||0);const qty=Math.max(0,Number(data?.quantity)||0),belongings=loadBelongings();belongings[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));localStorage.setItem(casinoChipKey,String(casinoChips));previousCasinoChips=casinoChips;
+        syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${qty}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(key==='cafeDrinkTicket'&&typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
+      }catch(e){console.warn('prize exchange sync',e);renderPrizeCounter('景品交換を同期できませんでした。もう一度お試しください。')}
     }
     const topBgmToggle=document.getElementById('topBgmToggle');
     const storyMenu=document.getElementById('storyMenu');
@@ -1887,28 +2064,31 @@ body.special-table-playing .special-comment-overlay{display:block}
     buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','追加ドリンクチケット',5000));
     buyCafeDrinkTicket.addEventListener('click',()=>buyTicket('cafeDrinkTicket','CAFEドリンクチケット',100000));
     // CAFE iframe と DAY1 の所持品を同期する。srcdoc 側のlocalStorageに依存しない。
-    window.addEventListener('message',e=>{
+    window.addEventListener('message',async e=>{
       const d=e.data||{};
+      const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].find(f=>f&&f.contentWindow===e.source);
       if(d.type==='spr-cafe-request-inventory'){
-        const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')]
-          .find(f=>f&&f.contentWindow===e.source);
         if(frame)frame.contentWindow.postMessage({type:'spr-cafe-inventory',cafeDrinkTicket:belongingCount('cafeDrinkTicket')},'*');
         return;
       }
       if(d.type==='spr-cafe-coasters-updated'){
-        updateCollectionButton();return;
+        updateCollectionButton();renderTeaExchange();syncCafeCoastersSnapshot().catch(err=>console.warn('cafe coaster sync',err));return;
+      }
+      if(d.type==='spr-cafe-state-updated'){
+        if(d.kind==='order'&&d.date)setRemoteFlag(`cafe-order:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
+        if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
+        if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue',true).catch(err=>console.warn('cafe first flag',err));
+        return;
       }
       if(d.type==='spr-cafe-consume-ticket'){
-        const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')]
-          .find(f=>f&&f.contentWindow===e.source);
         if(!frame)return;
         const inv=loadBelongings(),owned=Math.max(0,Math.floor(Number(inv.cafeDrinkTicket||0)));
-        if(owned<1){
-          frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:false,count:0},'*');return;
-        }
-        inv.cafeDrinkTicket=owned-1;saveBelongings(inv);
-        renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
-        frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:true,count:owned-1},'*');
+        if(owned<1){frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:false,count:0},'*');return}
+        try{
+          const qty=await remoteInventoryAdjust('cafeDrinkTicket',-1);if(qty===null)throw new Error('player id missing');
+          inv.cafeDrinkTicket=qty;localStorage.setItem(belongingsKey,JSON.stringify(inv));renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+          frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:true,count:qty},'*');
+        }catch(err){console.warn('cafe ticket consume sync',err);frame.contentWindow.postMessage({type:'spr-cafe-consume-result',ok:false,count:owned},'*')}
       }
     });
     function syncCafeTicketFrames(){
@@ -2071,13 +2251,13 @@ body.special-table-playing .special-comment-overlay{display:block}
             setTimeout(()=>openView('hernandoBarView'),350);
             return;
           }
-          const count=closetSearchCount()+1;localStorage.setItem(closetSearchKey(),String(count));
+          const count=closetSearchCount()+1;localStorage.setItem(closetSearchKey(),String(count));setRemoteFlag(`closet-search:${activeRoom}`,count).catch(e=>console.warn('closet search sync',e));
           let text='クローゼットを調べた。特に変わったところはない。';
           if(count>=4&&count<=6)text='奥の壁だけ、妙に冷たい。';
           else if(count>=7&&count<=9)text='……奥行きが合わない気がする。壁の向こうに、まだ空間があるような。';
           else if(count>=10){
             if(hasClosetFoodKey()){
-              localStorage.setItem(closetDoorKey(),'1');
+              localStorage.setItem(closetDoorKey(),'1');setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
               text='コツン。指先に、空洞のような感触が返ってきた。――衣類の奥に、見覚えのない細い扉がある。';
               setExploreMessage(text);updateRoomContextAction();return;
             } else text='何度確かめても、奥の壁には妙な違和感が残る。けれど、今はそれ以上のことは分からない。';
@@ -2123,7 +2303,8 @@ body.special-table-playing .special-comment-overlay{display:block}
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
-    function roomMessages(){try{return JSON.parse(localStorage.getItem(`spr-room-${activeRoom}`)||'[]')}catch{return []}}
+    let roomMessageCache=[],roomServiceCache=[],roomRealtimeChannel=null;
+    function roomMessages(){return roomMessageCache}
     function renderChat(){
       if(!activeRoom)return;
       const messages=roomMessages(); chatLog.replaceChildren();
@@ -2134,7 +2315,30 @@ body.special-table-playing .special-comment-overlay{display:block}
     function updateUnread(){chatUnread.textContent=String(unreadCount);chatUnread.classList.toggle('hidden',unreadCount===0)}
     function openChatSheet(){closeRoomService();closeRoomBelongings();closeRoomCollection();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');chatSheet.classList.add('open');chatSheet.setAttribute('aria-hidden','false');unreadCount=0;updateUnread();renderChat()}
     function closeChatSheet(){chatSheet.classList.remove('open');chatSheet.setAttribute('aria-hidden','true')}
-    function roomServiceOrders(){try{return JSON.parse(localStorage.getItem(`spr-roomservice-${activeRoom}`)||'[]')}catch{return []}}
+    function roomServiceOrders(){return roomServiceCache}
+    function roomSharedMessage(row){return {id:row.id,name:row.display_name||'ゲスト',text:row.body||'',time:new Date(row.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}}
+    function roomSharedOrder(row){return {id:String(row.id),room:row.room_no,guest:row.display_name||'ゲスト',items:Array.isArray(row.items)?row.items:[],time:new Date(row.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}}
+    async function loadRoomSharedData(room){
+      if(!window.supabaseClientSpecial||!room)return;
+      try{
+        const [m,o]=await Promise.all([
+          window.supabaseClientSpecial.from('spr_room_messages').select('id,room_no,display_name,body,created_at').eq('room_no',room).order('created_at',{ascending:false}).limit(100),
+          window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,display_name,items,created_at').eq('room_no',room).order('created_at',{ascending:false}).limit(20)
+        ]);if(m.error)throw m.error;if(o.error)throw o.error;if(activeRoom!==room)return;
+        roomMessageCache=(m.data||[]).reverse().map(roomSharedMessage);roomServiceCache=(o.data||[]).reverse().map(roomSharedOrder);renderChat();renderRoomServiceHistory();
+      }catch(e){console.warn('room shared load',e)}
+    }
+    async function startRoomSync(room){
+      if(roomRealtimeChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null}
+      roomMessageCache=[];roomServiceCache=[];renderChat();renderRoomServiceHistory();await loadRoomSharedData(room);
+      if(!window.supabaseClientSpecial||activeRoom!==room)return;
+      roomRealtimeChannel=window.supabaseClientSpecial.channel(`spr-room-${room}-${Math.random().toString(36).slice(2)}`)
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_messages',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;const msg=roomSharedMessage(payload.new);roomMessageCache.push(msg);roomMessageCache=roomMessageCache.slice(-100);renderChat();if(!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(msg)}})
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_service_orders',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;roomServiceCache.push(roomSharedOrder(payload.new));roomServiceCache=roomServiceCache.slice(-20);renderRoomServiceHistory()})
+        .subscribe();
+    }
+    function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;roomMessageCache=[];roomServiceCache=[]}
+
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
@@ -2208,11 +2412,12 @@ body.special-table-playing .special-comment-overlay{display:block}
       item.querySelector('[data-service-minus]').addEventListener('click',()=>{roomServiceCart[name]=Math.max(0,(roomServiceCart[name]||0)-1);renderRoomServiceCart()});
       item.querySelector('[data-service-plus]').addEventListener('click',()=>{roomServiceCart[name]=Math.min(9,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
     });
-    roomServiceOrder.addEventListener('click',()=>{
-      if(!activeRoom)return;const items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
-      const now=new Date();const order={id:String(Date.now()).slice(-6),room:activeRoom,guest:activeGuest,items,time:now.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})};
-      const orders=roomServiceOrders();orders.push(order);localStorage.setItem(`spr-roomservice-${activeRoom}`,JSON.stringify(orders.slice(-20)));
-      Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();renderRoomServiceHistory();roomServiceResult.textContent=`${activeRoom}号室のご注文を承りました。注文番号 ${order.id}`;roomServiceResult.classList.remove('hidden');
+    roomServiceOrder.addEventListener('click',async()=>{
+      if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
+      try{const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id').single();if(error)throw error;
+        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
+      }catch(e){console.warn('room service sync',e);roomServiceResult.textContent='注文を送信できませんでした。もう一度お試しください。';roomServiceResult.classList.remove('hidden')}
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
     chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
@@ -2229,17 +2434,17 @@ body.special-table-playing .special-comment-overlay{display:block}
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);renderChat();
+      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);
     });
-    document.getElementById('chatForm').addEventListener('submit',event=>{
-      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim();if(!message||!activeRoom)return;
-      const messages=roomMessages();messages.push({name:activeGuest,text:message,time:new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})});
-      localStorage.setItem(`spr-room-${activeRoom}`,JSON.stringify(messages.slice(-100)));input.value='';renderChat();input.focus();
+    document.getElementById('chatForm').addEventListener('submit',async event=>{
+      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
+    function leaveActiveRoom(){stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
-    window.addEventListener('storage',event=>{if(activeRoom&&event.key===`spr-room-${activeRoom}`){renderChat();if(!chatSheet.classList.contains('open')){const messages=roomMessages(),latest=messages[messages.length-1];unreadCount+=1;updateUnread();showChatToast(latest)}}if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}});
+    window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}});
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
@@ -2251,6 +2456,9 @@ body.special-table-playing .special-comment-overlay{display:block}
       galleries[name]=show;
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+    setTimeout(()=>hydratePersistentState(),0);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)hydratePersistentState()});
+    window.addEventListener('focus',()=>hydratePersistentState());
   </script>
 \n<script>
 (function(){
@@ -2271,7 +2479,7 @@ body.special-table-playing .special-comment-overlay{display:block}
   async function syncCurrentDay(redirect=true){try{const m=await latestMarker(DAY_TYPE);const day=m?Number(String(m.message).replace(/\D/g,'')):1;const safe=(day>=1&&day<=7)?day:1;setDayUI(safe);if(redirect&&safe!==THIS_DAY)goDay(safe)}catch(e){console.warn('day sync',e)}}
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
   function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));}
-  if(resetBtn)resetBtn.addEventListener('click',async()=>{if(!confirm('本番用にDAY1〜DAY7のギミック状態を初期化します。\n参加者の名前／プレイヤーIDは残します。\n\nこの操作を実行しますか？'))return;if(!confirm('最終確認です。全ギミックを初期状態へ戻しますか？'))return;try{resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミックを初期化中…';await publishMarker(RESET_TYPE,'RESET:'+Date.now());try{const c=client();if(c)await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing'])}catch(e){console.warn('special table reset',e)}await publishMarker(DAY_TYPE,'DAY:1');clearLocalGimmicks();localStorage.setItem('spr-hernando-bar-global-open','0');if(statusEl)statusEl.textContent='初期化完了。DAY1へ戻ります。';setTimeout(()=>goDay(1),350)}catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}finally{resetBtn.disabled=false}});
+  if(resetBtn)resetBtn.addEventListener('click',async()=>{if(!confirm('本番用にDAY1〜DAY7のギミック状態を初期化します。\n参加者の名前／プレイヤーIDは残します。\n\nこの操作を実行しますか？'))return;if(!confirm('最終確認です。全ギミックを初期状態へ戻しますか？'))return;try{resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミックを初期化中…';await publishMarker(RESET_TYPE,'RESET:'+Date.now());try{const c=client();if(c){await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing']);const {error:runtimeResetError}=await c.rpc('spr_reset_runtime_state');if(runtimeResetError)throw runtimeResetError}}catch(e){console.warn('special/runtime reset',e);throw e}await publishMarker(DAY_TYPE,'DAY:1');clearLocalGimmicks();localStorage.setItem('spr-hernando-bar-global-open','0');if(statusEl)statusEl.textContent='初期化完了。DAY1へ戻ります。';setTimeout(()=>goDay(1),350)}catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}finally{resetBtn.disabled=false}});
   // A discovery only counts if it happened after the latest world reset.
   window.refreshHernandoBarGlobalOpen=async function(){try{const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
   function onShared(payload){const row=payload&&payload.new;if(!row)return;if(row.announcement_type===DAY_TYPE){const d=Number(String(row.message).replace(/\D/g,''));if(d>=1&&d<=7){setDayUI(d);if(d!==THIS_DAY)goDay(d)}}if(row.announcement_type===RESET_TYPE){clearLocalGimmicks();hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();}}
@@ -2317,6 +2525,7 @@ body.special-table-playing .special-comment-overlay{display:block}
   const meals=document.getElementById(&#x27;meals&#x27;),drinks=document.getElementById(&#x27;drinks&#x27;);
   const order=document.getElementById(&#x27;order&#x27;),status=document.getElementById(&#x27;status&#x27;);
   let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;
+  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
 
   function select(box,item,type){
     box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
@@ -2333,18 +2542,20 @@ body.special-table-playing .special-comment-overlay{display:block}
     e.preventDefault();
     if(!meal||!drink){status.textContent=&#x27;食事とドリンクを1つずつお選びください。&#x27;;return}
     const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const day=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-    const orderKey=&#x27;spr-cafe-order-&#x27;+day;
+    const orderKey=`spr-cafe-order:${pid}:${day}`;
     if(localStorage.getItem(orderKey)===&#x27;1&#x27;){
       status.textContent=&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;;return;
     }
     const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];
-    let inv=[];try{inv=JSON.parse(localStorage.getItem(&#x27;spr-cafe-coasters&#x27;)||&#x27;[]&#x27;)}catch{}
-    inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});
-    localStorage.setItem(&#x27;spr-cafe-coasters&#x27;,JSON.stringify(inv));
+    let inv=[];try{inv=JSON.parse(localStorage.getItem(coKey)||&#x27;[]&#x27;)}catch{}
+    inv.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()});
+    localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
-    if(firstDialogue)localStorage.setItem(firstKey,&#x27;1&#x27;);
+    if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
+    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
     document.getElementById(&#x27;coasterFile&#x27;).textContent=file;
@@ -2360,7 +2571,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=&#x27;spr-cafe-coasters&#x27;;
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
 let parentTicketCount=0,consumePending=false;
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
@@ -2376,12 +2587,12 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
   if(d.type===&#x27;spr-cafe-consume-result&#x27;){
     consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
     if(!d.ok){refresh();return}
-    localStorage.setItem(useKey,&#x27;1&#x27;);
+    localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
     const nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(52-0+1))+0);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
-      cs.push({venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
+      cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
       const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
@@ -2499,6 +2710,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   const meals=document.getElementById(&#x27;meals&#x27;),drinks=document.getElementById(&#x27;drinks&#x27;);
   const order=document.getElementById(&#x27;order&#x27;),status=document.getElementById(&#x27;status&#x27;);
   let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;
+  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
 
   function select(box,item,type){
     box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
@@ -2515,18 +2727,20 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     e.preventDefault();
     if(!meal||!drink){status.textContent=&#x27;食事とドリンクを1つずつお選びください。&#x27;;return}
     const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const day=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-    const orderKey=&#x27;spr-cafe-order-&#x27;+day;
+    const orderKey=`spr-cafe-order:${pid}:${day}`;
     if(localStorage.getItem(orderKey)===&#x27;1&#x27;){
       status.textContent=&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;;return;
     }
     const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];
-    let inv=[];try{inv=JSON.parse(localStorage.getItem(&#x27;spr-cafe-coasters&#x27;)||&#x27;[]&#x27;)}catch{}
-    inv.push({venue:VENUE,file,meal,drink,at:new Date().toISOString()});
-    localStorage.setItem(&#x27;spr-cafe-coasters&#x27;,JSON.stringify(inv));
+    let inv=[];try{inv=JSON.parse(localStorage.getItem(coKey)||&#x27;[]&#x27;)}catch{}
+    inv.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()});
+    localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
-    if(firstDialogue)localStorage.setItem(firstKey,&#x27;1&#x27;);
+    if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
+    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
     document.getElementById(&#x27;coasterFile&#x27;).textContent=file;
@@ -2542,7 +2756,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 (()=&gt;{
 const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
 const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=&#x27;spr-cafe-coasters&#x27;;
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
 let parentTicketCount=0,consumePending=false;
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
@@ -2558,12 +2772,12 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
   if(d.type===&#x27;spr-cafe-consume-result&#x27;){
     consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
     if(!d.ok){refresh();return}
-    localStorage.setItem(useKey,&#x27;1&#x27;);
+    localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
     const nums=Array.from({length:14},()=&gt;Math.floor(Math.random()*(88-53+1))+53);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
-      cs.push({venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
+      cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
       const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
