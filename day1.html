@@ -147,7 +147,7 @@
     .casino-return{min-height:48px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;letter-spacing:.1em}
     /* CASINO GALLERY: one-screen horizontal gallery (no vertical scroll / no blur) */
     .casino-game.gallery-lock{overflow:hidden!important;overscroll-behavior:none!important}
-    .casino-gallery-screen{position:relative;height:calc(100dvh - 64px);min-height:0!important;width:min(760px,100%);padding:10px 12px max(72px,calc(10px + env(safe-area-inset-bottom)));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto auto;gap:7px;justify-content:stretch;align-content:stretch;overflow:hidden;overscroll-behavior:none;touch-action:none}
+    .casino-gallery-screen{position:relative;height:calc(100dvh - 64px);min-height:0!important;width:min(760px,100%);padding:10px 12px max(10px,env(safe-area-inset-bottom));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto auto;gap:7px;justify-content:stretch;align-content:stretch;overflow:hidden;overscroll-behavior:none;touch-action:none}
     .casino-gallery-screen .casino-screen-title{font-size:22px;line-height:1.1;margin:0;padding-top:1px}
     .casino-gallery-screen .casino-screen-sub{font-size:11px;line-height:1.35;margin:0 0 1px}
     .casino-gallery-stage{position:relative;isolation:isolate;width:100%;height:100%;min-height:0;background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:none;--casino-gallery-bg:none;touch-action:pan-x;overscroll-behavior:none}
@@ -164,13 +164,11 @@
     .casino-gallery-dots button{width:7px;height:7px;flex:0 0 7px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.25)}
     .casino-gallery-dots button.active{background:#d7bc79}
     .casino-gallery-hint{text-align:center;color:rgba(255,255,255,.58);font-size:9px;line-height:1.3;letter-spacing:.05em;touch-action:none}
-    .casino-gallery-screen .casino-return{position:absolute;left:12px;right:12px;bottom:max(12px,calc(12px + env(safe-area-inset-bottom)));min-height:42px;height:42px;margin:0;width:auto;z-index:5;touch-action:manipulation}
     @media(max-width:520px){
-      .casino-gallery-screen{height:calc(100dvh - 64px);padding:7px 0 max(74px,calc(7px + env(safe-area-inset-bottom)));gap:5px}
+      .casino-gallery-screen{height:calc(100dvh - 64px);padding:7px 0 max(7px,env(safe-area-inset-bottom));gap:5px}
       .casino-gallery-screen .casino-screen-title{font-size:20px}
       .casino-gallery-screen .casino-screen-sub{font-size:10px}
       .casino-gallery-stage{border-left:0;border-right:0}
-      .casino-gallery-screen .casino-return{left:10px;right:10px;bottom:max(10px,calc(10px + env(safe-area-inset-bottom)));min-height:40px;height:40px}
       .casino-gallery-hint{padding:0 10px}
       .casino-elevator-button{left:10px;right:10px;bottom:86px;min-height:40px}
     }
@@ -178,13 +176,22 @@
     .casino-elevator-button{position:absolute;left:14px;right:14px;bottom:74px;z-index:4;width:auto;min-height:42px;border:1px solid rgba(231,207,148,.52);background:rgba(5,20,34,.88);color:#f4e2b2;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.14em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
     .casino-elevator-button.confirm{border-color:rgba(190,70,65,.78);color:#fff;background:rgba(80,12,18,.82);animation:elevatorConfirmPulse 1.7s ease-in-out infinite}
     @keyframes elevatorConfirmPulse{0%,100%{box-shadow:0 0 0 rgba(172,42,38,0)}50%{box-shadow:0 0 22px rgba(172,42,38,.28)}}
-    .casino-elevator-glitch{position:fixed;inset:0;z-index:190;display:none;overflow:hidden;background:#02070c;pointer-events:all}
-    .casino-elevator-glitch.open{display:block;animation:elevatorGlitchFlash .17s steps(2,end) infinite}
-    .casino-elevator-glitch::before{content:"";position:absolute;inset:-12%;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,rgba(0,178,255,.08) 0 2px,rgba(255,0,72,.06) 2px 4px,transparent 4px 8px);mix-blend-mode:screen;animation:elevatorNoise .12s steps(2,end) infinite}
-    .casino-elevator-glitch::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 7%,rgba(0,210,255,.22) 7% 10%,transparent 10% 42%,rgba(255,0,76,.18) 42% 47%,transparent 47% 100%);animation:elevatorSlice .22s steps(2,end) infinite}
-    @keyframes elevatorNoise{0%{transform:translate(0,0) scale(1.03)}25%{transform:translate(-2%,1%) scale(1.05)}50%{transform:translate(2%,-1%) scale(1.03)}75%{transform:translate(-1%,-2%) scale(1.04)}100%{transform:translate(1%,2%) scale(1.03)}}
-    @keyframes elevatorSlice{0%{clip-path:inset(4% 0 72% 0);transform:translateX(-5%)}25%{clip-path:inset(44% 0 39% 0);transform:translateX(6%)}50%{clip-path:inset(70% 0 8% 0);transform:translateX(-3%)}75%{clip-path:inset(26% 0 55% 0);transform:translateX(4%)}100%{clip-path:inset(8% 0 75% 0);transform:translateX(0)}}
-    @keyframes elevatorGlitchFlash{0%,100%{filter:contrast(1.4) brightness(.7)}50%{filter:contrast(2.5) brightness(1.45)}}
+    .casino-elevator-glitch{position:fixed;inset:0;z-index:190;display:none;overflow:hidden;background:#000;pointer-events:all}
+    .casino-elevator-glitch.open{display:block;animation:elevatorGlitchFlash .12s steps(2,end) infinite}
+    .casino-elevator-glitch::before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12),rgba(255,255,255,0) 48%),linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0) 28%,rgba(255,255,255,.08) 58%,rgba(255,255,255,0) 100%);mix-blend-mode:screen;opacity:.9;animation:elevatorPulse .18s steps(2,end) infinite}
+    .casino-elevator-glitch::after{content:"";position:absolute;inset:-10%;z-index:4;background:linear-gradient(90deg,transparent 0 8%,rgba(0,210,255,.24) 8% 10%,transparent 10% 40%,rgba(255,0,76,.22) 40% 46%,transparent 46% 100%);mix-blend-mode:screen;animation:elevatorSlice .18s steps(2,end) infinite}
+    .casino-elevator-noise,.casino-elevator-scanlines,.casino-elevator-alert{position:absolute;inset:0;pointer-events:none}
+    .casino-elevator-noise{background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.92) 0 1px,rgba(0,0,0,.92) 1px 2px,rgba(255,255,255,.7) 2px 3px,rgba(0,0,0,.86) 3px 4px),repeating-linear-gradient(90deg,rgba(255,255,255,.26) 0 2px,rgba(0,0,0,.26) 2px 4px,rgba(255,255,255,.18) 4px 6px,rgba(0,0,0,.24) 6px 8px);background-size:100% 5px,11px 100%;opacity:.34;mix-blend-mode:screen;filter:contrast(1.8) saturate(0) blur(.15px)}
+    .casino-elevator-noise.a{z-index:2;animation:elevatorNoiseA .07s steps(2,end) infinite}
+    .casino-elevator-noise.b{z-index:3;opacity:.52;mix-blend-mode:difference;animation:elevatorNoiseB .11s steps(2,end) infinite}
+    .casino-elevator-scanlines{z-index:5;background:repeating-linear-gradient(180deg,rgba(255,255,255,.08) 0 1px,rgba(0,0,0,0) 1px 3px);opacity:.48;animation:elevatorScan .16s linear infinite}
+    .casino-elevator-alert{z-index:6;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 18px 24px;color:rgba(255,255,255,.82);font:12px Georgia,serif;letter-spacing:.24em;text-shadow:0 2px 8px rgba(0,0,0,.9);opacity:.86}
+    @keyframes elevatorNoiseA{0%{transform:translate(0,0) scale(1.12)}25%{transform:translate(-1.5%,-1%) scale(1.16)}50%{transform:translate(1.2%,1%) scale(1.1)}75%{transform:translate(-1%,1.5%) scale(1.14)}100%{transform:translate(1.4%,-1.2%) scale(1.13)}}
+    @keyframes elevatorNoiseB{0%{transform:translate(0,0) scale(1.08)}25%{transform:translate(2%,-1%) scale(1.1)}50%{transform:translate(-2%,1%) scale(1.13)}75%{transform:translate(1.5%,2%) scale(1.09)}100%{transform:translate(-1.5%,-1.5%) scale(1.12)}}
+    @keyframes elevatorScan{from{transform:translateY(-18px)}to{transform:translateY(18px)}}
+    @keyframes elevatorSlice{0%{clip-path:inset(4% 0 71% 0);transform:translateX(-5%)}25%{clip-path:inset(38% 0 38% 0);transform:translateX(5%)}50%{clip-path:inset(68% 0 10% 0);transform:translateX(-4%)}75%{clip-path:inset(22% 0 56% 0);transform:translateX(4%)}100%{clip-path:inset(8% 0 76% 0);transform:translateX(0)}}
+    @keyframes elevatorPulse{0%,100%{opacity:.82;filter:contrast(1.2) brightness(.85)}50%{opacity:1;filter:contrast(2.4) brightness(1.3)}}
+    @keyframes elevatorGlitchFlash{0%,100%{filter:contrast(1.2) brightness(.82)}45%{filter:contrast(2.6) brightness(1.35)}55%{filter:contrast(.9) brightness(.7)}}
     .casino-elevator-video{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:#000}
     .casino-elevator-video.open{display:flex}
     .casino-elevator-video video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
@@ -850,9 +857,9 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
         <div class="casino-gallery-actions">
           <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
         </div>
-        <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
       </div>
-      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"></div>
+      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
+      <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="auto"></audio>
       <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
         <button id="casinoElevatorVideoClose" class="casino-elevator-video-close" type="button" aria-label="動画を閉じる">×</button>
         <video id="casinoElevatorMovie" src="casino.elevator.mp4" preload="metadata" playsinline></video>
@@ -2397,12 +2404,14 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     const casinoGalleryHint=document.getElementById('casinoGalleryHint');
     const casinoElevatorButton=document.getElementById('casinoElevatorButton');
     const casinoElevatorGlitch=document.getElementById('casinoElevatorGlitch');
+    const casinoElevatorGlitchSound=document.getElementById('casinoElevatorGlitchSound');
     const casinoElevatorVideo=document.getElementById('casinoElevatorVideo');
     const casinoElevatorMovie=document.getElementById('casinoElevatorMovie');
     const casinoElevatorVideoClose=document.getElementById('casinoElevatorVideoClose');
     const casinoElevatorVideoError=document.getElementById('casinoElevatorVideoError');
     const CASINO_ELEVATOR_TRIGGER_FILE='casino.gallery08.jpg';
     const CASINO_ELEVATOR_MOVIE='casino.elevator.mp4';
+    const CASINO_ELEVATOR_GLITCH_SOUND='casino.glitch.mp3';
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
     let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false;
     let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
@@ -2412,11 +2421,24 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
       const src=String(casinoGalleryFiles[casinoGalleryIndex]||'').split('?')[0];
       return src.endsWith(CASINO_ELEVATOR_TRIGGER_FILE);
     }
+    function stopElevatorGlitchSound(){
+      if(!casinoElevatorGlitchSound)return;
+      try{casinoElevatorGlitchSound.pause();casinoElevatorGlitchSound.currentTime=0}catch{}
+    }
+    function playElevatorGlitchSound(){
+      if(!casinoElevatorGlitchSound)return;
+      casinoElevatorGlitchSound.src=CASINO_ELEVATOR_GLITCH_SOUND;
+      try{casinoElevatorGlitchSound.currentTime=0}catch{}
+      const p=casinoElevatorGlitchSound.play();
+      if(p&&p.catch)p.catch(()=>{});
+    }
     function stopElevatorGlitch(){
       clearTimeout(casinoElevatorGlitchTimer);casinoElevatorGlitchTimer=null;
+      stopElevatorGlitchSound();
       casinoElevatorGlitch.classList.remove('open');casinoElevatorGlitch.setAttribute('aria-hidden','true');
     }
     function closeElevatorMovie(){
+      stopElevatorGlitchSound();
       try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
       casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
       casinoElevatorVideoError.classList.add('hidden');
@@ -2440,10 +2462,11 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     }
     function runCasinoElevatorGlitch(){
       casinoElevatorState='glitch';stopCasinoMusic();
+      playElevatorGlitchSound();
       casinoElevatorGlitch.classList.add('open');casinoElevatorGlitch.setAttribute('aria-hidden','false');
       clearTimeout(casinoElevatorGlitchTimer);
       casinoElevatorGlitchTimer=setTimeout(()=>{
-        casinoElevatorGlitchTimer=null;casinoElevatorGlitch.classList.remove('open');casinoElevatorGlitch.setAttribute('aria-hidden','true');
+        casinoElevatorGlitchTimer=null;stopElevatorGlitchSound();casinoElevatorGlitch.classList.remove('open');casinoElevatorGlitch.setAttribute('aria-hidden','true');
         casinoElevatorState='confirm';casinoElevatorButton.textContent='本当に乗りますか？';casinoElevatorButton.classList.add('confirm');
       },2800);
     }
