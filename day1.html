@@ -673,10 +673,10 @@ body.special-table-playing .special-comment-overlay{display:block}
 
       <div id="sunsetTerraceMenu" class="panel hidden"><h3>SUNSET TERRACE / 仮メニュー</h3><p>現在はイベント確認用の仮メニューです。</p><div class="menu-list"><button class="menu-item sunset-meal" type="button" data-meal="アンコール">アンコール<small>SPECIAL COURSE / 本気のエミリー条件</small></button><button class="menu-item sunset-meal" type="button" data-meal="シーフードプレート">シーフードプレート<small>SEAFOOD PLATE</small></button><button class="menu-item sunset-meal" type="button" data-meal="サンセットディナー">サンセットディナー<small>CHEF'S DINNER</small></button></div><p id="sunsetMealResult" class="bar-selection" aria-live="polite"></p></div>
       <div id="cafeMenu" class="panel hidden"><h3>CAFÉ / DINING MENU</h3><p>カフェのお食事メニューをお選びください。</p><div class="menu-list">
-        <button class="menu-item cafe-meal" type="button" data-cafe-meal="ラボ・デ・トロ" data-closet-key="1">ラボ・デ・トロ<small>RABO DE TORO / スペイン風煮込み料理のプレート</small></button>
-        <button class="menu-item cafe-meal" type="button" data-cafe-meal="シーフード・パエリアプレート">シーフード・パエリアプレート<small>SEAFOOD PAELLA / 仮メニュー</small></button>
-        <button class="menu-item cafe-meal" type="button" data-cafe-meal="地中海デリプレート">地中海デリプレート<small>MEDITERRANEAN DELI / 仮メニュー</small></button>
-        <button class="menu-item cafe-meal" type="button" data-cafe-meal="レモンチキンプレート">レモンチキンプレート<small>LEMON CHICKEN / 仮メニュー</small></button>
+        <button class="menu-item cafe-meal" type="button" data-cafe-meal="ラボ・デ・トロ" data-closet-key="1">ラボ・デ・トロ（スペイン風 牛テールの煮込み）</button>
+        <button class="menu-item cafe-meal" type="button" data-cafe-meal="オーシャン・グリル">オーシャン・グリル（白身魚と魚介のハーブグリル）</button>
+        <button class="menu-item cafe-meal" type="button" data-cafe-meal="パール・デリ">パール・デリ（サーモンと季節野菜のデリプレート）</button>
+        <button class="menu-item cafe-meal" type="button" data-cafe-meal="レモン・ロースト">レモン・ロースト（鶏肉のレモンハーブロースト）</button>
       </div><p id="cafeMealResult" class="bar-selection" aria-live="polite"></p></div>
         <p id="teaTicketMessage" class="bar-selection" aria-live="polite">アフタヌーンティーチケット（2名様用／4名様用）は、The Pearl Terrace / Marine Bloom Cafe のどちらでもご利用いただけます。</p>
       </div>
@@ -1064,6 +1064,8 @@ body.special-table-playing .special-comment-overlay{display:block}
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
       else if(flagKey==='sunset-encore-date'){if(value)localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,String(value));else localStorage.removeItem(`spr-sunset-encore-date:${playerStorageId}`)}
       else if(flagKey==='closet-food-key'){if(bool(value))localStorage.setItem('spr-closet-food-key','1');else localStorage.removeItem('spr-closet-food-key')}
+      else if(flagKey==='bathroom-food-key'){if(bool(value))localStorage.setItem('spr-bathroom-food-key','1');else localStorage.removeItem('spr-bathroom-food-key')}
+      else if(flagKey==='bathroom-bloom-state'){localStorage.setItem('spr-bathroom-bloom-state',String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey.startsWith('cafe-order:')){const d=flagKey.slice('cafe-order:'.length),pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
@@ -1076,6 +1078,8 @@ body.special-table-playing .special-comment-overlay{display:block}
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
       const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}`);if(encore)out['sunset-encore-date']=encore;
       if(localStorage.getItem('spr-closet-food-key')==='1')out['closet-food-key']=true;
+      if(localStorage.getItem('spr-bathroom-food-key')==='1')out['bathroom-food-key']=true;
+      const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0));if(bathroomBloomState)out['bathroom-bloom-state']=bathroomBloomState;
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
@@ -2316,7 +2320,18 @@ body.special-table-playing .special-comment-overlay{display:block}
         updateCollectionButton();renderTeaExchange();syncCafeCoastersSnapshot().catch(err=>console.warn('cafe coaster sync',err));return;
       }
       if(d.type==='spr-cafe-state-updated'){
-        if(d.kind==='order'&&d.date)setRemoteFlag(`cafe-order:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
+        if(d.kind==='order'&&d.date){
+          setRemoteFlag(`cafe-order:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
+          const venue=String(d.venue||''),meal=String(d.meal||'');
+          if(venue==='The Pearl Terrace'&&meal==='ラボ・デ・トロ'){
+            localStorage.setItem('spr-closet-food-key','1');
+            setRemoteFlag('closet-food-key',true).catch(err=>console.warn('closet food flag',err));
+          }
+          if(venue==='Marine Bloom Cafe'&&meal==='ブルーム・フレンチ'){
+            localStorage.setItem('spr-bathroom-food-key','1');
+            setRemoteFlag('bathroom-food-key',true).catch(err=>console.warn('bathroom food flag',err));
+          }
+        }
         if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
         if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue',true).catch(err=>console.warn('cafe first flag',err));
         return;
@@ -2446,8 +2461,12 @@ body.special-table-playing .special-comment-overlay{display:block}
     }
     function closetSearchKey(){return `spr-closet-search-${activeGuest||'guest'}-${activeRoom||'room'}`}
     function closetDoorKey(){return `spr-closet-door-${activeGuest||'guest'}-${activeRoom||'room'}`}
-    // レストラン側で対象料理を食べた時に localStorage.setItem('spr-closet-food-key','1') を保存すれば連動する。
+    // The Pearl Terrace の「ラボ・デ・トロ」でクローゼットギミックが有効になる。
     function hasClosetFoodKey(){return localStorage.getItem('spr-closet-food-key')==='1'}
+    // Marine Bloom Cafe の「ブルーム・フレンチ」で、その日の夜のバスルームギミックが有効になる。
+    function hasBathroomFoodKey(){return localStorage.getItem('spr-bathroom-food-key')==='1'}
+    function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0))}
+    function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem('spr-bathroom-bloom-state',String(state));setRemoteFlag('bathroom-bloom-state',state).catch(e=>console.warn('bathroom bloom sync',e));return state}
     let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
       if(hernandoBarGlobalOpen)return true;
@@ -2503,6 +2522,24 @@ body.special-table-playing .special-comment-overlay{display:block}
           }
           setExploreMessage(text);
         };
+      } else if(selectedRoomScene==='bathroom'&&roomTimeIndex()===2&&hasBathroomFoodKey()){
+        const state=bathroomBloomState();
+        if(state<2){
+          roomContextAction.textContent=state===0?'バスルームを調べる':'水面の花に触れる';
+          roomContextAction.classList.remove('hidden');
+          roomContextAction.onclick=()=>{
+            const current=bathroomBloomState();
+            if(current===0){
+              setBathroomBloomState(1);
+              updateRoomContextAction();
+              setExploreMessage('浴槽には、いつの間にか水が張られている。静かな水面に、一輪の花だけが浮かんでいる。');
+              return;
+            }
+            setBathroomBloomState(2);
+            updateRoomContextAction();
+            setExploreMessage('花に指先が触れた瞬間、排水口がひとりでに開いた。水が引いていく。やがて浴槽の底に、濡れた文字が浮かび上がった。――「ここに沈んだものは、海へ還る。」');
+          };
+        }
       }
     }
     function updateRoomPhoto(force=false){
@@ -2753,7 +2790,7 @@ body.special-table-playing .special-comment-overlay{display:block}
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
 #coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
-&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;THE PEARL TERRACE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;The Pearl Terrace&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ラボ・デ・トロ&quot;&gt;ラボ・デ・トロ&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;シーフード・パエリアプレート&quot;&gt;シーフード・パエリアプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;地中海デリプレート&quot;&gt;地中海デリプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモンチキンプレート&quot;&gt;レモンチキンプレート&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;THE PEARL TERRACE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;The Pearl Terrace&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ラボ・デ・トロ&quot;&gt;ラボ・デ・トロ（スペイン風 牛テールの煮込み）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オーシャン・グリル&quot;&gt;オーシャン・グリル（白身魚と魚介のハーブグリル）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;パール・デリ&quot;&gt;パール・デリ（サーモンと季節野菜のデリプレート）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモン・ロースト&quot;&gt;レモン・ロースト（鶏肉のレモンハーブロースト）&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
@@ -2794,7 +2831,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
-    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
     parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
@@ -2938,7 +2975,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
 #coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
-&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;MARINE BLOOM CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;Marine Bloom Cafe&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ラボ・デ・トロ&quot;&gt;ラボ・デ・トロ&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;シーフード・パエリアプレート&quot;&gt;シーフード・パエリアプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;地中海デリプレート&quot;&gt;地中海デリプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモンチキンプレート&quot;&gt;レモンチキンプレート&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;MARINE BLOOM CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;Marine Bloom Cafe&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブルーム・クロック&quot;&gt;ブルーム・クロック（クロックムッシュとサラダのプレート）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;マーレ・パスタ&quot;&gt;マーレ・パスタ（海老とアボカドのクリームパスタ）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;フロール・キッシュ&quot;&gt;フロール・キッシュ（季節野菜とベーコンのキッシュプレート）&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブルーム・フレンチ&quot;&gt;ブルーム・フレンチ（季節のフルーツとフレンチトースト）&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
@@ -2979,7 +3016,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
-    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
     parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
