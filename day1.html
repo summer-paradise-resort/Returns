@@ -145,6 +145,25 @@
     .prize-exchange:disabled{opacity:.42;cursor:default}
     .prize-message{min-height:1.8em!important;color:#e9dcc0!important}
     .casino-return{min-height:48px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;letter-spacing:.1em}
+    .casino-gallery-screen{justify-content:flex-start;padding-top:18px}
+    .casino-gallery-stage{position:relative;width:100%;min-height:min(68dvh,680px);background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:0 18px 38px rgba(0,0,0,.28)}
+    .casino-gallery-stage img{display:block;width:100%;height:min(68dvh,680px);object-fit:cover;object-position:center;opacity:0;transition:opacity .35s ease}
+    .casino-gallery-stage img.ready{opacity:1}
+    .casino-gallery-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(2,11,19,.08),transparent 55%,rgba(2,11,19,.62))}
+    .casino-gallery-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:rgba(255,255,255,.72);font-size:12px;line-height:2;letter-spacing:.05em}
+    .casino-gallery-empty.hidden{display:none}
+    .casino-gallery-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:58px;border:1px solid rgba(240,216,157,.44);background:rgba(2,15,26,.54);color:#f0d89d;font-size:28px;line-height:1;backdrop-filter:blur(6px);z-index:2}
+    .casino-gallery-prev{left:10px}.casino-gallery-next{right:10px}
+    .casino-gallery-nav:disabled{opacity:.24}
+    .casino-gallery-caption{position:absolute;left:18px;right:18px;bottom:16px;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:12px;color:#fff}
+    .casino-gallery-caption strong{font:15px Georgia,serif;letter-spacing:.16em;font-weight:400;color:#f0d89d}
+    .casino-gallery-caption span{font:10px Georgia,serif;letter-spacing:.14em;color:rgba(255,255,255,.74)}
+    .casino-gallery-dots{display:flex;justify-content:center;gap:7px;min-height:12px;flex-wrap:wrap}
+    .casino-gallery-dots button{width:7px;height:7px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.25)}
+    .casino-gallery-dots button.active{background:#d7bc79}
+    .casino-gallery-hint{text-align:center;color:rgba(255,255,255,.58);font-size:10px;line-height:1.8;letter-spacing:.05em}
+    @media(max-width:520px){.casino-gallery-screen{padding:12px 0 max(20px,env(safe-area-inset-bottom));gap:12px}.casino-gallery-stage{min-height:calc(100dvh - 210px);border-left:0;border-right:0}.casino-gallery-stage img{height:calc(100dvh - 210px)}.casino-gallery-screen .casino-return{margin:0 12px}.casino-gallery-hint{padding:0 14px}}
+
     .hilo-wrap{width:min(760px,100%);min-height:calc(100dvh - 64px);margin:auto;padding:18px 14px max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
     .hilo-table{grid-template-rows:auto 1fr auto}
     .hilo-versus{font:11px Georgia,serif;letter-spacing:.16em;color:#ead29a;text-align:center;margin:2px 0 6px}
@@ -764,9 +783,30 @@ body.special-table-playing .special-comment-overlay{display:block}
         <div class="casino-hub-grid">
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
+          <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
         </div>
         <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
+      </div>
+
+
+      <div id="casinoGalleryScreen" class="casino-screen casino-gallery-screen hidden">
+        <h2 class="casino-screen-title">CASINO GALLERY</h2>
+        <p class="casino-screen-sub">館内を見て回る</p>
+        <div id="casinoGalleryStage" class="casino-gallery-stage">
+          <img id="casinoGalleryImage" src="" alt="カジノ館内">
+          <div class="casino-gallery-shade"></div>
+          <div id="casinoGalleryEmpty" class="casino-gallery-empty">館内写真を準備しています。<br><small>casino.gallery01.jpg から連番で読み込みます。</small></div>
+          <button id="casinoGalleryPrev" class="casino-gallery-nav casino-gallery-prev" type="button" aria-label="前の写真">‹</button>
+          <button id="casinoGalleryNext" class="casino-gallery-nav casino-gallery-next" type="button" aria-label="次の写真">›</button>
+          <div class="casino-gallery-caption">
+            <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
+            <span id="casinoGalleryCounter">00 / 00</span>
+          </div>
+        </div>
+        <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
+        <div class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
+        <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -1848,10 +1888,10 @@ body.special-table-playing .special-comment-overlay{display:block}
     const casinoGame=document.getElementById('casinoGame');
     const casinoEnter=document.getElementById('casinoEnter'), casinoExit=document.getElementById('casinoExit');
     const casinoBgm=document.getElementById('casinoBgm');
-    const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize');
+    const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize'), casinoGalleryScreen=document.getElementById('casinoGalleryScreen');
     const blackjackScreen=document.getElementById('blackjackScreen'), hiloScreen=document.getElementById('hiloScreen');
     const casinoHeaderTitle=document.getElementById('casinoHeaderTitle'), casinoHeaderSub=document.getElementById('casinoHeaderSub');
-    const casinoTableMenu=document.getElementById('casinoTableMenu'), casinoPrizeMenu=document.getElementById('casinoPrizeMenu');
+    const casinoTableMenu=document.getElementById('casinoTableMenu'), casinoPrizeMenu=document.getElementById('casinoPrizeMenu'), casinoGalleryMenu=document.getElementById('casinoGalleryMenu');
     const casinoChipsEl=document.getElementById('casinoChips'), prizeChips=document.getElementById('prizeChips');
     const afternoonTea2Owned=document.getElementById('afternoonTea2Owned'), buyAfternoonTea2Ticket=document.getElementById('buyAfternoonTea2Ticket'), afternoonTea4Owned=document.getElementById('afternoonTea4Owned'), buyAfternoonTea4Ticket=document.getElementById('buyAfternoonTea4Ticket'), extraDrinkTicketOwned=document.getElementById('extraDrinkTicketOwned'), buyExtraDrinkTicket=document.getElementById('buyExtraDrinkTicket'), cafeDrinkTicketOwned=document.getElementById('cafeDrinkTicketOwned'), buyCafeDrinkTicket=document.getElementById('buyCafeDrinkTicket'), prizeMessage=document.getElementById('prizeMessage');
     const betAmountEl=document.getElementById('betAmount'), casinoBetIndicator=document.getElementById('casinoBetIndicator');
@@ -2006,12 +2046,13 @@ body.special-table-playing .special-comment-overlay{display:block}
     function startCasinoMusic(){playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
-    function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
+    function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
       hideCasinoScreens();casinoLevel=level;syncCasinoBalances();
       if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
       else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
       else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL');renderPrizeCounter()}
+      else if(level==='gallery'){casinoGalleryScreen.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','GALLERY')}
       else if(level==='blackjack'){blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK','CASINO BLUE SHELL');updateCasinoHud();renderBlackjack()}
       else if(level==='hilo'){hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','CASINO BLUE SHELL');updateHiloHud();renderHilo()}
     }
@@ -2023,7 +2064,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     function exitCasinoExperience(){cancelActiveCasinoRound();casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');stopCasinoMusic();document.body.style.overflow='hidden'}
     function casinoBack(){
       if(casinoLevel==='hub'){exitCasinoExperience();return}
-      if(casinoLevel==='games'||casinoLevel==='prize'){showCasinoLevel('hub');return}
+      if(casinoLevel==='games'||casinoLevel==='prize'||casinoLevel==='gallery'){showCasinoLevel('hub');return}
       if(casinoLevel==='blackjack'||casinoLevel==='hilo'){cancelActiveCasinoRound();showCasinoLevel('games')}
     }
 
@@ -2095,6 +2136,82 @@ body.special-table-playing .special-comment-overlay{display:block}
     refreshCasinoChipsFromSupabase();
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCasinoChipsFromSupabase()});
     window.addEventListener('focus',()=>{refreshCasinoChipsFromSupabase()});
+
+    // CASINO GALLERY
+    // casino.gallery01.jpg から連番で探索。連番が途切れたところで終了。
+    const casinoGalleryImage=document.getElementById('casinoGalleryImage');
+    const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
+    const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
+    const casinoGalleryDots=document.getElementById('casinoGalleryDots');
+    const casinoGalleryPrev=document.getElementById('casinoGalleryPrev');
+    const casinoGalleryNext=document.getElementById('casinoGalleryNext');
+    const casinoGalleryStage=document.getElementById('casinoGalleryStage');
+    let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
+
+    function probeCasinoGalleryFile(src){
+      return new Promise(resolve=>{
+        const img=new Image();
+        img.onload=()=>resolve(true);
+        img.onerror=()=>resolve(false);
+        img.src=src;
+      });
+    }
+    async function discoverCasinoGallery(){
+      const found=[];
+      // 最大30枚。01から連続して存在する画像を読み込む。
+      for(let i=1;i<=30;i++){
+        const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
+        const ok=await probeCasinoGalleryFile(src);
+        if(!ok)break;
+        found.push(src);
+      }
+      casinoGalleryFiles=found;
+      casinoGalleryIndex=Math.min(casinoGalleryIndex,Math.max(0,found.length-1));
+      renderCasinoGallery();
+    }
+    function renderCasinoGallery(){
+      const total=casinoGalleryFiles.length;
+      const has=total>0;
+      casinoGalleryEmpty.classList.toggle('hidden',has);
+      casinoGalleryImage.classList.remove('ready');
+      casinoGalleryPrev.disabled=!has||total<2;
+      casinoGalleryNext.disabled=!has||total<2;
+      casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'00 / 00';
+      casinoGalleryDots.replaceChildren();
+      if(!has){
+        casinoGalleryImage.removeAttribute('src');
+        return;
+      }
+      const src=casinoGalleryFiles[casinoGalleryIndex];
+      casinoGalleryImage.onload=()=>casinoGalleryImage.classList.add('ready');
+      casinoGalleryImage.src=src;
+      casinoGalleryImage.alt=`カジノ館内 ${casinoGalleryIndex+1}`;
+      casinoGalleryFiles.forEach((_,index)=>{
+        const dot=document.createElement('button');
+        dot.type='button';
+        dot.classList.toggle('active',index===casinoGalleryIndex);
+        dot.setAttribute('aria-label',`${index+1}枚目を表示`);
+        dot.addEventListener('click',()=>{casinoGalleryIndex=index;renderCasinoGallery()});
+        casinoGalleryDots.append(dot);
+      });
+    }
+    function stepCasinoGallery(amount){
+      if(casinoGalleryFiles.length<2)return;
+      casinoGalleryIndex=(casinoGalleryIndex+amount+casinoGalleryFiles.length)%casinoGalleryFiles.length;
+      renderCasinoGallery();
+    }
+    casinoGalleryPrev.addEventListener('click',()=>stepCasinoGallery(-1));
+    casinoGalleryNext.addEventListener('click',()=>stepCasinoGallery(1));
+    casinoGalleryStage.addEventListener('touchstart',e=>{casinoGalleryTouchStart=e.touches[0].clientX},{passive:true});
+    casinoGalleryStage.addEventListener('touchend',e=>{
+      const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
+      if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
+    },{passive:true});
+    casinoGalleryMenu.addEventListener('click',async()=>{
+      showCasinoLevel('gallery');
+      await discoverCasinoGallery();
+    });
+
     casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
     buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティーチケット（2名様用）',20000));
