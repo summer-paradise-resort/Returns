@@ -173,6 +173,22 @@
       .casino-gallery-screen .casino-return{margin:0 10px;width:calc(100% - 20px);min-height:40px;height:40px}
       .casino-gallery-hint{padding:0 10px}
     }
+    .casino-gallery-actions{display:grid;gap:5px;min-height:28px;padding:0 2px;align-items:center}
+    .casino-elevator-button{width:100%;min-height:40px;border:1px solid rgba(231,207,148,.52);background:rgba(5,20,34,.88);color:#f4e2b2;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.14em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}
+    .casino-elevator-button.confirm{border-color:rgba(190,70,65,.78);color:#fff;background:rgba(80,12,18,.82);animation:elevatorConfirmPulse 1.7s ease-in-out infinite}
+    @keyframes elevatorConfirmPulse{0%,100%{box-shadow:0 0 0 rgba(172,42,38,0)}50%{box-shadow:0 0 22px rgba(172,42,38,.28)}}
+    .casino-elevator-glitch{position:fixed;inset:0;z-index:190;display:none;overflow:hidden;background:#02070c;pointer-events:all}
+    .casino-elevator-glitch.open{display:block;animation:elevatorGlitchFlash .17s steps(2,end) infinite}
+    .casino-elevator-glitch::before{content:"";position:absolute;inset:-12%;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,rgba(0,178,255,.08) 0 2px,rgba(255,0,72,.06) 2px 4px,transparent 4px 8px);mix-blend-mode:screen;animation:elevatorNoise .12s steps(2,end) infinite}
+    .casino-elevator-glitch::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 7%,rgba(0,210,255,.22) 7% 10%,transparent 10% 42%,rgba(255,0,76,.18) 42% 47%,transparent 47% 100%);animation:elevatorSlice .22s steps(2,end) infinite}
+    @keyframes elevatorNoise{0%{transform:translate(0,0) scale(1.03)}25%{transform:translate(-2%,1%) scale(1.05)}50%{transform:translate(2%,-1%) scale(1.03)}75%{transform:translate(-1%,-2%) scale(1.04)}100%{transform:translate(1%,2%) scale(1.03)}}
+    @keyframes elevatorSlice{0%{clip-path:inset(4% 0 72% 0);transform:translateX(-5%)}25%{clip-path:inset(44% 0 39% 0);transform:translateX(6%)}50%{clip-path:inset(70% 0 8% 0);transform:translateX(-3%)}75%{clip-path:inset(26% 0 55% 0);transform:translateX(4%)}100%{clip-path:inset(8% 0 75% 0);transform:translateX(0)}}
+    @keyframes elevatorGlitchFlash{0%,100%{filter:contrast(1.4) brightness(.7)}50%{filter:contrast(2.5) brightness(1.45)}}
+    .casino-elevator-video{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:#000}
+    .casino-elevator-video.open{display:flex}
+    .casino-elevator-video video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+    .casino-elevator-video-close{position:absolute;z-index:2;top:max(14px,env(safe-area-inset-top));right:14px;width:44px;height:44px;border:1px solid rgba(255,255,255,.45);border-radius:50%;background:rgba(0,0,0,.48);color:#fff;font-size:25px;line-height:1}
+    .casino-elevator-video-error{position:absolute;left:22px;right:22px;top:50%;transform:translateY(-50%);text-align:center;color:#fff;font-size:13px;line-height:2;letter-spacing:.05em}
 
     .hilo-wrap{width:min(760px,100%);min-height:calc(100dvh - 64px);margin:auto;padding:18px 14px max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
     .hilo-table{grid-template-rows:auto 1fr auto}
@@ -829,8 +845,17 @@ body.special-table-playing .special-comment-overlay{display:block}
           </div>
         </div>
         <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
-        <div class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
+        <div class="casino-gallery-actions">
+          <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
+          <button id="casinoElevatorButton" class="casino-elevator-button hidden" type="button">エレベーターに乗る。</button>
+        </div>
         <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
+      </div>
+      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"></div>
+      <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
+        <button id="casinoElevatorVideoClose" class="casino-elevator-video-close" type="button" aria-label="動画を閉じる">×</button>
+        <video id="casinoElevatorMovie" src="casino.elevator.mp4" preload="metadata" playsinline></video>
+        <div id="casinoElevatorVideoError" class="casino-elevator-video-error hidden">動画を読み込めませんでした。</div>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -2253,6 +2278,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
+      if(casinoLevel==='gallery'&&level!=='gallery'&&typeof window.__sprLeaveCasinoGalleryElevator==='function')window.__sprLeaveCasinoGalleryElevator();
       hideCasinoScreens();casinoLevel=level;syncCasinoBalances();
       casinoGame.classList.toggle('gallery-lock',level==='gallery');
       if(level==='gallery')casinoGame.scrollTop=0;
@@ -2351,8 +2377,82 @@ body.special-table-playing .special-comment-overlay{display:block}
     const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
+    const casinoGalleryHint=document.getElementById('casinoGalleryHint');
+    const casinoElevatorButton=document.getElementById('casinoElevatorButton');
+    const casinoElevatorGlitch=document.getElementById('casinoElevatorGlitch');
+    const casinoElevatorVideo=document.getElementById('casinoElevatorVideo');
+    const casinoElevatorMovie=document.getElementById('casinoElevatorMovie');
+    const casinoElevatorVideoClose=document.getElementById('casinoElevatorVideoClose');
+    const casinoElevatorVideoError=document.getElementById('casinoElevatorVideoError');
+    const CASINO_ELEVATOR_TRIGGER_FILE='casino.gallery08.jpg';
+    const CASINO_ELEVATOR_MOVIE='casino.elevator.mp4';
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
     let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false;
+    let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
+
+    function hasJokerForElevator(){return belongingCount('jokerCard')>0}
+    function isCasinoElevatorSlide(){
+      const src=String(casinoGalleryFiles[casinoGalleryIndex]||'').split('?')[0];
+      return src.endsWith(CASINO_ELEVATOR_TRIGGER_FILE);
+    }
+    function stopElevatorGlitch(){
+      clearTimeout(casinoElevatorGlitchTimer);casinoElevatorGlitchTimer=null;
+      casinoElevatorGlitch.classList.remove('open');casinoElevatorGlitch.setAttribute('aria-hidden','true');
+    }
+    function closeElevatorMovie(){
+      try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
+      casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
+      casinoElevatorVideoError.classList.add('hidden');
+      casinoElevatorState='idle';
+      updateCasinoElevatorAccess();
+    }
+    function updateCasinoElevatorAccess(){
+      if(!casinoElevatorButton)return;
+      const active=casinoLevel==='gallery'&&isCasinoElevatorSlide()&&hasJokerForElevator();
+      casinoElevatorButton.classList.toggle('hidden',!active);
+      if(casinoGalleryHint)casinoGalleryHint.classList.toggle('hidden',active);
+      if(active){
+        stopCasinoMusic();
+        if(casinoElevatorState!=='confirm'){casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm')}
+      }else{
+        stopElevatorGlitch();
+        if(casinoElevatorVideo.classList.contains('open'))closeElevatorMovie();
+        casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm');
+        if(!casinoGame.classList.contains('hidden'))startCasinoMusic();
+      }
+    }
+    function runCasinoElevatorGlitch(){
+      casinoElevatorState='glitch';stopCasinoMusic();
+      casinoElevatorGlitch.classList.add('open');casinoElevatorGlitch.setAttribute('aria-hidden','false');
+      clearTimeout(casinoElevatorGlitchTimer);
+      casinoElevatorGlitchTimer=setTimeout(()=>{
+        casinoElevatorGlitchTimer=null;casinoElevatorGlitch.classList.remove('open');casinoElevatorGlitch.setAttribute('aria-hidden','true');
+        casinoElevatorState='confirm';casinoElevatorButton.textContent='本当に乗りますか？';casinoElevatorButton.classList.add('confirm');
+      },2800);
+    }
+    function playCasinoElevatorMovie(){
+      casinoElevatorState='video';stopCasinoMusic();casinoElevatorVideoError.classList.add('hidden');
+      casinoElevatorMovie.src=CASINO_ELEVATOR_MOVIE;
+      casinoElevatorVideo.classList.add('open');casinoElevatorVideo.setAttribute('aria-hidden','false');
+      try{casinoElevatorMovie.currentTime=0}catch{}
+      const p=casinoElevatorMovie.play();
+      if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
+    }
+    casinoElevatorButton.addEventListener('click',()=>{
+      if(!isCasinoElevatorSlide()||!hasJokerForElevator())return;
+      if(casinoElevatorState==='confirm')playCasinoElevatorMovie();
+      else if(casinoElevatorState!=='glitch'&&casinoElevatorState!=='video')runCasinoElevatorGlitch();
+    });
+    casinoElevatorVideoClose.addEventListener('click',closeElevatorMovie);
+    casinoElevatorMovie.addEventListener('ended',closeElevatorMovie);
+    casinoElevatorMovie.addEventListener('error',()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
+    window.__sprLeaveCasinoGalleryElevator=()=>{
+      stopElevatorGlitch();
+      if(casinoElevatorVideo.classList.contains('open')){try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true')}
+      casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm');casinoElevatorButton.classList.add('hidden');
+      if(casinoGalleryHint)casinoGalleryHint.classList.remove('hidden');
+      if(!casinoGame.classList.contains('hidden'))startCasinoMusic();
+    };
 
     function probeCasinoGalleryFile(src){
       return new Promise(resolve=>{
@@ -2392,6 +2492,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       if(!has){
         casinoGalleryImage.removeAttribute('src');
         casinoGalleryImage.classList.remove('ready');
+        updateCasinoElevatorAccess();
         return;
       }
       const src=casinoGalleryFiles[casinoGalleryIndex];
@@ -2401,6 +2502,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         casinoGalleryImage.src=src;
         casinoGalleryImage.alt=`カジノ館内 ${casinoGalleryIndex+1}`;
         casinoGalleryImage.classList.add('ready');
+        updateCasinoElevatorAccess();
       };
       preload.src=src;
       casinoGalleryFiles.forEach((_,index)=>{
@@ -2430,6 +2532,8 @@ body.special-table-playing .special-comment-overlay{display:block}
     });
     // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
     discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
+    window.addEventListener('storage',e=>{if(e.key===belongingsKey&&casinoLevel==='gallery')updateCasinoElevatorAccess()});
+    window.addEventListener('focus',()=>{if(casinoLevel==='gallery')updateCasinoElevatorAccess()});
 
     casinoTableMenu.addEventListener('click',()=>showCasinoLevel('games'));
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
