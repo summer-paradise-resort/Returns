@@ -785,7 +785,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         <div class="casino-hub-grid">
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
-          <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
+          <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内をご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
         </div>
         <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
@@ -2162,9 +2162,13 @@ body.special-table-playing .special-comment-overlay{display:block}
       const found=[];
       // 最大30枚。01から連続して存在する画像を読み込む。
       for(let i=1;i<=30;i++){
-        const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
-        const ok=await probeCasinoGalleryFile(src);
-        if(!ok)break;
+        const base=`casino.gallery${String(i).padStart(2,'0')}`;
+        let src='';
+        for(const ext of ['.jpg','.JPG']){
+          const candidate=base+ext;
+          if(await probeCasinoGalleryFile(candidate)){src=candidate;break}
+        }
+        if(!src)break;
         found.push(src);
       }
       casinoGalleryFiles=found;
