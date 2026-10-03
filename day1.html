@@ -397,6 +397,8 @@
     .explore-location-sheet h2{text-align:center;margin:0 0 15px;font-size:23px;font-weight:400;letter-spacing:.12em;color:#fff}
     .explore-location-actions{max-width:620px;margin:0 auto;grid-template-columns:1fr}
     .explore-location-action{background:rgba(255,255,255,.94);border-color:rgba(231,223,209,.7);color:#0d2743;backdrop-filter:blur(4px)}
+    .explore-action-message{max-width:620px;margin:14px auto 0;padding:14px 15px;border:1px solid rgba(231,207,148,.34);background:rgba(3,15,27,.86);color:#fff;font-size:12px;line-height:2;letter-spacing:.035em;backdrop-filter:blur(8px)}
+    .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:7px;color:#e6cc8e;font:9px Georgia,serif;letter-spacing:.22em}
     @media(min-width:620px){.explore-location-actions{grid-template-columns:repeat(2,1fr)}}
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
@@ -724,7 +726,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
       <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
-      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><h2>何をしますか？</h2><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div></div>
+      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><h2>何をしますか？</h2><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"></div></div>
     </section>
   </section>
 
@@ -3637,17 +3639,103 @@ window.addEventListener('message',e=>{
   const locationEn=document.getElementById('exploreLocationEn');
   const locationJp=document.getElementById('exploreLocationJp');
   const locationBack=document.getElementById('exploreLocationBack');
+  const actionMessage=document.getElementById('exploreActionMessage');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
   const spots={
     beach:{label:'ビーチ',en:'BEACH',image:'summer_paradise_beach.jpg'},
     lighthouse:{label:'灯台',en:'LIGHTHOUSE',image:'lighthouse.jpg'},
     mermaids_cove:{label:'人魚の入り江',en:"MERMAID'S COVE",image:'mermaids_cove.jpg'}
   };
+  const fallbackMessages={
+    beach:{
+      camera:{
+        day:'青い海と白い砂浜を、一枚の写真に収めた。',
+        sunset:'夕日に染まる海岸を、静かに撮影した。',
+        night:'月明かりに浮かぶ砂浜を、そっと写真に収めた。'
+      },
+      telescope:{
+        day:'水平線を眺める。穏やかな海がどこまでも続いている。',
+        sunset:'夕暮れの水平線を眺める。特に変わったものは見えない。',
+        night:'暗い水平線を覗いてみる。遠くにいくつかの船明かりが揺れている。'
+      },
+      fishing:{
+        day:'潮風に吹かれながら釣りを楽しんだ。小さな魚が一匹釣れた。',
+        sunset:'夕暮れまで糸を垂らしたが、大きな獲物はかからなかった。',
+        night:'夜の波音を聞きながら糸を垂らした。しばらく待ったが、今日は静かなようだ。'
+      },
+      snorkel:{
+        day:'明るい海中を泳ぐ。色鮮やかな魚たちが見える。',
+        sunset:'夕日に照らされた浅瀬を泳いだ。海の中は静かだった。',
+        night:'夜の浅瀬を少しだけ泳いだ。足元を小さな魚の影が横切っていった。'
+      }
+    },
+    lighthouse:{
+      camera:{
+        day:'青空の下に立つ灯台を撮影した。',
+        sunset:'夕焼けを背にした灯台を、一枚の写真に残した。',
+        night:'暗い海を照らす灯台の光を、写真に収めた。'
+      },
+      telescope:{
+        day:'望遠鏡を覗く。海岸線と沖合の景色がくっきり見える。',
+        sunset:'夕日に染まる島を眺めた。遠くの景色がゆっくり暗くなっていく。',
+        night:'灯台の高台から夜の海を覗く。遠くの灯りが点々と見える。'
+      },
+      fishing:{
+        day:'灯台近くの岩場で釣りをした。波の音だけが静かに響いている。',
+        sunset:'夕暮れの海へ糸を垂らしたが、今日は何も釣れなかった。',
+        night:'暗い岩場から海を眺めた。ここで釣りを続けるのは危なそうだ。今日はやめておこう。'
+      },
+      snorkel:{
+        day:'灯台から海へ？　お客様、ずいぶん大胆な遊びを思いつかれますね。昔、ここから本当に飛び込んだ方をお一人だけ見かけたことがありますが、それはもう周囲が大騒ぎになりまして……。危険ですので、どうか真似はなさらないでくださいね。',
+        sunset:'まさか、この高さから海へ降りるおつもりですか？　ふふ、お客様もなかなか思い切ったことを仰る。以前、ここから飛び込んだ方がいらっしゃったのですが、あの時は辺りが騒然となりました。日も傾いておりますし、今日は灯台から眺めるだけになさってください。',
+        night:'……灯台から海へ飛び込む、ですか。お客様、それは少々笑えない冗談です。昔、ここから飛び込んだ方を一度だけ見たことがあります。周囲は随分と騒ぎになりましたよ。夜の海は、見えているよりずっと危険です。どうか、ここから先へは行かれませんように。'
+      }
+    },
+    mermaids_cove:{
+      camera:{
+        day:'静かな入り江を写真に収めた。透き通った水が美しい。',
+        sunset:'夕日に染まる入り江を撮影した。水面が金色に揺れている。',
+        night:'月明かりに照らされた入り江を撮影した。静かな水面だけが写真に残った。'
+      },
+      telescope:{
+        day:'対岸を望遠鏡で眺めた。特に変わったものは見つからない。',
+        sunset:'暮れゆく入り江を眺める。岩の影が少しずつ長くなっていった。',
+        night:'暗い入り江の奥を覗いてみる。岩陰と波の揺らめきが見えるだけだ。'
+      },
+      fishing:{
+        day:'入り江で釣りを楽しんだ。小さな魚が餌の周りに集まってきた。',
+        sunset:'夕暮れの入り江でしばらく待ったが、釣果はなかった。',
+        night:'夜の入り江で糸を垂らした。水面が静かに揺れているだけで、当たりはない。'
+      },
+      snorkel:{
+        day:'入り江の中を泳いだ。岩の隙間には小さな魚や貝が見える。',
+        sunset:'夕暮れ前の入り江を泳ぐ。水中には静かな青が広がっていた。',
+        night:'夜の入り江へ入る。水面の下は暗く、岸の近くを少し泳いで戻った。'
+      }
+    }
+  };
   let selectedSpot='';
+  function explorePeriod(){
+    const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+    return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
+  }
+  function clearActionMessage(){
+    if(!actionMessage)return;
+    actionMessage.textContent='';
+    actionMessage.classList.add('hidden');
+  }
+  function showFallback(actionKey){
+    const period=explorePeriod();
+    const message=fallbackMessages?.[selectedSpot]?.[actionKey]?.[period]||'特に変わったことは起こらなかった。';
+    if(actionMessage){actionMessage.textContent=message;actionMessage.classList.remove('hidden')}
+    return message;
+  }
+  window.__sprExploreFallbackMessage=(spotKey,actionKey,period=explorePeriod())=>fallbackMessages?.[spotKey]?.[actionKey]?.[period]||'';
   function openLocation(spotKey){
     const spot=spots[spotKey];
     if(!spot)return;
     selectedSpot=spotKey;
+    clearActionMessage();
     locationBg.style.backgroundImage=`url("${spot.image}")`;
     locationEn.textContent=spot.en;
     locationJp.textContent=spot.label;
@@ -3655,15 +3743,16 @@ window.addEventListener('message',e=>{
     locationPage.setAttribute('aria-hidden','false');
   }
   function closeLocation(){
+    clearActionMessage();
     locationPage.classList.add('hidden');
     locationPage.setAttribute('aria-hidden','true');
   }
   choiceButtons.forEach(btn=>btn.addEventListener('click',()=>openLocation(btn.dataset.exploreSpot)));
   locationBack?.addEventListener('click',closeLocation);
   exploreView.querySelector('[data-back]')?.addEventListener('click',closeLocation);
-  // 行動ボタンの効果は次の工程で追加する。場所だけは保持しておく。
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
     btn.dataset.selectedSpot=selectedSpot;
+    showFallback(btn.dataset.exploreAction);
   }));
   // 今後、探索ギミックで動画が追加された場合も自動でBGMを一時停止する。
   // 動画終了後は、探索画面を開いている間だけ同じ位置からBGMを再開する。
