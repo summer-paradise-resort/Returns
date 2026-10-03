@@ -346,7 +346,7 @@
 
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
-    .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:pan-x;cursor:zoom-in}
+    .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
     .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
     .bar-menu-hint strong{font-weight:500;color:var(--navy)}
@@ -356,6 +356,12 @@
     .bar-menu-lightbox img{display:block;width:auto;height:auto;max-width:96vw;max-height:calc(100% - 8px);object-fit:contain;box-shadow:0 18px 55px rgba(0,0,0,.42);touch-action:pinch-zoom}
     .bar-menu-lightbox-close{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;z-index:2;width:44px;height:44px;border:1px solid rgba(13,39,67,.28);border-radius:50%;background:rgba(255,255,255,.88);color:var(--navy);font-size:25px;line-height:1;display:grid;place-items:center;backdrop-filter:blur(5px)}
     .bar-menu-lightbox-note{position:absolute;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:2;color:var(--navy);font-size:10px;letter-spacing:.08em;white-space:nowrap;background:rgba(255,255,255,.82);padding:6px 10px;border-radius:999px;backdrop-filter:blur(5px)}
+    /* TOUCH / SCROLL FIX 2026-10-03:
+       Tappable images must not block vertical page scrolling.
+       Swipe galleries keep horizontal swipe handling while the browser owns vertical pan. */
+    .room-scene,.casino-gallery-stage{touch-action:pan-y}
+    .collection-card:not(.missing),.bar-menu-zoom-trigger{touch-action:manipulation}
+
 
     .special-overlay{position:fixed;inset:0;z-index:140;background:rgba(2,7,13,.96);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 2.4s ease}
     .special-overlay.open{opacity:1;pointer-events:auto}.special-dialog{width:min(620px,100%);text-align:center}.special-speaker{font:11px Georgia,serif;letter-spacing:.28em;color:#d8bd79;margin-bottom:24px}.special-line{min-height:92px;font:20px/2 Georgia,'Yu Mincho',serif;letter-spacing:.06em;opacity:1;transform:translateX(0);filter:blur(0);transition:opacity .48s ease,transform .58s cubic-bezier(.22,.61,.36,1),filter .48s ease}.special-line.soft-enter{opacity:0;transform:translateY(8px);filter:blur(2px)}.special-actions{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}.special-actions button{min-width:210px;min-height:50px;border:1px solid rgba(225,199,132,.55);background:transparent;color:#fff;letter-spacing:.1em}.special-actions button:hover{background:rgba(255,255,255,.08)}
@@ -1630,8 +1636,23 @@ body.special-table-playing .special-comment-overlay{display:block}
       document.body.style.overflow=barMenuPreviousOverflow;
       setTimeout(()=>{barMenuLightboxImage.src=''},220);
     }
+    function bindTapOnlyActivation(element,activate,{threshold=10}={}){
+      let startX=0,startY=0,moved=false;
+      element.addEventListener('pointerdown',event=>{
+        if(event.pointerType==='mouse')return;
+        startX=event.clientX;startY=event.clientY;moved=false;
+      },{passive:true});
+      element.addEventListener('pointermove',event=>{
+        if(event.pointerType==='mouse')return;
+        if(Math.hypot(event.clientX-startX,event.clientY-startY)>threshold)moved=true;
+      },{passive:true});
+      element.addEventListener('click',event=>{
+        if(moved){event.preventDefault();event.stopPropagation();moved=false;return}
+        activate(event);
+      });
+    }
     document.querySelectorAll('[data-menu-zoom]').forEach(button=>{
-      button.addEventListener('click',()=>{
+      bindTapOnlyActivation(button,()=>{
         const img=button.querySelector('img');
         openBarMenuLightbox(button.dataset.menuZoom,img?img.alt:'');
       });
@@ -2576,7 +2597,8 @@ body.special-table-playing .special-comment-overlay{display:block}
         if(count){
           card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`${img.alt}を拡大表示`);
           const openPreview=()=>openCollectionPreview(img.src,img.alt);
-          card.addEventListener('click',openPreview);
+          if(typeof bindTapOnlyActivation==='function')bindTapOnlyActivation(card,openPreview);
+          else card.addEventListener('click',openPreview);
           card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPreview()}});
         }
         grid.append(card)});
@@ -2721,16 +2743,16 @@ body.special-table-playing .special-comment-overlay{display:block}
 &lt;/style&gt;
 
 &lt;style&gt;
-#coasterZoom{cursor:zoom-out}
+#coaster14Grid{touch-action:pan-y}#coasterZoom{cursor:zoom-out}
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
-#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:manipulation}
+#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
 &lt;/style&gt;
 &lt;style&gt;/* SPR_COASTER_ZOOM_CSS */
-#coasterZoom{cursor:zoom-out}
+#coaster14Grid{touch-action:pan-y}#coasterZoom{cursor:zoom-out}
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
-#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:manipulation}
+#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
 &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;THE PEARL TERRACE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;The Pearl Terrace&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ラボ・デ・トロ&quot;&gt;ラボ・デ・トロ&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;シーフード・パエリアプレート&quot;&gt;シーフード・パエリアプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;地中海デリプレート&quot;&gt;地中海デリプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモンチキンプレート&quot;&gt;レモンチキンプレート&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
@@ -2906,16 +2928,16 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 &lt;/style&gt;
 
 &lt;style&gt;
-#coasterZoom{cursor:zoom-out}
+#coaster14Grid{touch-action:pan-y}#coasterZoom{cursor:zoom-out}
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
-#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:manipulation}
+#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
 &lt;/style&gt;
 &lt;style&gt;/* SPR_COASTER_ZOOM_CSS */
-#coasterZoom{cursor:zoom-out}
+#coaster14Grid{touch-action:pan-y}#coasterZoom{cursor:zoom-out}
 #coasterZoom img{display:block;width:auto;height:auto;max-width:88vw;max-height:78dvh;object-fit:contain;cursor:default;border:0;background:transparent}
 #coasterZoomClose{position:fixed;top:max(18px,env(safe-area-inset-top));right:18px;z-index:10002;color:#fff;font-size:38px;line-height:1;background:rgba(7,18,29,.55);width:48px;height:48px;border-radius:50%}
-#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:manipulation}
+#coaster14Grid button[data-coaster-file]{cursor:zoom-in;touch-action:pan-x pan-y pinch-zoom}
 &lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;home&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;MARINE BLOOM CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main&gt;&lt;h1&gt;Marine Bloom Cafe&lt;/h1&gt;&lt;div class=&quot;sub&quot;&gt;DINING &amp;amp; CAFE&lt;/div&gt;&lt;h2&gt;お食事&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;meals&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ラボ・デ・トロ&quot;&gt;ラボ・デ・トロ&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;シーフード・パエリアプレート&quot;&gt;シーフード・パエリアプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;地中海デリプレート&quot;&gt;地中海デリプレート&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモンチキンプレート&quot;&gt;レモンチキンプレート&lt;/button&gt;&lt;/div&gt;&lt;h2&gt;ドリンク&lt;/h2&gt;&lt;div class=&quot;grid&quot; id=&quot;drinks&quot;&gt;&lt;button class=&quot;item&quot; data-value=&quot;ブレンドコーヒー&quot;&gt;ブレンドコーヒー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アールグレイ&quot;&gt;アールグレイ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;アイスティー&quot;&gt;アイスティー&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;カフェラテ&quot;&gt;カフェラテ&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;レモネード&quot;&gt;レモネード&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;item&quot; data-value=&quot;オレンジジュース&quot;&gt;オレンジジュース&lt;small&gt;CAFE DRINK&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;div id=&quot;staff&quot; class=&quot;staff&quot;&gt;&lt;span class=&quot;staff-name&quot;&gt;STAFF&lt;/span&gt;&lt;span id=&quot;staffText&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;button id=&quot;order&quot; class=&quot;order&quot;&gt;注文する&lt;/button&gt;&lt;div id=&quot;status&quot; class=&quot;status&quot;&gt;食事とドリンクをお選びください。&lt;/div&gt;&lt;div id=&quot;coasterModal&quot; class=&quot;modal&quot; aria-hidden=&quot;true&quot;&gt;&lt;div class=&quot;modal-card&quot;&gt;&lt;button id=&quot;coasterClose&quot; class=&quot;modal-close&quot; aria-label=&quot;閉じる&quot;&gt;×&lt;/button&gt;&lt;div class=&quot;modal-label&quot;&gt;COMPLIMENTARY COASTER&lt;/div&gt;&lt;img id=&quot;coasterImage&quot; alt=&quot;ランダムコースター&quot;&gt;&lt;p id=&quot;coasterFile&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;div id=&quot;staffDialogue&quot; class=&quot;staff-dialogue&quot; aria-hidden=&quot;true&quot; style=&quot;display:none!important&quot;&gt;&lt;div class=&quot;staff-dialogue-box&quot;&gt;&lt;div class=&quot;staff-dialogue-name&quot;&gt;STAFF&lt;/div&gt;&lt;div id=&quot;staffDialogueText&quot; class=&quot;staff-dialogue-text&quot;&gt;&lt;/div&gt;&lt;button id=&quot;staffDialogueClose&quot; class=&quot;staff-dialogue-next&quot; type=&quot;button&quot;&gt;CLOSE　×&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ14杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
