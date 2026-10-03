@@ -547,7 +547,6 @@ body.special-table-playing .special-comment-overlay{display:block}
               </div>
               <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="room-actions">
-                <button id="roomServiceOpen" class="room-service-open" type="button"><span>ルームサービス</span></button>
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
                 <div id="roomExploreResult" class="room-explore-result hidden" aria-live="polite"></div>
@@ -1194,9 +1193,36 @@ body.special-table-playing .special-comment-overlay{display:block}
     function connectChallengerComments(sessionId){if(!window.supabaseClientSpecial||!sessionId)return;if(challengerCommentChannel)window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('broadcast',{event:'gallery-comment'},({payload})=>flySpecialComment(String(payload?.text||'').slice(0,60),String(payload?.name||'GALLERY').slice(0,24))).subscribe()}
     async function sendSpectatorComment(){const text=String(spectatorCommentInput?.value||'').trim().slice(0,60);if(!text||!activeSpecialSessionId||!spectatorChannel)return;spectatorCommentInput.value='';await spectatorChannel.send({type:'broadcast',event:'gallery-comment',payload:{text,name:storedGuestName||'GALLERY'}})}
     if(spectatorCommentSend)spectatorCommentSend.onclick=sendSpectatorComment;if(spectatorCommentInput)spectatorCommentInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendSpectatorComment()}});
-    function showSpecialBroadcast(row){const m=row?.metadata||{};const incomingSession=String(m.session_id||activeSpecialSessionId||'');activeSpecialSessionId=incomingSession||activeSpecialSessionId;specialBroadcastSessionId=incomingSession;if(incomingSession&&specialBroadcastDismissedSessionId===incomingSession)return;specialBroadcastText.textContent=row.message||'';specialBroadcast.classList.remove('hidden');if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();clearInterval(broadcastTimer);const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};tick();broadcastTimer=setInterval(tick,1000)}
+    function showSpecialBroadcast(row){
+      const m=row?.metadata||{};
+      const incomingSession=String(m.session_id||activeSpecialSessionId||'').trim();
+      // IMPORTANT: 表示中の告知は「同じSPECIAL TABLE」の更新だけを受け付ける。
+      // 別セッションの遅延Realtime通知で、現在の告知が点滅/上書きされるのを防ぐ。
+      if(specialBroadcastSessionId && incomingSession && specialBroadcastSessionId!==incomingSession && !specialBroadcast.classList.contains('hidden')) return;
+      activeSpecialSessionId=incomingSession||activeSpecialSessionId;
+      specialBroadcastSessionId=incomingSession;
+      if(incomingSession&&specialBroadcastDismissedSessionId===incomingSession)return;
+      specialBroadcastText.textContent=row.message||'';
+      specialBroadcast.classList.remove('hidden');
+      specialBroadcast.dataset.userPending='1';
+      if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');
+      const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();
+      clearInterval(broadcastTimer);
+      const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};
+      tick();broadcastTimer=setInterval(tick,1000)
+    }
+    function hideSpecialBroadcast(reason='system',sessionId=''){
+      const target=String(sessionId||'').trim();
+      // ユーザーがまだ閉じていない現在の告知は、別セッションや通常の再描画からは消さない。
+      if(reason!=='user' && reason!=='watch' && reason!=='reset' && reason!=='finished-current' && specialBroadcast.dataset.userPending==='1') return false;
+      if(reason==='finished-current' && target && specialBroadcastSessionId && target!==specialBroadcastSessionId) return false;
+      specialBroadcast.dataset.userPending='0';
+      specialBroadcast.classList.add('hidden');
+      clearInterval(broadcastTimer);
+      return true;
+    }
     function showSpectatorInvite(sessionId,challenger){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger)}
-    specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId||String(activeSpecialSessionId||'');specialBroadcast.classList.add('hidden');clearInterval(broadcastTimer)};spectatorClose.onclick=closeSpectator;
+    specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId||String(activeSpecialSessionId||'');hideSpecialBroadcast('user');};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
     function renderSpectatorState(state={}){
       if(spectatorBack)spectatorBack.classList.toggle('hidden',!state.finished);
@@ -1213,7 +1239,7 @@ body.special-table-playing .special-comment-overlay{display:block}
         window.__sprSpectatorCountdown=setInterval(()=>{const el=spectatorStage.querySelector('[data-spectator-countdown]');if(!el){clearInterval(window.__sprSpectatorCountdown);return}const n=Math.max(0,Math.ceil((new Date(state.starts_at).getTime()-Date.now())/1000));el.textContent=n?`開卓まで ${n} 秒`:'開卓をお待ちください。';if(!n)clearInterval(window.__sprSpectatorCountdown)},500);
       }else spectatorStage.innerHTML=`${matchup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
-    async function openSpectator(sessionId,challenger=''){specialBroadcast.classList.add('hidden');
+    async function openSpectator(sessionId,challenger=''){hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
       try{specialBgm.currentTime=0;await specialBgm.play()}catch(e){
         const unlockSpecialBgm=async()=>{try{await specialBgm.play()}catch{}};
@@ -1225,7 +1251,27 @@ body.special-table-playing .special-comment-overlay{display:block}
         if(t&&note)note.textContent=`${n}：${t}`;
       }).subscribe()}
     if(window.supabaseClientSpecial){
-      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{const r=payload.new;if(r&&r.announcement_type==='special-table'){const m=r.metadata||{},state=m.state;if(state==='finished'){localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}refreshCasinoSpectatorMenu();return}setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now()}));if(state==='countdown'){showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,150)}}}).subscribe();
+      window.supabaseClientSpecial.channel('resort-special-announcements').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{
+        const r=payload.new;
+        if(!r||r.announcement_type!=='special-table')return;
+        const m=r.metadata||{},state=String(m.state||''),incomingSession=String(m.session_id||'').trim();
+        if(state==='finished'){
+          // 以前は「誰かのfinished通知」が届くだけで、現在表示中の別SPECIAL TABLE告知まで消していた。
+          // 今は同一session_idの終了通知だけを閉じる。
+          const sameDisplayed=!!(incomingSession&&specialBroadcastSessionId&&incomingSession===specialBroadcastSessionId);
+          const sameActive=!!(incomingSession&&activeSpecialSessionId&&incomingSession===String(activeSpecialSessionId));
+          if(!sameDisplayed&&!sameActive)return;
+          localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();
+          hideSpecialBroadcast('finished-current',incomingSession);
+          if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
+          refreshCasinoSpectatorMenu();return;
+        }
+        if(state!=='countdown')return;
+        // countdown告知もsession_id単位で扱い、遅延/重複通知による点滅を防ぐ。
+        setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});
+        localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now(),sessionId:incomingSession}));
+        showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,150);
+      }).subscribe();
       refreshCasinoSpectatorMenu();
       // 別端末がRealtime通知の瞬間に開いていなくても、開催中は自動検出する。
       window.__sprSpectatorMenuPoll=setInterval(refreshCasinoSpectatorMenu,2000);
@@ -1554,7 +1600,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       else{hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.add('hidden');hiloStatus.textContent=win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。'}
 
       await pushSpecialState({challenger:storedGuestName,finished:true,message:win?'挑戦者の勝利です。':'勝負が決着しました。'},'finished');
-      localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();specialBroadcast.classList.add('hidden');
+      localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();hideSpecialBroadcast('finished-current',String(activeSpecialSessionId||''));
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
       await publishSpecialAnnouncement(win?`${storedGuestName}様のSPECIAL TABLEが決着しました。挑戦者の勝利です。`:`${storedGuestName}様のSPECIAL TABLEが決着しました。`,{challenger:storedGuestName,state:'finished',result:win?'win':'lose',session_id:activeSpecialSessionId});
 
@@ -1665,7 +1711,7 @@ body.special-table-playing .special-comment-overlay{display:block}
       localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');
       if(serious)localStorage.setItem(encoreMealDateKey,tokyoDateKey());
       casinoChips=chips;previousCasinoChips=chips;localStorage.setItem(casinoChipKey,String(casinoChips));activeSpecialSessionId=null;seriousEmilyMode=false;
-      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');specialBroadcast.classList.add('hidden');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
+      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');hideSpecialBroadcast('reset');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';syncCasinoBalances();normalResortAnnouncement();
       alert(serious?'本気のエミリー確認用：999,900 CHIP＋本日のアンコール喫食フラグを設定しました。':'通常エミリー確認用：49,900 CHIPに設定しました。');
     }
@@ -2084,7 +2130,7 @@ body.special-table-playing .special-comment-overlay{display:block}
     document.getElementById('chatOpenButton').addEventListener('click',openChatSheet);
     document.getElementById('fallbackChatOpen').addEventListener('click',openChatSheet);
     document.getElementById('chatCloseButton').addEventListener('click',closeChatSheet);
-    document.getElementById('roomServiceOpen').addEventListener('click',openRoomService);
+    document.getElementById('roomServiceOpen')?.addEventListener('click',openRoomService);
     document.getElementById('fallbackRoomServiceOpen').addEventListener('click',openRoomService);
     document.getElementById('roomServiceClose').addEventListener('click',closeRoomService);
     const collectionPreview=document.getElementById('collectionPreview'),
