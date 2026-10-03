@@ -397,11 +397,11 @@
     .explore-location-sheet h2{text-align:center;margin:0 0 15px;font-size:23px;font-weight:400;letter-spacing:.12em;color:#fff}
     .explore-location-actions{max-width:620px;margin:0 auto;grid-template-columns:1fr}
     .explore-location-action{background:rgba(255,255,255,.94);border-color:rgba(231,223,209,.7);color:#0d2743;backdrop-filter:blur(4px)}
-    .explore-action-message{position:absolute;z-index:8;left:18px;right:18px;top:50%;transform:translateY(-50%);max-width:620px;margin:0 auto;padding:20px 18px 16px;border:1px solid rgba(199,164,93,.72);background:rgba(251,248,241,.97);color:var(--navy);font-size:13px;line-height:2;letter-spacing:.035em;box-shadow:0 18px 50px rgba(0,0,0,.38);backdrop-filter:blur(12px);max-height:72dvh;overflow-y:auto}
-    .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:9px;color:var(--gold);font:9px Georgia,serif;letter-spacing:.22em}
-    .explore-action-message-text{white-space:pre-wrap}
-    .explore-action-message-close{display:block;margin:15px 0 0 auto;min-width:78px;height:38px;border:1px solid rgba(168,123,47,.42);background:transparent;color:var(--gold);font:10px Georgia,serif;letter-spacing:.14em}
-    @media(max-width:520px){.explore-action-message{left:14px;right:14px;padding:18px 16px 14px;font-size:12px;line-height:1.95;max-height:68dvh}}
+    .explore-action-message{position:fixed;z-index:110;left:50%;right:auto;top:50%;transform:translate(-50%,-50%);width:min(620px,calc(100vw - 36px));margin:0;padding:22px 20px 18px;border:1px solid rgba(199,164,93,.78);background:rgba(5,21,36,.96);color:#fff;font-size:13px;line-height:2;letter-spacing:.035em;box-shadow:0 24px 70px rgba(0,0,0,.58);backdrop-filter:blur(14px);max-height:72dvh;overflow-y:auto}
+    .explore-action-message::before{content:"RESORT GUIDE";display:block;margin-bottom:10px;color:#e6cc8e;font:9px Georgia,serif;letter-spacing:.22em}
+    .explore-action-message-text{white-space:pre-wrap;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.28)}
+    .explore-action-message-close{display:block;margin:18px 0 0 auto;min-width:86px;height:40px;border:1px solid rgba(230,204,142,.68);background:rgba(255,255,255,.04);color:#f0d89d;font:10px Georgia,serif;letter-spacing:.14em}
+    @media(max-width:520px){.explore-action-message{width:calc(100vw - 28px);padding:20px 17px 16px;font-size:12px;line-height:1.95;max-height:68dvh}}
     @media(min-width:620px){.explore-location-actions{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:520px){
       .explore-location-sheet{padding-top:12px;max-height:64dvh}
