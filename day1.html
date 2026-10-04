@@ -973,11 +973,12 @@ body.night-theme #integratedCafeShell iframe{
   </section>
 
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
-    <video id="hernandoArenaLoop" class="hernando-arena-loop" preload="metadata" playsinline webkit-playsinline loop></video>
+    <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
+    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop></audio>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
     <div id="hernandoArenaFallback" class="hernando-video-fallback">
-      <p>闘牛場の映像を再生します。</p>
-      <button id="hernandoArenaPlay" type="button">動画を再生する</button>
+      <p>闘牛場の音楽を再生します。</p>
+      <button id="hernandoArenaPlay" type="button">音楽を再生する</button>
     </div>
   </section>
 
@@ -2575,8 +2576,8 @@ body.night-theme #integratedCafeShell iframe{
     function resumeExploreMusicAfterGimmick(){const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause()}
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)playAudio(arenaBgm,.42)}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause();const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm)arenaBgm.pause()}
     function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
@@ -3052,13 +3053,12 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
     const hernandoVideoScreen=document.getElementById('hernandoVideoScreen'),hernandoBullringVideo=document.getElementById('hernandoBullringVideo');
-    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaLoop=document.getElementById('hernandoArenaLoop');
+    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
     const hernandoArenaFallback=document.getElementById('hernandoArenaFallback'),hernandoArenaPlay=document.getElementById('hernandoArenaPlay'),hernandoArenaBack=document.getElementById('hernandoArenaBack');
-    // Large movie is hosted on Supabase Storage, not GitHub Pages.
+    // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Public bucket: videos / object: hernandos_bullring.mp4
     const HERNANDO_BULLRING_VIDEO_URL=`${SUPABASE_URL}/storage/v1/object/public/videos/hernandos_bullring.mp4`;
     if(hernandoBullringVideo){hernandoBullringVideo.src=HERNANDO_BULLRING_VIDEO_URL;hernandoBullringVideo.load()}
-    if(hernandoArenaLoop){hernandoArenaLoop.src=HERNANDO_BULLRING_VIDEO_URL;hernandoArenaLoop.load()}
     const hernandoVideoFallback=document.getElementById('hernandoVideoFallback'),hernandoVideoFallbackText=document.getElementById('hernandoVideoFallbackText');
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
     let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false;
@@ -3083,9 +3083,12 @@ body.night-theme #integratedCafeShell iframe{
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
       if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      try{hernandoArenaLoop.currentTime=0;hernandoArenaLoop.muted=false}catch{}
-      const p=hernandoArenaLoop?.play();
-      if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      try{hernandoArenaBgm.currentTime=0}catch{}
+      if(hernandoArenaBgm){
+        hernandoArenaBgm.volume=.42;
+        const p=localStorage.getItem('spr-bgm-enabled')==='off'?null:hernandoArenaBgm.play();
+        if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      }
     }
     function playHernandoVideo(){
       clearHernandoDescentTimers();
@@ -3139,11 +3142,13 @@ body.night-theme #integratedCafeShell iframe{
     }
     if(hernandoArenaPlay)hernandoArenaPlay.addEventListener('click',()=>{
       if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      try{hernandoArenaLoop.muted=false}catch{}
-      const p=hernandoArenaLoop?.play();if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      if(hernandoArenaBgm){
+        hernandoArenaBgm.volume=.42;
+        const p=hernandoArenaBgm.play();if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      }
     });
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',()=>{
-      try{hernandoArenaLoop.pause()}catch{}
+      try{hernandoArenaBgm.pause();hernandoArenaBgm.currentTime=0}catch{}
       if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
     });
