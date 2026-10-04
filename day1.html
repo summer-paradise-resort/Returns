@@ -3081,6 +3081,7 @@ body.night-theme #integratedCafeShell iframe{
     let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
     let hernandoArenaBgmPrimed=false;
+    let hernandoArenaBgmFadeToken=0;
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
     function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'||windowSprFlagCache['hernando-intro-seen']===true||windowSprFlagCache['hernando-intro-seen']===1||windowSprFlagCache['hernando-intro-seen']==='1'}
@@ -3187,8 +3188,32 @@ body.night-theme #integratedCafeShell iframe{
         else hernandoArenaBgmPrimed=true;
       }catch(e){console.warn('Hernando BGM prime',e)}
     }
+    function cancelHernandoArenaBgmFade(restoreVolume=false){
+      hernandoArenaBgmFadeToken++;
+      if(restoreVolume&&hernandoArenaBgm){
+        try{hernandoArenaBgm.volume=.42}catch{}
+      }
+    }
+    function fadeHernandoArenaBgm(targetVolume=.07,duration=3000,onDone=null){
+      if(!hernandoArenaBgm||hernandoArenaBgm.paused){if(typeof onDone==='function')onDone();return}
+      const token=++hernandoArenaBgmFadeToken;
+      const startVolume=Math.max(0,Math.min(1,Number(hernandoArenaBgm.volume)||0));
+      const target=Math.max(0,Math.min(1,Number(targetVolume)||0));
+      const ms=Math.max(1,Number(duration)||1);
+      const started=performance.now();
+      const step=now=>{
+        if(token!==hernandoArenaBgmFadeToken)return;
+        const t=Math.min(1,(now-started)/ms);
+        const eased=1-Math.pow(1-t,2);
+        try{hernandoArenaBgm.volume=startVolume+(target-startVolume)*eased}catch{}
+        if(t<1){requestAnimationFrame(step);return}
+        if(typeof onDone==='function')onDone();
+      };
+      requestAnimationFrame(step);
+    }
     function ensureHernandoArenaBgm(){
       if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      cancelHernandoArenaBgmFade(true);
       try{
         hernandoArenaBgm.loop=true;
         hernandoArenaBgm.volume=.42;
@@ -3209,6 +3234,11 @@ body.night-theme #integratedCafeShell iframe{
     function showHernandoDialogueLine(line){
       const text=String(line||'');
       hernandoDialogueCurrentText=text;
+      // 「今夜の牡牛にはならない」側は、最後の台詞に入った瞬間から
+      // 闘牛場BGMをゆっくり絞り、退場時のぶつ切り感をなくす。
+      if(hernandoDialogueMode==='decline'&&hernandoDialogueIndex===hernandoDialogueLines.length-1){
+        fadeHernandoArenaBgm(.07,3000);
+      }
       const token=++hernandoDialogueTypeToken;
       hernandoDialogueTyping=true;
       hernandoDialogueText.textContent='';
@@ -3241,12 +3271,20 @@ body.night-theme #integratedCafeShell iframe{
       setHernandoDialogueLines(script.intro,'intro','choice');
       hernandoDialogue.dataset.visitGroup=String(key);
     }
-    function closeHernandoArena(){
+    function closeHernandoArena(fadeOut=false){
       hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
-      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
-      hernandoArenaBgmPrimed=false;
       hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
+      if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
+        fadeHernandoArenaBgm(0,900,()=>{
+          try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+          hernandoArenaBgmPrimed=false;
+        });
+        return;
+      }
+      cancelHernandoArenaBgmFade();
+      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+      hernandoArenaBgmPrimed=false;
     }
     function showHernandoArena(){
       clearHernandoDescentTimers();
@@ -3335,14 +3373,16 @@ body.night-theme #integratedCafeShell iframe{
       if(hernandoDialogueAfter==='arena'){
         hernandoDialogue.classList.add('hidden');return;
       }
-      if(hernandoDialogueAfter==='exit'){closeHernandoArena();return}
+      if(hernandoDialogueAfter==='exit'){closeHernandoArena(true);return}
     });
     if(hernandoBullAccept)hernandoBullAccept.addEventListener('click',()=>{
+      cancelHernandoArenaBgmFade(true);
       ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','arena');
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
+      cancelHernandoArenaBgmFade(true);
       ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
