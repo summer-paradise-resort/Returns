@@ -2613,7 +2613,7 @@ body.night-theme #integratedCafeShell iframe{
         // このタップの最中に電話用 AudioContext も解除し、2分後まで生かしておく。
         armRoomPhoneAudioMaster();
         startResortMusic();
-        if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+        if(roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
       }else{
         pauseResortMusic();
         stopRoomPhoneRing();
@@ -3089,8 +3089,14 @@ body.night-theme #integratedCafeShell iframe{
     const ROOM_PHONE_WAIT_MS=2*60*1000;
     let roomPhoneStayStartedAt=0,roomPhoneTimer=null,roomPhoneCallState='idle',roomPhoneAudioUnlocked=false,roomPhoneLastMessage='';
     let roomPhoneActiveEvent=null,roomPhoneCreating=false,roomPhoneResolving=false,roomPhoneConversationEventId='';
-    let roomPhoneCallAudioPrimed=false,roomPhoneCallAudioPrimePromise=null,roomPhoneWaveTimer=null,roomPhoneFinishFallbackTimer=null,roomPhoneAudioSequenceEventId='';
+    let roomPhoneCallAudioPrimed=false,roomPhoneCallAudioPrimePromise=null,roomPhoneWaveDelayTimer=null,roomPhoneWaveTimer=null,roomPhoneFinishFallbackTimer=null,roomPhoneAudioSequenceEventId='';
     let roomPhoneRingAudible=false,roomPhoneUiClearTimer=null;
+    // 同室者の「出る／出ない」選択をRealtime Presenceで共有する。
+    // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
+    // 選んだ時だけ3秒後に静かに止める。
+    let roomPhonePresenceChannel=null,roomPhonePresenceReady=false;
+    const roomPhonePresenceSessionKey=`${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    let roomPhoneDeclineStopTimer=null,roomPhoneDeclineStopEventId='',roomPhoneDeclineSilencedEventId='';
 
     function roomPhoneEligibleNow(){
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
@@ -3304,6 +3310,7 @@ body.night-theme #integratedCafeShell iframe{
       if(!row?.id)return;
       const eventId=String(row.id);
       if(roomPhoneAudioSequenceEventId===eventId)return;
+      if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
       if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
       if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
       if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
@@ -3328,15 +3335,134 @@ body.night-theme #integratedCafeShell iframe{
           playRoomPhoneFinish(eventId);
         },8000);
       };
-      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused)beginWave();
-      else primeRoomPhoneCallAudio().finally(beginWave);
+      // 受話器を取った直後の「間」を残す。
+      // answered が届いてから1秒間は完全な無音にし、その後に波音を始める。
+      const answeredAt=Date.now();
+      const beginWaveAfterSilence=()=>{
+        if(roomPhoneAudioSequenceEventId!==eventId)return;
+        const remaining=Math.max(0,1000-(Date.now()-answeredAt));
+        if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
+        roomPhoneWaveDelayTimer=setTimeout(()=>{
+          roomPhoneWaveDelayTimer=null;
+          beginWave();
+        },remaining);
+      };
+      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused)beginWaveAfterSilence();
+      else primeRoomPhoneCallAudio().finally(beginWaveAfterSilence);
     }
+    function roomPhonePresenceChoice(){
+      if(!roomPhoneActiveEvent?.id||roomPhoneCallState!=='ringing')return 'idle';
+      return roomPhoneDeclinedLocally()?'declined':'pending';
+    }
+    function roomPhonePresencePayload(choice=roomPhonePresenceChoice()){
+      return {
+        room_no:String(activeRoom||''),
+        player_id:String(storedPlayerId||''),
+        display_name:String(activeGuest||storedGuestName||'ゲスト'),
+        phone_event_id:roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'',
+        phone_choice:String(choice||'idle'),
+        updated_at:new Date().toISOString()
+      };
+    }
+    async function trackRoomPhonePresence(choice=roomPhonePresenceChoice()){
+      if(!roomPhonePresenceChannel||!roomPhonePresenceReady||!activeRoom)return false;
+      try{await roomPhonePresenceChannel.track(roomPhonePresencePayload(choice));return true}
+      catch(e){console.warn('room phone presence track',e);return false}
+    }
+    function roomPhonePresenceMembers(){
+      if(!roomPhonePresenceChannel?.presenceState)return [];
+      try{
+        const state=roomPhonePresenceChannel.presenceState()||{};
+        return Object.values(state).flat().filter(member=>String(member?.room_no||'')===String(activeRoom||''));
+      }catch{return []}
+    }
+    function roomPhoneEveryonePresentDeclined(){
+      const eventId=roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'';
+      if(!eventId||roomPhoneCallState!=='ringing')return false;
+      const members=roomPhonePresenceMembers();
+      // Presenceがまだ接続できていない場合は、単独利用としてローカル選択を使う。
+      if(!roomPhonePresenceReady||!members.length)return roomPhoneDeclinedLocally();
+      // 同じ部屋にPresenceしている全員が「この着信」に対してdeclinedになった時だけ成立。
+      // event_idが空／違う人は「まだ選んでいない人」として扱う。
+      return members.every(member=>
+        String(member?.phone_event_id||'')===eventId&&String(member?.phone_choice||'')==='declined'
+      );
+    }
+    function cancelRoomPhoneDeclineStop(){
+      if(roomPhoneDeclineStopTimer){clearTimeout(roomPhoneDeclineStopTimer);roomPhoneDeclineStopTimer=null}
+      roomPhoneDeclineStopEventId='';
+    }
+    function softSilenceRoomPhoneRing(){
+      roomPhoneRingAudible=false;
+      if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
+      // HTML Audioはpauseせずミュートだけにする。後から未選択者が入った時、
+      // iPhoneでも新しいplay()なしで再び鳴らせるよう再生状態を維持する。
+      if(roomPhoneRing){try{roomPhoneRing.muted=true;roomPhoneRing.loop=true}catch{}}
+    }
+    function evaluateRoomPhoneDeclineState({restart=false}={}){
+      if(roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id){cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';return}
+      const eventId=String(roomPhoneActiveEvent.id);
+      const allDeclined=roomPhoneEveryonePresentDeclined();
+      if(!allDeclined){
+        cancelRoomPhoneDeclineStop();
+        roomPhoneDeclineSilencedEventId='';
+        attemptRoomPhoneRing({restart});
+        return;
+      }
+      // すでにこの着信を全員拒否で静音化済みなら、そのまま維持する。
+      if(roomPhoneDeclineSilencedEventId===eventId){softSilenceRoomPhoneRing();return}
+      // 全員が「出ない」を選んでも、現実の電話のように3秒だけ呼び出し音を残す。
+      attemptRoomPhoneRing({restart});
+      if(roomPhoneDeclineStopTimer&&roomPhoneDeclineStopEventId===eventId)return;
+      cancelRoomPhoneDeclineStop();
+      roomPhoneDeclineStopEventId=eventId;
+      roomPhoneDeclineStopTimer=setTimeout(()=>{
+        roomPhoneDeclineStopTimer=null;roomPhoneDeclineStopEventId='';
+        if(roomPhoneCallState!=='ringing'||String(roomPhoneActiveEvent?.id||'')!==eventId)return;
+        if(roomPhoneEveryonePresentDeclined()){
+          roomPhoneDeclineSilencedEventId=eventId;
+          softSilenceRoomPhoneRing();
+        }else{
+          roomPhoneDeclineSilencedEventId='';
+          attemptRoomPhoneRing();
+        }
+      },3000);
+    }
+    function stopRoomPhonePresence(){
+      cancelRoomPhoneDeclineStop();
+      roomPhoneDeclineSilencedEventId='';
+      roomPhonePresenceReady=false;
+      if(roomPhonePresenceChannel&&window.supabaseClientSpecial){
+        try{roomPhonePresenceChannel.untrack()}catch{}
+        try{window.supabaseClientSpecial.removeChannel(roomPhonePresenceChannel)}catch{}
+      }
+      roomPhonePresenceChannel=null;
+    }
+    async function startRoomPhonePresence(room){
+      stopRoomPhonePresence();
+      if(!window.supabaseClientSpecial||!room)return;
+      const roomAtStart=String(room);
+      const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey}}})
+        .on('presence',{event:'sync'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
+        .on('presence',{event:'join'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
+        .on('presence',{event:'leave'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()});
+      roomPhonePresenceChannel=channel;
+      channel.subscribe(async status=>{
+        if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
+        if(status==='SUBSCRIBED'){
+          roomPhonePresenceReady=true;
+          await trackRoomPhonePresence();
+          evaluateRoomPhoneDeclineState();
+        }
+      });
+    }
+
     function roomPhoneEventExpired(row=roomPhoneActiveEvent){
       const end=Date.parse(row?.expires_at||'');
       return Number.isFinite(end)&&Date.now()>=end;
     }
     function startRoomPhoneWebAudio(){
-      if(!roomPhoneMasterAudioOn()||roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return false;
+      if(!roomPhoneMasterAudioOn()||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return false;
       const ctx=ensureRoomPhoneAudioContext();
       if(!ctx||ctx.state!=='running'||!roomPhoneAudioBuffer||!roomPhoneAudioGain)return false;
       if(roomPhoneAudioSource)return true;
@@ -3346,7 +3472,7 @@ body.night-theme #integratedCafeShell iframe{
       }catch{return false}
     }
     function attemptRoomPhoneRing({restart=false}={}){
-      if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return;
+      if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return;
       if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
       setRoomPhoneAudioSessionPlayback();
 
@@ -3465,8 +3591,9 @@ body.night-theme #integratedCafeShell iframe{
       const current=roomPhoneActiveEvent;
       if(!current?.id||String(current.status)!=='ringing')return;
       // UIと着信音は1分到達時に即座に止める。DBはserver now()でmissedへ確定する。
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
       stopRoomPhoneRing();
-      roomPhoneCallState='missed';roomPhoneLastMessage='';updateRoomPhoneUi();
+      roomPhoneCallState='missed';roomPhoneLastMessage='';updateRoomPhoneUi();trackRoomPhonePresence('idle');
       if(!window.supabaseClientSpecial)return;
       try{
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_room_phone_expire',{p_event_id:Number(current.id)});
@@ -3487,20 +3614,24 @@ body.night-theme #integratedCafeShell iframe{
           return;
         }
         updateRoomPhoneUi();
-        if(roomPhoneDeclinedLocally())stopRoomPhoneRing();else attemptRoomPhoneRing({restart:previousStatus!=='ringing'});
+        trackRoomPhonePresence().finally(()=>evaluateRoomPhoneDeclineState({restart:previousStatus!=='ringing'}));
+        evaluateRoomPhoneDeclineState({restart:previousStatus!=='ringing'});
         return;
       }
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
       stopRoomPhoneRing();
       if(status==='answered'){
         roomPhoneCallState='answered';
         roomPhoneLastMessage='受話器を取った。';
         updateRoomPhoneUi();
+        trackRoomPhonePresence('answered');
         if(announce||previousStatus==='ringing')startRoomPhoneConversation(row);
         return;
       }
       roomPhoneCallState=status==='missed'?'missed':'idle';
       roomPhoneLastMessage='';
       updateRoomPhoneUi();
+      trackRoomPhonePresence('idle');
     }
     async function loadRoomPhoneEvent(room=activeRoom){
       if(!window.supabaseClientSpecial||!room)return null;
@@ -3561,8 +3692,11 @@ body.night-theme #integratedCafeShell iframe{
     function declineRoomPhoneCall(){
       if(roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id)return;
       localStorage.setItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id),'1');
-      stopRoomPhoneRing();
+      // 自分が「出ない」を選んでも、同室者に未選択の人がいれば呼び出し音は止めない。
+      // 全員のPresenceがdeclinedになった時だけ3秒カウントを開始する。
       updateRoomPhoneUi();
+      trackRoomPhonePresence('declined').finally(()=>evaluateRoomPhoneDeclineState());
+      evaluateRoomPhoneDeclineState();
     }
     function resolveRoomPhoneCall(result){
       if(result==='answered')answerRoomPhoneCall();
@@ -3583,6 +3717,7 @@ body.night-theme #integratedCafeShell iframe{
       if(roomPhoneTimer)clearInterval(roomPhoneTimer);
       roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
       if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';trackRoomPhonePresence('idle');
       roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
       updateRoomPhoneUi();
       roomPhoneTimer=setInterval(checkRoomPhoneStay,1000);
@@ -3592,6 +3727,8 @@ body.night-theme #integratedCafeShell iframe{
       if(roomPhoneTimer){clearInterval(roomPhoneTimer);roomPhoneTimer=null}
       roomPhoneStayStartedAt=0;roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
       if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
+      if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
       if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
       if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
       roomPhoneAudioSequenceEventId='';
@@ -3618,7 +3755,7 @@ body.night-theme #integratedCafeShell iframe{
     },{passive:true});
     // Safari がバックグラウンド移行で音声を一時停止した場合、復帰時に着信中なら再試行する。
     document.addEventListener('visibilitychange',()=>{
-      if(!document.hidden&&roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+      if(!document.hidden&&roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
     });
     let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
@@ -4085,6 +4222,7 @@ body.night-theme #integratedCafeShell iframe{
     }
     async function startRoomSync(room){
       if(roomRealtimeChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null}
+      startRoomPhonePresence(room);
       roomMessageCache=[];roomServiceCache=[];renderChat();renderRoomServiceHistory();
       await Promise.all([loadRoomSharedData(room),loadRoomPhoneEvent(room)]);
       if(!window.supabaseClientSpecial||activeRoom!==room)return;
@@ -4095,7 +4233,7 @@ body.night-theme #integratedCafeShell iframe{
         .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_room_phone_events',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;applyRoomPhoneEvent(payload.new,{announce:String(payload.new?.status||'')==='answered'})})
         .subscribe();
     }
-    function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;roomMessageCache=[];roomServiceCache=[]}
+    function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;stopRoomPhonePresence();roomMessageCache=[];roomServiceCache=[]}
 
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
