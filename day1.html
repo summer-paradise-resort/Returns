@@ -3090,6 +3090,7 @@ body.night-theme #integratedCafeShell iframe{
     let roomPhoneStayStartedAt=0,roomPhoneTimer=null,roomPhoneCallState='idle',roomPhoneAudioUnlocked=false,roomPhoneLastMessage='';
     let roomPhoneActiveEvent=null,roomPhoneCreating=false,roomPhoneResolving=false,roomPhoneConversationEventId='';
     let roomPhoneCallAudioPrimed=false,roomPhoneCallAudioPrimePromise=null,roomPhoneWaveTimer=null,roomPhoneFinishFallbackTimer=null,roomPhoneAudioSequenceEventId='';
+    let roomPhoneRingAudible=false,roomPhoneUiClearTimer=null;
 
     function roomPhoneEligibleNow(){
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
@@ -3220,7 +3221,7 @@ body.night-theme #integratedCafeShell iframe{
       if(roomPhoneAudioContext&&roomPhoneAudioContext.state==='running'){try{roomPhoneAudioContext.suspend()}catch{}}
       if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
       silenceRoomPhoneCallAudio();
-      roomPhoneHtmlPrimed=false;roomPhoneHtmlPrimePromise=null;roomPhoneAudioUnlocked=false;
+      roomPhoneHtmlPrimed=false;roomPhoneHtmlPrimePromise=null;roomPhoneAudioUnlocked=false;roomPhoneRingAudible=false;
     }
     // ♪が前回からONのままでも、ページ内の最初の操作で電話音声も解除する。
     document.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
@@ -3263,11 +3264,21 @@ body.night-theme #integratedCafeShell iframe{
     function completeRoomPhoneAudioSequence(eventId){
       if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
       if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
       if(roomPhoneFinish)roomPhoneFinish.onended=null;
       silenceRoomPhoneCallAudio();
       roomPhoneAudioSequenceEventId='';
       roomPhoneLastMessage='通話が終了した。';
       updateRoomPhoneUi();
+      // 終話メッセージは確認できる程度だけ表示し、その後は電話パネルごと自動で消す。
+      const finishedEventId=String(eventId);
+      roomPhoneUiClearTimer=setTimeout(()=>{
+        roomPhoneUiClearTimer=null;
+        if(roomPhoneCallState==='answered'&&String(roomPhoneActiveEvent?.id||'')===finishedEventId){
+          roomPhoneLastMessage='';
+          updateRoomPhoneUi();
+        }
+      },2000);
       window.dispatchEvent(new CustomEvent('spr-room-phone-finished',{detail:{eventId}}));
     }
     function playRoomPhoneFinish(eventId){
@@ -3295,6 +3306,7 @@ body.night-theme #integratedCafeShell iframe{
       if(roomPhoneAudioSequenceEventId===eventId)return;
       if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
       if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
       if(roomPhoneFinish)roomPhoneFinish.onended=null;
       roomPhoneAudioSequenceEventId=eventId;
       roomPhoneLastMessage='受話器を取った。';updateRoomPhoneUi();
@@ -3333,23 +3345,39 @@ body.night-theme #integratedCafeShell iframe{
         source.onended=()=>{if(roomPhoneAudioSource===source)roomPhoneAudioSource=null};roomPhoneAudioSource=source;return true;
       }catch{return false}
     }
-    function attemptRoomPhoneRing(){
+    function attemptRoomPhoneRing({restart=false}={}){
       if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return;
       if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
       setRoomPhoneAudioSessionPlayback();
-      // 主系統：すでにミュート再生中の HTML Audio をアンミュートするだけ。
+
+      // すでに聞こえている着信音は絶対に先頭へ戻さない。
+      // Supabaseの再通知や画面切替のたびに currentTime=0 へ戻していたことが、
+      // 「ぶつ切り／長さが不揃い」に聞こえる原因になるため、再生中は何もしない。
+      if(roomPhoneRingAudible&&!roomPhoneRing.paused&&!roomPhoneRing.muted)return;
+
+      // 主系統：ユーザー操作時からミュート再生で待機しているHTML Audioを使う。
       if(roomPhoneHtmlPrimed&&!roomPhoneRing.paused){
-        try{roomPhoneRing.currentTime=0}catch{}
-        roomPhoneRing.volume=1;roomPhoneRing.muted=false;roomPhoneAudioUnlocked=true;
+        try{if(restart)roomPhoneRing.currentTime=0}catch{}
+        roomPhoneRing.loop=true;
+        roomPhoneRing.volume=1;
+        roomPhoneRing.muted=false;
+        roomPhoneAudioUnlocked=true;
+        roomPhoneRingAudible=true;
         return;
       }
-      // 予備：直接 HTML Audio を開始。成功すればこちらを使用する。
+
+      // Safariが待機音声を止めていた場合のみ play() で復帰する。
       try{
         roomPhoneRing.loop=true;roomPhoneRing.volume=1;roomPhoneRing.muted=false;
-        try{roomPhoneRing.currentTime=0}catch{}
+        try{if(restart)roomPhoneRing.currentTime=0}catch{}
         const p=roomPhoneRing.play();
         if(p&&p.then){
-          p.then(()=>{roomPhoneHtmlPrimed=true;roomPhoneAudioUnlocked=true}).catch(()=>{
+          p.then(()=>{
+            roomPhoneHtmlPrimed=true;
+            roomPhoneAudioUnlocked=true;
+            roomPhoneRingAudible=true;
+          }).catch(()=>{
+            roomPhoneRingAudible=false;
             // 最後のフォールバック：Web Audio。
             const ctx=ensureRoomPhoneAudioContext();
             if(ctx&&ctx.state==='running'){
@@ -3357,10 +3385,13 @@ body.night-theme #integratedCafeShell iframe{
               else loadRoomPhoneAudioBuffer().then(()=>startRoomPhoneWebAudio()).catch(()=>{});
             }
           });
+        }else{
+          roomPhoneRingAudible=true;
         }
-      }catch{}
+      }catch{roomPhoneRingAudible=false}
     }
     function stopRoomPhoneRing(){
+      roomPhoneRingAudible=false;
       if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
       if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
       roomPhoneHtmlPrimed=false;
@@ -3381,10 +3412,10 @@ body.night-theme #integratedCafeShell iframe{
         const p=roomPhoneRing.play();
         if(status)status.textContent='着信音テスト再生中（HTML AUDIO / 3秒）';
         Promise.resolve(p).then(()=>{
-          roomPhoneHtmlPrimed=true;roomPhoneAudioUnlocked=true;
+          roomPhoneHtmlPrimed=true;roomPhoneAudioUnlocked=true;roomPhoneRingAudible=true;
           setTimeout(()=>{
             // 停止ではなくミュートに戻し、実際の2分後着信に備えて再生状態を維持する。
-            try{roomPhoneRing.muted=true;roomPhoneRing.loop=true}catch{}
+            try{roomPhoneRing.muted=true;roomPhoneRing.loop=true;roomPhoneRingAudible=false}catch{}
             if(status)status.textContent='着信音テスト終了。音が聞こえたか確認してください。';
           },3000);
         }).catch(error=>{
@@ -3456,7 +3487,7 @@ body.night-theme #integratedCafeShell iframe{
           return;
         }
         updateRoomPhoneUi();
-        if(roomPhoneDeclinedLocally())stopRoomPhoneRing();else attemptRoomPhoneRing();
+        if(roomPhoneDeclinedLocally())stopRoomPhoneRing();else attemptRoomPhoneRing({restart:previousStatus!=='ringing'});
         return;
       }
       stopRoomPhoneRing();
@@ -3551,6 +3582,7 @@ body.night-theme #integratedCafeShell iframe{
     function startRoomPhoneStay(){
       if(roomPhoneTimer)clearInterval(roomPhoneTimer);
       roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
       roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
       updateRoomPhoneUi();
       roomPhoneTimer=setInterval(checkRoomPhoneStay,1000);
@@ -3559,6 +3591,7 @@ body.night-theme #integratedCafeShell iframe{
     function stopRoomPhoneStay(){
       if(roomPhoneTimer){clearInterval(roomPhoneTimer);roomPhoneTimer=null}
       roomPhoneStayStartedAt=0;roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
       if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
       if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
       roomPhoneAudioSequenceEventId='';
