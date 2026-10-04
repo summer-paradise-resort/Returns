@@ -516,6 +516,8 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .hernando-dialogue.hidden{display:none!important}
 .hernando-dialogue-name{font:11px Georgia,serif;letter-spacing:.3em;color:#e3c27d;margin-bottom:10px}
 .hernando-dialogue-text{min-height:58px;font-size:15px;line-height:2;letter-spacing:.05em}
+.hernando-dialogue-char{display:inline;opacity:0;filter:blur(2px);transition:opacity .34s ease,filter .42s ease;will-change:opacity,filter}
+.hernando-dialogue-char.in{opacity:1;filter:blur(0)}
 .hernando-dialogue-next{width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.48);background:rgba(125,31,27,.86);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
 .hernando-dialogue-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
 .hernando-dialogue-choice{min-height:48px;padding:10px 8px;border:1px solid rgba(227,194,125,.48);background:rgba(12,14,16,.9);color:#fff;font:11px Georgia,serif;letter-spacing:.08em;line-height:1.6}
@@ -2588,7 +2590,7 @@ body.night-theme #integratedCafeShell iframe{
     function resumeExploreMusicAfterGimmick(){const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)playAudio(arenaBgm,.42)}
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm){arenaBgm.muted=false;playAudio(arenaBgm,.42)}}
     function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause();const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm)arenaBgm.pause()}
     function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
@@ -3077,6 +3079,8 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
     let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false,hernandoEntryWasIntroSeen=false;
     let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
+    let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
+    let hernandoArenaBgmPrimed=false;
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
     function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'||windowSprFlagCache['hernando-intro-seen']===true||windowSprFlagCache['hernando-intro-seen']===1||windowSprFlagCache['hernando-intro-seen']==='1'}
@@ -3173,17 +3177,63 @@ body.night-theme #integratedCafeShell iframe{
     function primeHernandoArenaBgm(){
       if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
       try{
-        hernandoArenaBgm.currentTime=0;
-        hernandoArenaBgm.volume=0;
+        // iPhone/iPadでは、ユーザー操作の中で一度 play() を成立させておく必要がある。
+        // currentTime を読み込み前に触ると Safari で例外になることがあるため、ここでは触らない。
+        hernandoArenaBgm.loop=true;
+        hernandoArenaBgm.volume=.42;
+        hernandoArenaBgm.muted=true;
         const p=hernandoArenaBgm.play();
-        if(p&&p.catch)p.catch(()=>{});
-      }catch{}
+        if(p&&p.then)p.then(()=>{hernandoArenaBgmPrimed=true}).catch(e=>console.warn('Hernando BGM prime',e));
+        else hernandoArenaBgmPrimed=true;
+      }catch(e){console.warn('Hernando BGM prime',e)}
+    }
+    function ensureHernandoArenaBgm(){
+      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      try{
+        hernandoArenaBgm.loop=true;
+        hernandoArenaBgm.volume=.42;
+        hernandoArenaBgm.muted=false;
+        if(hernandoArenaBgm.paused){
+          const p=hernandoArenaBgm.play();
+          if(p&&p.then)p.then(()=>{hernandoArenaBgmPrimed=true}).catch(e=>console.warn('Hernando BGM start',e));
+        }
+      }catch(e){console.warn('Hernando BGM start',e)}
+    }
+    function hernandoTypeDelay(ch){if(ch==='、')return 260;if(ch==='。'||ch==='？'||ch==='！')return 460;if(ch==='…')return 320;return 82}
+    function finishHernandoDialogueLine(){
+      if(!hernandoDialogueCurrentText)return;
+      hernandoDialogueTypeToken++;
+      hernandoDialogueTyping=false;
+      hernandoDialogueText.textContent=hernandoDialogueCurrentText;
+    }
+    function showHernandoDialogueLine(line){
+      const text=String(line||'');
+      hernandoDialogueCurrentText=text;
+      const token=++hernandoDialogueTypeToken;
+      hernandoDialogueTyping=true;
+      hernandoDialogueText.textContent='';
+      const chars=[...text];
+      const spans=chars.map(ch=>{const span=document.createElement('span');span.className='hernando-dialogue-char';span.textContent=ch;hernandoDialogueText.appendChild(span);return span});
+      const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
+      (async()=>{
+        await new Promise(r=>setTimeout(r,350));
+        if(token!==hernandoDialogueTypeToken)return;
+        await new Promise(requestAnimationFrame);
+        for(let i=0;i<spans.length;i++){
+          if(token!==hernandoDialogueTypeToken)return;
+          spans[i].classList.add('in');
+          await new Promise(r=>setTimeout(r,hernandoTypeDelay(chars[i])));
+        }
+        if(token===hernandoDialogueTypeToken)hernandoDialogueTyping=false;
+      })();
     }
     function setHernandoDialogueLines(lines,mode='intro',after='choice'){
       hernandoDialogueLines=Array.isArray(lines)?lines:[];hernandoDialogueIndex=0;hernandoDialogueMode=mode;hernandoDialogueAfter=after;
       hernandoDialogueChoices.classList.add('hidden');hernandoDialogueNext.classList.remove('hidden');
       if(!hernandoDialogueLines.length){hernandoDialogue.classList.add('hidden');return}
-      hernandoDialogueText.textContent=hernandoDialogueLines[0];hernandoDialogue.classList.remove('hidden');
+      hernandoDialogue.classList.remove('hidden');
+      showHernandoDialogueLine(hernandoDialogueLines[0]);
       hernandoDialogueNext.textContent='NEXT　›';
     }
     function beginHernandoDialogue(visit){
@@ -3192,7 +3242,9 @@ body.night-theme #integratedCafeShell iframe{
       hernandoDialogue.dataset.visitGroup=String(key);
     }
     function closeHernandoArena(){
-      try{hernandoArenaBgm.pause();hernandoArenaBgm.currentTime=0;hernandoArenaBgm.volume=.42}catch{}
+      hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
+      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+      hernandoArenaBgmPrimed=false;
       hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
     }
@@ -3204,14 +3256,22 @@ body.night-theme #integratedCafeShell iframe{
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-        try{hernandoArenaBgm.currentTime=0;hernandoArenaBgm.volume=.42}catch{}
-        if(hernandoArenaBgm.paused){const p=hernandoArenaBgm.play();if(p&&p.catch)p.catch(()=>{})}
+        try{
+          // 「奥に進む」のタップで先行再生済みなら、その再生をここで可聴化する。
+          // 読み込み済みになってから先頭へ戻すので iOS Safari でも currentTime 例外を避けられる。
+          if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;
+          hernandoArenaBgm.volume=.42;
+          hernandoArenaBgm.muted=false;
+        }catch(e){console.warn('Hernando BGM reveal',e)}
+        ensureHernandoArenaBgm();
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
     function playHernandoVideo(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
+      // 初回動画中は、先行再生している闘牛場BGMだけ無音に保つ。
+      if(hernandoArenaBgm)hernandoArenaBgm.muted=true;
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
       hernandoVideoStarted=true;
@@ -3264,7 +3324,11 @@ body.night-theme #integratedCafeShell iframe{
       hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
     if(hernandoDialogueNext)hernandoDialogueNext.addEventListener('click',()=>{
-      if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;hernandoDialogueText.textContent=hernandoDialogueLines[hernandoDialogueIndex];return}
+      // 万一iOS側で初回の先行再生が失敗していても、会話操作そのものを再生許可のフォールバックにする。
+      ensureHernandoArenaBgm();
+      // 文字送りの途中でNEXTを押した場合は、次へ進まず現在の台詞を全文表示する。
+      if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
+      if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;showHernandoDialogueLine(hernandoDialogueLines[hernandoDialogueIndex]);return}
       if(hernandoDialogueAfter==='choice'){
         hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');return;
       }
@@ -3274,10 +3338,12 @@ body.night-theme #integratedCafeShell iframe{
       if(hernandoDialogueAfter==='exit'){closeHernandoArena();return}
     });
     if(hernandoBullAccept)hernandoBullAccept.addEventListener('click',()=>{
+      ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','arena');
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
+      ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
     });
