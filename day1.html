@@ -773,7 +773,7 @@ body.night-theme #integratedCafeShell iframe{
         <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜110：デラックスオーシャン<br>201〜205：ファミリー<br>301〜310：オーシャンラグーン<br>401〜405：スイート<br>特別ヴィラ：暗証番号をお持ちのお客様</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
-        <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="auto" loop></audio>
+        <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="auto" loop playsinline></audio>
         <div id="roomScene" class="room-scene hidden">
           <figure>
             <div class="room-photo-area"><img id="roomPhoto" src="" alt="客室の部屋全体"></div>
@@ -3086,14 +3086,30 @@ body.night-theme #integratedCafeShell iframe{
       return Boolean(roomPhoneActiveEvent?.id&&localStorage.getItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id))==='1');
     }
     function primeRoomPhoneAudio(){
-      if(!roomPhoneRing||roomPhoneAudioUnlocked)return;
+      if(!roomPhoneRing)return;
+      // iPhone / iPad Safari 対策：客室へ入るタップの中で一度再生を開始し、
+      // 着信まではミュートのまま再生状態を維持する。2分後は play() ではなく
+      // 「すでに再生中の音をアンミュート」するため、自動再生制限に止められにくい。
+      if(roomPhoneAudioUnlocked&&!roomPhoneRing.paused)return;
       try{
-        roomPhoneRing.muted=true;roomPhoneRing.volume=1;roomPhoneRing.currentTime=0;
+        roomPhoneRing.loop=true;
+        roomPhoneRing.preload='auto';
+        roomPhoneRing.muted=true;
+        roomPhoneRing.volume=1;
+        roomPhoneRing.currentTime=0;
+        try{roomPhoneRing.load()}catch{}
         const p=roomPhoneRing.play();
         if(p&&p.then)p.then(()=>{
-          roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=false;roomPhoneAudioUnlocked=true;
-        }).catch(()=>{roomPhoneRing.muted=false});
-      }catch(e){try{roomPhoneRing.muted=false}catch{}}
+          roomPhoneAudioUnlocked=true;
+        }).catch(e=>{
+          roomPhoneAudioUnlocked=false;
+          console.warn('room phone audio prime blocked',e);
+        });
+        else roomPhoneAudioUnlocked=!roomPhoneRing.paused;
+      }catch(e){
+        roomPhoneAudioUnlocked=false;
+        console.warn('room phone audio prime',e);
+      }
     }
     function roomPhoneEventExpired(row=roomPhoneActiveEvent){
       const end=Date.parse(row?.expires_at||'');
@@ -3102,13 +3118,32 @@ body.night-theme #integratedCafeShell iframe{
     function attemptRoomPhoneRing(){
       if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return;
       try{
-        roomPhoneRing.loop=true;roomPhoneRing.muted=false;roomPhoneRing.volume=1;
-        const p=roomPhoneRing.play();if(p&&p.catch)p.catch(e=>console.warn('room phone ring blocked',e));
+        roomPhoneRing.loop=true;
+        roomPhoneRing.volume=1;
+        // primeRoomPhoneAudio() でミュート再生を維持できていれば、ここでは
+        // 新規再生せずに先頭へ戻してアンミュートするだけで着信音が鳴る。
+        if(!roomPhoneRing.paused){
+          try{roomPhoneRing.currentTime=0}catch{}
+          roomPhoneRing.muted=false;
+          roomPhoneAudioUnlocked=true;
+          return;
+        }
+        roomPhoneRing.muted=false;
+        try{roomPhoneRing.currentTime=0}catch{}
+        const p=roomPhoneRing.play();
+        if(p&&p.then)p.then(()=>{roomPhoneAudioUnlocked=true}).catch(e=>{
+          roomPhoneAudioUnlocked=false;
+          console.warn('room phone ring blocked',e);
+        });
       }catch(e){console.warn('room phone ring',e)}
     }
     function stopRoomPhoneRing(){
       if(!roomPhoneRing)return;
-      try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=false}catch{}
+      try{
+        roomPhoneRing.pause();
+        roomPhoneRing.currentTime=0;
+        roomPhoneRing.muted=true;
+      }catch{}
     }
     function updateRoomPhoneUi(){
       if(!roomPhoneCallPanel)return;
@@ -3277,6 +3312,15 @@ body.night-theme #integratedCafeShell iframe{
     roomPhoneDecline?.addEventListener('click',()=>resolveRoomPhoneCall('declined'));
     document.querySelectorAll('[data-room-phone-answer]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('answered')));
     document.querySelectorAll('[data-room-phone-decline]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('declined')));
+    // 初回の解除に失敗した端末でも、客室内で次に触れた瞬間に再度音声を準備する。
+    roomLounge?.addEventListener('pointerdown',()=>{
+      if(!activeRoom||roomPhoneCallState==='ringing'||roomPhoneCallState==='answered')return;
+      if(roomPhoneRing?.paused)primeRoomPhoneAudio();
+    },{passive:true});
+    // Safari がバックグラウンド移行で音声を一時停止した場合、復帰時に着信中なら再試行する。
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden&&roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+    });
     let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
       if(hernandoBarGlobalOpen)return true;
@@ -3873,8 +3917,10 @@ body.night-theme #integratedCafeShell iframe{
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
     chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
-      event.preventDefault();primeRoomPhoneAudio();const entered=roomPin.value.trim();const room=entered==='0923'?'501':entered; if(entered==='501'){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
+      event.preventDefault();const entered=roomPin.value.trim();const room=entered==='0923'?'501':entered; if(entered==='501'){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
+      // 有効な客室へ入るタップの中で着信音を先に解除しておく。
+      primeRoomPhoneAudio();
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
