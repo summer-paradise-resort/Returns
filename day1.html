@@ -3789,7 +3789,7 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
     const hernandoVideoScreen=document.getElementById('hernandoVideoScreen'),hernandoBullringVideo=document.getElementById('hernandoBullringVideo');
-    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
+    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBg=document.getElementById('hernandoArenaBg'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
     const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
     const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline');
@@ -3956,6 +3956,10 @@ body.night-theme #integratedCafeShell iframe{
     function showHernandoDialogueLine(line){
       const text=String(line||'');
       hernandoDialogueCurrentText=text;
+      // 初回会話で三杯の酒を説明し始めた瞬間、酒杯の画像へ切り替える。
+      if(hernandoDialogueMode==='intro'&&text.startsWith('見ての通り、酒は三杯。')&&hernandoArenaBg){
+        hernandoArenaBg.src='hernandos_bullring02.jpg';
+      }
       // 「今夜の牡牛にはならない」側は、最後の台詞に入った瞬間から
       // 闘牛場BGMをゆっくり絞り、退場時のぶつ切り感をなくす。
       if(hernandoDialogueMode==='decline'&&hernandoDialogueIndex===hernandoDialogueLines.length-1){
@@ -4015,6 +4019,8 @@ body.night-theme #integratedCafeShell iframe{
       hernandoVideoFallback.classList.remove('show');
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
+      // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
+      if(hernandoArenaBg)hernandoArenaBg.src='hernandos_bullring01.jpg';
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
         try{
           // 「奥に進む」のタップで先行再生済みなら、その再生をここで可聴化する。
