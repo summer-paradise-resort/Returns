@@ -3715,7 +3715,7 @@ body.night-theme #integratedCafeShell iframe{
     }catch(e){console.warn('world reset session check',e);return false}
   }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
-    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n\nこの操作を実行しますか？'))return;
+    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者のCHIPは0になります\n\nこの操作を実行しますか？'))return;
     if(!confirm('最終確認です。\n管理人以外の参加者ログインもリセットします。よろしいですか？'))return;
     try{
       resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミック＋参加者ログインを初期化中…';
@@ -3726,6 +3726,9 @@ body.night-theme #integratedCafeShell iframe{
         const c=client();if(c){
           await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing']);
           const {error:runtimeResetError}=await c.rpc('spr_reset_runtime_state');if(runtimeResetError)throw runtimeResetError;
+          // 本番用リセットでは、RPC側の初期値に関係なく全参加者のCHIPを必ず0にする。
+          const {error:chipResetError}=await c.from('players').update({chips:0}).not('id','is',null);
+          if(chipResetError)throw chipResetError;
           // エルナンド導入動画の既読は全プレイヤー分を本番用リセット対象にする。
           // RLS等で削除できない環境でも、hydratePersistentState側で最新RESET以前の既読を無効化する。
           const {error:hernandoSeenResetError}=await c.from('spr_player_flags').delete().in('flag_key',['hernando-intro-seen','hernando-visit-count']);
@@ -3739,7 +3742,7 @@ body.night-theme #integratedCafeShell iframe{
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
       try{const c=client();if(c)await c.from('players').update({last_seen_at:new Date().toISOString()}).eq('id',adminId)}catch(e){console.warn('admin last_seen restore',e)}
-      if(statusEl)statusEl.textContent='初期化完了。他の参加者はログアウトしました。DAY1へ戻ります。';
+      if(statusEl)statusEl.textContent='初期化完了。全参加者のCHIPを0にし、他の参加者はログアウトしました。DAY1へ戻ります。';
       setTimeout(()=>goDay(1),500);
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
