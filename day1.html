@@ -733,7 +733,7 @@ body.night-theme #integratedCafeShell iframe{
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
       <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 79,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
-      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
+      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -2607,14 +2607,15 @@ body.night-theme #integratedCafeShell iframe{
       localStorage.setItem('spr-bgm-enabled',next?'on':'off');
       renderTopBgmToggle();
       if(next){
-        // ♪ ON をサイト全体の音声マスターにする。
-        // このユーザー操作の中で電話用 Web Audio も解除しておく。
-        unlockRoomPhoneAudioMaster();
+        // ♪ ON をサイト全体の音声マスターとして扱う。
+        // このタップの最中に電話用 AudioContext も解除し、2分後まで生かしておく。
+        armRoomPhoneAudioMaster();
         startResortMusic();
         if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
       }else{
         pauseResortMusic();
         stopRoomPhoneRing();
+        disarmRoomPhoneAudioMaster();
       }
     });
     document.getElementById('storyMenuOpen').addEventListener('click',()=>{storyMenu.classList.add('open');storyMenu.setAttribute('aria-hidden','false')});
@@ -3087,68 +3088,6 @@ body.night-theme #integratedCafeShell iframe{
     let roomPhoneStayStartedAt=0,roomPhoneTimer=null,roomPhoneCallState='idle',roomPhoneAudioUnlocked=false,roomPhoneLastMessage='';
     let roomPhoneActiveEvent=null,roomPhoneCreating=false,roomPhoneResolving=false,roomPhoneConversationEventId='';
 
-    // PHONE AUDIO MASTER
-    // iPhone / iPad Safari では、2分後の <audio>.play() が自動再生として拒否されることがある。
-    // そこで、トップの ♪ ON/OFF を音声マスターにし、ユーザー操作時に Web Audio を解除して
-    // room_phone_ring.mp3 を AudioBuffer として準備する。着信時は BufferSource を開始するだけにする。
-    let roomPhoneAudioContext=null,roomPhoneAudioGain=null,roomPhoneAudioBuffer=null,roomPhoneAudioSource=null,roomPhoneAudioLoadPromise=null;
-
-    function roomPhoneMasterAudioOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
-    function ensureRoomPhoneAudioContext(){
-      const AudioCtx=window.AudioContext||window.webkitAudioContext;
-      if(!AudioCtx)return null;
-      if(!roomPhoneAudioContext){
-        try{
-          roomPhoneAudioContext=new AudioCtx();
-          roomPhoneAudioGain=roomPhoneAudioContext.createGain();
-          roomPhoneAudioGain.gain.value=1;
-          roomPhoneAudioGain.connect(roomPhoneAudioContext.destination);
-        }catch(e){
-          console.warn('room phone AudioContext create failed',e);
-          roomPhoneAudioContext=null;roomPhoneAudioGain=null;
-          return null;
-        }
-      }
-      return roomPhoneAudioContext;
-    }
-    function loadRoomPhoneAudioBuffer(){
-      if(roomPhoneAudioBuffer)return Promise.resolve(roomPhoneAudioBuffer);
-      if(roomPhoneAudioLoadPromise)return roomPhoneAudioLoadPromise;
-      const ctx=ensureRoomPhoneAudioContext();
-      if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
-      roomPhoneAudioLoadPromise=fetch(new URL('room_phone_ring.mp3',window.location.href).href,{cache:'force-cache'})
-        .then(response=>{if(!response.ok)throw new Error(`room_phone_ring.mp3 HTTP ${response.status}`);return response.arrayBuffer()})
-        .then(arrayBuffer=>ctx.decodeAudioData(arrayBuffer.slice(0)))
-        .then(buffer=>{roomPhoneAudioBuffer=buffer;return buffer})
-        .catch(error=>{roomPhoneAudioLoadPromise=null;console.warn('room phone buffer load failed',error);throw error});
-      return roomPhoneAudioLoadPromise;
-    }
-    function unlockRoomPhoneAudioMaster(){
-      if(!roomPhoneMasterAudioOn())return;
-      const ctx=ensureRoomPhoneAudioContext();
-      if(!ctx){roomPhoneAudioUnlocked=false;return}
-      try{
-        const resumed=ctx.state==='suspended'?ctx.resume():Promise.resolve();
-        Promise.resolve(resumed).then(()=>{
-          roomPhoneAudioUnlocked=ctx.state==='running';
-          return loadRoomPhoneAudioBuffer();
-        }).then(()=>{
-          roomPhoneAudioUnlocked=ctx.state==='running';
-          if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
-        }).catch(error=>{
-          roomPhoneAudioUnlocked=false;
-          console.warn('room phone master unlock failed',error);
-        });
-      }catch(e){
-        roomPhoneAudioUnlocked=false;
-        console.warn('room phone master unlock',e);
-      }
-    }
-    // 既に ♪ ON の場合も、ページ内で最初に触れたユーザー操作を使って解除する。
-    // これで「前回ONのまま保存され、今回は♪を押していない」ケースにも対応する。
-    document.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn())unlockRoomPhoneAudioMaster()},{capture:true,passive:true});
-    document.addEventListener('keydown',()=>{if(roomPhoneMasterAudioOn())unlockRoomPhoneAudioMaster()},{capture:true});
-
     function roomPhoneEligibleNow(){
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=22||hour<3;
@@ -3161,14 +3100,127 @@ body.night-theme #integratedCafeShell iframe{
     function roomPhoneDeclinedLocally(){
       return Boolean(roomPhoneActiveEvent?.id&&localStorage.getItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id))==='1');
     }
+    // PHONE AUDIO MASTER v3
+    // iPhone / iPad Safari は、ユーザー操作から時間が空いた後の play()/resume() を止めることがある。
+    // そこで最初のタップで AudioContext を解除し、ほぼ無音の keep-alive を動かしたままにして
+    // 2分後も context を running に保つ。着信時は読み込み済み AudioBuffer を鳴らすだけにする。
+    let roomPhoneAudioContext=null,roomPhoneAudioGain=null,roomPhoneAudioBuffer=null,roomPhoneAudioSource=null,roomPhoneAudioLoadPromise=null;
+    let roomPhoneKeepAliveOsc=null,roomPhoneKeepAliveGain=null,roomPhoneTestSource=null,roomPhoneAudioLastError='';
+
+    function roomPhoneMasterAudioOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
+    function roomPhoneAudioUrl(){
+      return roomPhoneRing?.currentSrc||roomPhoneRing?.src||new URL('room_phone_ring.mp3',window.location.href).href;
+    }
+    function ensureRoomPhoneAudioContext(){
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if(!AudioCtx)return null;
+      if(!roomPhoneAudioContext){
+        try{
+          roomPhoneAudioContext=new AudioCtx();
+          roomPhoneAudioGain=roomPhoneAudioContext.createGain();
+          roomPhoneAudioGain.gain.value=1;
+          roomPhoneAudioGain.connect(roomPhoneAudioContext.destination);
+          roomPhoneAudioContext.onstatechange=()=>{
+            roomPhoneAudioUnlocked=roomPhoneAudioContext?.state==='running';
+          };
+        }catch(e){
+          roomPhoneAudioLastError='AudioContext: '+(e?.message||e);
+          console.warn('room phone AudioContext create failed',e);
+          roomPhoneAudioContext=null;roomPhoneAudioGain=null;
+          return null;
+        }
+      }
+      return roomPhoneAudioContext;
+    }
+    function startRoomPhoneKeepAlive(){
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx||ctx.state!=='running'||roomPhoneKeepAliveOsc)return;
+      try{
+        const osc=ctx.createOscillator();
+        const gain=ctx.createGain();
+        // 20Hz / 極小音量。可聴上は無音だが、AudioContext を休止させにくくする。
+        osc.frequency.value=20;
+        gain.gain.value=0.000001;
+        osc.connect(gain);gain.connect(ctx.destination);osc.start(0);
+        roomPhoneKeepAliveOsc=osc;roomPhoneKeepAliveGain=gain;
+      }catch(e){console.warn('room phone keep-alive failed',e)}
+    }
+    function stopRoomPhoneKeepAlive(){
+      if(roomPhoneKeepAliveOsc){try{roomPhoneKeepAliveOsc.stop(0)}catch{}try{roomPhoneKeepAliveOsc.disconnect()}catch{}roomPhoneKeepAliveOsc=null}
+      if(roomPhoneKeepAliveGain){try{roomPhoneKeepAliveGain.disconnect()}catch{}roomPhoneKeepAliveGain=null}
+    }
+    function loadRoomPhoneAudioBuffer(force=false){
+      if(roomPhoneAudioBuffer&&!force)return Promise.resolve(roomPhoneAudioBuffer);
+      if(roomPhoneAudioLoadPromise&&!force)return roomPhoneAudioLoadPromise;
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
+      roomPhoneAudioLastError='';
+      const url=roomPhoneAudioUrl();
+      roomPhoneAudioLoadPromise=fetch(url,{cache:force?'reload':'no-store'})
+        .then(response=>{
+          if(!response.ok)throw new Error(`room_phone_ring.mp3 HTTP ${response.status}`);
+          return response.arrayBuffer();
+        })
+        .then(arrayBuffer=>ctx.decodeAudioData(arrayBuffer.slice(0)))
+        .then(buffer=>{
+          if(!buffer||!buffer.duration)throw new Error('room_phone_ring.mp3 decoded as empty audio');
+          roomPhoneAudioBuffer=buffer;
+          roomPhoneAudioLoadPromise=null;
+          return buffer;
+        })
+        .catch(error=>{
+          roomPhoneAudioLoadPromise=null;
+          roomPhoneAudioLastError=error?.message||String(error);
+          console.warn('room phone buffer load failed',error,'url=',url);
+          throw error;
+        });
+      return roomPhoneAudioLoadPromise;
+    }
+    function armRoomPhoneAudioMaster(){
+      if(!roomPhoneMasterAudioOn())return Promise.resolve(false);
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx){roomPhoneAudioUnlocked=false;return Promise.resolve(false)}
+      try{
+        // resume() は必ずこの関数を呼んだユーザー操作中に実行する。
+        const resumed=ctx.state==='running'?Promise.resolve():ctx.resume();
+        return Promise.resolve(resumed).then(()=>{
+          roomPhoneAudioUnlocked=ctx.state==='running';
+          if(roomPhoneAudioUnlocked)startRoomPhoneKeepAlive();
+          return loadRoomPhoneAudioBuffer();
+        }).then(()=>{
+          roomPhoneAudioUnlocked=ctx.state==='running';
+          if(roomPhoneAudioUnlocked)startRoomPhoneKeepAlive();
+          if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+          return roomPhoneAudioUnlocked;
+        }).catch(error=>{
+          roomPhoneAudioUnlocked=false;
+          roomPhoneAudioLastError=error?.message||String(error);
+          console.warn('room phone master arm failed',error);
+          return false;
+        });
+      }catch(e){
+        roomPhoneAudioUnlocked=false;
+        roomPhoneAudioLastError=e?.message||String(e);
+        return Promise.resolve(false);
+      }
+    }
+    function disarmRoomPhoneAudioMaster(){
+      stopRoomPhoneKeepAlive();
+      if(roomPhoneAudioContext&&roomPhoneAudioContext.state==='running'){
+        try{roomPhoneAudioContext.suspend()}catch{}
+      }
+      roomPhoneAudioUnlocked=false;
+    }
+    // ♪が前回からONのままでも、今回のページで最初に触れた操作を解除トリガーにする。
+    document.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
+    document.addEventListener('touchstart',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
+    document.addEventListener('keydown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true});
+
     function primeRoomPhoneAudio(){
       if(!roomPhoneMasterAudioOn())return;
-      // 客室入室時にも同じマスター解除処理を呼ぶ。
-      // Web Audio 非対応端末向けに HTMLAudio のロードだけは済ませておく。
-      unlockRoomPhoneAudioMaster();
-      if(roomPhoneRing){
-        try{roomPhoneRing.preload='auto';roomPhoneRing.load()}catch{}
-      }
+      armRoomPhoneAudioMaster();
+      // Web Audio が使えない時のフォールバック用に HTMLAudio も先読みする。
+      if(roomPhoneRing){try{roomPhoneRing.preload='auto';roomPhoneRing.load()}catch{}}
     }
     function roomPhoneEventExpired(row=roomPhoneActiveEvent){
       const end=Date.parse(row?.expires_at||'');
@@ -3177,8 +3229,7 @@ body.night-theme #integratedCafeShell iframe{
     function startRoomPhoneWebAudio(){
       if(!roomPhoneMasterAudioOn()||roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return false;
       const ctx=ensureRoomPhoneAudioContext();
-      if(!ctx||!roomPhoneAudioBuffer||!roomPhoneAudioGain)return false;
-      if(ctx.state!=='running')return false;
+      if(!ctx||ctx.state!=='running'||!roomPhoneAudioBuffer||!roomPhoneAudioGain)return false;
       if(roomPhoneAudioSource)return true;
       try{
         const source=ctx.createBufferSource();
@@ -3191,6 +3242,7 @@ body.night-theme #integratedCafeShell iframe{
         roomPhoneAudioUnlocked=true;
         return true;
       }catch(e){
+        roomPhoneAudioLastError=e?.message||String(e);
         console.warn('room phone Web Audio start failed',e);
         return false;
       }
@@ -3198,19 +3250,18 @@ body.night-theme #integratedCafeShell iframe{
     function attemptRoomPhoneRing(){
       if(roomPhoneCallState!=='ringing'||roomPhoneDeclinedLocally()||roomPhoneEventExpired())return;
       if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
-
-      // 第一選択：トップの♪で解除した Web Audio。
       const ctx=ensureRoomPhoneAudioContext();
-      if(ctx){
-        const resumePromise=ctx.state==='suspended'?ctx.resume():Promise.resolve();
-        Promise.resolve(resumePromise).then(()=>loadRoomPhoneAudioBuffer()).then(()=>{
+      if(ctx&&ctx.state==='running'){
+        startRoomPhoneKeepAlive();
+        if(roomPhoneAudioBuffer&&startRoomPhoneWebAudio())return;
+        loadRoomPhoneAudioBuffer().then(()=>{
           if(roomPhoneCallState==='ringing'&&roomPhoneMasterAudioOn()&&!roomPhoneDeclinedLocally()&&!roomPhoneEventExpired()){
-            if(startRoomPhoneWebAudio())return;
-            attemptRoomPhoneHtmlAudioFallback();
+            if(!startRoomPhoneWebAudio())attemptRoomPhoneHtmlAudioFallback();
           }
         }).catch(()=>attemptRoomPhoneHtmlAudioFallback());
         return;
       }
+      // context が何らかの理由で suspend された時は、その場の resume に期待せず HTMLAudio に逃がす。
       attemptRoomPhoneHtmlAudioFallback();
     }
     function attemptRoomPhoneHtmlAudioFallback(){
@@ -3220,9 +3271,10 @@ body.night-theme #integratedCafeShell iframe{
         try{roomPhoneRing.currentTime=0}catch{}
         const p=roomPhoneRing.play();
         if(p&&p.then)p.then(()=>{roomPhoneAudioUnlocked=true}).catch(e=>{
+          roomPhoneAudioLastError=e?.message||String(e);
           console.warn('room phone HTMLAudio fallback blocked',e);
         });
-      }catch(e){console.warn('room phone HTMLAudio fallback',e)}
+      }catch(e){roomPhoneAudioLastError=e?.message||String(e);console.warn('room phone HTMLAudio fallback',e)}
     }
     function stopRoomPhoneRing(){
       if(roomPhoneAudioSource){
@@ -3230,10 +3282,37 @@ body.night-theme #integratedCafeShell iframe{
         try{roomPhoneAudioSource.disconnect()}catch{}
         roomPhoneAudioSource=null;
       }
-      if(roomPhoneRing){
-        try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}
+      if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
+      // ♪がONなら keep-alive は止めない。次の遅延音声も鳴らせる状態を維持する。
+      if(roomPhoneMasterAudioOn()&&roomPhoneAudioContext?.state==='running')startRoomPhoneKeepAlive();
+    }
+
+    async function testRoomPhoneSound(){
+      const status=document.getElementById('adminMasterStatus');
+      if(!roomPhoneMasterAudioOn()){
+        if(status)status.textContent='着信音テスト：先に右上の♪をONにしてください。';
+        return;
+      }
+      if(status)status.textContent='着信音を準備しています…';
+      // ボタンを押したユーザー操作の中で resume を開始する。
+      await armRoomPhoneAudioMaster();
+      const ctx=ensureRoomPhoneAudioContext();
+      try{
+        const buffer=await loadRoomPhoneAudioBuffer(true);
+        if(!ctx||ctx.state!=='running')throw new Error('AudioContext is '+(ctx?.state||'unavailable'));
+        if(roomPhoneTestSource){try{roomPhoneTestSource.stop(0)}catch{}roomPhoneTestSource=null}
+        const source=ctx.createBufferSource();source.buffer=buffer;source.loop=true;source.connect(roomPhoneAudioGain);source.start(0);roomPhoneTestSource=source;
+        if(status)status.textContent=`着信音テスト再生中（${roomPhoneAudioUrl().split('/').pop()}）`;
+        setTimeout(()=>{if(roomPhoneTestSource===source){try{source.stop(0)}catch{}try{source.disconnect()}catch{}roomPhoneTestSource=null}if(status)status.textContent='着信音テスト終了。音が聞こえたか確認してください。';},3000);
+      }catch(error){
+        roomPhoneAudioLastError=error?.message||String(error);
+        if(status)status.textContent='着信音テスト失敗：'+roomPhoneAudioLastError;
+        console.warn('room phone sound test failed',error);
+        // 直接タップ中なので HTMLAudio でも最後に試す。
+        try{roomPhoneRing.muted=false;roomPhoneRing.loop=false;roomPhoneRing.currentTime=0;await roomPhoneRing.play()}catch{}
       }
     }
+    document.getElementById('adminPhoneSoundTest')?.addEventListener('click',testRoomPhoneSound);
     function updateRoomPhoneUi(){
       if(!roomPhoneCallPanel)return;
       const declined=roomPhoneCallState==='ringing'&&roomPhoneDeclinedLocally();
@@ -3401,18 +3480,22 @@ body.night-theme #integratedCafeShell iframe{
     roomPhoneDecline?.addEventListener('click',()=>resolveRoomPhoneCall('declined'));
     document.querySelectorAll('[data-room-phone-answer]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('answered')));
     document.querySelectorAll('[data-room-phone-decline]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('declined')));
-    // 客室内で触れた時も、♪ ON なら電話用 Web Audio を確実に復帰させる。
-    roomLounge?.addEventListener('pointerdown',()=>{
-      if(!activeRoom||!roomPhoneMasterAudioOn())return;
-      unlockRoomPhoneAudioMaster();
-      if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
-    },{passive:true});
-    // Safari がバックグラウンド移行で AudioContext を suspend した場合の復帰処理。
+    // 客室内で触れた時は毎回、AudioContext が running か確認して再アームする。
+    roomLounge?.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
     document.addEventListener('visibilitychange',()=>{
-      if(!document.hidden&&roomPhoneMasterAudioOn()){
-        unlockRoomPhoneAudioMaster();
+      if(!document.hidden&&roomPhoneMasterAudioOn()&&roomPhoneAudioContext?.state==='running'){
+        startRoomPhoneKeepAlive();
         if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
       }
+    });
+    // 初回の解除に失敗した端末でも、客室内で次に触れた瞬間に再度音声を準備する。
+    roomLounge?.addEventListener('pointerdown',()=>{
+      if(!activeRoom||roomPhoneCallState==='ringing'||roomPhoneCallState==='answered')return;
+      if(roomPhoneRing?.paused)primeRoomPhoneAudio();
+    },{passive:true});
+    // Safari がバックグラウンド移行で音声を一時停止した場合、復帰時に着信中なら再試行する。
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden&&roomPhoneCallState==='ringing')attemptRoomPhoneRing();
     });
     let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
