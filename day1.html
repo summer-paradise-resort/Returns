@@ -976,10 +976,6 @@ body.night-theme #integratedCafeShell iframe{
     <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
     <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop></audio>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
-    <div id="hernandoArenaFallback" class="hernando-video-fallback">
-      <p>闘牛場の音楽を再生します。</p>
-      <button id="hernandoArenaPlay" type="button">音楽を再生する</button>
-    </div>
   </section>
 
   <section class="subview" id="barView" aria-hidden="true">
@@ -3054,7 +3050,7 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
     const hernandoVideoScreen=document.getElementById('hernandoVideoScreen'),hernandoBullringVideo=document.getElementById('hernandoBullringVideo');
     const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
-    const hernandoArenaFallback=document.getElementById('hernandoArenaFallback'),hernandoArenaPlay=document.getElementById('hernandoArenaPlay'),hernandoArenaBack=document.getElementById('hernandoArenaBack');
+    const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Public bucket: videos / object: hernandos_bullring.mp4
     const HERNANDO_BULLRING_VIDEO_URL=`${SUPABASE_URL}/storage/v1/object/public/videos/hernandos_bullring.mp4`;
@@ -3075,6 +3071,15 @@ body.night-theme #integratedCafeShell iframe{
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
     }
     function hideHernandoDoorChoice(){hernandoSecretSequence.classList.remove('open');hernandoSecretSequence.setAttribute('aria-hidden','true')}
+    function primeHernandoArenaBgm(){
+      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      try{
+        hernandoArenaBgm.currentTime=0;
+        hernandoArenaBgm.volume=0;
+        const p=hernandoArenaBgm.play();
+        if(p&&p.catch)p.catch(()=>{});
+      }catch{}
+    }
     function showHernandoArena(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
@@ -3082,12 +3087,9 @@ body.night-theme #integratedCafeShell iframe{
       hernandoVideoFallback.classList.remove('show');
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      try{hernandoArenaBgm.currentTime=0}catch{}
-      if(hernandoArenaBgm){
-        hernandoArenaBgm.volume=.42;
-        const p=localStorage.getItem('spr-bgm-enabled')==='off'?null:hernandoArenaBgm.play();
-        if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
+        try{hernandoArenaBgm.currentTime=0;hernandoArenaBgm.volume=.42}catch{}
+        if(hernandoArenaBgm.paused){const p=hernandoArenaBgm.play();if(p&&p.catch)p.catch(()=>{})}
       }
     }
     function playHernandoVideo(){
@@ -3106,28 +3108,32 @@ body.night-theme #integratedCafeShell iframe{
     function startHernandoDescent(){
       hideHernandoDoorChoice();
       clearHernandoDescentTimers();
-      // 2回目以降は導入動画を再生せず、そのまま闘牛場へ入る。
-      if(hasSeenHernandoIntro()){
-        showHernandoArena();
-        return;
-      }
+      const introSeen=hasSeenHernandoIntro();
       hernandoVideoStarted=false;
       hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
-      // iPhone/iPadで音声付き動画を自動再生しやすくするため、ユーザー操作中に一度だけ再生権限を確保する。
-      try{
-        hernandoBullringVideo.muted=true;
-        const unlock=hernandoBullringVideo.play();
-        if(unlock&&unlock.then)unlock.then(()=>{
-          if(!hernandoVideoStarted){hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}
-          hernandoBullringVideo.muted=false;
-        }).catch(()=>{hernandoBullringVideo.muted=false});
-      }catch{}
+
+      // 「奥に進む」のタップ中に闘牛場BGMを無音で先行再生し、iPhone/iPadでも
+      // 闘牛場表示時に追加タップなしで hernandos_bullring.mp3 を鳴らせるようにする。
+      primeHernandoArenaBgm();
+
+      // 初回だけ、同じユーザー操作中に導入動画の再生権限も確保する。
+      if(!introSeen){
+        try{
+          hernandoBullringVideo.muted=true;
+          const unlock=hernandoBullringVideo.play();
+          if(unlock&&unlock.then)unlock.then(()=>{
+            if(!hernandoVideoStarted){hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}
+            hernandoBullringVideo.muted=false;
+          }).catch(()=>{hernandoBullringVideo.muted=false});
+        }catch{}
+      }
       hernandoDescentTimerA=setTimeout(()=>{
         hernandoDescentText.classList.add('fade');
         setTimeout(()=>{hernandoDescentText.textContent='ゆっくりと、階段を降りていった。';hernandoDescentText.classList.remove('fade')},360);
       },1550);
-      hernandoDescentTimerB=setTimeout(playHernandoVideo,3600);
+      // 2回目以降も暗転＋階段演出は毎回表示し、その後だけ導入動画を省略する。
+      hernandoDescentTimerB=setTimeout(()=>{if(introSeen)showHernandoArena();else playHernandoVideo()},3600);
     }
     if(hernandoSecretEnter)hernandoSecretEnter.addEventListener('click',startHernandoDescent);
     if(hernandoSecretCancel)hernandoSecretCancel.addEventListener('click',hideHernandoDoorChoice);
@@ -3140,16 +3146,8 @@ body.night-theme #integratedCafeShell iframe{
       hernandoBullringVideo.addEventListener('ended',()=>{markHernandoIntroSeen();showHernandoArena()});
       hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
-    if(hernandoArenaPlay)hernandoArenaPlay.addEventListener('click',()=>{
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      if(hernandoArenaBgm){
-        hernandoArenaBgm.volume=.42;
-        const p=hernandoArenaBgm.play();if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
-      }
-    });
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',()=>{
-      try{hernandoArenaBgm.pause();hernandoArenaBgm.currentTime=0}catch{}
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
+      try{hernandoArenaBgm.pause();hernandoArenaBgm.currentTime=0;hernandoArenaBgm.volume=.42}catch{}
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
     });
     function updateRoomContextAction(){
