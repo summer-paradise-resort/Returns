@@ -4120,7 +4120,6 @@ body.night-theme #integratedCafeShell iframe{
     let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false,hernandoEntryWasIntroSeen=false;
     let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
-    let hernandoArenaBgmPrimed=false;
     let hernandoArenaBgmFadeToken=0;
     let hernandoDrinkRoundNo=1,hernandoPoisonChoice='';
 
@@ -4217,35 +4216,17 @@ body.night-theme #integratedCafeShell iframe{
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
     }
     function hideHernandoDoorChoice(){hernandoSecretSequence.classList.remove('open');hernandoSecretSequence.setAttribute('aria-hidden','true')}
-    function setHernandoAudioSessionPlayback(){
-      try{
-        // iPhone/iPad では BGM を「メディア再生」として扱わせ、消音状態や動画終了後の引き継ぎを安定させる。
-        if(navigator.audioSession&&'type' in navigator.audioSession)navigator.audioSession.type='playback';
-      }catch(e){console.warn('Hernando audioSession',e)}
-    }
-    function playHernandoArenaBgmImmediate({restart=false,prime=false}={}){
-      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return Promise.resolve(false);
-      setHernandoAudioSessionPlayback();
-      // Hernando の BGM は iOS で「ミュート再生→後から解除」をすると無音のままになることがある。
-      // そのため、必ず muted=false のままユーザー操作で再生権限を確保し、prime 時だけ volume=0 にする。
+    function playHernandoArenaBgm(restart=false){
+      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
       sprCancelGuardedAudioStart(hernandoArenaBgm);
       try{
         hernandoArenaBgm.loop=true;
         hernandoArenaBgm.muted=false;
-        hernandoArenaBgm.volume=prime?0:.42;
-        if(restart){try{if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0}catch{}}
+        hernandoArenaBgm.volume=.42;
+        if(restart&&hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;
         const p=hernandoArenaBgm.play();
-        if(p&&p.then){
-          return p.then(()=>{hernandoArenaBgmPrimed=true;return true}).catch(e=>{console.warn('Hernando BGM play',e);return false});
-        }
-        hernandoArenaBgmPrimed=true;
-        return Promise.resolve(true);
-      }catch(e){console.warn('Hernando BGM play',e);return Promise.resolve(false)}
-    }
-    function primeHernandoArenaBgm(){
-      // 「奥に進む」のタップそのものを使って、BGM 要素を無音(volume=0)で一度再生する。
-      // 動画再生で iOS が一時停止しても、この要素自体の再生許可を先に取得しておく。
-      void playHernandoArenaBgmImmediate({restart:false,prime:true});
+        if(p&&p.catch)p.catch(e=>console.warn('Hernando BGM play',e));
+      }catch(e){console.warn('Hernando BGM play',e)}
     }
     function cancelHernandoArenaBgmFade(restoreVolume=false){
       hernandoArenaBgmFadeToken++;
@@ -4269,14 +4250,6 @@ body.night-theme #integratedCafeShell iframe{
         if(typeof onDone==='function')onDone();
       };
       requestAnimationFrame(step);
-    }
-    function ensureHernandoArenaBgm(){
-      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
-      // すでに鳴っている場合はフェード中も含めて触らない。
-      if(!hernandoArenaBgm.paused&&!hernandoArenaBgm.muted&&hernandoArenaBgm.volume>0)return;
-      cancelHernandoArenaBgmFade(true);
-      // NEXT などのタップ時は、非同期 guard を挟まずそのユーザー操作内で即 play() する。
-      void playHernandoArenaBgmImmediate({restart:false,prime:false});
     }
     function hernandoTypeDelay(ch){if(ch==='、')return 90;if(ch==='。'||ch==='？'||ch==='！')return 150;if(ch==='…')return 110;return 34}
     function finishHernandoDialogueLine(){
@@ -4390,14 +4363,12 @@ body.night-theme #integratedCafeShell iframe{
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         fadeHernandoArenaBgm(0,900,()=>{
           try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
-          hernandoArenaBgmPrimed=false;
         });
         return;
       }
       cancelHernandoArenaBgmFade();
       sprCancelGuardedAudioStart(hernandoArenaBgm);
       try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
-      hernandoArenaBgmPrimed=false;
     }
     function showHernandoArena(){
       clearHernandoDescentTimers();
@@ -4410,19 +4381,18 @@ body.night-theme #integratedCafeShell iframe{
       setHernandoArenaImage('hernandos_bullring01.jpg');
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
         // 初回は導入動画の終了後、この闘牛場表示に切り替わった時点でBGMを開始する。
-        void playHernandoArenaBgmImmediate({restart:true,prime:false});
+        playHernandoArenaBgm(true);
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
     function playHernandoVideo(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
-      // 導入動画が終わるまでは完全に無音。闘牛場BGMは再生せず、動画終了後の showHernandoArena() で初めて開始する。
+      // 導入動画が終わるまでは闘牛場BGMを再生しない。動画終了後に showHernandoArena() で初めて開始する。
       if(hernandoArenaBgm){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
-        hernandoArenaBgmPrimed=false;
-      }
+        }
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
       hernandoVideoStarted=true;
@@ -4441,14 +4411,13 @@ body.night-theme #integratedCafeShell iframe{
       hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
 
-      // 階段演出中は完全に無音にする。闘牛場BGMはここでは先行再生しない。
-      // 初回は導入動画の終了後、2回目以降は闘牛場表示後に初めてBGMを開始する。
+      // 階段演出中は無音。闘牛場BGMはここでは一切再生しない。
+      // 初回は導入動画終了後、2回目以降は闘牛場表示後に初めてBGMを開始する。
       pauseResortMusic();
       if(hernandoArenaBgm){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
-        hernandoArenaBgmPrimed=false;
-      }
+        }
 
       // 初回だけ、同じユーザー操作中に導入動画の再生権限も確保する。
       if(!introSeen){
@@ -4480,8 +4449,6 @@ body.night-theme #integratedCafeShell iframe{
       hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
     if(hernandoDialogueNext)hernandoDialogueNext.addEventListener('click',()=>{
-      // 万一iOS側で初回の先行再生が失敗していても、会話操作そのものを再生許可のフォールバックにする。
-      ensureHernandoArenaBgm();
       // 文字送りの途中でNEXTを押した場合は、次へ進まず現在の台詞を全文表示する。
       if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
       if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;showHernandoDialogueLine(hernandoDialogueLines[hernandoDialogueIndex]);return}
@@ -4497,23 +4464,17 @@ body.night-theme #integratedCafeShell iframe{
     });
     if(hernandoBullAccept)hernandoBullAccept.addEventListener('click',()=>{
       cancelHernandoArenaBgmFade(true);
-      ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       hernandoDrinkRoundNo=1;hernandoPoisonChoice='';
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','drinkGame');
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
       cancelHernandoArenaBgmFade(true);
-      ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
     });
     hernandoDrinkButtons.forEach(btn=>btn.addEventListener('click',()=>{void chooseHernandoDrink(btn.dataset.hernandoDrink)}));
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
-    if(hernandoEncounter)hernandoEncounter.addEventListener('pointerdown',()=>{
-      // 動画終了直後の自動再生を iOS が止めた場合も、闘牛場内の最初のタップで即復帰する。
-      if(hernandoEncounter.classList.contains('open'))ensureHernandoArenaBgm();
-    },{capture:true});
     function updateRoomContextAction(){
       updateRoomPhoneUi();
       if(!roomContextAction)return;
