@@ -389,6 +389,51 @@
     .bar-order-result{margin-top:11px;padding:11px 12px;border:1px solid #d9c9a9;background:#fffaf0;color:#6b552d;font-size:11px;line-height:1.8;text-align:center}
     @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
 
+    /* SEASIDE BAR IMMERSIVE BACKGROUND
+       元の seaside_bar.jpg を画面いっぱいに拡大して背景として使用する。 */
+    #barView{
+      background:#071a2b;
+      isolation:isolate;
+    }
+    #barView::before{
+      content:"";
+      position:fixed;
+      inset:-3%;
+      z-index:0;
+      pointer-events:none;
+      background:
+        linear-gradient(180deg,rgba(4,15,25,.24),rgba(4,15,25,.48)),
+        url("seaside_bar.jpg") center center/cover no-repeat;
+      transform:scale(1.04);
+    }
+    #barView::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(7,21,35,.22));
+    }
+    #barView > *{position:relative;z-index:1}
+    #barView .subhead{
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+    #barView .gallery{
+      background:rgba(7,21,35,.22);
+    }
+    #barView .info{
+      margin-top:0;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      box-shadow:0 -12px 34px rgba(0,0,0,.12);
+    }
+    body.night-theme #barView .info{
+      background:rgba(7,21,35,.94);
+    }
+
     .explore-choice-grid,.explore-location-actions{display:grid;gap:10px;margin-top:14px}
     .explore-choice-btn,.explore-location-action{width:100%;padding:14px 15px;border:1px solid #e7dfd1;background:#fff;color:var(--navy);text-align:left;font-size:13px;line-height:1.7;letter-spacing:.04em}
     .explore-choice-btn small,.explore-location-action small{display:block;color:var(--gold);font-size:10px;letter-spacing:.12em;margin-top:3px}
@@ -527,7 +572,7 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .hernando-dialogue.hidden{display:none!important}
 .hernando-dialogue-name{font:11px Georgia,serif;letter-spacing:.3em;color:#e3c27d;margin-bottom:10px}
 .hernando-dialogue-text{min-height:58px;font-size:15px;line-height:2;letter-spacing:.05em}
-.hernando-dialogue-char{display:inline;opacity:0;filter:blur(2px);transition:opacity .34s ease,filter .42s ease;will-change:opacity,filter}
+.hernando-dialogue-char{display:inline;opacity:0;filter:blur(1.4px);transition:opacity .18s ease,filter .22s ease;will-change:opacity,filter}
 .hernando-dialogue-char.in{opacity:1;filter:blur(0)}
 .hernando-dialogue-next{width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.48);background:rgba(125,31,27,.86);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
 .hernando-dialogue-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
@@ -1015,7 +1060,7 @@ body.night-theme #integratedCafeShell iframe{
     <div class="hernando-encounter-shade"></div>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
     <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
-      <div class="hernando-dialogue-name">HERNANDO</div>
+      <div class="hernando-dialogue-name">エルナンド</div>
       <div id="hernandoDialogueText" class="hernando-dialogue-text"></div>
       <button id="hernandoDialogueNext" class="hernando-dialogue-next" type="button">NEXT　›</button>
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
@@ -1040,6 +1085,7 @@ body.night-theme #integratedCafeShell iframe{
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
     </div>
+    <audio id="seasideBarBgm" src="seasidebar.bgm.mp3" loop preload="auto"></audio>
     <section id="barOrderSheet" class="bar-order-sheet" aria-hidden="true" aria-label="シーサイドバー ドリンク注文">
       <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
       <div class="bar-order-content">
@@ -1248,7 +1294,7 @@ body.night-theme #integratedCafeShell iframe{
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity},
       jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
-      mermaidGuardShell:{label:'人魚の護り貝',detail:'NGギミックに触れた時、残機の代わりに1個消費して身を守るお守り。',max:Infinity}
+      mermaidGuardShell:{label:'人魚の護り貝',detail:'NGギミックに触れた時、先に1個消費されるお守り。',max:Infinity}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
@@ -1726,8 +1772,8 @@ body.night-theme #integratedCafeShell iframe{
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
     scheduleHeroBackgroundRefresh();
@@ -2822,9 +2868,56 @@ body.night-theme #integratedCafeShell iframe{
     setInterval(()=>syncExploreMusicForTime(),1000);
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS})}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
-    function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
+
+    // SEASIDE BAR BGM BY TIME
+    // 昼（07:00〜15:59）・夕（16:00〜19:59）のみ seasidebar.bgm.mp3 を再生。
+    // 夜（20:00〜06:59）は自動で停止する。BARを開いたまま時間帯をまたいだ場合も追従する。
+    const seasideBarBgm=document.getElementById('seasideBarBgm');
+    let seasideBarBgmPeriod='';
+    function seasideBarBgmEnabledForPeriod(period=currentTokyoPeriod()){
+      return period==='day'||period==='sunset';
+    }
+    function syncSeasideBarMusicForTime({force=false,restart=false}={}){
+      if(!seasideBarBgm)return;
+      const view=document.getElementById('barView');
+      const open=Boolean(view?.classList.contains('open'));
+      const period=currentTokyoPeriod();
+      const changed=seasideBarBgmPeriod!==period;
+      seasideBarBgmPeriod=period;
+      const shouldPlay=open&&seasideBarBgmEnabledForPeriod(period)&&localStorage.getItem('spr-bgm-enabled')!=='off';
+
+      if(!shouldPlay){
+        sprCancelGuardedAudioStart(seasideBarBgm);
+        seasideBarBgm.pause();
+        if(changed||!open){try{seasideBarBgm.currentTime=0}catch{}}
+        return;
+      }
+
+      if(force||changed||seasideBarBgm.paused){
+        void sprStartAudioClean(seasideBarBgm,{
+          volume:.34,
+          loop:true,
+          restart:restart||changed||seasideBarBgm.paused,
+          guard:SPR_AUDIO_START_GUARD_MS
+        });
+      }
+    }
+    function startSeasideBarMusic(){
+      if(!seasideBarBgm)return;
+      casinoBgm.pause();
+      pauseExploreMusic();
+      syncSeasideBarMusicForTime({force:true,restart:true});
+    }
+    function stopSeasideBarMusic(reset=false){
+      if(!seasideBarBgm)return;
+      sprCancelGuardedAudioStart(seasideBarBgm);
+      seasideBarBgm.pause();
+      if(reset){try{seasideBarBgm.currentTime=0}catch{}}
+    }
+    setInterval(()=>syncSeasideBarMusicForTime(),1000);
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS})}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
+    function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
@@ -4142,7 +4235,7 @@ body.night-theme #integratedCafeShell iframe{
       // NEXT などのタップ時は、非同期 guard を挟まずそのユーザー操作内で即 play() する。
       void playHernandoArenaBgmImmediate({restart:false,prime:false});
     }
-    function hernandoTypeDelay(ch){if(ch==='、')return 260;if(ch==='。'||ch==='？'||ch==='！')return 460;if(ch==='…')return 320;return 82}
+    function hernandoTypeDelay(ch){if(ch==='、')return 90;if(ch==='。'||ch==='？'||ch==='！')return 150;if(ch==='…')return 110;return 34}
     function finishHernandoDialogueLine(){
       if(!hernandoDialogueCurrentText)return;
       hernandoDialogueTypeToken++;
@@ -4169,7 +4262,7 @@ body.night-theme #integratedCafeShell iframe{
       const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
       (async()=>{
-        await new Promise(r=>setTimeout(r,350));
+        await new Promise(r=>setTimeout(r,140));
         if(token!==hernandoDialogueTypeToken)return;
         await new Promise(requestAnimationFrame);
         for(let i=0;i<spans.length;i++){
@@ -4525,10 +4618,9 @@ body.night-theme #integratedCafeShell iframe{
       const lives=remainingLives();
       const lifeRow=document.createElement('div');lifeRow.className='belongings-item life-row';
       const lifeMain=document.createElement('div');lifeMain.className='belongings-main';
-      const lifeInfo=document.createElement('div');const lifeName=document.createElement('strong');lifeName.textContent='残機';
-      const lifeDetail=document.createElement('small');lifeDetail.textContent=lives>0?'NGギミックに触れると1つ減ります。人魚の護り貝を所持している場合は、先に護り貝が身代わりになります。':'残機がありません。最終日の個人選択には参加できません。';if(lives===0)lifeDetail.className='life-zero-note';
-      lifeInfo.append(lifeName,lifeDetail);lifeMain.append(lifeInfo);
-      const hearts=document.createElement('div');hearts.className='life-hearts';hearts.setAttribute('aria-label',`残機 ${lives} / 3`);
+      const lifeInfo=document.createElement('div');const lifeName=document.createElement('strong');lifeName.textContent='YOU';
+      lifeInfo.append(lifeName);lifeMain.append(lifeInfo);
+      const hearts=document.createElement('div');hearts.className='life-hearts';hearts.setAttribute('aria-label',`YOU ${lives} / 3`);
       for(let i=0;i<3;i++){const h=document.createElement('span');h.className='life-heart'+(i<lives?'':' empty');h.textContent=i<lives?'♥':'♡';hearts.append(h)}
       lifeRow.append(lifeMain,hearts);roomBelongingsList.append(lifeRow);
       Object.entries(belongingsCatalog).forEach(([key,item])=>{
@@ -4840,7 +4932,7 @@ body.night-theme #integratedCafeShell iframe{
   };
   document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
-    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
+    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,lines:[&#x27;あら、こちらのカフェは初めてでいらっしゃいますか？ただいま期間限定で、ご利用のお客様へ記念のコースターをお渡ししております。&#x27;,&#x27;最近は、そのコースターをきっかけにお客様同士で絵柄を見せ合ったり、交換を楽しまれることも多いんですよ。アフタヌーンティーのカフェエリアは、ゲストの皆様の交流の場としても開放しております。よろしければ、旅先ならではの素敵な出会いもお楽しみくださいませ。&#x27;]},&#x27;*&#x27;),260);
   };
   // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
@@ -5025,7 +5117,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   };
   document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
-    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
+    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,lines:[&#x27;あら、こちらのカフェは初めてでいらっしゃいますか？ただいま期間限定で、ご利用のお客様へ記念のコースターをお渡ししております。&#x27;,&#x27;最近は、そのコースターをきっかけにお客様同士で絵柄を見せ合ったり、交換を楽しまれることも多いんですよ。アフタヌーンティーのカフェエリアは、ゲストの皆様の交流の場としても開放しております。よろしければ、旅先ならではの素敵な出会いもお楽しみくださいませ。&#x27;]},&#x27;*&#x27;),260);
   };
   // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
@@ -5217,7 +5309,7 @@ window.addEventListener('message',e=>{
 <script>
 (()=>{
  const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose');
- let token=0; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ let token=0,sequence=[],sequenceIndex=-1; const wait=ms=>new Promise(r=>setTimeout(r,ms));
  async function show(line){
    const mine=++token;t.textContent='';
    const chars=[...line],spans=chars.map(ch=>{const s=document.createElement('span');s.className='cafe-staff-char';s.textContent=ch;t.appendChild(s);return s});
@@ -5225,12 +5317,27 @@ window.addEventListener('message',e=>{
    await wait(650); if(mine!==token)return; await new Promise(requestAnimationFrame);
    for(let i=0;i<spans.length;i++){if(mine!==token)return;spans[i].classList.add('in');const ch=chars[i];let d=82;if(ch==='、')d=260;else if(ch==='。'||ch==='？'||ch==='！')d=460;else if(ch==='…')d=320;await wait(d)}
  }
- function hide(){token++;o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+ function setButton(){c.textContent=(sequence.length&&sequenceIndex<sequence.length-1)?'NEXT　›':'CLOSE　×'}
+ function showSingle(line){sequence=[];sequenceIndex=-1;setButton();show(line)}
+ function showSequence(lines){
+   sequence=(Array.isArray(lines)?lines:[]).map(v=>String(v||'').trim()).filter(Boolean);
+   if(!sequence.length)return;
+   sequenceIndex=0;setButton();show(sequence[0]);
+ }
+ function hide(){token++;sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true')}
  // CAFE以外の館内イベントからも、同じスタッフ会話演出を呼び出せるようにする。
- window.__sprShowStaffDialogue=(line)=>show(String(line||''));
+ window.__sprShowStaffDialogue=(line)=>showSingle(String(line||''));
  window.__sprHideStaffDialogue=hide;
- c.addEventListener('click',hide);
- window.addEventListener('message',e=>{const d=e.data||{};if(d.type!=='spr-cafe-staff-dialogue')return;const ok=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].some(f=>f&&f.contentWindow===e.source);if(ok)show(String(d.text||''))});
+ c.addEventListener('click',()=>{
+   if(sequence.length&&sequenceIndex<sequence.length-1){sequenceIndex++;setButton();show(sequence[sequenceIndex]);return}
+   hide();
+ });
+ window.addEventListener('message',e=>{
+   const d=e.data||{};if(d.type!=='spr-cafe-staff-dialogue')return;
+   const ok=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].some(f=>f&&f.contentWindow===e.source);
+   if(!ok)return;
+   if(Array.isArray(d.lines)&&d.lines.length)showSequence(d.lines);else showSingle(String(d.text||''));
+ });
 })();
 </script>
 <script>
