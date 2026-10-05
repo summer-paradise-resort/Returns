@@ -319,6 +319,8 @@
     .belongings-item small{display:block;margin-top:5px;color:var(--sheet-muted);font-size:10px;line-height:1.65}
     .belongings-count{min-width:54px;text-align:center;font:19px Georgia,serif;color:var(--gold)}
     .belongings-empty{padding:24px 15px;text-align:center;color:var(--sheet-muted);font-size:12px;line-height:1.9;background:var(--message-bg);border:1px solid rgba(130,110,76,.16)}
+    .life-row{grid-template-columns:1fr auto}.life-hearts{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:76px}.life-heart{font:16px/1 Georgia,serif;color:#c34b54;text-shadow:0 1px 5px rgba(195,75,84,.24)}.life-heart.empty{color:var(--sheet-muted);opacity:.28;text-shadow:none}.life-zero-note{color:#b24a4a!important}
+
     .collection-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.collection-card{min-width:0;padding:7px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18);text-align:center}.collection-card.missing{opacity:.42}.collection-card img{display:block;width:100%;aspect-ratio:1;object-fit:contain}.collection-card strong{display:block;margin-top:5px;font:11px Georgia,serif}.collection-card small{display:block;margin-top:2px;font-size:9px;color:var(--sheet-muted)}
     .tea-exchange{margin-top:18px;padding:14px;border:1px solid #e1d4bd;background:#fbf8f1}.tea-exchange h4{margin:0 0 7px;font:500 13px Georgia,serif;letter-spacing:.08em}.tea-exchange-note{font-size:11px;line-height:1.8;color:#6f675c}.tea-exchange-list{display:grid;gap:7px;margin-top:10px}.tea-exchange-item{display:flex;justify-content:space-between;gap:12px;padding:10px;background:#fff;border:1px solid #e7dfd1;font-size:12px}.tea-exchange-empty{padding:10px;text-align:center;font-size:11px;color:#7a7063}
     .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
@@ -517,10 +519,11 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .hernando-video-fallback button{min-width:210px;min-height:48px;border:1px solid rgba(227,194,125,.6);background:#7d1f1b;color:#fff;letter-spacing:.1em}
 .hernando-encounter{position:fixed;inset:0;z-index:223;display:none;background:#050505;color:#fff;overflow:hidden}
 .hernando-encounter.open{display:block}
-.hernando-arena-loop{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.hernando-arena-blur{position:absolute;inset:-4%;display:block;width:108%;height:108%;object-fit:cover;object-position:center;filter:blur(18px) brightness(.46);transform:scale(1.04);background:#000}
+.hernando-arena-loop{position:absolute;left:0;right:0;top:14px;bottom:calc(220px + env(safe-area-inset-bottom));display:block;width:100%;height:calc(100% - 234px - env(safe-area-inset-bottom));object-fit:contain;object-position:center center;background:transparent;padding:0 6px;z-index:1}
 .hernando-arena-back{position:absolute;z-index:4;top:max(14px,env(safe-area-inset-top));left:14px;min-width:84px;height:42px;padding:0 13px;border:1px solid rgba(255,255,255,.45);background:rgba(0,0,0,.48);color:#fff;font:11px Georgia,serif;letter-spacing:.12em}
 .hernando-encounter-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.hernando-encounter-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.08) 48%,rgba(0,0,0,.82) 77%,rgba(0,0,0,.96) 100%)}
+.hernando-encounter-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.08) 30%,rgba(0,0,0,.34) 58%,rgba(0,0,0,.84) 80%,rgba(0,0,0,.96) 100%)}
 .hernando-dialogue{position:absolute;z-index:5;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));margin:auto;max-width:720px;padding:18px 18px 16px;border:1px solid rgba(227,194,125,.5);background:rgba(7,9,11,.9);backdrop-filter:blur(8px);box-shadow:0 18px 50px rgba(0,0,0,.42)}
 .hernando-dialogue.hidden{display:none!important}
 .hernando-dialogue-name{font:11px Georgia,serif;letter-spacing:.3em;color:#e3c27d;margin-bottom:10px}
@@ -531,7 +534,9 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .hernando-dialogue-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
 .hernando-dialogue-choice{min-height:48px;padding:10px 8px;border:1px solid rgba(227,194,125,.48);background:rgba(12,14,16,.9);color:#fff;font:11px Georgia,serif;letter-spacing:.08em;line-height:1.6}
 .hernando-dialogue-choice:first-child{background:rgba(125,31,27,.9);border-color:rgba(190,78,67,.82)}
-@media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}}
+.hernando-drink-game{margin-top:12px}.hernando-drink-game.hidden{display:none!important}.hernando-drink-round{text-align:center;margin:0 0 9px;font:10px Georgia,serif;letter-spacing:.18em;color:#e3c27d}.hernando-drink-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hernando-drink-choice{min-height:50px;padding:10px 6px;border:1px solid rgba(227,194,125,.55);background:rgba(12,14,16,.94);color:#fff;font:12px Georgia,serif;letter-spacing:.12em}.hernando-drink-choice:disabled{opacity:.42;cursor:default}.hernando-drink-choice:nth-child(2){background:rgba(88,24,22,.84)}
+
+@media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}.hernando-arena-blur{inset:-8%;width:116%;height:116%;filter:blur(16px) brightness(.46)}.hernando-arena-loop{top:10px;bottom:calc(246px + env(safe-area-inset-bottom));height:calc(100% - 256px - env(safe-area-inset-bottom));padding:0 2px}}
 
     .admin-master-panel{margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -1005,6 +1010,7 @@ body.night-theme #integratedCafeShell iframe{
   </section>
 
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
+    <img id="hernandoArenaBgBlur" class="hernando-arena-blur" src="hernandos_bullring01.jpg" alt="" aria-hidden="true">
     <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
     <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop></audio>
     <div class="hernando-encounter-shade"></div>
@@ -1016,6 +1022,14 @@ body.night-theme #integratedCafeShell iframe{
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
         <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
+      </div>
+      <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
+        <div id="hernandoDrinkRound" class="hernando-drink-round">1 / 3</div>
+        <div id="hernandoDrinkChoices" class="hernando-drink-choices">
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="right">右</button>
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="center">真ん中</button>
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="left">左</button>
+        </div>
       </div>
     </div>
   </section>
@@ -1234,7 +1248,8 @@ body.night-theme #integratedCafeShell iframe{
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity},
-      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'}
+      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
+      mermaidGuardShell:{label:'人魚の護り貝',detail:'NGギミックに触れた時、残機の代わりに1個消費して身を守るお守り。',max:Infinity}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
@@ -1341,6 +1356,22 @@ body.night-theme #integratedCafeShell iframe{
       if(!window.__sprRemoteHydrating)persistInventorySnapshot(items).catch(e=>console.warn('inventory sync',e));
     }
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
+    function remainingLives(){
+      const belongings=loadBelongings();
+      if(!Object.prototype.hasOwnProperty.call(belongings,'lifeHearts'))return 3;
+      const value=Number(belongings.lifeHearts);
+      return Number.isFinite(value)?Math.max(0,Math.min(3,Math.floor(value))):3;
+    }
+    function setLocalInventoryQuantity(key,quantity,{sync=true}={}){
+      const belongings=loadBelongings();
+      let qty=Math.max(0,Math.floor(Number(quantity)||0));
+      if(key==='lifeHearts')qty=Math.min(3,qty);
+      belongings[key]=qty;
+      if(sync)saveBelongings(belongings);else localStorage.setItem(belongingsKey,JSON.stringify(belongings));
+      if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      return qty;
+    }
+
     // 旧版のアフタヌーンティーチケットがある場合は2名様用へ引き継ぐ
     {const b=loadBelongings();if(Number(b.afternoonTeaTicket||0)>0){b.afternoonTeaTicket2=Math.max(0,Math.floor(Number(b.afternoonTeaTicket2||0)))+Math.max(0,Math.floor(Number(b.afternoonTeaTicket||0)));delete b.afternoonTeaTicket;saveBelongings(b)}}
     // CAFE / AFTERNOON TEA SALON
@@ -1391,7 +1422,7 @@ body.night-theme #integratedCafeShell iframe{
     async function sprPlayerId(){return (await ensureStoredPlayerId())||''}
     async function persistInventorySnapshot(items){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
-      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>({player_id:playerId,item_key,quantity:Math.max(0,Math.floor(Number(v)||0)),updated_at:new Date().toISOString()}));
+      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>{let quantity=Math.max(0,Math.floor(Number(v)||0));if(item_key==='lifeHearts')quantity=Math.min(3,quantity);return {player_id:playerId,item_key,quantity,updated_at:new Date().toISOString()}});
       if(!rows.length)return;
       const {error}=await window.supabaseClientSpecial.from('spr_player_inventory').upsert(rows,{onConflict:'player_id,item_key'});if(error)throw error;
     }
@@ -1400,6 +1431,61 @@ body.night-theme #integratedCafeShell iframe{
       const {data,error}=await window.supabaseClientSpecial.rpc('spr_inventory_adjust',{p_player_id:playerId,p_item_key:itemKey,p_delta:delta});
       if(error)throw error;return Math.max(0,Number(data)||0);
     }
+    async function authoritativeInventoryCount(itemKey){
+      try{const value=await remoteInventoryAdjust(itemKey,0);if(value!==null)return Math.max(0,Math.floor(Number(value)||0))}catch(e){console.warn('inventory count sync',itemKey,e)}
+      return belongingCount(itemKey);
+    }
+    async function consumeMermaidGuardShell(){
+      let current=await authoritativeInventoryCount('mermaidGuardShell');
+      if(current<=0){setLocalInventoryQuantity('mermaidGuardShell',0,{sync:false});return false}
+      try{
+        const next=await remoteInventoryAdjust('mermaidGuardShell',-1);
+        if(next!==null){setLocalInventoryQuantity('mermaidGuardShell',next,{sync:false});return true}
+      }catch(e){console.warn('mermaid shell consume sync',e)}
+      setLocalInventoryQuantity('mermaidGuardShell',Math.max(0,current-1));
+      return true;
+    }
+    async function applyNgGimmick(source='NGギミック'){
+      if(await consumeMermaidGuardShell()){
+        const result={source,protected:true,lives:remainingLives(),shells:belongingCount('mermaidGuardShell')};
+        window.dispatchEvent(new CustomEvent('spr:ng-result',{detail:result}));
+        return result;
+      }
+      let current=remainingLives(),next=Math.max(0,current-1);
+      try{
+        const remoteCurrent=await remoteInventoryAdjust('lifeHearts',0);
+        if(remoteCurrent!==null){
+          current=Math.max(0,Math.min(3,Math.floor(Number(remoteCurrent)||0)));
+          const remoteNext=await remoteInventoryAdjust('lifeHearts',-1);
+          next=Math.max(0,Math.min(3,Math.floor(Number(remoteNext)||0)));
+          setLocalInventoryQuantity('lifeHearts',next,{sync:false});
+        }else setLocalInventoryQuantity('lifeHearts',next);
+      }catch(e){console.warn('life decrement sync',e);setLocalInventoryQuantity('lifeHearts',next)}
+      const result={source,protected:false,lives:next,shells:belongingCount('mermaidGuardShell'),finalChoiceAvailable:next>0};
+      window.dispatchEvent(new CustomEvent('spr:ng-result',{detail:result}));
+      return result;
+    }
+    window.sprRemainingLives=remainingLives;
+    window.sprCanUseFinalEscapeChoice=()=>remainingLives()>0;
+    window.sprApplyNgGimmick=applyNgGimmick;
+    window.sprMarkFinalEscapeSuccess=async function(metadata={}){
+      if(!window.sprCanUseFinalEscapeChoice())return false;
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
+      const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'final-escape-success',message:`ESCAPED:${storedGuestName}`,created_by:playerId,expires_at:'2099-12-31T23:59:59+00:00',metadata:{winner:storedGuestName,...metadata}});
+      if(error)throw error;return true;
+    };
+    window.sprHasGlobalEscapeSuccess=async function(){
+      if(!window.supabaseClientSpecial)return false;
+      const [winRes,resetRes]=await Promise.all([
+        window.supabaseClientSpecial.from('resort_announcements').select('created_at').eq('announcement_type','final-escape-success').order('created_at',{ascending:false}).limit(1),
+        window.supabaseClientSpecial.from('resort_announcements').select('created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1)
+      ]);
+      if(winRes.error)throw winRes.error;if(resetRes.error)throw resetRes.error;
+      const winAt=winRes.data&&winRes.data[0]?.created_at?new Date(winRes.data[0].created_at).getTime():0;
+      const resetAt=resetRes.data&&resetRes.data[0]?.created_at?new Date(resetRes.data[0].created_at).getTime():0;
+      return !!winAt&&(!resetAt||winAt>resetAt);
+    };
+
     async function setRemoteFlag(flagKey,value){
       windowSprFlagCache[flagKey]=value;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
@@ -1474,7 +1560,7 @@ body.night-theme #integratedCafeShell iframe{
         const localCoasters=loadCoasterInventory();
         const localFlags=collectLocalFlags();
         const [invRes,flagRes,barRes,coRes,resetRes]=await Promise.all([
-          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity,updated_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_player_flags').select('flag_key,value,updated_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_bar_orders').select('record,service_date,period,expires_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at'),
@@ -1483,12 +1569,21 @@ body.night-theme #integratedCafeShell iframe{
         for(const r of [invRes,flagRes,barRes,coRes,resetRes])if(r.error)throw r.error;
         const latestWorldResetAt=resetRes.data&&resetRes.data[0]?.created_at?new Date(resetRes.data[0].created_at).getTime():0;
 
-        let belongings={};
-        if((invRes.data||[]).length){(invRes.data||[]).forEach(r=>belongings[r.item_key]=Math.max(0,Number(r.quantity)||0))}
-        else if(Object.values(localBelongings).some(v=>Number(v)>0)){
+        let belongings={},inventoryBootstrap={};
+        if((invRes.data||[]).length){
+          (invRes.data||[]).forEach(r=>{
+            const key=String(r.item_key||''),updatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
+            const staleForReset=!!(latestWorldResetAt&&updatedAt&&updatedAt<=latestWorldResetAt);
+            if(key==='lifeHearts'&&staleForReset){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3;return}
+            if(key==='mermaidGuardShell'&&staleForReset){belongings.mermaidGuardShell=0;inventoryBootstrap.mermaidGuardShell=0;return}
+            let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);belongings[key]=qty;
+          });
+        }else if(Object.values(localBelongings).some(v=>Number(v)>0)){
           belongings={...localBelongings};await persistInventorySnapshot(belongings);
         }
+        if(!Object.prototype.hasOwnProperty.call(belongings,'lifeHearts')){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3}
         localStorage.setItem(belongingsKey,JSON.stringify(belongings));
+        if(Object.keys(inventoryBootstrap).length)await persistInventorySnapshot(inventoryBootstrap);
 
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
@@ -3872,10 +3967,15 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
     const hernandoVideoScreen=document.getElementById('hernandoVideoScreen'),hernandoBullringVideo=document.getElementById('hernandoBullringVideo');
-    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBg=document.getElementById('hernandoArenaBg'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
+    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBg=document.getElementById('hernandoArenaBg'),hernandoArenaBgBlur=document.getElementById('hernandoArenaBgBlur'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
+    function setHernandoArenaImage(src){
+      if(hernandoArenaBg)hernandoArenaBg.src=src;
+      if(hernandoArenaBgBlur)hernandoArenaBgBlur.src=src;
+    }
     const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
     const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline');
+    const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
     // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Public bucket: videos / object: hernandos_bullring.mp4
     const HERNANDO_BULLRING_VIDEO_URL=`${SUPABASE_URL}/storage/v1/object/public/videos/hernandos_bullring.mp4`;
@@ -3887,6 +3987,8 @@ body.night-theme #integratedCafeShell iframe{
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
     let hernandoArenaBgmPrimed=false;
     let hernandoArenaBgmFadeToken=0;
+    let hernandoDrinkRoundNo=1,hernandoPoisonChoice='';
+
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
     function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'||windowSprFlagCache['hernando-intro-seen']===true||windowSprFlagCache['hernando-intro-seen']===1||windowSprFlagCache['hernando-intro-seen']==='1'}
@@ -3911,7 +4013,7 @@ body.night-theme #integratedCafeShell iframe{
           '……へえ、見つけたのか。あの扉を開けた上に、ここまで降りてくるとはな。なかなか度胸がある。俺はエルナンド。――ここは俺の《Ruedo》だ。',
           '上じゃ随分と綺麗な顔をしたリゾートだっただろう？　海、酒、音楽、賭け事……退屈しないよう、よく出来てる。だが、俺には少し足りない。勝つと分かっている勝負も、安全だと分かっている夜も、何度繰り返したところで心臓は鳴らないからな。',
           '俺が欲しいのは、もう少し――際どい刺激だ。だから、君とちょっとしたゲームをしよう。',
-          '見ての通り、酒は三杯。覚えておけ。――三杯のうち一杯は、必ず毒だ。二杯はただの酒。残る一杯だけは、まともな酒だと思わない方がいい。見た目じゃ分からないし、どれがそれかは俺しか知らない。',
+          '見ての通り、酒は三杯。覚えておけ。――三杯のうち一杯は、必ず毒だ。残り二杯はただの酒。見た目じゃ分からないし、どれが毒かは俺しか知らない。',
           '君は三杯の中から一つを選ぶ。それを三度。三回続けて毒杯を避けられたら、君の勝ちだ。簡単だろ？',
           'ただし、毒を口にしたなら、もう遅い。その時点で今夜の挑戦は終わりだ。何が起きるかって？　……そこまで教えたら面白くないだろ。まあ、朝には酔いも醒めてるんじゃないか？',
           '怖いなら、引き返しても構わない。俺は逃げる奴を追いかけてまで、勝負をさせる趣味はない。',
@@ -4036,8 +4138,8 @@ body.night-theme #integratedCafeShell iframe{
       const text=String(line||'');
       hernandoDialogueCurrentText=text;
       // 初回会話で三杯の酒を説明し始めた瞬間、酒杯の画像へ切り替える。
-      if(hernandoDialogueMode==='intro'&&text.startsWith('見ての通り、酒は三杯。')&&hernandoArenaBg){
-        hernandoArenaBg.src='hernandos_bullring02.jpg';
+      if(hernandoDialogueMode==='intro'&&text.startsWith('見ての通り、酒は三杯。')){
+        setHernandoArenaImage('hernandos_bullring02.jpg');
       }
       // 「今夜の牡牛にはならない」側は、最後の台詞に入った瞬間から
       // 闘牛場BGMをゆっくり絞り、退場時のぶつ切り感をなくす。
@@ -4065,20 +4167,73 @@ body.night-theme #integratedCafeShell iframe{
     }
     function setHernandoDialogueLines(lines,mode='intro',after='choice'){
       hernandoDialogueLines=Array.isArray(lines)?lines:[];hernandoDialogueIndex=0;hernandoDialogueMode=mode;hernandoDialogueAfter=after;
-      hernandoDialogueChoices.classList.add('hidden');hernandoDialogueNext.classList.remove('hidden');
+      hernandoDialogueChoices.classList.add('hidden');hernandoDrinkGame?.classList.add('hidden');hernandoDialogueNext.classList.remove('hidden');
       if(!hernandoDialogueLines.length){hernandoDialogue.classList.add('hidden');return}
       hernandoDialogue.classList.remove('hidden');
       showHernandoDialogueLine(hernandoDialogueLines[0]);
       hernandoDialogueNext.textContent='NEXT　›';
     }
+    function hernandoUniformChoice(){
+      const options=['right','center','left'];
+      if(window.crypto?.getRandomValues){
+        const limit=Math.floor(0x100000000/3)*3,buf=new Uint32Array(1);let value=0;
+        do{window.crypto.getRandomValues(buf);value=buf[0]}while(value>=limit);
+        return options[value%3];
+      }
+      return options[Math.floor(Math.random()*3)];
+    }
+    function showHernandoDrinkRound(){
+      hernandoDialogueMode='drinkChoice';hernandoDialogueAfter='drinkChoice';hernandoDialogueLines=[];hernandoDialogueIndex=0;
+      setHernandoArenaImage('hernandos_bullring02.jpg');
+      hernandoDialogue.classList.remove('hidden');hernandoDialogueChoices.classList.add('hidden');hernandoDialogueNext.classList.add('hidden');
+      hernandoDrinkGame?.classList.remove('hidden');
+      if(hernandoDrinkRound)hernandoDrinkRound.textContent=`${hernandoDrinkRoundNo} / 3`;
+      hernandoDrinkButtons.forEach(btn=>btn.disabled=false);
+      hernandoPoisonChoice=hernandoUniformChoice();
+      showHernandoDialogueLine(hernandoDrinkRoundNo===1?'どの酒を選ぶ？':`${hernandoDrinkRoundNo}杯目だ。どの酒を選ぶ？`);
+    }
+    function grantMermaidGuardShell(){
+      const qty=belongingCount('mermaidGuardShell')+1;
+      setLocalInventoryQuantity('mermaidGuardShell',qty);
+      return qty;
+    }
+    async function chooseHernandoDrink(choice){
+      if(hernandoDialogueMode!=='drinkChoice'||!choice)return;
+      hernandoDrinkButtons.forEach(btn=>btn.disabled=true);hernandoDrinkGame?.classList.add('hidden');
+      if(choice===hernandoPoisonChoice){
+        setHernandoDialogueLines([
+          '……それを選んだか。',
+          '残念だ。毒杯だ。今夜の勝負はここまで。口にしたなら、もう遅い。',
+          '朝には酔いも醒めてるんじゃないか？　……また立つ気があるなら、次は外せ。'
+        ],'drinkPoison','exit');
+        return;
+      }
+      if(hernandoDrinkRoundNo>=3){
+        const qty=grantMermaidGuardShell();
+        setHernandoDialogueLines([
+          '……三杯とも外したか。いいね。最後までその顔を崩さなかった。',
+          '約束だ。持っていけ。――《人魚の護り貝》だ。',
+          'この島で、何かに命を奪われそうになった時に一度だけ君の身代わりになる。大事に持っておけ。',
+          `人魚の護り貝を手に入れた。所持数は ${qty} 個。`
+        ],'drinkWin','exit');
+        return;
+      }
+      const passed=hernandoDrinkRoundNo;
+      hernandoDrinkRoundNo++;
+      setHernandoDialogueLines([
+        passed===1?'……毒じゃない。まず一杯目は生き残ったな。':'……また毒を外した。あと一杯だ。',
+        'まだ終わりじゃない。次を選べ。'
+      ],'drinkSafe','drinkNext');
+    }
     function beginHernandoDialogue(visit){
+      hernandoDrinkRoundNo=1;hernandoPoisonChoice='';hernandoDrinkGame?.classList.add('hidden');
       const key=visit<=1?1:(visit===2?2:3),script=HERNANDO_DIALOGUE[key];
       setHernandoDialogueLines(script.intro,'intro','choice');
       hernandoDialogue.dataset.visitGroup=String(key);
     }
     function closeHernandoArena(fadeOut=false){
       hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
-      hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');
+      hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');hernandoDrinkGame?.classList.add('hidden');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
       if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
@@ -4101,7 +4256,7 @@ body.night-theme #integratedCafeShell iframe{
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
       // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
-      if(hernandoArenaBg)hernandoArenaBg.src='hernandos_bullring01.jpg';
+      setHernandoArenaImage('hernandos_bullring01.jpg');
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
         // 先行再生はミュートのまま維持し、闘牛場表示時だけ短い無音を挟んで先頭から可聴化する。
         void sprStartAudioClean(hernandoArenaBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
@@ -4175,6 +4330,8 @@ body.night-theme #integratedCafeShell iframe{
       if(hernandoDialogueAfter==='choice'){
         hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');return;
       }
+      if(hernandoDialogueAfter==='drinkGame'){showHernandoDrinkRound();return}
+      if(hernandoDialogueAfter==='drinkNext'){showHernandoDrinkRound();return}
       if(hernandoDialogueAfter==='arena'){
         hernandoDialogue.classList.add('hidden');return;
       }
@@ -4184,7 +4341,8 @@ body.night-theme #integratedCafeShell iframe{
       cancelHernandoArenaBgmFade(true);
       ensureHernandoArenaBgm();
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
-      setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','arena');
+      hernandoDrinkRoundNo=1;hernandoPoisonChoice='';
+      setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','drinkGame');
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
       cancelHernandoArenaBgmFade(true);
@@ -4192,6 +4350,7 @@ body.night-theme #integratedCafeShell iframe{
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
     });
+    hernandoDrinkButtons.forEach(btn=>btn.addEventListener('click',()=>{void chooseHernandoDrink(btn.dataset.hernandoDrink)}));
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
     function updateRoomContextAction(){
       updateRoomPhoneUi();
@@ -4344,7 +4503,16 @@ body.night-theme #integratedCafeShell iframe{
         grid.append(card)});
     }
     function renderRoomBelongings(){
-      if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
+      if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=true;
+      const lives=remainingLives();
+      const lifeRow=document.createElement('div');lifeRow.className='belongings-item life-row';
+      const lifeMain=document.createElement('div');lifeMain.className='belongings-main';
+      const lifeInfo=document.createElement('div');const lifeName=document.createElement('strong');lifeName.textContent='残機';
+      const lifeDetail=document.createElement('small');lifeDetail.textContent=lives>0?'NGギミックに触れると1つ減ります。人魚の護り貝を所持している場合は、先に護り貝が身代わりになります。':'残機がありません。最終日の個人選択には参加できません。';if(lives===0)lifeDetail.className='life-zero-note';
+      lifeInfo.append(lifeName,lifeDetail);lifeMain.append(lifeInfo);
+      const hearts=document.createElement('div');hearts.className='life-hearts';hearts.setAttribute('aria-label',`残機 ${lives} / 3`);
+      for(let i=0;i<3;i++){const h=document.createElement('span');h.className='life-heart'+(i<lives?'':' empty');h.textContent=i<lives?'♥':'♡';hearts.append(h)}
+      lifeRow.append(lifeMain,hearts);roomBelongingsList.append(lifeRow);
       Object.entries(belongingsCatalog).forEach(([key,item])=>{
         const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));
         const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;
