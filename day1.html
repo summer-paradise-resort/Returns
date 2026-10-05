@@ -4109,6 +4109,7 @@ body.night-theme #integratedCafeShell iframe{
     }
     const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
+    const hernandoDialogueName=hernandoDialogue?.querySelector('.hernando-dialogue-name');
     const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline');
     const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
     // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
@@ -4262,9 +4263,18 @@ body.night-theme #integratedCafeShell iframe{
     function showHernandoDialogueLine(line){
       const text=String(line||'');
       hernandoDialogueCurrentText=text;
+      // 基本はエルナンド名を表示。人魚の護り貝の獲得通知だけはシステム文として名前を消す。
+      if(hernandoDialogueName){
+        const isMermaidShellNotice=hernandoDialogueMode==='drinkWin'&&text.startsWith('人魚の護り貝を手に入れた。');
+        hernandoDialogueName.classList.toggle('hidden',isMermaidShellNotice);
+      }
       // 初回会話で三杯の酒を説明し始めた瞬間、酒杯の画像へ切り替える。
       if(hernandoDialogueMode==='intro'&&text.startsWith('見ての通り、酒は三杯。')){
         setHernandoArenaImage('hernandos_bullring02.jpg');
+      }
+      // 勝利後の2ページ目「約束だ。」から、人魚の護り貝を置いた03画像へ切り替え、その後も維持する。
+      if(hernandoDialogueMode==='drinkWin'&&hernandoDialogueIndex>=1){
+        setHernandoArenaImage('hernandos_bullring03.jpg');
       }
       // 「今夜の牡牛にはならない」側は、最後の台詞に入った瞬間から
       // 闘牛場BGMをゆっくり絞り、退場時のぶつ切り感をなくす。
