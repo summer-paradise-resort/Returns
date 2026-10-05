@@ -272,7 +272,6 @@
     .room-chat-sheet{position:absolute;z-index:20;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.3);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-chat-sheet.open{transform:none;visibility:visible}
     .room-chat-sheet:focus-within{height:min(82%,720px)}
-    .chat-sheet-handle{width:42px;height:4px;border-radius:2px;background:var(--sheet-muted);opacity:.45;margin:9px auto 5px}
     .chat-sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:4px 14px 10px;border-bottom:1px solid rgba(130,110,76,.2)}
     .chat-sheet-head h3{text-align:center;font-size:15px;font-weight:500;letter-spacing:.1em;margin:0}
     .chat-sheet-close{grid-column:3;width:44px;height:44px;border:0;background:transparent;color:var(--sheet-fg);font-size:24px}
@@ -839,13 +838,13 @@ body.night-theme #integratedCafeShell iframe{
         </div>
         <div id="roomChatToast" class="room-chat-toast" aria-live="polite"></div>
         <section id="chatSheet" class="room-chat-sheet" aria-hidden="true" aria-label="この客室の会話">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
           <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
           <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
         </section>
         <section id="roomServiceSheet" class="room-service-sheet" aria-hidden="true" aria-label="ルームサービス">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>ROOM SERVICE</h3><button id="roomServiceClose" class="service-sheet-close" type="button" aria-label="ルームサービスを閉じる">⌄</button></div>
           <div class="service-body">
             <div id="roomServiceMeta" class="service-room-meta"></div>
@@ -871,7 +870,7 @@ body.night-theme #integratedCafeShell iframe{
           </div>
         </section>
         <section id="roomBelongingsSheet" class="room-belongings-sheet" aria-hidden="true" aria-label="所持品">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>BELONGINGS</h3><button id="roomBelongingsClose" class="service-sheet-close" type="button" aria-label="所持品を閉じる">⌄</button></div>
           <div class="belongings-body">
             <p class="belongings-intro">滞在中に手に入れたチケットや品物はこちらに表示されます。</p>
@@ -879,7 +878,7 @@ body.night-theme #integratedCafeShell iframe{
           </div>
         </section>
         <section id="roomCollectionSheet" class="room-belongings-sheet" aria-hidden="true" aria-label="コースターコレクション">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>COLLECTION</h3><button id="roomCollectionClose" class="service-sheet-close" type="button" aria-label="コレクションを閉じる">⌄</button></div>
           <div class="belongings-body"><p id="collectionProgress" class="belongings-intro"></p><div id="roomCollectionGrid" class="collection-grid"></div></div>
         </section><div id="collectionPreview" class="collection-preview" aria-hidden="true">
@@ -1012,7 +1011,7 @@ body.night-theme #integratedCafeShell iframe{
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
     <img id="hernandoArenaBgBlur" class="hernando-arena-blur" src="hernandos_bullring01.jpg" alt="" aria-hidden="true">
     <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
-    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop></audio>
+    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop playsinline webkit-playsinline></audio>
     <div class="hernando-encounter-shade"></div>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
     <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
@@ -4082,18 +4081,35 @@ body.night-theme #integratedCafeShell iframe{
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
     }
     function hideHernandoDoorChoice(){hernandoSecretSequence.classList.remove('open');hernandoSecretSequence.setAttribute('aria-hidden','true')}
-    function primeHernandoArenaBgm(){
-      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+    function setHernandoAudioSessionPlayback(){
       try{
-        // iPhone/iPadでは、ユーザー操作の中で一度 play() を成立させておく必要がある。
-        // currentTime を読み込み前に触ると Safari で例外になることがあるため、ここでは触らない。
+        // iPhone/iPad では BGM を「メディア再生」として扱わせ、消音状態や動画終了後の引き継ぎを安定させる。
+        if(navigator.audioSession&&'type' in navigator.audioSession)navigator.audioSession.type='playback';
+      }catch(e){console.warn('Hernando audioSession',e)}
+    }
+    function playHernandoArenaBgmImmediate({restart=false,prime=false}={}){
+      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return Promise.resolve(false);
+      setHernandoAudioSessionPlayback();
+      // Hernando の BGM は iOS で「ミュート再生→後から解除」をすると無音のままになることがある。
+      // そのため、必ず muted=false のままユーザー操作で再生権限を確保し、prime 時だけ volume=0 にする。
+      sprCancelGuardedAudioStart(hernandoArenaBgm);
+      try{
         hernandoArenaBgm.loop=true;
-        hernandoArenaBgm.volume=.42;
-        hernandoArenaBgm.muted=true;
+        hernandoArenaBgm.muted=false;
+        hernandoArenaBgm.volume=prime?0:.42;
+        if(restart){try{if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0}catch{}}
         const p=hernandoArenaBgm.play();
-        if(p&&p.then)p.then(()=>{hernandoArenaBgmPrimed=true}).catch(e=>console.warn('Hernando BGM prime',e));
-        else hernandoArenaBgmPrimed=true;
-      }catch(e){console.warn('Hernando BGM prime',e)}
+        if(p&&p.then){
+          return p.then(()=>{hernandoArenaBgmPrimed=true;return true}).catch(e=>{console.warn('Hernando BGM play',e);return false});
+        }
+        hernandoArenaBgmPrimed=true;
+        return Promise.resolve(true);
+      }catch(e){console.warn('Hernando BGM play',e);return Promise.resolve(false)}
+    }
+    function primeHernandoArenaBgm(){
+      // 「奥に進む」のタップそのものを使って、BGM 要素を無音(volume=0)で一度再生する。
+      // 動画再生で iOS が一時停止しても、この要素自体の再生許可を先に取得しておく。
+      void playHernandoArenaBgmImmediate({restart:false,prime:true});
     }
     function cancelHernandoArenaBgmFade(restoreVolume=false){
       hernandoArenaBgmFadeToken++;
@@ -4120,12 +4136,11 @@ body.night-theme #integratedCafeShell iframe{
     }
     function ensureHernandoArenaBgm(){
       if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      // すでに鳴っている場合はフェード中も含めて触らない。
+      if(!hernandoArenaBgm.paused&&!hernandoArenaBgm.muted&&hernandoArenaBgm.volume>0)return;
       cancelHernandoArenaBgmFade(true);
-      // すでに正常に鳴っている時は触らない。停止/ミュート時だけ安全に復帰する。
-      if(!hernandoArenaBgm.paused&&!hernandoArenaBgm.muted)return;
-      void sprStartAudioClean(hernandoArenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
-        if(ok)hernandoArenaBgmPrimed=true;
-      });
+      // NEXT などのタップ時は、非同期 guard を挟まずそのユーザー操作内で即 play() する。
+      void playHernandoArenaBgmImmediate({restart:false,prime:false});
     }
     function hernandoTypeDelay(ch){if(ch==='、')return 260;if(ch==='。'||ch==='？'||ch==='！')return 460;if(ch==='…')return 320;return 82}
     function finishHernandoDialogueLine(){
@@ -4258,18 +4273,17 @@ body.night-theme #integratedCafeShell iframe{
       // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
       setHernandoArenaImage('hernandos_bullring01.jpg');
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-        // 先行再生はミュートのまま維持し、闘牛場表示時だけ短い無音を挟んで先頭から可聴化する。
-        void sprStartAudioClean(hernandoArenaBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
-          if(ok)hernandoArenaBgmPrimed=true;
-        });
+        // 動画終了後は iOS Safari の「ミュート解除待ち」を使わず、先に許可済みの同じ audio 要素を即座に可聴再生する。
+        void playHernandoArenaBgmImmediate({restart:true,prime:false});
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
     function playHernandoVideo(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
-      // 初回動画中は、先行再生している闘牛場BGMだけ無音に保つ。
-      if(hernandoArenaBgm)hernandoArenaBgm.muted=true;
+      // 初回動画中も BGM 要素は muted=true にしない。iOS Safari では後からの unmute が止められることがあるため、
+      // ユーザー操作で許可済みの状態を保ったまま volume=0 で待機する。
+      if(hernandoArenaBgm){try{hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=0}catch{}}
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
       hernandoVideoStarted=true;
@@ -4352,6 +4366,10 @@ body.night-theme #integratedCafeShell iframe{
     });
     hernandoDrinkButtons.forEach(btn=>btn.addEventListener('click',()=>{void chooseHernandoDrink(btn.dataset.hernandoDrink)}));
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
+    if(hernandoEncounter)hernandoEncounter.addEventListener('pointerdown',()=>{
+      // 動画終了直後の自動再生を iOS が止めた場合も、闘牛場内の最初のタップで即復帰する。
+      if(hernandoEncounter.classList.contains('open'))ensureHernandoArenaBgm();
+    },{capture:true});
     function updateRoomContextAction(){
       updateRoomPhoneUi();
       if(!roomContextAction)return;
