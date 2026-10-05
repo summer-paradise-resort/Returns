@@ -4144,7 +4144,8 @@ body.night-theme #integratedCafeShell iframe{
     const HERNANDO_DIALOGUE={
       1:{
         intro:[
-          '……へえ、見つけたのか。あの扉を開けた上に、ここまで降りてくるとはな。なかなか度胸がある。俺はエルナンド。――ここは俺の《Ruedo》だ。',
+          '……へえ、見つけたのか。あの扉を開けた上に、ここまで降りてくるとはな。なかなか度胸がある。',
+          '俺はエルナンド。――ここは俺の《Ruedo》だ。',
           '上じゃ随分と綺麗な顔をしたリゾートだっただろう？　海、酒、音楽、賭け事……退屈しないよう、よく出来てる。だが、俺には少し足りない。勝つと分かっている勝負も、安全だと分かっている夜も、何度繰り返したところで心臓は鳴らないからな。',
           '俺が欲しいのは、もう少し――際どい刺激だ。だから、君とちょっとしたゲームをしよう。',
           '見ての通り、酒は三杯。覚えておけ。――三杯のうち一杯は、必ず毒だ。残り二杯はただの酒。見た目じゃ分からないし、どれが毒かは俺しか知らない。',
@@ -4448,6 +4449,12 @@ body.night-theme #integratedCafeShell iframe{
       hernandoBullringVideo.addEventListener('ended',()=>{markHernandoIntroSeen();showHernandoArena()});
       hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
+    // 文字送り中は、会話枠を1回タップすると現在のページだけ全文を即表示する。
+    // NEXT・選択肢・酒杯ボタンの操作とは干渉させない。
+    if(hernandoDialogue)hernandoDialogue.addEventListener('click',e=>{
+      if(e.target.closest('button'))return;
+      if(hernandoDialogueTyping)finishHernandoDialogueLine();
+    });
     if(hernandoDialogueNext)hernandoDialogueNext.addEventListener('click',()=>{
       // 文字送りの途中でNEXTを押した場合は、次へ進まず現在の台詞を全文表示する。
       if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
@@ -5320,14 +5327,20 @@ window.addEventListener('message',e=>{
 </style>
 <script>
 (()=>{
- const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose');
- let token=0,sequence=[],sequenceIndex=-1; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose'),card=o?.querySelector('.cafe-staff-card');
+ let token=0,sequence=[],sequenceIndex=-1,currentLine='',typing=false; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ function finishCurrentLine(){
+   if(!typing||!currentLine)return;
+   token++;typing=false;t.textContent=currentLine;
+ }
  async function show(line){
+   currentLine=String(line||'');typing=true;
    const mine=++token;t.textContent='';
-   const chars=[...line],spans=chars.map(ch=>{const s=document.createElement('span');s.className='cafe-staff-char';s.textContent=ch;t.appendChild(s);return s});
+   const chars=[...currentLine],spans=chars.map(ch=>{const s=document.createElement('span');s.className='cafe-staff-char';s.textContent=ch;t.appendChild(s);return s});
    o.classList.add('show');o.setAttribute('aria-hidden','false');
    await wait(650); if(mine!==token)return; await new Promise(requestAnimationFrame);
    for(let i=0;i<spans.length;i++){if(mine!==token)return;spans[i].classList.add('in');const ch=chars[i];let d=82;if(ch==='、')d=260;else if(ch==='。'||ch==='？'||ch==='！')d=460;else if(ch==='…')d=320;await wait(d)}
+   if(mine===token)typing=false;
  }
  function setButton(){c.textContent=(sequence.length&&sequenceIndex<sequence.length-1)?'NEXT　›':'CLOSE　×'}
  function showSingle(line){sequence=[];sequenceIndex=-1;setButton();show(line)}
@@ -5336,10 +5349,16 @@ window.addEventListener('message',e=>{
    if(!sequence.length)return;
    sequenceIndex=0;setButton();show(sequence[0]);
  }
- function hide(){token++;sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+ function hide(){token++;typing=false;currentLine='';sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true')}
  // CAFE以外の館内イベントからも、同じスタッフ会話演出を呼び出せるようにする。
  window.__sprShowStaffDialogue=(line)=>showSingle(String(line||''));
  window.__sprHideStaffDialogue=hide;
+ // スタッフの文字送り中も、会話枠を1回タップすると現在のページだけ全文を即表示する。
+ // NEXT/CLOSEボタンは従来どおりの動作を優先する。
+ if(card)card.addEventListener('click',e=>{
+   if(e.target.closest('button'))return;
+   if(typing)finishCurrentLine();
+ });
  c.addEventListener('click',()=>{
    if(sequence.length&&sequenceIndex<sequence.length-1){sequenceIndex++;setButton();show(sequence[sequenceIndex]);return}
    hide();
