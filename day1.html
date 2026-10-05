@@ -332,7 +332,7 @@
     .room-scene[data-scene="phone"] .room-scene-title{font-size:20px;margin:0 0 4px}
     .room-scene[data-scene="phone"] .room-view-controls{margin-top:6px}
     .room-scene[data-scene="phone"] .room-scene-dots{margin:7px 0}
-    .room-scene[data-scene="phone"] .room-chat-open,.room-scene[data-scene="phone"] .room-service-open{min-height:44px}
+    .room-scene[data-scene="phone"] .room-chat-open,.room-scene[data-scene="phone"] .room-service-open{min-height:52px}
     .room-phone-call-panel{grid-column:1/-1;padding:14px 13px;border:1px solid rgba(240,216,157,.72);background:rgba(5,18,31,.90);backdrop-filter:blur(9px);text-align:center;color:#fff}
     .room-phone-call-panel.hidden{display:none!important}
     .room-phone-call-status{font-size:12px;line-height:1.8;letter-spacing:.08em;color:#f1dfb3;margin-bottom:10px}
@@ -4409,7 +4409,7 @@ body.night-theme #integratedCafeShell iframe{
       // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
       setHernandoArenaImage('hernandos_bullring01.jpg');
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-        // 動画終了後は iOS Safari の「ミュート解除待ち」を使わず、先に許可済みの同じ audio 要素を即座に可聴再生する。
+        // 初回は導入動画の終了後、この闘牛場表示に切り替わった時点でBGMを開始する。
         void playHernandoArenaBgmImmediate({restart:true,prime:false});
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
@@ -4417,9 +4417,12 @@ body.night-theme #integratedCafeShell iframe{
     function playHernandoVideo(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
-      // 初回動画中も BGM 要素は muted=true にしない。iOS Safari では後からの unmute が止められることがあるため、
-      // ユーザー操作で許可済みの状態を保ったまま volume=0 で待機する。
-      if(hernandoArenaBgm){try{hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=0}catch{}}
+      // 導入動画が終わるまでは完全に無音。闘牛場BGMは再生せず、動画終了後の showHernandoArena() で初めて開始する。
+      if(hernandoArenaBgm){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        hernandoArenaBgmPrimed=false;
+      }
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
       hernandoVideoStarted=true;
@@ -4438,9 +4441,14 @@ body.night-theme #integratedCafeShell iframe{
       hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
 
-      // 「奥に進む」のタップ中に闘牛場BGMを無音で先行再生し、iPhone/iPadでも
-      // 闘牛場表示時に追加タップなしで hernandos_bullring.mp3 を鳴らせるようにする。
-      primeHernandoArenaBgm();
+      // 階段演出中は完全に無音にする。闘牛場BGMはここでは先行再生しない。
+      // 初回は導入動画の終了後、2回目以降は闘牛場表示後に初めてBGMを開始する。
+      pauseResortMusic();
+      if(hernandoArenaBgm){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        hernandoArenaBgmPrimed=false;
+      }
 
       // 初回だけ、同じユーザー操作中に導入動画の再生権限も確保する。
       if(!introSeen){
