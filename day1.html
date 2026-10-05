@@ -1657,6 +1657,61 @@ body.night-theme #integratedCafeShell iframe{
       const date=tokyoDateLabel();
       setResortAnnouncement(`${date}　｜　潮風の遊歩道、灯台、入り江など、島内の散策スポットをお楽しみください。　｜　レストラン・バー・カジノなど館内施設もご利用いただけます。`);
     }
+
+    // AUDIO START GUARD
+    // iPhone / iPad Safari で、ミュート待機中の古いデコード断片が
+    // 新しいイベント音の先頭へ一瞬混ざる症状を避ける。
+    // 「ミュート → 先頭を確定 → 短い無音 → 再度先頭を確定 → ミュート解除」の順で統一する。
+    const SPR_AUDIO_START_GUARD_MS=220;
+    const sprAudioStartTokens=new WeakMap();
+    const sprAudioGuardSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    function sprCancelGuardedAudioStart(audio){
+      if(!audio)return;
+      sprAudioStartTokens.set(audio,(sprAudioStartTokens.get(audio)||0)+1);
+    }
+    async function sprStartAudioClean(audio,{volume=1,loop=audio?.loop??false,restart=true,guard=SPR_AUDIO_START_GUARD_MS,respectMaster=true}={}){
+      if(!audio)return false;
+      if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+      const token=(sprAudioStartTokens.get(audio)||0)+1;
+      sprAudioStartTokens.set(audio,token);
+      try{
+        // 必ず音を隠した状態で位置・再生状態を整える。
+        audio.muted=true;
+        audio.volume=Math.max(0,Math.min(1,Number(volume)||0));
+        audio.loop=Boolean(loop);
+        if(restart){try{if(audio.readyState>0)audio.currentTime=0}catch{}}
+
+        if(audio.paused){
+          const p=audio.play();
+          if(p&&p.then)await p;
+        }
+        await sprAudioGuardSleep(Math.max(0,Number(guard)||0));
+        if(sprAudioStartTokens.get(audio)!==token||audio.paused)return false;
+        if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+
+        // 待機中に進んだ分を捨て、可聴化の直前でもう一度「本当の先頭」に合わせる。
+        if(restart){
+          try{if(audio.readyState>0)audio.currentTime=0}catch{}
+          if(audio.seeking){
+            await Promise.race([
+              new Promise(resolve=>audio.addEventListener('seeked',resolve,{once:true})),
+              sprAudioGuardSleep(120)
+            ]);
+          }else{
+            await new Promise(requestAnimationFrame);
+          }
+        }else{
+          await new Promise(requestAnimationFrame);
+        }
+        if(sprAudioStartTokens.get(audio)!==token||audio.paused)return false;
+        if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+        audio.muted=false;
+        return true;
+      }catch(e){
+        console.warn('clean audio start',e);
+        return false;
+      }
+    }
     function activateSpecialTableAnnouncement(challenger=''){
       const who=challenger?` 挑戦者：${challenger}。`:'';
       const message=`SPECIAL GAME　｜　カジノ・ブルーシェルにスペシャルテーブルが出現しました。${who} 観客席よりご覧いただけます。`;
@@ -1675,7 +1730,7 @@ body.night-theme #integratedCafeShell iframe{
     const specialBroadcast=document.getElementById('specialBroadcast'),specialBroadcastText=document.getElementById('specialBroadcastText'),specialBroadcastCount=document.getElementById('specialBroadcastCount'),specialBroadcastClose=document.getElementById('specialBroadcastClose');
     const spectatorScreen=document.getElementById('spectatorScreen'),spectatorStatus=document.getElementById('spectatorStatus'),spectatorStage=document.getElementById('spectatorStage'),spectatorClose=document.getElementById('spectatorClose'),spectatorBack=document.getElementById('spectatorBack'),casinoSpectatorMenu=document.getElementById('casinoSpectatorMenu');
     let activeSpectatorChallenger='';
-    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
+    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     async function currentSpecialIdentity(){
       const id=await resolveSpecialPlayerId();
@@ -1695,7 +1750,7 @@ body.night-theme #integratedCafeShell iframe{
       specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
       try{stopCasinoMusic()}catch{}
-      try{specialBgm.volume=.42;if(specialBgm.paused)await specialBgm.play()}catch{}
+      try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
       if(specialSelectedGame){
         specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
         casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');
@@ -1844,7 +1899,7 @@ body.night-theme #integratedCafeShell iframe{
       stopSpecialHeartbeat();clearInterval(specialCountdownTimer);specialCountdownTimer=null;
       await restoreChipsAfterInterruptedSpecial(stake||specialStake||readSpecialPresenceMarker()?.stake||0);
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
-      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';specialBgm.pause();specialBgm.currentTime=0;
+      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');
       if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null}
       localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();hideSpecialBroadcast('finished-current',id);
@@ -1921,8 +1976,14 @@ body.night-theme #integratedCafeShell iframe{
     }
     async function openSpectator(sessionId,challenger=''){hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
-      try{specialBgm.currentTime=0;await specialBgm.play()}catch(e){
-        const unlockSpecialBgm=async()=>{try{await specialBgm.play()}catch{}};
+      try{
+        const ok=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(!ok){
+          const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
+          spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
+        }
+      }catch(e){
+        const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
         spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
       }
       spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');document.body.classList.add('spectator-watching');specialCommentOverlay?.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';spectatorPresenceSessionId=String(sessionId);spectatorPresenceStatus=data.status;spectatorPresenceState={...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'};renderSpectatorState(spectatorPresenceState);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorPresenceStatus==='finished'||!spectatorPresenceState)return;const hb=Date.parse(spectatorPresenceState.heartbeat_at||'');if(!Number.isFinite(hb)||Date.now()-hb<SPECIAL_PRESENCE_TIMEOUT_MS)return;clearInterval(spectatorPresenceTimer);spectatorPresenceState=await finishInterruptedSpecialSession(spectatorPresenceSessionId,spectatorPresenceState);spectatorPresenceStatus='finished';renderSpectatorState({...spectatorPresenceState,finished:true});refreshCasinoSpectatorMenu()},2000);if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{spectatorPresenceStatus=p.new.status;spectatorPresenceState={...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'};renderSpectatorState(spectatorPresenceState);if(p.new.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}).on('broadcast',{event:'gallery-comment'},({payload})=>{
@@ -2139,7 +2200,7 @@ body.night-theme #integratedCafeShell iframe{
       specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
       await sleep(1800);if(seriousEmilyMode){await specialSay('運のみぞ知る','───あら。またあなたなの。',2000);await specialSay('運のみぞ知る','あれだけの勝負をして、それでもまだ足りないのね。',2200);await specialSay('運のみぞ知る','いいわ。あなたがそこまで欲張るのなら――私も少しくらい、欲張っていいでしょう？',2400);}else{await specialSay('UNKNOWN',randomOpener(),2100);await specialSay('UNKNOWN','───ねえ。もう少しだけ、大きな賭けをしてみない？',2100);await specialSay('UNKNOWN','どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',2100);await specialSay('運のみぞ知る','あなたが今、手にしているもの。全部。',1900);}
       specialActions.innerHTML='<button id="acceptAllIn" type="button">オールイン勝負を受ける</button><button id="declineAllIn" type="button">受けない</button>';
-      specialBgm.currentTime=0; specialBgm.muted=false; specialBgm.volume=.42;
+      void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
     async function resolveSpecialPlayerId(){
@@ -2625,14 +2686,50 @@ body.night-theme #integratedCafeShell iframe{
     storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
     renderTopBgmToggle();
     function playAudio(audio,volume){if(!audio||localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
-    function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();playAudio(exploreBgm,.34)}
-    function pauseExploreMusic(){if(exploreBgm)exploreBgm.pause()}
-    function stopExploreMusic(reset=false){if(!exploreBgm)return;exploreBgm.pause();if(reset){try{exploreBgm.currentTime=0}catch{}}}
+
+    // EXPLORE BGM BY TIME
+    // 07:00-19:59 は従来の探索BGM、20:00-06:59 は room_phone_wave.mp3 に切り替える。
+    // 探索画面を開いたまま時刻をまたいだ場合も自動で切り替える。
+    const EXPLORE_BGM_DAY_SRC='explore_bgm.mp3';
+    const EXPLORE_BGM_NIGHT_SRC='room_phone_wave.mp3';
+    let exploreBgmPeriod='';
+    function desiredExploreBgm(period=currentTokyoPeriod()){
+      return period==='night'?EXPLORE_BGM_NIGHT_SRC:EXPLORE_BGM_DAY_SRC;
+    }
+    function sameAudioSrc(audio,src){
+      try{return new URL(audio.currentSrc||audio.src,window.location.href).href===new URL(src,window.location.href).href}catch{return false}
+    }
+    function syncExploreMusicForTime({force=false}={}){
+      if(!exploreBgm)return;
+      const view=document.getElementById('exploreView');
+      const open=Boolean(view?.classList.contains('open'));
+      const period=currentTokyoPeriod();
+      const src=desiredExploreBgm(period);
+      const changed=exploreBgmPeriod!==period||!sameAudioSrc(exploreBgm,src);
+      exploreBgmPeriod=period;
+
+      if(changed){
+        sprCancelGuardedAudioStart(exploreBgm);
+        try{exploreBgm.muted=true;exploreBgm.pause();exploreBgm.currentTime=0}catch{}
+        exploreBgm.src=src;
+        exploreBgm.loop=true;
+        exploreBgm.preload='auto';
+        try{exploreBgm.load()}catch{}
+      }
+      if(!open||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      if(changed||force||exploreBgm.paused){
+        void sprStartAudioClean(exploreBgm,{volume:.34,loop:true,restart:changed,guard:SPR_AUDIO_START_GUARD_MS});
+      }
+    }
+    function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();syncExploreMusicForTime({force:true})}
+    function pauseExploreMusic(){if(exploreBgm){sprCancelGuardedAudioStart(exploreBgm);exploreBgm.pause()}}
+    function stopExploreMusic(reset=false){if(!exploreBgm)return;sprCancelGuardedAudioStart(exploreBgm);exploreBgm.pause();if(reset){try{exploreBgm.currentTime=0}catch{}}}
     function resumeExploreMusicAfterGimmick(){const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
+    setInterval(()=>syncExploreMusicForTime(),1000);
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm){arenaBgm.muted=false;playAudio(arenaBgm,.42)}}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause();const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm)arenaBgm.pause()}
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS})}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
     function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
@@ -2759,14 +2856,13 @@ body.night-theme #integratedCafeShell iframe{
     }
     function stopElevatorGlitchSound(){
       if(!casinoElevatorGlitchSound)return;
-      try{casinoElevatorGlitchSound.pause();casinoElevatorGlitchSound.currentTime=0}catch{}
+      sprCancelGuardedAudioStart(casinoElevatorGlitchSound);
+      try{casinoElevatorGlitchSound.pause();casinoElevatorGlitchSound.currentTime=0;casinoElevatorGlitchSound.muted=false}catch{}
     }
     function playElevatorGlitchSound(){
       if(!casinoElevatorGlitchSound)return;
-      casinoElevatorGlitchSound.src=CASINO_ELEVATOR_GLITCH_SOUND;
-      try{casinoElevatorGlitchSound.currentTime=0}catch{}
-      const p=casinoElevatorGlitchSound.play();
-      if(p&&p.catch)p.catch(()=>{});
+      // クリック直後に muted のまま再生権限を確保し、短い無音を挟んで先頭から可聴化する。
+      void sprStartAudioClean(casinoElevatorGlitchSound,{volume:1,loop:false,restart:true,guard:180,respectMaster:false});
     }
     function stopElevatorGlitch(){
       clearTimeout(casinoElevatorGlitchTimer);casinoElevatorGlitchTimer=null;
@@ -3118,6 +3214,7 @@ body.night-theme #integratedCafeShell iframe{
     let roomPhoneAudioContext=null,roomPhoneAudioGain=null,roomPhoneAudioBuffer=null,roomPhoneAudioSource=null,roomPhoneAudioLoadPromise=null;
     let roomPhoneKeepAliveOsc=null,roomPhoneKeepAliveGain=null,roomPhoneAudioLastError='';
     let roomPhoneHtmlPrimed=false,roomPhoneHtmlPrimePromise=null;
+    let roomPhoneRingStarting=false;
 
     function roomPhoneMasterAudioOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function roomPhoneAudioUrl(){return roomPhoneRing?.currentSrc||roomPhoneRing?.src||new URL('room_phone_ring.mp3',window.location.href).href}
@@ -3263,6 +3360,7 @@ body.night-theme #integratedCafeShell iframe{
     function silenceRoomPhoneCallAudio(){
       [roomPhoneWave,roomPhoneFinish].forEach(audio=>{
         if(!audio)return;
+        sprCancelGuardedAudioStart(audio);
         try{audio.pause();audio.currentTime=0;audio.muted=true}catch{}
       });
       roomPhoneCallAudioPrimed=false;roomPhoneCallAudioPrimePromise=null;
@@ -3287,20 +3385,17 @@ body.night-theme #integratedCafeShell iframe{
       },2000);
       window.dispatchEvent(new CustomEvent('spr-room-phone-finished',{detail:{eventId}}));
     }
-    function playRoomPhoneFinish(eventId){
+    async function playRoomPhoneFinish(eventId){
       if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
-      if(roomPhoneWave){try{roomPhoneWave.pause();roomPhoneWave.currentTime=0;roomPhoneWave.muted=true}catch{}}
+      if(roomPhoneWave){sprCancelGuardedAudioStart(roomPhoneWave);try{roomPhoneWave.pause();roomPhoneWave.currentTime=0;roomPhoneWave.muted=true}catch{}}
       roomPhoneLastMessage='……';updateRoomPhoneUi();
       if(!roomPhoneMasterAudioOn()||!roomPhoneFinish){completeRoomPhoneAudioSequence(eventId);return}
       try{
-        roomPhoneFinish.loop=false;roomPhoneFinish.volume=1;
-        try{roomPhoneFinish.currentTime=0}catch{}
-        roomPhoneFinish.muted=false;
+        roomPhoneFinish.onended=null;
+        const started=await sprStartAudioClean(roomPhoneFinish,{volume:1,loop:false,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
+        if(!started){console.warn('room phone finish blocked');completeRoomPhoneAudioSequence(eventId);return}
         roomPhoneFinish.onended=()=>completeRoomPhoneAudioSequence(eventId);
-        if(roomPhoneFinish.paused){
-          const p=roomPhoneFinish.play();
-          if(p&&p.catch)p.catch(e=>{console.warn('room phone finish blocked',e);completeRoomPhoneAudioSequence(eventId)});
-        }
         const d=Number(roomPhoneFinish.duration);
         const fallbackMs=Number.isFinite(d)&&d>0?Math.ceil(d*1000)+1500:30000;
         roomPhoneFinishFallbackTimer=setTimeout(()=>completeRoomPhoneAudioSequence(eventId),fallbackMs);
@@ -3317,19 +3412,14 @@ body.night-theme #integratedCafeShell iframe{
       if(roomPhoneFinish)roomPhoneFinish.onended=null;
       roomPhoneAudioSequenceEventId=eventId;
       roomPhoneLastMessage='受話器を取った。';updateRoomPhoneUi();
-      const beginWave=()=>{
+      const beginWave=async()=>{
         if(roomPhoneAudioSequenceEventId!==eventId)return;
         if(roomPhoneMasterAudioOn()&&roomPhoneWave){
           try{
-            roomPhoneWave.loop=true;roomPhoneWave.volume=1;
-            try{roomPhoneWave.currentTime=0}catch{}
-            roomPhoneWave.muted=false;
-            if(roomPhoneWave.paused){
-              const p=roomPhoneWave.play();
-              if(p&&p.catch)p.catch(e=>console.warn('room phone wave blocked',e));
-            }
+            await sprStartAudioClean(roomPhoneWave,{volume:1,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
           }catch(e){console.warn('room phone wave',e)}
         }
+        if(roomPhoneAudioSequenceEventId!==eventId)return;
         roomPhoneWaveTimer=setTimeout(()=>{
           roomPhoneWaveTimer=null;
           playRoomPhoneFinish(eventId);
@@ -3394,6 +3484,8 @@ body.night-theme #integratedCafeShell iframe{
     }
     function softSilenceRoomPhoneRing(){
       roomPhoneRingAudible=false;
+      roomPhoneRingStarting=false;
+      sprCancelGuardedAudioStart(roomPhoneRing);
       if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
       // HTML Audioはpauseせずミュートだけにする。後から未選択者が入った時、
       // iPhoneでも新しいplay()なしで再び鳴らせるよう再生状態を維持する。
@@ -3477,47 +3569,38 @@ body.night-theme #integratedCafeShell iframe{
       setRoomPhoneAudioSessionPlayback();
 
       // すでに聞こえている着信音は絶対に先頭へ戻さない。
-      // Supabaseの再通知や画面切替のたびに currentTime=0 へ戻していたことが、
-      // 「ぶつ切り／長さが不揃い」に聞こえる原因になるため、再生中は何もしない。
       if(roomPhoneRingAudible&&!roomPhoneRing.paused&&!roomPhoneRing.muted)return;
+      // 220msの保護時間中にPresence通知が重なっても、開始処理を二重に走らせない。
+      if(roomPhoneRingStarting)return;
+      roomPhoneRingStarting=true;
 
-      // 主系統：ユーザー操作時からミュート再生で待機しているHTML Audioを使う。
-      if(roomPhoneHtmlPrimed&&!roomPhoneRing.paused){
-        try{if(restart)roomPhoneRing.currentTime=0}catch{}
-        roomPhoneRing.loop=true;
-        roomPhoneRing.volume=1;
-        roomPhoneRing.muted=false;
-        roomPhoneAudioUnlocked=true;
-        roomPhoneRingAudible=true;
-        return;
-      }
-
-      // Safariが待機音声を止めていた場合のみ play() で復帰する。
-      try{
-        roomPhoneRing.loop=true;roomPhoneRing.volume=1;roomPhoneRing.muted=false;
-        try{if(restart)roomPhoneRing.currentTime=0}catch{}
-        const p=roomPhoneRing.play();
-        if(p&&p.then){
-          p.then(()=>{
-            roomPhoneHtmlPrimed=true;
-            roomPhoneAudioUnlocked=true;
-            roomPhoneRingAudible=true;
-          }).catch(()=>{
-            roomPhoneRingAudible=false;
-            // 最後のフォールバック：Web Audio。
-            const ctx=ensureRoomPhoneAudioContext();
-            if(ctx&&ctx.state==='running'){
-              if(roomPhoneAudioBuffer)startRoomPhoneWebAudio();
-              else loadRoomPhoneAudioBuffer().then(()=>startRoomPhoneWebAudio()).catch(()=>{});
-            }
-          });
-        }else{
-          roomPhoneRingAudible=true;
+      // 初回の着信だけ restart=true で「ミュート → seek → 無音 → seek → unmute」。
+      // 全員拒否後に再び鳴らす時など restart=false の場合は、待機中の続きから自然に戻す。
+      void sprStartAudioClean(roomPhoneRing,{volume:1,loop:true,restart:Boolean(restart),guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+        roomPhoneRingStarting=false;
+        if(roomPhoneCallState!=='ringing'||roomPhoneEventExpired()||!roomPhoneMasterAudioOn()){
+          if(roomPhoneRing)roomPhoneRing.muted=true;
+          return;
         }
-      }catch{roomPhoneRingAudible=false}
+        if(ok){
+          roomPhoneHtmlPrimed=true;
+          roomPhoneAudioUnlocked=true;
+          roomPhoneRingAudible=true;
+          return;
+        }
+        roomPhoneRingAudible=false;
+        // HTML Audio が復帰できなかった場合だけ Web Audio を最後のフォールバックにする。
+        const ctx=ensureRoomPhoneAudioContext();
+        if(ctx&&ctx.state==='running'){
+          if(roomPhoneAudioBuffer)startRoomPhoneWebAudio();
+          else loadRoomPhoneAudioBuffer().then(()=>startRoomPhoneWebAudio()).catch(()=>{});
+        }
+      }).catch(()=>{roomPhoneRingStarting=false;roomPhoneRingAudible=false});
     }
     function stopRoomPhoneRing(){
       roomPhoneRingAudible=false;
+      roomPhoneRingStarting=false;
+      sprCancelGuardedAudioStart(roomPhoneRing);
       if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
       if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
       roomPhoneHtmlPrimed=false;
@@ -3533,14 +3616,14 @@ body.night-theme #integratedCafeShell iframe{
       setRoomPhoneAudioSessionPlayback();
       // テストは Web Audio を使わず、iPhoneの消音モードでも聞こえるHTML Audioを直接鳴らす。
       try{
-        roomPhoneRing.loop=true;roomPhoneRing.volume=1;roomPhoneRing.muted=false;
-        try{roomPhoneRing.currentTime=0}catch{}
-        const p=roomPhoneRing.play();
-        if(status)status.textContent='着信音テスト再生中（HTML AUDIO / 3秒）';
-        Promise.resolve(p).then(()=>{
+        if(status)status.textContent='着信音テスト準備中…';
+        sprStartAudioClean(roomPhoneRing,{volume:1,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS,respectMaster:false}).then(ok=>{
+          if(!ok)throw new Error('HTML Audio start failed');
+          if(status)status.textContent='着信音テスト再生中（HTML AUDIO / 3秒）';
           roomPhoneHtmlPrimed=true;roomPhoneAudioUnlocked=true;roomPhoneRingAudible=true;
           setTimeout(()=>{
             // 停止ではなくミュートに戻し、実際の2分後着信に備えて再生状態を維持する。
+            sprCancelGuardedAudioStart(roomPhoneRing);
             try{roomPhoneRing.muted=true;roomPhoneRing.loop=true;roomPhoneRingAudible=false}catch{}
             if(status)status.textContent='着信音テスト終了。音が聞こえたか確認してください。';
           },3000);
@@ -3936,15 +4019,11 @@ body.night-theme #integratedCafeShell iframe{
     function ensureHernandoArenaBgm(){
       if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
       cancelHernandoArenaBgmFade(true);
-      try{
-        hernandoArenaBgm.loop=true;
-        hernandoArenaBgm.volume=.42;
-        hernandoArenaBgm.muted=false;
-        if(hernandoArenaBgm.paused){
-          const p=hernandoArenaBgm.play();
-          if(p&&p.then)p.then(()=>{hernandoArenaBgmPrimed=true}).catch(e=>console.warn('Hernando BGM start',e));
-        }
-      }catch(e){console.warn('Hernando BGM start',e)}
+      // すでに正常に鳴っている時は触らない。停止/ミュート時だけ安全に復帰する。
+      if(!hernandoArenaBgm.paused&&!hernandoArenaBgm.muted)return;
+      void sprStartAudioClean(hernandoArenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+        if(ok)hernandoArenaBgmPrimed=true;
+      });
     }
     function hernandoTypeDelay(ch){if(ch==='、')return 260;if(ch==='。'||ch==='？'||ch==='！')return 460;if(ch==='…')return 320;return 82}
     function finishHernandoDialogueLine(){
@@ -4002,6 +4081,7 @@ body.night-theme #integratedCafeShell iframe{
       hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
       if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
         fadeHernandoArenaBgm(0,900,()=>{
           try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
           hernandoArenaBgmPrimed=false;
@@ -4009,6 +4089,7 @@ body.night-theme #integratedCafeShell iframe{
         return;
       }
       cancelHernandoArenaBgmFade();
+      sprCancelGuardedAudioStart(hernandoArenaBgm);
       try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
       hernandoArenaBgmPrimed=false;
     }
@@ -4022,14 +4103,10 @@ body.night-theme #integratedCafeShell iframe{
       // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
       if(hernandoArenaBg)hernandoArenaBg.src='hernandos_bullring01.jpg';
       if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-        try{
-          // 「奥に進む」のタップで先行再生済みなら、その再生をここで可聴化する。
-          // 読み込み済みになってから先頭へ戻すので iOS Safari でも currentTime 例外を避けられる。
-          if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;
-          hernandoArenaBgm.volume=.42;
-          hernandoArenaBgm.muted=false;
-        }catch(e){console.warn('Hernando BGM reveal',e)}
-        ensureHernandoArenaBgm();
+        // 先行再生はミュートのまま維持し、闘牛場表示時だけ短い無音を挟んで先頭から可聴化する。
+        void sprStartAudioClean(hernandoArenaBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+          if(ok)hernandoArenaBgmPrimed=true;
+        });
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
