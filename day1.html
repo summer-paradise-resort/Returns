@@ -372,7 +372,7 @@
     .bar-menu-pages::-webkit-scrollbar{display:none}
     .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
     .bar-menu-page img{width:100%;height:auto;display:block}
-    .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#8c7b62;margin:-8px 0 22px}
+    .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#fff;margin:-8px 0 22px;text-shadow:0 2px 8px rgba(0,0,0,.45)}
     .bar-drink-list{display:grid;gap:9px}
     .bar-drink-item{width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid #e7dfd1;background:#fff;color:var(--navy);padding:12px 11px;min-height:68px}
     .bar-drink-item .num{font:18px Georgia,serif;color:var(--gold);text-align:center}
@@ -512,7 +512,7 @@
     .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
     .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
-    .bar-menu-hint strong{font-weight:500;color:var(--navy)}
+    .bar-menu-hint strong{font-weight:500;color:#fff}
     .bar-menu-lightbox{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:transparent;padding:56px 10px 22px;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s}
     .bar-menu-lightbox.open{opacity:1;visibility:visible}
     .bar-menu-lightbox-inner{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:auto;-webkit-overflow-scrolling:touch}
@@ -1161,7 +1161,7 @@ body.night-theme #integratedCafeShell iframe{
     <div class="bar-menu-lightbox-inner">
       <img id="barMenuLightboxImage" src="" alt="拡大したシーサイドバーのドリンクメニュー">
     </div>
-    <div class="bar-menu-lightbox-note">背景をタップして閉じる</div>
+    
   </div>
 
   <section class="subview" id="casinoView" aria-hidden="true">
@@ -2292,7 +2292,7 @@ body.night-theme #integratedCafeShell iframe{
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
       try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
-      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} のご注文を承りました。`;barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
+      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
     useExtraDrinkTicket.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
