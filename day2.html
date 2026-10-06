@@ -871,10 +871,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   </div>
   <div id="specialBroadcast" class="special-broadcast hidden" role="dialog" aria-modal="true" aria-live="assertive"><div class="special-broadcast-card"><div class="special-broadcast-kicker">SPECIAL ANNOUNCEMENT</div><div id="specialBroadcastText" class="special-broadcast-text"></div><div id="specialBroadcastCount" class="special-broadcast-count"></div><div class="special-broadcast-actions"><button id="specialBroadcastClose" type="button">閉じる</button></div></div></div>
 
-  <main id="day1Home">
+  <main id="day2Home">
     <section class="hero" id="heroSection">
       <div class="hero-copy">
-        <p class="eyebrow">サマーパラダイスリゾート　/　DAY1</p>
+        <p class="eyebrow">サマーパラダイスリゾート　/　DAY2</p>
         <h1>島で過ごす。</h1>
         <p>目覚めたあとは、島の時間へ。<br>気になる場所を選んで、今日だけの滞在をお楽しみください。</p>
       </div>
@@ -887,7 +887,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
       <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 139,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
-      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
+      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">2</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -1669,6 +1669,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const {error}=await window.supabaseClientSpecial.from('spr_player_flags').delete().eq('player_id',playerId).eq('flag_key',flagKey);if(error)throw error;
     }
+    function resortDayNumber(){
+      const n=Number(document.documentElement.dataset.resortDay||1);
+      return n>=1&&n<=7?n:1;
+    }
+    function resortDayToken(){return `day${resortDayNumber()}`}
     function cafeServiceDate(){
       const dp=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=>[p.type,p.value]));
       const base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)<3)base.setUTCDate(base.getUTCDate()-1);
@@ -1678,16 +1683,16 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const bool=v=>v===true||v===1||v==='1';
       if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`)}
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
-      else if(flagKey==='sunset-encore-date'){if(value)localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,String(value));else localStorage.removeItem(`spr-sunset-encore-date:${playerStorageId}`)}
-      else if(flagKey==='closet-food-key'){if(bool(value))localStorage.setItem('spr-closet-food-key','1');else localStorage.removeItem('spr-closet-food-key')}
-      else if(flagKey==='bathroom-food-key'){if(bool(value))localStorage.setItem('spr-bathroom-food-key','1');else localStorage.removeItem('spr-bathroom-food-key')}
-      else if(flagKey==='bathroom-bloom-state'){localStorage.setItem('spr-bathroom-bloom-state',String(Math.max(0,Math.min(2,Number(value)||0))))}
+      else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
+      else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
       else if(flagKey==='hernando-visit-count'){const n=Math.max(0,Number(value)||0);if(n)localStorage.setItem(`spr-hernando-visit-count:${playerStorageId}`,String(n));else localStorage.removeItem(`spr-hernando-visit-count:${playerStorageId}`)}
       else if(flagKey==='hernando-poison-until'){const until=Math.max(0,Number(value)||0);if(until)localStorage.setItem(`spr-hernando-poison-until:${playerStorageId}`,String(until));else localStorage.removeItem(`spr-hernando-poison-until:${playerStorageId}`)}
-      else if(flagKey.startsWith('cafe-order:')){const d=flagKey.slice('cafe-order:'.length),pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
-      else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
+      else if(flagKey.startsWith('cafe-order:')){const rest=flagKey.slice('cafe-order:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey.startsWith('cafe-drink-ticket-used:')){const rest=flagKey.slice('cafe-drink-ticket-used:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-drink-ticket-used:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
       else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
       else if(flagKey.startsWith('room-service-horror:')){const token=flagKey.slice('room-service-horror:'.length),key=`spr-room-service-horror:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
@@ -1696,16 +1701,17 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const out={};
       if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
-      const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}`);if(encore)out['sunset-encore-date']=encore;
-      if(localStorage.getItem('spr-closet-food-key')==='1')out['closet-food-key']=true;
-      if(localStorage.getItem('spr-bathroom-food-key')==='1')out['bathroom-food-key']=true;
-      const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0));if(bathroomBloomState)out['bathroom-bloom-state']=bathroomBloomState;
+      const dayScope=resortDayToken();
+      const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}:${dayScope}`);if(encore)out[`sunset-encore-date:${dayScope}`]=encore;
+      if(localStorage.getItem(`spr-closet-food-key:${dayScope}`)==='1')out[`closet-food-key:${dayScope}`]=true;
+      if(localStorage.getItem(`spr-bathroom-food-key:${dayScope}`)==='1')out[`bathroom-food-key:${dayScope}`]=true;
+      const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
       if(localStorage.getItem(`spr-hernando-intro-seen:${playerStorageId}`)==='1')out['hernando-intro-seen']=true;
       const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
       const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
-      const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
-      const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
+      const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-order:${dayScope}:${cafeDate}`]=true;
+      const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${dayScope}:${cafeDate}`]=true;
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`;
       Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}else if(k.startsWith(horrorPrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(horrorPrefix.length);out[`room-service-horror:${token}`]=true}});
       return out;
@@ -1773,7 +1779,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         }
 
         let barState={};
-        if((barRes.data||[]).length){(barRes.data||[]).forEach(r=>{const rec=r.record||{},token=`${r.service_date}:${r.period}`;barState[token]={...rec,serviceDate:r.service_date,period:r.period,expiresAt:new Date(r.expires_at).getTime()}})}
+        if((barRes.data||[]).length){(barRes.data||[]).forEach(r=>{const rec=r.record||{},recDay=Math.max(1,Number(rec.resortDay||1));if(recDay!==resortDayNumber())return;const token=`${resortDayToken()}:${r.service_date}:${r.period}`;barState[token]={...rec,resortDay:recDay,serviceDate:r.service_date,period:r.period,expiresAt:new Date(r.expires_at).getTime()}})}
         else if(Object.keys(localBarState).length){barState={...localBarState};for(const rec of Object.values(barState)){if(rec&&rec.serviceDate&&rec.period)await persistBarOrderRemote(rec)}}
         localStorage.setItem(barDrinkStorageKey,JSON.stringify(barState));
 
@@ -1921,7 +1927,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
-      if(button.dataset.closetKey==='1'){localStorage.setItem('spr-closet-food-key','1');setRemoteFlag('closet-food-key',true).catch(e=>console.warn('closet food flag sync',e));}
+      if(button.dataset.closetKey==='1'){localStorage.setItem(`spr-closet-food-key:${resortDayToken()}`,'1');setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(e=>console.warn('closet food flag sync',e));}
       if(cafeMealResult)cafeMealResult.textContent=`${meal} をお召し上がりいただきました。`;
     }));
     document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',async()=>{
@@ -2375,7 +2381,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       else{ id='night';label='夜';hours='20:00〜6:59';if(now.hour<7)serviceDate=addDaysToDateKey(serviceDate,-1);endDate=addDaysToDateKey(serviceDate,1);endTime='07:00:00'}
       if(id!=='night')endDate=serviceDate;
       const orderOpen=now.hour>=11||now.hour<5;
-      return{id,label,hours,serviceDate,token:`${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
+      return{id,label,hours,serviceDate,token:`${resortDayToken()}:${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
     }
     function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
     function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
@@ -2501,7 +2507,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       barOrderConfirm.disabled=true;
       void playSeasideKanpai();
-      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:drink.effectKey||null};
+      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,resortDay:resortDayNumber(),orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:drink.effectKey||null};
       try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');renderBarOrderState();return}
       state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
@@ -2931,12 +2937,12 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
     const sunsetTerraceOpen=document.getElementById('sunsetTerraceOpen'),sunsetTerraceMenu=document.getElementById('sunsetTerraceMenu'),sunsetMealResult=document.getElementById('sunsetMealResult');
     if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>sunsetTerraceMenu.classList.toggle('hidden'));
-    document.querySelectorAll('.sunset-meal').forEach(button=>button.addEventListener('click',()=>{const meal=button.dataset.meal;if(meal==='スペシャルコース'){localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}`,tokyoDateKey());setRemoteFlag('sunset-encore-date',tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));}sunsetMealResult.textContent=`「${meal}」を注文しました。${meal==='スペシャルコース'?' 今夜、特別な何かが起こるかもしれません。':''}`}));
+    document.querySelectorAll('.sunset-meal').forEach(button=>button.addEventListener('click',()=>{const meal=button.dataset.meal;if(meal==='スペシャルコース'){localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));}sunsetMealResult.textContent=`「${meal}」を注文しました。${meal==='スペシャルコース'?' 今夜、特別な何かが起こるかもしれません。':''}`}));
 
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     const seriousEmilyKey=`spr-emily-serious-announced:${playerStorageId}`;
-    const encoreMealDateKey=`spr-sunset-encore-date:${playerStorageId}`;
+    const encoreMealDateKey=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;
     let seriousEmilyMode=false;
     function tokyoDateKey(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
     function hasEncoreTonight(){const h=tokyoHour();return (h>=20||h<7)&&localStorage.getItem(encoreMealDateKey)===tokyoDateKey()}
@@ -3017,7 +3023,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const adminSeriousReset=document.getElementById('adminSeriousReset');
     async function resetEmilyTest(chips,serious=false){
       localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});
-      if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());await setRemoteFlag('sunset-encore-date',tokyoDateKey()).catch(()=>{})}
+      if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());await setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{})}
       casinoChips=chips;previousCasinoChips=chips;activeSpecialSessionId=null;seriousEmilyMode=false;stopSpecialHeartbeat();clearSpecialPresenceMarker();
       await queueCasinoChipSync(casinoChips);
       // テスト用リセットは、Supabaseへ実際に反映されたことを確認してから完了表示する。
@@ -3466,18 +3472,18 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       }
       if(d.type==='spr-cafe-state-updated'){
         if(d.kind==='order'&&d.date){
-          setRemoteFlag(`cafe-order:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
+          setRemoteFlag(`cafe-order:${resortDayToken()}:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
           const venue=String(d.venue||''),meal=String(d.meal||'');
           if(venue==='The Pearl Terrace'&&meal==='ラボ・デ・トロ'){
-            localStorage.setItem('spr-closet-food-key','1');
-            setRemoteFlag('closet-food-key',true).catch(err=>console.warn('closet food flag',err));
+            localStorage.setItem(`spr-closet-food-key:${resortDayToken()}`,'1');
+            setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(err=>console.warn('closet food flag',err));
           }
           if(venue==='Marine Bloom Cafe'&&meal==='ブルーム・フレンチ'){
-            localStorage.setItem('spr-bathroom-food-key','1');
-            setRemoteFlag('bathroom-food-key',true).catch(err=>console.warn('bathroom food flag',err));
+            localStorage.setItem(`spr-bathroom-food-key:${resortDayToken()}`,'1');
+            setRemoteFlag(`bathroom-food-key:${resortDayToken()}`,true).catch(err=>console.warn('bathroom food flag',err));
           }
         }
-        if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
+        if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${resortDayToken()}:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
         if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue',true).catch(err=>console.warn('cafe first flag',err));
         return;
       }
@@ -3644,11 +3650,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function closetSearchKey(){return `spr-closet-search-${activeGuest||'guest'}-${activeRoom||'room'}`}
     function closetDoorKey(){return `spr-closet-door-${activeGuest||'guest'}-${activeRoom||'room'}`}
     // The Pearl Terrace の「ラボ・デ・トロ」でクローゼットギミックが有効になる。
-    function hasClosetFoodKey(){return localStorage.getItem('spr-closet-food-key')==='1'}
+    function hasClosetFoodKey(){return localStorage.getItem(`spr-closet-food-key:${resortDayToken()}`)==='1'}
     // Marine Bloom Cafe の「ブルーム・フレンチ」で、その日の夜のバスルームギミックが有効になる。
-    function hasBathroomFoodKey(){return localStorage.getItem('spr-bathroom-food-key')==='1'}
-    function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0))}
-    function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem('spr-bathroom-bloom-state',String(state));setRemoteFlag('bathroom-bloom-state',state).catch(e=>console.warn('bathroom bloom sync',e));return state}
+    function hasBathroomFoodKey(){return localStorage.getItem(`spr-bathroom-food-key:${resortDayToken()}`)==='1'}
+    function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${resortDayToken()}`))||0))}
+    function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(state));setRemoteFlag(`bathroom-bloom-state:${resortDayToken()}`,state).catch(e=>console.warn('bathroom bloom sync',e));return state}
 
     // DAY1 ROOM PHONE (Supabase shared event)
     // 22:00〜翌3:00の間、客室に連続2分滞在すると「部屋単位」で電話が鳴る。
@@ -3788,7 +3794,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         }catch{}
       }
       return Promise.resolve(htmlPrime).then(ok=>{
-        if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+        if(roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing();
         return ok;
       });
     }
@@ -4049,6 +4055,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function attemptRoomPhoneRing({restart=false}={}){
       if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return;
+      // この端末で「出ない」を選んだ後は、同室者の選択状況に関係なくこの端末の着信音を再開しない。
+      if(roomPhoneDeclinedLocally()){stopRoomPhoneRing();return}
       if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
       setRoomPhoneAudioSessionPlayback();
 
@@ -4259,8 +4267,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function declineRoomPhoneCall(){
       if(roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id)return;
       localStorage.setItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id),'1');
-      // 自分が「出ない」を選んでも、同室者に未選択の人がいれば呼び出し音は止めない。
-      // 全員のPresenceがdeclinedになった時だけ3秒カウントを開始する。
+      // 「出ない」を選んだ本人の端末では、その瞬間に着信音を止める。
+      // 同室者の端末では、それぞれが応答／拒否するまで従来どおり着信を継続できる。
+      cancelRoomPhoneDeclineStop();
+      roomPhoneDeclineSilencedEventId=String(roomPhoneActiveEvent.id);
+      stopRoomPhoneRing();
       updateRoomPhoneUi();
       trackRoomPhonePresence('declined').finally(()=>evaluateRoomPhoneDeclineState());
       evaluateRoomPhoneDeclineState();
@@ -4312,7 +4323,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     document.addEventListener('visibilitychange',()=>{
       if(!document.hidden&&roomPhoneMasterAudioOn()&&roomPhoneAudioContext?.state==='running'){
         startRoomPhoneKeepAlive();
-        if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+        if(roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing();
       }
     });
     // 初回の解除に失敗した端末でも、客室内で次に触れた瞬間に再度音声を準備する。
@@ -4876,7 +4887,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomSceneButtons.forEach(button=>{const available=availableScenes.includes(button.dataset.roomScene);button.classList.toggle('hidden',!available);button.setAttribute('aria-pressed',String(available&&button.dataset.roomScene===selectedRoomScene))});
       updateRoomContextAction();
     }
-    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing')attemptRoomPhoneRing()}
+    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
@@ -5514,11 +5525,19 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 (function(){
   const THIS_DAY=Number(document.documentElement.dataset.resortDay||1);
   const DAY_TYPE='admin-day-switch';
+  const AUTO_DAY_TYPE='admin-day-auto';
   const RESET_TYPE='admin-world-reset';
   const statusEl=document.getElementById('adminMasterStatus');
   const currentEl=document.getElementById('adminCurrentDay');
   const dayButtons=[...document.querySelectorAll('[data-admin-day]')];
+  const autoDayBtn=document.getElementById('adminAutoDayToggle');
   const resetBtn=document.getElementById('adminWorldReset');
+  const DAY_MS=86400000;
+  const TOKYO_7_SHIFT_MS=2*60*60*1000; // JST(+9h) の 07:00 を日境界にするため UTC epoch に +2h して日番号化
+  let autoDayEnabled=false;
+  let autoDayTimer=0;
+  let autoDayAnchor=null;
+  let autoDayPublishInFlight=false;
   function setDayUI(day){if(currentEl)currentEl.textContent=String(day);dayButtons.forEach(b=>b.classList.toggle('active',Number(b.dataset.adminDay)===day));}
   setDayUI(THIS_DAY);
   function client(){return window.supabaseClientSpecial||null}
@@ -5526,8 +5545,98 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   async function latestMarker(type){const c=client();if(!c)return null;const {data,error}=await c.from('resort_announcements').select('id,message,created_at').eq('announcement_type',type).order('created_at',{ascending:false}).limit(1);if(error)throw error;return data&&data[0]?data[0]:null}
   async function publishMarker(type,message){const c=client();if(!c)throw new Error('Supabaseに接続できません。');const created_by=await creator();if(!created_by)throw new Error('プレイヤー情報を確認できません。SECURITY CHECKから入ってください。');const {error}=await c.from('resort_announcements').insert({announcement_type:type,message,created_by,expires_at:'2099-12-31T23:59:59+00:00'});if(error)throw error}
   function goDay(day){const base='day'+day+'.html';const target=base+(typeof identityQuery==='string'?identityQuery:'');const here=(location.pathname.split('/').pop()||'').toLowerCase();if(here!==base)location.replace(target)}
-  async function syncCurrentDay(redirect=true){try{const m=await latestMarker(DAY_TYPE);const day=m?Number(String(m.message).replace(/\D/g,'')):1;const safe=(day>=1&&day<=7)?day:1;setDayUI(safe);if(redirect&&safe!==THIS_DAY)goDay(safe)}catch(e){console.warn('day sync',e)}}
-  dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
+  function markerDay(marker,fallback=1){const m=String(marker?.message||'').match(/DAY:(\d+)/i);const n=m?Number(m[1]):Number(fallback);return n>=1&&n<=7?n:1}
+  function parseAutoDayMarker(marker){
+    const message=String(marker?.message||'');
+    const enabled=/AUTO:ON/i.test(message);
+    const day=markerDay(marker,THIS_DAY);
+    const createdAt=marker?.created_at?new Date(marker.created_at).getTime():0;
+    return{enabled,day,createdAt:Number.isFinite(createdAt)?createdAt:0,marker};
+  }
+  function resortBoundaryIndex(ms){return Math.floor((Number(ms)+TOKYO_7_SHIFT_MS)/DAY_MS)}
+  function deriveAutoDay(state,now=Date.now()){
+    if(!state?.enabled||!state.createdAt)return null;
+    const passed=Math.max(0,resortBoundaryIndex(now)-resortBoundaryIndex(state.createdAt));
+    return Math.max(1,Math.min(7,state.day+passed));
+  }
+  function nextTokyoSevenDelay(now=Date.now()){
+    const currentIndex=resortBoundaryIndex(now);
+    const nextBoundary=(currentIndex+1)*DAY_MS-TOKYO_7_SHIFT_MS;
+    return Math.max(250,nextBoundary-now+350);
+  }
+  function renderAutoDayButton(){
+    if(!autoDayBtn)return;
+    autoDayBtn.textContent=autoDayEnabled?'本番自動DAY進行中（毎朝7:00）／停止':'本番自動DAY進行を開始（毎朝7:00）';
+    autoDayBtn.setAttribute('aria-pressed',String(autoDayEnabled));
+  }
+  function scheduleAutoDayCheck(){
+    if(autoDayTimer){clearTimeout(autoDayTimer);autoDayTimer=0}
+    if(!autoDayEnabled)return;
+    const current=Math.max(1,Math.min(7,Number(currentEl?.textContent)||THIS_DAY));
+    if(current>=7)return;
+    autoDayTimer=setTimeout(()=>{autoDayTimer=0;void syncCurrentDay(true,true)},nextTokyoSevenDelay());
+  }
+  async function publishDerivedDayIfNeeded(manualMarker,derivedDay){
+    if(autoDayPublishInFlight)return;
+    const manualDay=markerDay(manualMarker,1);
+    if(derivedDay<=manualDay)return;
+    autoDayPublishInFlight=true;
+    try{
+      const latest=await latestMarker(DAY_TYPE);
+      if(markerDay(latest,1)<derivedDay)await publishMarker(DAY_TYPE,'DAY:'+derivedDay);
+    }catch(e){console.warn('auto day publish',e)}
+    finally{autoDayPublishInFlight=false}
+  }
+  async function syncCurrentDay(redirect=true,publishAdvance=false){
+    try{
+      const [manualMarker,autoMarker]=await Promise.all([latestMarker(DAY_TYPE),latestMarker(AUTO_DAY_TYPE)]);
+      const manualDay=markerDay(manualMarker,1);
+      const autoState=parseAutoDayMarker(autoMarker);
+      autoDayEnabled=autoState.enabled;
+      autoDayAnchor=autoState.enabled?autoState:null;
+      let safe=manualDay;
+      if(autoDayEnabled){const derived=deriveAutoDay(autoState);if(derived) safe=derived}
+      safe=Math.max(1,Math.min(7,safe));
+      setDayUI(safe);renderAutoDayButton();scheduleAutoDayCheck();
+      if(autoDayEnabled&&(publishAdvance||safe>manualDay))void publishDerivedDayIfNeeded(manualMarker,safe);
+      if(redirect&&safe!==THIS_DAY)goDay(safe);
+      return safe;
+    }catch(e){console.warn('day sync',e);renderAutoDayButton();return Number(currentEl?.textContent)||THIS_DAY}
+  }
+  dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{
+    const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;
+    try{
+      btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';
+      await publishMarker(DAY_TYPE,'DAY:'+day);
+      if(autoDayEnabled)await publishMarker(AUTO_DAY_TYPE,'AUTO:ON|DAY:'+day);
+      setDayUI(day);scheduleAutoDayCheck();goDay(day);
+    }catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}
+    finally{btn.disabled=false}
+  }));
+  if(autoDayBtn)autoDayBtn.addEventListener('click',async()=>{
+    const current=Math.max(1,Math.min(7,Number(currentEl?.textContent)||THIS_DAY));
+    if(autoDayEnabled){
+      if(!confirm('毎朝7:00の自動DAY進行を停止しますか？\n現在のDAY '+current+' で固定されます。'))return;
+      try{
+        autoDayBtn.disabled=true;
+        await publishMarker(DAY_TYPE,'DAY:'+current);
+        await publishMarker(AUTO_DAY_TYPE,'AUTO:OFF|DAY:'+current);
+        autoDayEnabled=false;autoDayAnchor=null;renderAutoDayButton();scheduleAutoDayCheck();
+        if(statusEl)statusEl.textContent='自動DAY進行を停止しました。現在は DAY '+current+' で固定されています。';
+      }catch(e){alert('自動DAY進行の停止に失敗しました。\n'+(e.message||e))}
+      finally{autoDayBtn.disabled=false}
+      return;
+    }
+    if(!confirm('本番用の自動DAY進行を開始します。\n現在の DAY '+current+' を起点に、以後は日本時間の毎朝7:00に次のDAYへ自動で切り替わります。\n\n開始しますか？'))return;
+    try{
+      autoDayBtn.disabled=true;
+      await publishMarker(DAY_TYPE,'DAY:'+current);
+      await publishMarker(AUTO_DAY_TYPE,'AUTO:ON|DAY:'+current);
+      if(statusEl)statusEl.textContent='自動DAY進行を開始しました。次の切替は日本時間7:00です。';
+      await syncCurrentDay(false);
+    }catch(e){alert('自動DAY進行の開始に失敗しました。\n'+(e.message||e))}
+    finally{autoDayBtn.disabled=false}
+  });
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
   function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];}}
@@ -5587,6 +5696,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         }
       }catch(e){console.warn('special/runtime/login reset',e);throw e}
       await publishMarker(DAY_TYPE,'DAY:1');
+      await publishMarker(AUTO_DAY_TYPE,'AUTO:OFF|DAY:1');
+      autoDayEnabled=false;autoDayAnchor=null;renderAutoDayButton();scheduleAutoDayCheck();
       clearLocalGimmicks();
       localStorage.setItem('spr-hernando-bar-global-open','0');
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
@@ -5601,7 +5712,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   window.refreshHernandoBarGlobalOpen=async function(){try{if(Number(document.documentElement.dataset.resortDay||1)<2){hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return false}const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
   function onShared(payload){
     const row=payload&&payload.new;if(!row)return;
-    if(row.announcement_type===DAY_TYPE){const d=Number(String(row.message).replace(/\D/g,''));if(d>=1&&d<=7){setDayUI(d);if(d!==THIS_DAY)goDay(d)}}
+    if(row.announcement_type===DAY_TYPE||row.announcement_type===AUTO_DAY_TYPE){setTimeout(()=>{void syncCurrentDay(true)},120)}
     if(row.announcement_type===RESET_TYPE){
       clearLocalGimmicks();hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();
       const keepId=resetKeepPlayerId(row.message),me=String(localStorage.getItem('spr-player-id')||'').trim();
@@ -5609,7 +5720,14 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       localStorage.setItem('spr-last-seen',String(Date.now()));
     }
   }
-  async function startRuntime(){if(await enforceLatestResetSession())return;syncCurrentDay(true);const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();window.refreshHernandoBarGlobalOpen();}
+  async function startRuntime(){
+    if(await enforceLatestResetSession())return;
+    await syncCurrentDay(true);
+    const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();
+    window.refreshHernandoBarGlobalOpen();
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncCurrentDay(true)});
+    window.addEventListener('focus',()=>{void syncCurrentDay(true)});
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(startRuntime,350));else setTimeout(startRuntime,350);
 })();
 </script>
@@ -5651,7 +5769,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   const meals=document.getElementById(&#x27;meals&#x27;),drinks=document.getElementById(&#x27;drinks&#x27;);
   const order=document.getElementById(&#x27;order&#x27;),status=document.getElementById(&#x27;status&#x27;);
   let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;
-  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
+  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`,coKey=`spr-cafe-coasters:${pid}`;
 
   function select(box,item,type){
     box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
@@ -5668,7 +5786,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     e.preventDefault();
     if(!meal||!drink){status.textContent=&#x27;食事とドリンクを1つずつお選びください。&#x27;;return}
     const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const day=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-    const orderKey=`spr-cafe-order:${pid}:${day}`;
+    const orderKey=`spr-cafe-order:${pid}:${resortDayToken}:${day}`;
     if(localStorage.getItem(orderKey)===&#x27;1&#x27;){
       status.textContent=&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;;return;
     }
@@ -5696,9 +5814,9 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
-const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
+const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;
 const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${resortDayToken}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
 let parentTicketCount=0,consumePending=false;
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
@@ -5837,7 +5955,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   const meals=document.getElementById(&#x27;meals&#x27;),drinks=document.getElementById(&#x27;drinks&#x27;);
   const order=document.getElementById(&#x27;order&#x27;),status=document.getElementById(&#x27;status&#x27;);
   let meal=&#x27;&#x27;,drink=&#x27;&#x27;,firstDialogue=false;
-  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
+  const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`,coKey=`spr-cafe-coasters:${pid}`;
 
   function select(box,item,type){
     box.querySelectorAll(&#x27;.item&#x27;).forEach(x=&gt;x.classList.remove(&#x27;selected&#x27;));
@@ -5854,7 +5972,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     e.preventDefault();
     if(!meal||!drink){status.textContent=&#x27;食事とドリンクを1つずつお選びください。&#x27;;return}
     const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const day=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-    const orderKey=`spr-cafe-order:${pid}:${day}`;
+    const orderKey=`spr-cafe-order:${pid}:${resortDayToken}:${day}`;
     if(localStorage.getItem(orderKey)===&#x27;1&#x27;){
       status.textContent=&#x27;本日のCAFEのご注文はすでにご利用いただいています。&#x27;;return;
     }
@@ -5882,9 +6000,9 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
-const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;);
+const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;
 const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
+const useKey=`spr-cafe-drink-ticket-used:${pid}:${resortDayToken}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
 let parentTicketCount=0,consumePending=false;
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
@@ -6223,6 +6341,26 @@ window.addEventListener('message',e=>{
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
     return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
   }
+  function exploreGuestName(){
+    const name=String(localStorage.getItem('spr-guest-name')||storedGuestName||'').trim();
+    return name||'ゲスト';
+  }
+  function exploreStaffGreeting(period=explorePeriod()){
+    const hello=period==='day'?'こんにちは':'こんばんは';
+    return `${hello}、${exploreGuestName()}様でいらっしゃいますね。`;
+  }
+  function showExploreStaffSequence(lines){
+    const clean=(Array.isArray(lines)?lines:[lines]).flatMap(v=>String(v||'').split('\n')).map(v=>v.trim()).filter(Boolean);
+    if(typeof window.__sprShowStaffDialogueSequence==='function'){
+      window.__sprShowStaffDialogueSequence([exploreStaffGreeting(),...clean]);
+      return true;
+    }
+    if(typeof window.__sprShowStaffDialogue==='function'){
+      window.__sprShowStaffDialogue([exploreStaffGreeting(),...clean].join('\n'));
+      return true;
+    }
+    return false;
+  }
   function clearActionMessage(){
     if(!actionMessage)return;
     if(actionMessageText)actionMessageText.textContent='';
@@ -6275,26 +6413,22 @@ window.addEventListener('message',e=>{
     if(explorePoisoned()){
       clearActionMessage();
       const line=poisonMessages?.[selectedSpot]?.[actionKey]||'何かが、いつもと違って見える。';
-      // シュノーケルのみ、スタッフに声をかけられる形式。
-      // 灯台だけはスタッフ会話ではなく、特殊な注意表示として出す。
-      if(actionKey==='snorkel'&&selectedSpot!=='lighthouse'&&typeof window.__sprShowStaffDialogue==='function'){
-        window.__sprShowStaffDialogue(line);
+      // シュノーケルはすべてスタッフに声をかけられる形式。
+      // 灯台の毒杯時も、スタッフが名指しで挨拶したあと特殊な注意事項を伝える。
+      if(actionKey==='snorkel'){
+        if(!showExploreStaffSequence(line))showPoisonMessage(actionKey);
       }else{
         showPoisonMessage(actionKey);
       }
       return;
     }
 
-    // 通常時：灯台でシュノーケルを選んだ場合だけ、スタッフ会話演出で注意される。
+    // 通常時：灯台でシュノーケルを選んだ場合も、まずプレイヤー名を確認してからスタッフが注意する。
     if(selectedSpot==='lighthouse' && actionKey==='snorkel'){
       clearActionMessage();
       const period=explorePeriod();
       const line=fallbackMessages.lighthouse.snorkel[period];
-      if(typeof window.__sprShowStaffDialogue==='function'){
-        window.__sprShowStaffDialogue(line);
-      }else{
-        showFallback(actionKey);
-      }
+      if(!showExploreStaffSequence(line))showFallback(actionKey);
       return;
     }
     showFallback(actionKey);
