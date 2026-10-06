@@ -54,6 +54,8 @@
     .card img{height:170px;object-fit:cover}
     .card-body{padding:16px 15px 17px}
     .card-title{font-size:18px;letter-spacing:.1em;font-weight:500;margin:0 0 5px}
+    .room-delivery-badge{display:inline-block;width:9px;height:9px;margin-left:8px;border-radius:50%;background:#c92f2f;vertical-align:middle;box-shadow:0 0 0 3px rgba(201,47,47,.12)}
+    .room-delivery-badge.hidden{display:none!important}
     .card-en{font:10px Georgia,serif;letter-spacing:.2em;color:var(--gold);margin-bottom:11px}
     .card-desc{min-height:48px;font-size:12px;line-height:1.8;color:#4c5661;margin:0}
     .view{font:10px Georgia,serif;letter-spacing:.15em;color:var(--gold);margin-top:15px}
@@ -311,6 +313,13 @@
     .service-history{display:grid;gap:7px;margin-top:8px}
     .service-history-item{padding:10px 11px;background:var(--message-bg);border:1px solid rgba(130,110,76,.16);font-size:11px;line-height:1.7}
     .service-history-item small{color:var(--sheet-muted)}
+    .room-service-delivery-notice{position:absolute;z-index:35;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(3,14,25,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+    .room-service-delivery-notice.hidden{display:none!important}
+    .room-service-delivery-card{width:min(420px,100%);padding:24px 20px 20px;background:rgba(251,248,241,.98);border:1px solid rgba(199,164,93,.62);box-shadow:0 18px 45px rgba(0,0,0,.34);text-align:center;color:#0d2743}
+    .room-service-delivery-kicker{font:10px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:11px}
+    .room-service-delivery-title{font-size:18px;letter-spacing:.1em;margin-bottom:13px}
+    .room-service-delivery-text{font-size:13px;line-height:2;letter-spacing:.04em;color:#37495a}
+    .room-service-delivery-close{width:100%;min-height:44px;margin-top:18px;border:0;background:#0d2743;color:#fff;letter-spacing:.12em}
     .room-belongings-sheet{position:absolute;z-index:22;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.34);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-belongings-sheet.open{transform:none;visibility:visible}
     .belongings-body{flex:1;min-height:0;overflow-y:auto;padding:14px 15px 20px}
@@ -854,7 +863,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
-          <div class="card-body"><h3 class="card-title">ROOM</h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
+          <div class="card-body"><h3 class="card-title">ROOM<span id="roomDeliveryBadge" class="room-delivery-badge hidden" aria-label="ルームサービス到着"></span></h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
         </button>
         <button class="card" type="button" data-open="exploreView">
           <img src="lighthouse.jpg" alt="島の灯台">
@@ -893,6 +902,15 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="auto" loop playsinline></audio>
         <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="auto" loop playsinline></audio>
         <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
+        <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="auto" playsinline></audio>
+        <div id="roomServiceDeliveryNotice" class="room-service-delivery-notice hidden" role="dialog" aria-modal="true" aria-live="assertive">
+          <div class="room-service-delivery-card">
+            <div class="room-service-delivery-kicker">ROOM SERVICE</div>
+            <div class="room-service-delivery-title">ご注文の品が届きました</div>
+            <div id="roomServiceDeliveryText" class="room-service-delivery-text"></div>
+            <button id="roomServiceDeliveryClose" class="room-service-delivery-close" type="button">CLOSE　×</button>
+          </div>
+        </div>
         <div id="roomScene" class="room-scene hidden">
           <figure>
             <div class="room-photo-area"><img id="roomPhoto" src="" alt="客室の部屋全体"></div>
@@ -3495,6 +3513,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const roomPhoneAnswer=document.getElementById('roomPhoneAnswer'), roomPhoneDecline=document.getElementById('roomPhoneDecline');
     const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
+    const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'), roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
+    const roomServiceDeliveryNotice=document.getElementById('roomServiceDeliveryNotice'), roomServiceDeliveryText=document.getElementById('roomServiceDeliveryText'), roomServiceDeliveryClose=document.getElementById('roomServiceDeliveryClose');
     let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
@@ -4799,6 +4819,125 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;stopRoomPhonePresence();roomMessageCache=[];roomServiceCache=[]}
 
+    // ROOM SERVICE DELIVERY / 注文から5分後に到着
+    const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
+    let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='';
+    let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
+    let roomServiceDoorbellKeepAliveOsc=null,roomServiceDoorbellKeepAliveGain=null;
+
+    function roomServiceDeliveredStorageKey(){return `spr-room-service-delivered:${roomServiceDeliveryPlayerId||playerStorageId||'guest'}`}
+    function loadRoomServiceDeliveredIds(){
+      try{const raw=JSON.parse(localStorage.getItem(roomServiceDeliveredStorageKey())||'[]');return new Set(Array.isArray(raw)?raw.map(String):[])}catch{return new Set()}
+    }
+    function saveRoomServiceDeliveredIds(ids){
+      try{localStorage.setItem(roomServiceDeliveredStorageKey(),JSON.stringify([...ids].slice(-200)))}catch{}
+    }
+    function markRoomServiceOrdersDelivered(orders){
+      const done=loadRoomServiceDeliveredIds();orders.forEach(order=>done.add(String(order.id)));saveRoomServiceDeliveredIds(done);
+    }
+    function normalizeRoomServiceDeliveryOrder(row){
+      return {id:String(row.id),room:String(row.room_no||''),items:Array.isArray(row.items)?row.items:[],createdAt:Date.parse(row.created_at||'')||Date.now()};
+    }
+    function roomServiceOrderDueAt(order){return Number(order.createdAt||0)+ROOM_SERVICE_DELIVERY_DELAY_MS}
+    function roomServicePendingOrders(){
+      const done=loadRoomServiceDeliveredIds();return roomServiceDeliveryOrders.filter(order=>!done.has(String(order.id)));
+    }
+    function roomServiceDueOrders(now=Date.now()){return roomServicePendingOrders().filter(order=>roomServiceOrderDueAt(order)<=now)}
+    function formatRoomServiceDeliveredItems(orders){
+      const merged=new Map();
+      orders.forEach(order=>(order.items||[]).forEach(item=>{const name=String(item?.name||'').trim();if(!name)return;const qty=Math.max(1,Math.floor(Number(item?.qty)||1));merged.set(name,(merged.get(name)||0)+qty)}));
+      const labels=[...merged.entries()].map(([name,qty])=>qty>1?`${name} × ${qty}`:name);
+      if(!labels.length)return '注文した品物が届いた。';
+      if(labels.length===1)return `注文した${labels[0]}が届いた。`;
+      if(labels.length===2)return `注文した${labels[0]}と${labels[1]}が届いた。`;
+      return `注文した${labels.slice(0,-1).join('、')}と${labels.at(-1)}が届いた。`;
+    }
+    function showRoomServiceDeliveryNotice(orders){
+      if(!roomServiceDeliveryNotice||!roomServiceDeliveryText)return;
+      roomServiceDeliveryText.textContent=formatRoomServiceDeliveredItems(orders);
+      roomServiceDeliveryNotice.classList.remove('hidden');
+    }
+    function closeRoomServiceDeliveryNotice(){roomServiceDeliveryNotice?.classList.add('hidden')}
+    roomServiceDeliveryClose?.addEventListener('click',closeRoomServiceDeliveryNotice);
+    roomServiceDeliveryNotice?.addEventListener('click',event=>{if(event.target===roomServiceDeliveryNotice)closeRoomServiceDeliveryNotice()});
+
+    function ensureRoomServiceDoorbellContext(){
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return null;
+      if(!roomServiceDoorbellContext){try{roomServiceDoorbellContext=new AudioCtx()}catch{return null}}
+      return roomServiceDoorbellContext;
+    }
+    function startRoomServiceDoorbellKeepAlive(){
+      const ctx=ensureRoomServiceDoorbellContext();if(!ctx||ctx.state!=='running'||roomServiceDoorbellKeepAliveOsc)return;
+      try{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=20;gain.gain.value=.000001;osc.connect(gain);gain.connect(ctx.destination);osc.start();roomServiceDoorbellKeepAliveOsc=osc;roomServiceDoorbellKeepAliveGain=gain}catch{}
+    }
+    function loadRoomServiceDoorbellBuffer(){
+      if(roomServiceDoorbellBuffer)return Promise.resolve(roomServiceDoorbellBuffer);
+      if(roomServiceDoorbellLoadPromise)return roomServiceDoorbellLoadPromise;
+      const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
+      const url=roomServiceDoorbell?.currentSrc||roomServiceDoorbell?.src||new URL('doorbell.mp3',window.location.href).href;
+      roomServiceDoorbellLoadPromise=fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`doorbell.mp3 HTTP ${r.status}`);return r.arrayBuffer()}).then(a=>ctx.decodeAudioData(a.slice(0))).then(buffer=>{roomServiceDoorbellBuffer=buffer;roomServiceDoorbellLoadPromise=null;return buffer}).catch(error=>{roomServiceDoorbellLoadPromise=null;console.warn('room service doorbell load',error);throw error});
+      return roomServiceDoorbellLoadPromise;
+    }
+    function primeRoomServiceDoorbellAudio(){
+      const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return;
+      try{const resume=ctx.state==='running'?Promise.resolve():ctx.resume();Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomServiceDoorbellKeepAlive();loadRoomServiceDoorbellBuffer().catch(()=>{})}}).catch(()=>{})}catch{}
+      if(roomServiceDoorbell){try{roomServiceDoorbell.preload='auto';roomServiceDoorbell.load()}catch{}}
+    }
+    function playRoomServiceDoorbell(){
+      const ctx=ensureRoomServiceDoorbellContext();
+      if(ctx&&ctx.state==='running'&&roomServiceDoorbellBuffer){
+        try{const source=ctx.createBufferSource();source.buffer=roomServiceDoorbellBuffer;source.connect(ctx.destination);source.start(0);return true}catch{}
+      }
+      if(ctx&&ctx.state==='running'&&!roomServiceDoorbellBuffer){loadRoomServiceDoorbellBuffer().then(()=>playRoomServiceDoorbell()).catch(()=>{})}
+      if(roomServiceDoorbell){try{roomServiceDoorbell.currentTime=0;const p=roomServiceDoorbell.play();if(p?.catch)p.catch(error=>console.warn('room service doorbell play',error));return true}catch{}}
+      return false;
+    }
+    document.addEventListener('pointerdown',primeRoomServiceDoorbellAudio,{capture:true,passive:true});
+    document.addEventListener('touchstart',primeRoomServiceDoorbellAudio,{capture:true,passive:true});
+
+    function updateRoomServiceDeliveryBadge(){
+      const due=roomServiceDueOrders();
+      const hasDueOutside=due.some(order=>!activeRoom||String(order.room)!==String(activeRoom));
+      roomDeliveryBadge?.classList.toggle('hidden',!hasDueOutside);
+    }
+    function scheduleRoomServiceDeliveryCheck(){
+      if(roomServiceDeliveryTimer){clearTimeout(roomServiceDeliveryTimer);roomServiceDeliveryTimer=null}
+      const now=Date.now(),pending=roomServicePendingOrders();if(!pending.length){updateRoomServiceDeliveryBadge();return}
+      const future=pending.map(roomServiceOrderDueAt).filter(dueAt=>dueAt>now);
+      if(future.length){
+        const nextDue=Math.min(...future),wait=Math.max(100,Math.min(2147483000,nextDue-now+50));
+        roomServiceDeliveryTimer=setTimeout(()=>{evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()},wait);
+      }
+      updateRoomServiceDeliveryBadge();
+    }
+    function evaluateRoomServiceDeliveries(){
+      const due=roomServiceDueOrders();
+      if(!due.length){updateRoomServiceDeliveryBadge();return}
+      if(activeRoom&&roomView.classList.contains('room-active')){
+        const here=due.filter(order=>String(order.room)===String(activeRoom));
+        if(here.length){markRoomServiceOrdersDelivered(here);playRoomServiceDoorbell();showRoomServiceDeliveryNotice(here)}
+      }
+      updateRoomServiceDeliveryBadge();
+    }
+    async function refreshRoomServiceDeliveryOrders(){
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      roomServiceDeliveryPlayerId=String(playerId);
+      try{
+        const since=new Date(Date.now()-24*60*60*1000).toISOString();
+        const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,player_id,items,created_at').eq('player_id',playerId).gte('created_at',since).order('created_at',{ascending:true}).limit(50);
+        if(error)throw error;
+        roomServiceDeliveryOrders=(data||[]).map(normalizeRoomServiceDeliveryOrder);
+        evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
+      }catch(error){console.warn('room service delivery sync',error)}
+    }
+    function trackNewRoomServiceDeliveryOrder(row){
+      if(!row?.id)return;const normalized=normalizeRoomServiceDeliveryOrder(row);
+      roomServiceDeliveryOrders=roomServiceDeliveryOrders.filter(order=>String(order.id)!==String(normalized.id));roomServiceDeliveryOrders.push(normalized);scheduleRoomServiceDeliveryCheck();
+    }
+    setTimeout(()=>refreshRoomServiceDeliveryOrders(),700);
+    setInterval(()=>refreshRoomServiceDeliveryOrders(),60000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden){primeRoomServiceDoorbellAudio();refreshRoomServiceDeliveryOrders()}});
+
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
@@ -4917,8 +5056,9 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     roomServiceOrder.addEventListener('click',async()=>{
       if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
-      try{const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id').single();if(error)throw error;
-        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
+      try{primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
+        roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);
+        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。5分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
       }catch(e){console.warn('room service sync',e);roomServiceResult.textContent='注文を送信できませんでした。もう一度お試しください。';roomServiceResult.classList.remove('hidden')}
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
@@ -4926,8 +5066,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
       event.preventDefault();const entered=roomPin.value.trim();const room=entered==='0923'?'501':entered; if(entered==='501'){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
-      // 有効な客室へ入るタップの中で着信音を先に解除しておく。
-      primeRoomPhoneAudio();
+      // 有効な客室へ入るタップの中で着信音とルームサービスのドアベルを先に解除しておく。
+      primeRoomPhoneAudio();primeRoomServiceDoorbellAudio();
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
@@ -4939,16 +5079,17 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();
+      evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
     });
     document.getElementById('chatForm').addEventListener('submit',async event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
+    function leaveActiveRoom(){stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
-    window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}});
+    window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
