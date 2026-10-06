@@ -274,6 +274,8 @@
     .room-image-error{position:absolute;z-index:15;left:18px;right:18px;top:90px;padding:12px;background:rgba(255,255,255,.92);color:#a53b32;text-align:center;font-size:12px}
     .room-chat-toast{position:absolute;z-index:14;left:20px;right:20px;bottom:94px;padding:12px 14px;background:rgba(7,21,35,.88);color:#fff;font-size:12px;line-height:1.6;opacity:0;visibility:hidden;transform:translateY(8px);transition:.25s;backdrop-filter:blur(10px)}
     .room-chat-toast.show{opacity:1;visibility:visible;transform:none}
+    .room-entry-notice{position:absolute;z-index:34;left:50%;top:46%;width:max-content;max-width:calc(100% - 44px);padding:13px 20px;background:rgba(5,18,31,.78);border:1px solid rgba(255,255,255,.28);color:#fff;text-align:center;font-size:13px;line-height:1.7;letter-spacing:.06em;text-shadow:0 1px 5px rgba(0,0,0,.7);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);opacity:0;visibility:hidden;transform:translate(-50%,-50%) scale(.98);transition:opacity .28s ease,visibility .28s ease,transform .28s ease;pointer-events:none}
+    .room-entry-notice.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
     .room-chat-sheet{position:absolute;z-index:20;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.3);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-chat-sheet.open{transform:none;visibility:visible}
     .room-chat-sheet:focus-within{height:min(82%,720px)}
@@ -1009,6 +1011,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <button id="fallbackRoomServiceOpen" type="button">ルームサービスを頼む</button><button id="fallbackChatOpen" type="button">この客室で話す</button><button id="fallbackBelongingsOpen" type="button">所持品を見る</button><button id="fallbackLeaveRoom" type="button">部屋から出る</button>
         </div>
         <div id="roomChatToast" class="room-chat-toast" aria-live="polite"></div>
+        <div id="roomEntryNotice" class="room-entry-notice" role="status" aria-live="polite"></div>
         <section id="chatSheet" class="room-chat-sheet" aria-hidden="true" aria-label="この客室の会話">
           
           <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
@@ -3553,7 +3556,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const roomSceneNav=document.getElementById('roomSceneNav'), roomSceneMenuToggle=document.getElementById('roomSceneMenuToggle');
     const roomSceneTitle=document.getElementById('roomSceneTitle'), roomSceneDots=[...document.querySelectorAll('#roomSceneDots span')];
     const roomSceneButtons=[...document.querySelectorAll('[data-room-scene]')], chatSheet=document.getElementById('chatSheet');
-    const chatUnread=document.getElementById('chatUnread'), roomChatToast=document.getElementById('roomChatToast');
+    const chatUnread=document.getElementById('chatUnread'), roomChatToast=document.getElementById('roomChatToast'), roomEntryNotice=document.getElementById('roomEntryNotice');
     const roomFallback=document.getElementById('roomFallback');
     const roomServiceSheet=document.getElementById('roomServiceSheet'), roomServiceMeta=document.getElementById('roomServiceMeta');
     const roomBelongingsSheet=document.getElementById('roomBelongingsSheet'), roomBelongingsList=document.getElementById('roomBelongingsList');
@@ -3670,8 +3673,34 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     // 同室者の「出る／出ない」選択をRealtime Presenceで共有する。
     // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
     // 選んだ時だけ3秒後に静かに止める。
-    let roomPhonePresenceChannel=null,roomPhonePresenceReady=false;
+    let roomPhonePresenceChannel=null,roomPhonePresenceReady=false,roomPresenceAnnounceReady=false,roomEntryNoticeTimer=null;
     const roomPhonePresenceSessionKey=`${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    function hideRoomEntryNotice(){
+      if(roomEntryNoticeTimer){clearTimeout(roomEntryNoticeTimer);roomEntryNoticeTimer=null}
+      roomEntryNotice?.classList.remove('show');
+    }
+    function showRoomEntryNotice(name){
+      if(!roomEntryNotice||!activeRoom||!roomView.classList.contains('room-active'))return;
+      const display=String(name||'ゲスト').trim()||'ゲスト';
+      hideRoomEntryNotice();
+      roomEntryNotice.textContent=`${display}が部屋に入室した。`;
+      roomEntryNotice.classList.add('show');
+      roomEntryNoticeTimer=setTimeout(()=>{roomEntryNoticeTimer=null;roomEntryNotice.classList.remove('show')},3600);
+    }
+    function announceRoomPresenceJoin(payload,roomAtStart){
+      if(!roomPresenceAnnounceReady||activeRoom!==roomAtStart)return;
+      const joined=Array.isArray(payload?.newPresences)?payload.newPresences:[];
+      const announced=new Set();
+      joined.forEach(member=>{
+        if(String(member?.room_no||'')!==String(roomAtStart))return;
+        const memberId=String(member?.player_id||'');
+        const memberName=String(member?.display_name||'ゲスト').trim()||'ゲスト';
+        if(memberId&&storedPlayerId&&memberId===String(storedPlayerId))return;
+        if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
+        const key=memberId||memberName;if(announced.has(key))return;announced.add(key);
+        showRoomEntryNotice(memberName);
+      });
+    }
     let roomPhoneDeclineStopTimer=null,roomPhoneDeclineStopEventId='',roomPhoneDeclineSilencedEventId='';
 
     function roomPhoneEligibleNow(){
@@ -4006,6 +4035,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       cancelRoomPhoneDeclineStop();
       roomPhoneDeclineSilencedEventId='';
       roomPhonePresenceReady=false;
+      roomPresenceAnnounceReady=false;
+      hideRoomEntryNotice();
       if(roomPhonePresenceChannel&&window.supabaseClientSpecial){
         try{roomPhonePresenceChannel.untrack()}catch{}
         try{window.supabaseClientSpecial.removeChannel(roomPhonePresenceChannel)}catch{}
@@ -4021,10 +4052,13 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         evaluateRoomPhoneDeclineState();
         if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
         if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
+        // 最初のPresence同期は既に部屋にいた人の読み込みなので、入室通知は出さない。
+        // 初期同期が終わった後に新しくjoinした人だけセンター表示する。
+        roomPresenceAnnounceReady=true;
       };
       const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey},broadcast:{self:true,ack:true}}})
         .on('presence',{event:'sync'},syncSharedRoomState)
-        .on('presence',{event:'join'},syncSharedRoomState)
+        .on('presence',{event:'join'},payload=>{announceRoomPresenceJoin(payload,roomAtStart);syncSharedRoomState()})
         .on('presence',{event:'leave'},syncSharedRoomState)
         .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
         .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)});
