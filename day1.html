@@ -24,16 +24,19 @@
     .music-toggle.off{opacity:.38}
     .menu-lines{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
     .menu-lines i{display:block;height:1px;background:currentColor;width:100%}
-    .story-menu{position:fixed;inset:0;z-index:90;background:rgba(255,255,255,.985);overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s}
+    /* STORY MENU: resort background visible through a deep-blue translucent layer */
+    .story-menu{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,rgba(9,53,91,.57),rgba(4,27,49,.72)),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s;color:#fff}
     .story-menu.open{opacity:1;visibility:visible;transform:none}
-    .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:rgba(255,255,255,.97)}
-    .story-menu-close{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font-size:28px}
-    .story-menu-content{max-width:680px;margin:auto;padding:38px 22px 60px}
-    .story-menu-content>p{text-align:center;font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold)}
-    .story-menu-content>h2{text-align:center;font-size:25px;font-weight:500;letter-spacing:.12em;margin:8px 0 30px}
-    .story-item{border-top:1px solid #e7dfd1}.story-item:last-child{border-bottom:1px solid #e7dfd1}
-    .story-toggle{width:100%;padding:18px 4px;border:0;background:transparent;color:var(--navy);display:flex;justify-content:space-between;text-align:left;font-size:14px}
-    .story-copy{display:none;padding:0 4px 20px;color:#4c5661;font-size:12px;line-height:2}.story-item.open .story-copy{display:block}
+    .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.18);position:sticky;top:0;background:rgba(10,61,103,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    .story-menu-top .brand-name{color:#f0d89d}
+    .story-menu-close{width:44px;height:44px;border:0;background:transparent;color:#fff;font-size:28px}
+    .story-menu-content{max-width:680px;margin:auto;padding:38px 22px 60px;text-shadow:0 2px 10px rgba(0,0,0,.22)}
+    .story-menu-content>p{text-align:center;font:10px Georgia,serif;letter-spacing:.28em;color:#f0d89d}
+    .story-menu-content>h2{text-align:center;font-size:25px;font-weight:500;letter-spacing:.12em;margin:8px 0 30px;color:#fff}
+    .story-item{border-top:1px solid rgba(255,255,255,.30)}.story-item:last-child{border-bottom:1px solid rgba(255,255,255,.30)}
+    .story-toggle{width:100%;padding:18px 4px;border:0;background:transparent;color:#fff;display:flex;justify-content:space-between;text-align:left;font-size:14px;text-shadow:0 2px 9px rgba(0,0,0,.25)}
+    .story-toggle span{color:#f0d89d}
+    .story-copy{display:none;padding:0 4px 20px;color:rgba(255,255,255,.88);font-size:12px;line-height:2;text-shadow:0 2px 9px rgba(0,0,0,.30)}.story-item.open .story-copy{display:block}
     .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;transition:background-image .45s ease,background-position .45s ease}
     .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
     .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
@@ -272,7 +275,6 @@
     .room-chat-sheet{position:absolute;z-index:20;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.3);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-chat-sheet.open{transform:none;visibility:visible}
     .room-chat-sheet:focus-within{height:min(82%,720px)}
-    .chat-sheet-handle{width:42px;height:4px;border-radius:2px;background:var(--sheet-muted);opacity:.45;margin:9px auto 5px}
     .chat-sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:4px 14px 10px;border-bottom:1px solid rgba(130,110,76,.2)}
     .chat-sheet-head h3{text-align:center;font-size:15px;font-weight:500;letter-spacing:.1em;margin:0}
     .chat-sheet-close{grid-column:3;width:44px;height:44px;border:0;background:transparent;color:var(--sheet-fg);font-size:24px}
@@ -319,6 +321,8 @@
     .belongings-item small{display:block;margin-top:5px;color:var(--sheet-muted);font-size:10px;line-height:1.65}
     .belongings-count{min-width:54px;text-align:center;font:19px Georgia,serif;color:var(--gold)}
     .belongings-empty{padding:24px 15px;text-align:center;color:var(--sheet-muted);font-size:12px;line-height:1.9;background:var(--message-bg);border:1px solid rgba(130,110,76,.16)}
+    .life-row{grid-template-columns:1fr auto}.life-hearts{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:76px}.life-heart{font:16px/1 Georgia,serif;color:#c34b54;text-shadow:0 1px 5px rgba(195,75,84,.24)}.life-heart.empty{color:var(--sheet-muted);opacity:.28;text-shadow:none}.life-zero-note{color:#b24a4a!important}
+
     .collection-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.collection-card{min-width:0;padding:7px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18);text-align:center}.collection-card.missing{opacity:.42}.collection-card img{display:block;width:100%;aspect-ratio:1;object-fit:contain}.collection-card strong{display:block;margin-top:5px;font:11px Georgia,serif}.collection-card small{display:block;margin-top:2px;font-size:9px;color:var(--sheet-muted)}
     .tea-exchange{margin-top:18px;padding:14px;border:1px solid #e1d4bd;background:#fbf8f1}.tea-exchange h4{margin:0 0 7px;font:500 13px Georgia,serif;letter-spacing:.08em}.tea-exchange-note{font-size:11px;line-height:1.8;color:#6f675c}.tea-exchange-list{display:grid;gap:7px;margin-top:10px}.tea-exchange-item{display:flex;justify-content:space-between;gap:12px;padding:10px;background:#fff;border:1px solid #e7dfd1;font-size:12px}.tea-exchange-empty{padding:10px;text-align:center;font-size:11px;color:#7a7063}
     .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
@@ -331,7 +335,16 @@
     .room-scene[data-scene="phone"] .room-scene-title{font-size:20px;margin:0 0 4px}
     .room-scene[data-scene="phone"] .room-view-controls{margin-top:6px}
     .room-scene[data-scene="phone"] .room-scene-dots{margin:7px 0}
-    .room-scene[data-scene="phone"] .room-chat-open,.room-scene[data-scene="phone"] .room-service-open{min-height:44px}
+    .room-scene[data-scene="phone"] .room-chat-open,.room-scene[data-scene="phone"] .room-service-open{min-height:52px}
+    .room-phone-call-panel{grid-column:1/-1;padding:14px 13px;border:1px solid rgba(240,216,157,.72);background:rgba(5,18,31,.90);backdrop-filter:blur(9px);text-align:center;color:#fff}
+    .room-phone-call-panel.hidden{display:none!important}
+    .room-phone-call-status{font-size:12px;line-height:1.8;letter-spacing:.08em;color:#f1dfb3;margin-bottom:10px}
+    .room-phone-call-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .room-phone-call-actions button{min-height:46px;border:1px solid rgba(255,255,255,.42);font-size:13px;letter-spacing:.1em}
+    .room-phone-answer{background:#f6f0e5;color:#0d2743}
+    .room-phone-decline{background:rgba(255,255,255,.05);color:#fff}
+    .room-phone-call-panel.resolved .room-phone-call-actions{display:none}
+    .room-phone-call-panel.resolved .room-phone-call-status{margin-bottom:0;color:#fff}
     @media(max-height:540px) and (orientation:landscape){
       .room-overlay-bottom{left:auto;width:270px;padding:10px 14px;max-height:calc(100% - 76px);overflow-y:auto;background:rgba(3,14,25,.5)}
       .room-overlay-bottom .room-kicker,.room-overlay-bottom .room-welcome{display:none}
@@ -362,7 +375,7 @@
     .bar-menu-pages::-webkit-scrollbar{display:none}
     .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
     .bar-menu-page img{width:100%;height:auto;display:block}
-    .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#8c7b62;margin:-8px 0 22px}
+    .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#fff;margin:-8px 0 22px;text-shadow:0 2px 8px rgba(0,0,0,.45)}
     .bar-drink-list{display:grid;gap:9px}
     .bar-drink-item{width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid #e7dfd1;background:#fff;color:var(--navy);padding:12px 11px;min-height:68px}
     .bar-drink-item .num{font:18px Georgia,serif;color:var(--gold);text-align:center}
@@ -378,6 +391,94 @@
     .bar-order-confirm:disabled{background:#b9b6ae;color:#f3f1ec;cursor:default}
     .bar-order-result{margin-top:11px;padding:11px 12px;border:1px solid #d9c9a9;background:#fffaf0;color:#6b552d;font-size:11px;line-height:1.8;text-align:center}
     @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
+
+    /* SEASIDE BAR BACKGROUND PLACEMENT
+       案内ページには拡大背景を置かず、ドリンク注文画面だけに seaside_bar.jpg を使用する。 */
+    #barView{
+      background:#fff;
+      isolation:auto;
+    }
+    #barView::before,
+    #barView::after{
+      content:none;
+      display:none;
+    }
+    #barView .subhead{
+      background:rgba(255,255,255,.97);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    #barView .gallery{
+      background:#e8e3da;
+    }
+    #barView .info{
+      margin-top:0;
+      background:#fff;
+      box-shadow:none;
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
+    }
+    body.night-theme #barView{
+      background:#071a2b;
+    }
+    body.night-theme #barView .info{
+      background:#071a2b;
+    }
+
+    /* 「ドリンクを注文する」後の選択画面だけ、元のBAR画像を全面背景にする。 */
+    #barOrderSheet{
+      background:#071a2b;
+      isolation:isolate;
+    }
+    #barOrderSheet::before{
+      content:"";
+      position:fixed;
+      inset:-3%;
+      z-index:0;
+      pointer-events:none;
+      background:
+        linear-gradient(180deg,rgba(4,15,25,.36),rgba(4,15,25,.58)),
+        url("seaside_bar.jpg") center center/cover no-repeat;
+      transform:scale(1.04);
+    }
+    #barOrderSheet::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(7,21,35,.24));
+    }
+    #barOrderSheet > *{
+      position:relative;
+      z-index:1;
+    }
+    #barOrderSheet .bar-order-head{
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    }
+    #barOrderSheet .bar-period-card,
+    #barOrderSheet .bar-drink-item,
+    #barOrderSheet .bar-order-result{
+      background:rgba(255,255,255,.94);
+      backdrop-filter:blur(7px);
+      -webkit-backdrop-filter:blur(7px);
+    }
+    #barOrderSheet .bar-order-confirm-wrap{
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+    }
+    body.night-theme #barOrderSheet .bar-order-head,
+    body.night-theme #barOrderSheet .bar-order-confirm-wrap{
+      background:rgba(7,26,43,.92);
+    }
+    body.night-theme #barOrderSheet .bar-period-card,
+    body.night-theme #barOrderSheet .bar-drink-item,
+    body.night-theme #barOrderSheet .bar-order-result{
+      background:rgba(13,39,67,.94);
+    }
 
     .explore-choice-grid,.explore-location-actions{display:grid;gap:10px;margin-top:14px}
     .explore-choice-btn,.explore-location-action{width:100%;padding:14px 15px;border:1px solid #e7dfd1;background:#fff;color:var(--navy);text-align:left;font-size:13px;line-height:1.7;letter-spacing:.04em}
@@ -414,7 +515,7 @@
     .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
     .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
-    .bar-menu-hint strong{font-weight:500;color:var(--navy)}
+    .bar-menu-hint strong{font-weight:500;color:#fff}
     .bar-menu-lightbox{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:transparent;padding:56px 10px 22px;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s}
     .bar-menu-lightbox.open{opacity:1;visibility:visible}
     .bar-menu-lightbox-inner{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:auto;-webkit-overflow-scrolling:touch}
@@ -478,6 +579,11 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .tea-party-compose button{min-width:72px;border:0;background:var(--gold);color:#fff}
 .tea-party-compose.hidden{display:none}
 .tea-party-note{font-size:11px;line-height:1.7;color:#776e60;margin-top:8px}
+#teaPartyList{display:grid;gap:8px;margin-top:12px}
+#teaPartyList .menu-item{width:100%;text-align:left}
+#teaPartyList .menu-item:disabled{opacity:.55;cursor:default}
+#teaPartyList .tea-party-people{display:block;margin-top:6px;font-size:11px;line-height:1.7;color:#6f675c}
+body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 
 
@@ -508,15 +614,24 @@ body.special-table-playing .special-comment-overlay,body.spectator-watching .spe
 .hernando-video-fallback button{min-width:210px;min-height:48px;border:1px solid rgba(227,194,125,.6);background:#7d1f1b;color:#fff;letter-spacing:.1em}
 .hernando-encounter{position:fixed;inset:0;z-index:223;display:none;background:#050505;color:#fff;overflow:hidden}
 .hernando-encounter.open{display:block}
-.hernando-arena-loop{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.hernando-arena-blur{position:absolute;inset:-4%;display:block;width:108%;height:108%;object-fit:cover;object-position:center;filter:blur(18px) brightness(.46);transform:scale(1.04);background:#000}
+.hernando-arena-loop{position:absolute;left:0;right:0;top:14px;bottom:calc(220px + env(safe-area-inset-bottom));display:block;width:100%;height:calc(100% - 234px - env(safe-area-inset-bottom));object-fit:contain;object-position:center center;background:transparent;padding:0 6px;z-index:1}
 .hernando-arena-back{position:absolute;z-index:4;top:max(14px,env(safe-area-inset-top));left:14px;min-width:84px;height:42px;padding:0 13px;border:1px solid rgba(255,255,255,.45);background:rgba(0,0,0,.48);color:#fff;font:11px Georgia,serif;letter-spacing:.12em}
 .hernando-encounter-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-.hernando-encounter-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.08) 48%,rgba(0,0,0,.82) 77%,rgba(0,0,0,.96) 100%)}
-.hernando-dialogue{position:absolute;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));margin:auto;max-width:720px;padding:18px 18px 16px;border:1px solid rgba(227,194,125,.5);background:rgba(7,9,11,.9);backdrop-filter:blur(8px);box-shadow:0 18px 50px rgba(0,0,0,.42)}
+.hernando-encounter-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.08) 30%,rgba(0,0,0,.34) 58%,rgba(0,0,0,.84) 80%,rgba(0,0,0,.96) 100%)}
+.hernando-dialogue{position:absolute;z-index:5;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));margin:auto;max-width:720px;padding:18px 18px 16px;border:1px solid rgba(227,194,125,.5);background:rgba(7,9,11,.9);backdrop-filter:blur(8px);box-shadow:0 18px 50px rgba(0,0,0,.42)}
+.hernando-dialogue.hidden{display:none!important}
 .hernando-dialogue-name{font:11px Georgia,serif;letter-spacing:.3em;color:#e3c27d;margin-bottom:10px}
 .hernando-dialogue-text{min-height:58px;font-size:15px;line-height:2;letter-spacing:.05em}
+.hernando-dialogue-char{display:inline;opacity:0;filter:blur(1.4px);transition:opacity .18s ease,filter .22s ease;will-change:opacity,filter}
+.hernando-dialogue-char.in{opacity:1;filter:blur(0)}
 .hernando-dialogue-next{width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.48);background:rgba(125,31,27,.86);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
-@media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}}
+.hernando-dialogue-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.hernando-dialogue-choice{min-height:48px;padding:10px 8px;border:1px solid rgba(227,194,125,.48);background:rgba(12,14,16,.9);color:#fff;font:11px Georgia,serif;letter-spacing:.08em;line-height:1.6}
+.hernando-dialogue-choice:first-child{background:rgba(125,31,27,.9);border-color:rgba(190,78,67,.82)}
+.hernando-drink-game{margin-top:12px}.hernando-drink-game.hidden{display:none!important}.hernando-drink-round{text-align:center;margin:0 0 9px;font:10px Georgia,serif;letter-spacing:.18em;color:#e3c27d}.hernando-drink-choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hernando-drink-choice{min-height:50px;padding:10px 6px;border:1px solid rgba(227,194,125,.55);background:rgba(12,14,16,.94);color:#fff;font:12px Georgia,serif;letter-spacing:.12em}.hernando-drink-choice:disabled{opacity:.42;cursor:default}.hernando-drink-choice:nth-child(2){background:rgba(88,24,22,.84)}
+
+@media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}.hernando-arena-blur{inset:-8%;width:116%;height:116%;filter:blur(16px) brightness(.46)}.hernando-arena-loop{top:10px;bottom:calc(246px + env(safe-area-inset-bottom));height:calc(100% - 256px - env(safe-area-inset-bottom));padding:0 2px}}
 
     .admin-master-panel{margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
@@ -676,6 +791,23 @@ body.night-theme #integratedCafeShell iframe{
   color:#0d2743;font:30px/1 Georgia,serif;cursor:pointer;
 }
 </style>
+<script>
+// Coaster titles confirmed on 2026-10-06; filenames remain the inventory keys.
+window.sprCoasterNames=Object.freeze(["幸運の予兆", "蒼海の医", "天秤の弁", "泥夜の光陰", "庭園の午後", "魔幻の一幕", "冒険の航路", "傭われの旅路", "月下の祭壇", "空への憧憬", "技巧の設計図", "ラグビーの闘志", "心に宿る慧眼", "調べに香る追憶", "荒野を駆ける縄", "運命に踊る華", "星の巡りを占う", "棺に納める祈り", "鉱石を探る足跡", "運命を刻む呪", "野に宿る本能", "曲弧に煌めく芸", "航路を導く海風", "海風に揺れる酒彩", "配る想いの行方", "墓標を守る灯", "囚われた知の閃き", "昆影に煌めく蝶", "色彩に眠る画", "不屈のクリケット", "夢を紡ぐ玩具", "患いに沈む夜も", "心に朝は訪れる", "小さな謎を説く", "少し幼い女神の夢", "泣くほど笑う夜", "教えを説くトカゲ", "骨董に眠る記憶", "作りかけの夢に曲を", "記す者だけが知る", "航く翼が空を拓く", "応える心、響く声", "形に残る人の記憶", "火はすべてを語らない", "女の嗜み", "ナイト・ウォーカー", "気象を操る者", "蒼空を駆ける弓", "脱出の美学", "幻灯に揺れる影", "闘牛に舞う紅", "沈黙を演じる者", "星に選ばれた神童", "復路の残り火", "夕凪の道化", "鹿鳴く蒼凪", "霧夜の爪痕", "煌糸に結ぶ魂", "月夜に舞う芸扇", "白と黒の傘便り", "真実を写す一枚", "狂想を描く眼", "黄夕に眠る王", "夢路を誘う魔", "泣き声をあやす風", "魔月と眠るトカゲ", "血薔薇に眠る女王", "火花を散らすゼンマイ", "黒き使いの祈り", "波間を奏でる弦", "星を彫る刻", "不死の果ての陽", "波を破る輪", "銛に揺れる漁歌", "微笑む蝋像", "悪影に沈む夢", "書頁に刻む記憶", "隠る知を説く者", "夜風に眠らぬ番", "潮風とオペラ", "黄鉄色の結晶", "時を渡る影", "羊を撫でる潮風", "舞台を巡る曲", "潮風が運ぶ雑貨", "潮風を裂くキュー", "女王に捧ぐ蜂蜜", "夏色のハブラシ", "心を駆ける獣"]);
+window.sprCoasterNumber=function(value){
+  if(typeof value==='number')return Number.isInteger(value)&&value>=0&&value<89?value:-1;
+  const match=String(value||'').match(/(?:^|\/)coaster(\d{2})\.PNG(?:[?#].*)?$/i);
+  return match&&Number(match[1])<89?Number(match[1]):-1;
+};
+window.sprCoasterName=function(value){return window.sprCoasterNames[window.sprCoasterNumber(value)]||'コースター'};
+window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);return n<0?'コースター':`No.${String(n).padStart(2,'0')} ${window.sprCoasterNames[n]}`};
+</script>
+<style>
+.tea-exchange-item{flex-wrap:wrap;align-items:center;row-gap:6px}
+.tea-exchange-item>span:first-child{flex:1 1 180px;min-width:0;line-height:1.6;overflow-wrap:anywhere}
+.tea-exchange-item>span:last-child{margin-left:auto;white-space:nowrap}
+.collection-card strong{line-height:1.6;overflow-wrap:anywhere}
+</style>
 </head>
 <body>
   <header>
@@ -718,7 +850,7 @@ body.night-theme #integratedCafeShell iframe{
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
       <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 79,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
-      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
+      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -758,6 +890,9 @@ body.night-theme #integratedCafeShell iframe{
         <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜110：デラックスオーシャン<br>201〜205：ファミリー<br>301〜310：オーシャンラグーン<br>401〜405：スイート<br>特別ヴィラ：暗証番号をお持ちのお客様</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
+        <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="auto" loop playsinline></audio>
+        <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="auto" loop playsinline></audio>
+        <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
         <div id="roomScene" class="room-scene hidden">
           <figure>
             <div class="room-photo-area"><img id="roomPhoto" src="" alt="客室の部屋全体"></div>
@@ -778,6 +913,13 @@ body.night-theme #integratedCafeShell iframe{
               </div>
               <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="room-actions">
+                <div id="roomPhoneCallPanel" class="room-phone-call-panel hidden" aria-live="polite">
+                  <div id="roomPhoneCallStatus" class="room-phone-call-status">電話が鳴っている。</div>
+                  <div class="room-phone-call-actions">
+                    <button id="roomPhoneAnswer" class="room-phone-answer" type="button">電話に出る</button>
+                    <button id="roomPhoneDecline" class="room-phone-decline" type="button">出ない</button>
+                  </div>
+                </div>
                 <button id="roomServiceOpen" class="room-service-open" type="button"><span>ルームサービス</span></button>
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
@@ -798,17 +940,24 @@ body.night-theme #integratedCafeShell iframe{
         </div>
         <div id="roomFallback" class="room-fallback hidden">
           <h2 id="fallbackRoomName"></h2><p>この客室の写真は準備中です。ルームサービスと会話はご利用いただけます。</p>
+          <div id="roomPhoneFallbackPanel" class="room-phone-call-panel hidden" aria-live="polite">
+            <div id="roomPhoneFallbackStatus" class="room-phone-call-status">電話が鳴っている。</div>
+            <div class="room-phone-call-actions">
+              <button class="room-phone-answer" type="button" data-room-phone-answer>電話に出る</button>
+              <button class="room-phone-decline" type="button" data-room-phone-decline>出ない</button>
+            </div>
+          </div>
           <button id="fallbackRoomServiceOpen" type="button">ルームサービスを頼む</button><button id="fallbackChatOpen" type="button">この客室で話す</button><button id="fallbackBelongingsOpen" type="button">所持品を見る</button><button id="fallbackLeaveRoom" type="button">部屋から出る</button>
         </div>
         <div id="roomChatToast" class="room-chat-toast" aria-live="polite"></div>
         <section id="chatSheet" class="room-chat-sheet" aria-hidden="true" aria-label="この客室の会話">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
           <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
           <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
         </section>
         <section id="roomServiceSheet" class="room-service-sheet" aria-hidden="true" aria-label="ルームサービス">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>ROOM SERVICE</h3><button id="roomServiceClose" class="service-sheet-close" type="button" aria-label="ルームサービスを閉じる">⌄</button></div>
           <div class="service-body">
             <div id="roomServiceMeta" class="service-room-meta"></div>
@@ -834,7 +983,7 @@ body.night-theme #integratedCafeShell iframe{
           </div>
         </section>
         <section id="roomBelongingsSheet" class="room-belongings-sheet" aria-hidden="true" aria-label="所持品">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>BELONGINGS</h3><button id="roomBelongingsClose" class="service-sheet-close" type="button" aria-label="所持品を閉じる">⌄</button></div>
           <div class="belongings-body">
             <p class="belongings-intro">滞在中に手に入れたチケットや品物はこちらに表示されます。</p>
@@ -842,7 +991,7 @@ body.night-theme #integratedCafeShell iframe{
           </div>
         </section>
         <section id="roomCollectionSheet" class="room-belongings-sheet" aria-hidden="true" aria-label="コースターコレクション">
-          <div class="chat-sheet-handle"></div>
+          
           <div class="service-sheet-head"><h3>COLLECTION</h3><button id="roomCollectionClose" class="service-sheet-close" type="button" aria-label="コレクションを閉じる">⌄</button></div>
           <div class="belongings-body"><p id="collectionProgress" class="belongings-intro"></p><div id="roomCollectionGrid" class="collection-grid"></div></div>
         </section><div id="collectionPreview" class="collection-preview" aria-hidden="true">
@@ -930,7 +1079,7 @@ body.night-theme #integratedCafeShell iframe{
               <input id="teaPartyInput" maxlength="300" placeholder="メッセージ">
               <button id="teaPartySend" type="button">送信</button>
             </div>
-            <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会は閲覧できますが、発言できるのは招待されたメンバーのみです。</div>
+            <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会の会話は、参加者だけに表示されます。</div>
           </div>
         </div>
       </div>
@@ -973,12 +1122,27 @@ body.night-theme #integratedCafeShell iframe{
   </section>
 
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
+    <img id="hernandoArenaBgBlur" class="hernando-arena-blur" src="hernandos_bullring01.jpg" alt="" aria-hidden="true">
     <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
-    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop></audio>
+    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop playsinline webkit-playsinline></audio>
+    <div class="hernando-encounter-shade"></div>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
-    <div id="hernandoArenaFallback" class="hernando-video-fallback">
-      <p>闘牛場の音楽を再生します。</p>
-      <button id="hernandoArenaPlay" type="button">音楽を再生する</button>
+    <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
+      <div class="hernando-dialogue-name">エルナンド</div>
+      <div id="hernandoDialogueText" class="hernando-dialogue-text"></div>
+      <button id="hernandoDialogueNext" class="hernando-dialogue-next" type="button">NEXT　›</button>
+      <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
+        <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
+        <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
+      </div>
+      <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
+        <div id="hernandoDrinkRound" class="hernando-drink-round">1 / 3</div>
+        <div id="hernandoDrinkChoices" class="hernando-drink-choices">
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="right">右</button>
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="center">真ん中</button>
+          <button class="hernando-drink-choice" type="button" data-hernando-drink="left">左</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -989,6 +1153,8 @@ body.night-theme #integratedCafeShell iframe{
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
     </div>
+    <audio id="seasideBarBgm" src="seasidebar.bgm.mp3" loop preload="auto"></audio>
+    <audio id="seasideKanpaiSfx" src="seaside.kanpai.mp3" preload="auto" playsinline></audio>
     <section id="barOrderSheet" class="bar-order-sheet" aria-hidden="true" aria-label="シーサイドバー ドリンク注文">
       <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
       <div class="bar-order-content">
@@ -1021,7 +1187,7 @@ body.night-theme #integratedCafeShell iframe{
     <div class="bar-menu-lightbox-inner">
       <img id="barMenuLightboxImage" src="" alt="拡大したシーサイドバーのドリンクメニュー">
     </div>
-    <div class="bar-menu-lightbox-note">背景をタップして閉じる</div>
+    
   </div>
 
   <section class="subview" id="casinoView" aria-hidden="true">
@@ -1196,7 +1362,8 @@ body.night-theme #integratedCafeShell iframe{
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity},
-      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'}
+      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
+      mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
@@ -1303,6 +1470,22 @@ body.night-theme #integratedCafeShell iframe{
       if(!window.__sprRemoteHydrating)persistInventorySnapshot(items).catch(e=>console.warn('inventory sync',e));
     }
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
+    function remainingLives(){
+      const belongings=loadBelongings();
+      if(!Object.prototype.hasOwnProperty.call(belongings,'lifeHearts'))return 3;
+      const value=Number(belongings.lifeHearts);
+      return Number.isFinite(value)?Math.max(0,Math.min(3,Math.floor(value))):3;
+    }
+    function setLocalInventoryQuantity(key,quantity,{sync=true}={}){
+      const belongings=loadBelongings();
+      let qty=Math.max(0,Math.floor(Number(quantity)||0));
+      if(key==='lifeHearts')qty=Math.min(3,qty);
+      belongings[key]=qty;
+      if(sync)saveBelongings(belongings);else localStorage.setItem(belongingsKey,JSON.stringify(belongings));
+      if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      return qty;
+    }
+
     // 旧版のアフタヌーンティーチケットがある場合は2名様用へ引き継ぐ
     {const b=loadBelongings();if(Number(b.afternoonTeaTicket||0)>0){b.afternoonTeaTicket2=Math.max(0,Math.floor(Number(b.afternoonTeaTicket2||0)))+Math.max(0,Math.floor(Number(b.afternoonTeaTicket||0)));delete b.afternoonTeaTicket;saveBelongings(b)}}
     // CAFE / AFTERNOON TEA SALON
@@ -1353,7 +1536,7 @@ body.night-theme #integratedCafeShell iframe{
     async function sprPlayerId(){return (await ensureStoredPlayerId())||''}
     async function persistInventorySnapshot(items){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
-      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>({player_id:playerId,item_key,quantity:Math.max(0,Math.floor(Number(v)||0)),updated_at:new Date().toISOString()}));
+      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>{let quantity=Math.max(0,Math.floor(Number(v)||0));if(item_key==='lifeHearts')quantity=Math.min(3,quantity);return {player_id:playerId,item_key,quantity,updated_at:new Date().toISOString()}});
       if(!rows.length)return;
       const {error}=await window.supabaseClientSpecial.from('spr_player_inventory').upsert(rows,{onConflict:'player_id,item_key'});if(error)throw error;
     }
@@ -1362,6 +1545,61 @@ body.night-theme #integratedCafeShell iframe{
       const {data,error}=await window.supabaseClientSpecial.rpc('spr_inventory_adjust',{p_player_id:playerId,p_item_key:itemKey,p_delta:delta});
       if(error)throw error;return Math.max(0,Number(data)||0);
     }
+    async function authoritativeInventoryCount(itemKey){
+      try{const value=await remoteInventoryAdjust(itemKey,0);if(value!==null)return Math.max(0,Math.floor(Number(value)||0))}catch(e){console.warn('inventory count sync',itemKey,e)}
+      return belongingCount(itemKey);
+    }
+    async function consumeMermaidGuardShell(){
+      let current=await authoritativeInventoryCount('mermaidGuardShell');
+      if(current<=0){setLocalInventoryQuantity('mermaidGuardShell',0,{sync:false});return false}
+      try{
+        const next=await remoteInventoryAdjust('mermaidGuardShell',-1);
+        if(next!==null){setLocalInventoryQuantity('mermaidGuardShell',next,{sync:false});return true}
+      }catch(e){console.warn('mermaid shell consume sync',e)}
+      setLocalInventoryQuantity('mermaidGuardShell',Math.max(0,current-1));
+      return true;
+    }
+    async function applyNgGimmick(source='NGギミック'){
+      if(await consumeMermaidGuardShell()){
+        const result={source,protected:true,lives:remainingLives(),shells:belongingCount('mermaidGuardShell')};
+        window.dispatchEvent(new CustomEvent('spr:ng-result',{detail:result}));
+        return result;
+      }
+      let current=remainingLives(),next=Math.max(0,current-1);
+      try{
+        const remoteCurrent=await remoteInventoryAdjust('lifeHearts',0);
+        if(remoteCurrent!==null){
+          current=Math.max(0,Math.min(3,Math.floor(Number(remoteCurrent)||0)));
+          const remoteNext=await remoteInventoryAdjust('lifeHearts',-1);
+          next=Math.max(0,Math.min(3,Math.floor(Number(remoteNext)||0)));
+          setLocalInventoryQuantity('lifeHearts',next,{sync:false});
+        }else setLocalInventoryQuantity('lifeHearts',next);
+      }catch(e){console.warn('life decrement sync',e);setLocalInventoryQuantity('lifeHearts',next)}
+      const result={source,protected:false,lives:next,shells:belongingCount('mermaidGuardShell'),finalChoiceAvailable:next>0};
+      window.dispatchEvent(new CustomEvent('spr:ng-result',{detail:result}));
+      return result;
+    }
+    window.sprRemainingLives=remainingLives;
+    window.sprCanUseFinalEscapeChoice=()=>remainingLives()>0;
+    window.sprApplyNgGimmick=applyNgGimmick;
+    window.sprMarkFinalEscapeSuccess=async function(metadata={}){
+      if(!window.sprCanUseFinalEscapeChoice())return false;
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
+      const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'final-escape-success',message:`ESCAPED:${storedGuestName}`,created_by:playerId,expires_at:'2099-12-31T23:59:59+00:00',metadata:{winner:storedGuestName,...metadata}});
+      if(error)throw error;return true;
+    };
+    window.sprHasGlobalEscapeSuccess=async function(){
+      if(!window.supabaseClientSpecial)return false;
+      const [winRes,resetRes]=await Promise.all([
+        window.supabaseClientSpecial.from('resort_announcements').select('created_at').eq('announcement_type','final-escape-success').order('created_at',{ascending:false}).limit(1),
+        window.supabaseClientSpecial.from('resort_announcements').select('created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1)
+      ]);
+      if(winRes.error)throw winRes.error;if(resetRes.error)throw resetRes.error;
+      const winAt=winRes.data&&winRes.data[0]?.created_at?new Date(winRes.data[0].created_at).getTime():0;
+      const resetAt=resetRes.data&&resetRes.data[0]?.created_at?new Date(resetRes.data[0].created_at).getTime():0;
+      return !!winAt&&(!resetAt||winAt>resetAt);
+    };
+
     async function setRemoteFlag(flagKey,value){
       windowSprFlagCache[flagKey]=value;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
@@ -1387,6 +1625,7 @@ body.night-theme #integratedCafeShell iframe{
       else if(flagKey==='bathroom-bloom-state'){localStorage.setItem('spr-bathroom-bloom-state',String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
+      else if(flagKey==='hernando-visit-count'){const n=Math.max(0,Number(value)||0);if(n)localStorage.setItem(`spr-hernando-visit-count:${playerStorageId}`,String(n));else localStorage.removeItem(`spr-hernando-visit-count:${playerStorageId}`)}
       else if(flagKey.startsWith('cafe-order:')){const d=flagKey.slice('cafe-order:'.length),pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
@@ -1402,6 +1641,7 @@ body.night-theme #integratedCafeShell iframe{
       const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0));if(bathroomBloomState)out['bathroom-bloom-state']=bathroomBloomState;
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
       if(localStorage.getItem(`spr-hernando-intro-seen:${playerStorageId}`)==='1')out['hernando-intro-seen']=true;
+      const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`;
@@ -1434,7 +1674,7 @@ body.night-theme #integratedCafeShell iframe{
         const localCoasters=loadCoasterInventory();
         const localFlags=collectLocalFlags();
         const [invRes,flagRes,barRes,coRes,resetRes]=await Promise.all([
-          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity,updated_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_player_flags').select('flag_key,value,updated_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_bar_orders').select('record,service_date,period,expires_at').eq('player_id',playerId),
           window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at'),
@@ -1443,17 +1683,26 @@ body.night-theme #integratedCafeShell iframe{
         for(const r of [invRes,flagRes,barRes,coRes,resetRes])if(r.error)throw r.error;
         const latestWorldResetAt=resetRes.data&&resetRes.data[0]?.created_at?new Date(resetRes.data[0].created_at).getTime():0;
 
-        let belongings={};
-        if((invRes.data||[]).length){(invRes.data||[]).forEach(r=>belongings[r.item_key]=Math.max(0,Number(r.quantity)||0))}
-        else if(Object.values(localBelongings).some(v=>Number(v)>0)){
+        let belongings={},inventoryBootstrap={};
+        if((invRes.data||[]).length){
+          (invRes.data||[]).forEach(r=>{
+            const key=String(r.item_key||''),updatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
+            const staleForReset=!!(latestWorldResetAt&&updatedAt&&updatedAt<=latestWorldResetAt);
+            if(key==='lifeHearts'&&staleForReset){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3;return}
+            if(key==='mermaidGuardShell'&&staleForReset){belongings.mermaidGuardShell=0;inventoryBootstrap.mermaidGuardShell=0;return}
+            let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);belongings[key]=qty;
+          });
+        }else if(Object.values(localBelongings).some(v=>Number(v)>0)){
           belongings={...localBelongings};await persistInventorySnapshot(belongings);
         }
+        if(!Object.prototype.hasOwnProperty.call(belongings,'lifeHearts')){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3}
         localStorage.setItem(belongingsKey,JSON.stringify(belongings));
+        if(Object.keys(inventoryBootstrap).length)await persistInventorySnapshot(inventoryBootstrap);
 
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if(r.flag_key==='hernando-intro-seen'&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -1512,7 +1761,7 @@ body.night-theme #integratedCafeShell iframe{
       if(!teaExchangeList)return;const counts=coasterCounts();const rows=counts.map((count,n)=>({n,count,extra:Math.max(0,count-1)})).filter(x=>x.extra>0);
       teaExchangeList.replaceChildren();
       if(!rows.length){const e=document.createElement('div');e.className='tea-exchange-empty';e.textContent='現在、交換に出せるダブりはありません。';teaExchangeList.append(e);return}
-      rows.forEach(({n,count,extra})=>{const row=document.createElement('div');row.className='tea-exchange-item';const name=document.createElement('span');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('span');qty.textContent=`所持 ${count}枚 ／ 交換可能 ${extra}枚`;row.append(name,qty);teaExchangeList.append(row)});
+      rows.forEach(({n,count,extra})=>{const row=document.createElement('div');row.className='tea-exchange-item';const name=document.createElement('span');name.textContent=sprCoasterLabel(n);const qty=document.createElement('span');qty.textContent=`所持 ${count}枚 ／ 交換可能 ${extra}枚`;row.append(name,qty);teaExchangeList.append(row)});
     }
     async function createTeaParty(venue,label,capacity,key,guests){
       if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
@@ -1530,24 +1779,60 @@ body.night-theme #integratedCafeShell iframe{
       document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
       await loadTeaParties();await openTeaParty(party.id);
     }
+    function teaEscapeHtml(value){
+      return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
     async function loadTeaParties(){
       if(!window.supabaseClientSpecial)return;
-      const {data,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ends_at,created_at').gt('ends_at',new Date().toISOString()).order('created_at',{ascending:false});
+      const {data,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at,created_at').gt('ends_at',new Date().toISOString()).order('created_at',{ascending:false});
       if(error){teaPartyPublicStatus.textContent='お茶会を読み込めません。';console.error(error);return}
-      teaPartyPublicStatus.textContent=data?.length?'開催中のお茶会は、どなたでも会話をご覧いただけます。':'現在開催中のお茶会はありません。';
-      teaPartyList.innerHTML=(data||[]).map(p=>`<button class="menu-item" type="button" data-tea-party="${p.id}">${p.venue}<small>${p.host_name}様のお茶会　｜　会話を見る</small></button>`).join('');
-      teaPartyList.querySelectorAll('[data-tea-party]').forEach(b=>b.onclick=()=>openTeaParty(b.dataset.teaParty));
+      const parties=data||[];
+      let allMembers=[];
+      if(parties.length){
+        const {data:memberRows,error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').select('party_id,player_id,display_name,is_host').in('party_id',parties.map(p=>p.id));
+        if(memberError){teaPartyPublicStatus.textContent='参加者情報を読み込めません。';console.error(memberError);return}
+        allMembers=memberRows||[];
+      }
+      teaPartyPublicStatus.textContent=parties.length?'会話の内容は参加者以外には表示されません。参加中のお客様のみご案内しています。':'現在開催中のお茶会はありません。';
+      teaPartyList.innerHTML=parties.map(p=>{
+        const members=allMembers.filter(m=>m.party_id===p.id);
+        const capacity=Math.max(1,Math.floor(Number(p.ticket_type)||members.length||1));
+        const me=members.find(m=>m.player_id===storedPlayerId);
+        const isMember=Boolean(me);
+        const isFull=members.length>=capacity;
+        const names=members.length?members.map(m=>`${teaEscapeHtml(m.display_name||'GUEST')}様`).join('、'):`${teaEscapeHtml(p.host_name||'GUEST')}様`;
+        const state=isMember?'お茶会に戻る':(isFull?'満席・入室できません':'招待者のみ入室できます');
+        return `<button class="menu-item" type="button" data-tea-party="${teaEscapeHtml(p.id)}" data-tea-action="${isMember?'enter':'locked'}" ${isMember?'':'disabled'}>${teaEscapeHtml(p.venue)}<small>${state}　｜　${members.length}/${capacity}名</small><span class="tea-party-people">参加者：${names}</span></button>`;
+      }).join('');
+      teaPartyList.querySelectorAll('[data-tea-party]').forEach(b=>b.onclick=()=>{
+        if(b.dataset.teaAction==='enter')openTeaParty(b.dataset.teaParty);
+      });
+    }
+    async function joinTeaParty(id){
+      teaSalonMessage.textContent='このお茶会は、チケットを使用した主催者から招待された方だけが入室できます。';
+      await loadTeaParties();
     }
     async function openTeaParty(id){
-      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');
-      const [{data:party},{data:members},{data:messages}]=await Promise.all([
-        window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ends_at').eq('id',id).single(),
-        window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host').eq('party_id',id),
-        window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at')
+      if(!window.supabaseClientSpecial||!storedPlayerId)return;
+      const [{data:party,error:partyError},{data:members,error:membersError}]=await Promise.all([
+        window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at').eq('id',id).single(),
+        window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host').eq('party_id',id)
       ]);
+      if(partyError||membersError||!party){teaSalonMessage.textContent='お茶会を読み込めません。';return}
       const member=(members||[]).some(m=>m.player_id===storedPlayerId);
-      teaPartyChatMeta.textContent=`${party?.venue||''}　｜　参加者：${(members||[]).map(m=>m.display_name).join('、')}`;
-      teaPartyCompose.classList.toggle('hidden',!member);teaPartyReadOnly.classList.toggle('hidden',member);
+      const capacity=Math.max(1,Math.floor(Number(party.ticket_type)||(members||[]).length||1));
+      if(!member){
+        teaPartyChat.classList.add('hidden');
+        teaPartyCompose.classList.add('hidden');
+        if((members||[]).length>=capacity)teaSalonMessage.textContent='このお茶会は満席のため、中に入ることはできません。';
+        else teaSalonMessage.textContent='会話は参加者だけに表示されます。入室には、チケットを使用した主催者からの招待が必要です。';
+        return;
+      }
+      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');
+      teaPartyChatMeta.textContent=`${party.venue||''}　｜　参加者：${(members||[]).map(m=>m.display_name).join('、')}　｜　${(members||[]).length}/${capacity}名`;
+      teaPartyCompose.classList.remove('hidden');teaPartyReadOnly.classList.add('hidden');
+      const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
+      if(messageError){console.error(messageError);teaSalonMessage.textContent='会話を読み込めませんでした。';return}
       renderTeaMessages(messages||[]);
       if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);
       teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>appendTeaMessage(p.new)).subscribe();
@@ -1592,8 +1877,8 @@ body.night-theme #integratedCafeShell iframe{
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
     scheduleHeroBackgroundRefresh();
@@ -1617,6 +1902,61 @@ body.night-theme #integratedCafeShell iframe{
       const date=tokyoDateLabel();
       setResortAnnouncement(`${date}　｜　潮風の遊歩道、灯台、入り江など、島内の散策スポットをお楽しみください。　｜　レストラン・バー・カジノなど館内施設もご利用いただけます。`);
     }
+
+    // AUDIO START GUARD
+    // iPhone / iPad Safari で、ミュート待機中の古いデコード断片が
+    // 新しいイベント音の先頭へ一瞬混ざる症状を避ける。
+    // 「ミュート → 先頭を確定 → 短い無音 → 再度先頭を確定 → ミュート解除」の順で統一する。
+    const SPR_AUDIO_START_GUARD_MS=220;
+    const sprAudioStartTokens=new WeakMap();
+    const sprAudioGuardSleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    function sprCancelGuardedAudioStart(audio){
+      if(!audio)return;
+      sprAudioStartTokens.set(audio,(sprAudioStartTokens.get(audio)||0)+1);
+    }
+    async function sprStartAudioClean(audio,{volume=1,loop=audio?.loop??false,restart=true,guard=SPR_AUDIO_START_GUARD_MS,respectMaster=true}={}){
+      if(!audio)return false;
+      if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+      const token=(sprAudioStartTokens.get(audio)||0)+1;
+      sprAudioStartTokens.set(audio,token);
+      try{
+        // 必ず音を隠した状態で位置・再生状態を整える。
+        audio.muted=true;
+        audio.volume=Math.max(0,Math.min(1,Number(volume)||0));
+        audio.loop=Boolean(loop);
+        if(restart){try{if(audio.readyState>0)audio.currentTime=0}catch{}}
+
+        if(audio.paused){
+          const p=audio.play();
+          if(p&&p.then)await p;
+        }
+        await sprAudioGuardSleep(Math.max(0,Number(guard)||0));
+        if(sprAudioStartTokens.get(audio)!==token||audio.paused)return false;
+        if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+
+        // 待機中に進んだ分を捨て、可聴化の直前でもう一度「本当の先頭」に合わせる。
+        if(restart){
+          try{if(audio.readyState>0)audio.currentTime=0}catch{}
+          if(audio.seeking){
+            await Promise.race([
+              new Promise(resolve=>audio.addEventListener('seeked',resolve,{once:true})),
+              sprAudioGuardSleep(120)
+            ]);
+          }else{
+            await new Promise(requestAnimationFrame);
+          }
+        }else{
+          await new Promise(requestAnimationFrame);
+        }
+        if(sprAudioStartTokens.get(audio)!==token||audio.paused)return false;
+        if(respectMaster&&localStorage.getItem('spr-bgm-enabled')==='off')return false;
+        audio.muted=false;
+        return true;
+      }catch(e){
+        console.warn('clean audio start',e);
+        return false;
+      }
+    }
     function activateSpecialTableAnnouncement(challenger=''){
       const who=challenger?` 挑戦者：${challenger}。`:'';
       const message=`SPECIAL GAME　｜　カジノ・ブルーシェルにスペシャルテーブルが出現しました。${who} 観客席よりご覧いただけます。`;
@@ -1635,7 +1975,7 @@ body.night-theme #integratedCafeShell iframe{
     const specialBroadcast=document.getElementById('specialBroadcast'),specialBroadcastText=document.getElementById('specialBroadcastText'),specialBroadcastCount=document.getElementById('specialBroadcastCount'),specialBroadcastClose=document.getElementById('specialBroadcastClose');
     const spectatorScreen=document.getElementById('spectatorScreen'),spectatorStatus=document.getElementById('spectatorStatus'),spectatorStage=document.getElementById('spectatorStage'),spectatorClose=document.getElementById('spectatorClose'),spectatorBack=document.getElementById('spectatorBack'),casinoSpectatorMenu=document.getElementById('casinoSpectatorMenu');
     let activeSpectatorChallenger='';
-    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
+    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     async function currentSpecialIdentity(){
       const id=await resolveSpecialPlayerId();
@@ -1655,7 +1995,7 @@ body.night-theme #integratedCafeShell iframe{
       specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
       try{stopCasinoMusic()}catch{}
-      try{specialBgm.volume=.42;if(specialBgm.paused)await specialBgm.play()}catch{}
+      try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
       if(specialSelectedGame){
         specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
         casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');
@@ -1804,7 +2144,7 @@ body.night-theme #integratedCafeShell iframe{
       stopSpecialHeartbeat();clearInterval(specialCountdownTimer);specialCountdownTimer=null;
       await restoreChipsAfterInterruptedSpecial(stake||specialStake||readSpecialPresenceMarker()?.stake||0);
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
-      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';specialBgm.pause();specialBgm.currentTime=0;
+      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');
       if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null}
       localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();hideSpecialBroadcast('finished-current',id);
@@ -1881,8 +2221,14 @@ body.night-theme #integratedCafeShell iframe{
     }
     async function openSpectator(sessionId,challenger=''){hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
-      try{specialBgm.currentTime=0;await specialBgm.play()}catch(e){
-        const unlockSpecialBgm=async()=>{try{await specialBgm.play()}catch{}};
+      try{
+        const ok=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(!ok){
+          const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
+          spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
+        }
+      }catch(e){
+        const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
         spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
       }
       spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');document.body.classList.add('spectator-watching');specialCommentOverlay?.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';spectatorPresenceSessionId=String(sessionId);spectatorPresenceStatus=data.status;spectatorPresenceState={...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'};renderSpectatorState(spectatorPresenceState);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorPresenceStatus==='finished'||!spectatorPresenceState)return;const hb=Date.parse(spectatorPresenceState.heartbeat_at||'');if(!Number.isFinite(hb)||Date.now()-hb<SPECIAL_PRESENCE_TIMEOUT_MS)return;clearInterval(spectatorPresenceTimer);spectatorPresenceState=await finishInterruptedSpecialSession(spectatorPresenceSessionId,spectatorPresenceState);spectatorPresenceStatus='finished';renderSpectatorState({...spectatorPresenceState,finished:true});refreshCasinoSpectatorMenu()},2000);if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{spectatorPresenceStatus=p.new.status;spectatorPresenceState={...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'};renderSpectatorState(spectatorPresenceState);if(p.new.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}).on('broadcast',{event:'gallery-comment'},({payload})=>{
@@ -1999,16 +2345,103 @@ body.night-theme #integratedCafeShell iframe{
       }
       barDrinkList.querySelectorAll('[data-bar-drink]').forEach(button=>{const isOrdered=Boolean(ordered),match=(ordered&&button.dataset.barDrink===ordered.name);button.disabled=isOrdered||!info.orderOpen;button.classList.toggle('selected',!isOrdered&&button.dataset.barDrink===selectedBarDrink);button.classList.toggle('ordered',Boolean(match));button.querySelector('.choose').textContent=match?'ORDERED':isOrdered||!info.orderOpen?'—':button.dataset.barDrink===selectedBarDrink?'SELECTED':'SELECT'});
     }
-    function openBarOrder(){selectedBarDrink='';barOrderResult.classList.add('hidden');barOrderResult.textContent='';renderBarOrderState();barOrderSheet.classList.add('open');barOrderSheet.setAttribute('aria-hidden','false')}
+    function openBarOrder(){
+      selectedBarDrink='';
+      barOrderResult.classList.add('hidden');
+      barOrderResult.textContent='';
+      renderBarOrderState();
+      barOrderSheet.classList.add('open');
+      barOrderSheet.setAttribute('aria-hidden','false');
+      // 注文確定前のタップで乾杯SEを先読みし、iPhone / iPadでも即時再生しやすくする。
+      void primeSeasideKanpai();
+    }
     function closeBarOrder(){barOrderSheet.classList.remove('open');barOrderSheet.setAttribute('aria-hidden','true')}
     document.getElementById('barOrderOpen').addEventListener('click',openBarOrder);
     document.getElementById('barOrderClose').addEventListener('click',closeBarOrder);
+    const seasideKanpaiSfx=document.getElementById('seasideKanpaiSfx');
+    let seasideKanpaiAudioContext=null;
+    let seasideKanpaiBuffer=null;
+    let seasideKanpaiBufferPromise=null;
+
+    function getSeasideKanpaiAudioContext(){
+      if(seasideKanpaiAudioContext)return seasideKanpaiAudioContext;
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)return null;
+      try{seasideKanpaiAudioContext=new AudioContextClass()}catch(e){console.warn('seaside kanpai AudioContext',e)}
+      return seasideKanpaiAudioContext;
+    }
+
+    function primeSeasideKanpai(){
+      // HTMLAudioも予備として先読みする。
+      if(seasideKanpaiSfx){
+        seasideKanpaiSfx.preload='auto';
+        seasideKanpaiSfx.loop=false;
+        seasideKanpaiSfx.muted=false;
+        seasideKanpaiSfx.volume=1;
+        try{seasideKanpaiSfx.load()}catch{}
+      }
+
+      // iPhone / iPad では短い効果音をBGMとは別系統(Web Audio)で先読みしておく。
+      const ctx=getSeasideKanpaiAudioContext();
+      if(!ctx)return Promise.resolve(null);
+      if(ctx.state==='suspended')void ctx.resume().catch(()=>{});
+      if(seasideKanpaiBuffer)return Promise.resolve(seasideKanpaiBuffer);
+      if(seasideKanpaiBufferPromise)return seasideKanpaiBufferPromise;
+
+      seasideKanpaiBufferPromise=fetch('seaside.kanpai.mp3',{cache:'force-cache'})
+        .then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.arrayBuffer()})
+        .then(arrayBuffer=>ctx.decodeAudioData(arrayBuffer))
+        .then(buffer=>{seasideKanpaiBuffer=buffer;return buffer})
+        .catch(e=>{console.warn('seaside kanpai preload',e);return null});
+      return seasideKanpaiBufferPromise;
+    }
+
+    async function playSeasideKanpai(){
+      // BGMには触れず、乾杯SEだけを独立再生する。
+      const ctx=getSeasideKanpaiAudioContext();
+      if(ctx){
+        try{
+          if(ctx.state==='suspended')await ctx.resume();
+          const buffer=seasideKanpaiBuffer||await primeSeasideKanpai();
+          if(buffer){
+            const source=ctx.createBufferSource();
+            const gain=ctx.createGain();
+            source.buffer=buffer;
+            gain.gain.value=1;
+            source.connect(gain);
+            gain.connect(ctx.destination);
+            source.start(0);
+            return true;
+          }
+        }catch(e){console.warn('seaside kanpai webaudio',e)}
+      }
+
+      // Web Audioが使えない環境では通常のAudio再生へフォールバック。
+      if(!seasideKanpaiSfx)return false;
+      try{
+        sprCancelGuardedAudioStart(seasideKanpaiSfx);
+        seasideKanpaiSfx.pause();
+        seasideKanpaiSfx.loop=false;
+        seasideKanpaiSfx.muted=false;
+        seasideKanpaiSfx.volume=1;
+        try{seasideKanpaiSfx.currentTime=0}catch{}
+        if(seasideKanpaiSfx.readyState===0){try{seasideKanpaiSfx.load()}catch{}}
+        const p=seasideKanpaiSfx.play();
+        if(p&&p.then)await p;
+        return !seasideKanpaiSfx.paused;
+      }catch(e){
+        console.warn('seaside kanpai audio',e);
+        return false;
+      }
+    }
     barOrderConfirm.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState();if(!selectedBarDrink||state[info.token]||!info.orderOpen){renderBarOrderState();return}
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
+      barOrderConfirm.disabled=true;
+      void playSeasideKanpai();
       const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
-      try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
-      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} のご注文を承りました。`;barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
+      try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');renderBarOrderState();return}
+      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
     useExtraDrinkTicket.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
@@ -2099,7 +2532,7 @@ body.night-theme #integratedCafeShell iframe{
       specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
       await sleep(1800);if(seriousEmilyMode){await specialSay('運のみぞ知る','───あら。またあなたなの。',2000);await specialSay('運のみぞ知る','あれだけの勝負をして、それでもまだ足りないのね。',2200);await specialSay('運のみぞ知る','いいわ。あなたがそこまで欲張るのなら――私も少しくらい、欲張っていいでしょう？',2400);}else{await specialSay('UNKNOWN',randomOpener(),2100);await specialSay('UNKNOWN','───ねえ。もう少しだけ、大きな賭けをしてみない？',2100);await specialSay('UNKNOWN','どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',2100);await specialSay('運のみぞ知る','あなたが今、手にしているもの。全部。',1900);}
       specialActions.innerHTML='<button id="acceptAllIn" type="button">オールイン勝負を受ける</button><button id="declineAllIn" type="button">受けない</button>';
-      specialBgm.currentTime=0; specialBgm.muted=false; specialBgm.volume=.42;
+      void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
     async function resolveSpecialPlayerId(){
@@ -2564,21 +2997,119 @@ body.night-theme #integratedCafeShell iframe{
     const exploreBgm=document.getElementById('exploreBgm');
     const storyMenu=document.getElementById('storyMenu');
     function renderTopBgmToggle(){const on=localStorage.getItem('spr-bgm-enabled')!=='off';topBgmToggle.classList.toggle('off',!on);topBgmToggle.setAttribute('aria-pressed',String(on));topBgmToggle.title=on?'BGM ON':'BGM OFF'}
-    topBgmToggle.addEventListener('click',()=>{const next=localStorage.getItem('spr-bgm-enabled')==='off';localStorage.setItem('spr-bgm-enabled',next?'on':'off');renderTopBgmToggle();if(next)startResortMusic();else pauseResortMusic()});
+    topBgmToggle.addEventListener('click',()=>{
+      const next=localStorage.getItem('spr-bgm-enabled')==='off';
+      localStorage.setItem('spr-bgm-enabled',next?'on':'off');
+      renderTopBgmToggle();
+      if(next){
+        // ♪ ON をサイト全体の音声マスターとして扱う。
+        // このタップの最中に電話用 AudioContext も解除し、2分後まで生かしておく。
+        armRoomPhoneAudioMaster();
+        startResortMusic();
+        if(roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
+      }else{
+        pauseResortMusic();
+        stopRoomPhoneRing();
+        disarmRoomPhoneAudioMaster();
+      }
+    });
     document.getElementById('storyMenuOpen').addEventListener('click',()=>{storyMenu.classList.add('open');storyMenu.setAttribute('aria-hidden','false')});
     document.getElementById('storyMenuClose').addEventListener('click',()=>{storyMenu.classList.remove('open');storyMenu.setAttribute('aria-hidden','true')});
     storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
     renderTopBgmToggle();
     function playAudio(audio,volume){if(!audio||localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
-    function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();playAudio(exploreBgm,.34)}
-    function pauseExploreMusic(){if(exploreBgm)exploreBgm.pause()}
-    function stopExploreMusic(reset=false){if(!exploreBgm)return;exploreBgm.pause();if(reset){try{exploreBgm.currentTime=0}catch{}}}
+
+    // EXPLORE BGM BY TIME
+    // 07:00-19:59 は従来の探索BGM、20:00-06:59 は room_phone_wave.mp3 に切り替える。
+    // 探索画面を開いたまま時刻をまたいだ場合も自動で切り替える。
+    const EXPLORE_BGM_DAY_SRC='explore_bgm.mp3';
+    const EXPLORE_BGM_NIGHT_SRC='room_phone_wave.mp3';
+    let exploreBgmPeriod='';
+    function desiredExploreBgm(period=currentTokyoPeriod()){
+      return period==='night'?EXPLORE_BGM_NIGHT_SRC:EXPLORE_BGM_DAY_SRC;
+    }
+    function sameAudioSrc(audio,src){
+      try{return new URL(audio.currentSrc||audio.src,window.location.href).href===new URL(src,window.location.href).href}catch{return false}
+    }
+    function syncExploreMusicForTime({force=false}={}){
+      if(!exploreBgm)return;
+      const view=document.getElementById('exploreView');
+      const open=Boolean(view?.classList.contains('open'));
+      const period=currentTokyoPeriod();
+      const src=desiredExploreBgm(period);
+      const changed=exploreBgmPeriod!==period||!sameAudioSrc(exploreBgm,src);
+      exploreBgmPeriod=period;
+
+      if(changed){
+        sprCancelGuardedAudioStart(exploreBgm);
+        try{exploreBgm.muted=true;exploreBgm.pause();exploreBgm.currentTime=0}catch{}
+        exploreBgm.src=src;
+        exploreBgm.loop=true;
+        exploreBgm.preload='auto';
+        try{exploreBgm.load()}catch{}
+      }
+      if(!open||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      if(changed||force||exploreBgm.paused){
+        void sprStartAudioClean(exploreBgm,{volume:.34,loop:true,restart:changed,guard:SPR_AUDIO_START_GUARD_MS});
+      }
+    }
+    function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();syncExploreMusicForTime({force:true})}
+    function pauseExploreMusic(){if(exploreBgm){sprCancelGuardedAudioStart(exploreBgm);exploreBgm.pause()}}
+    function stopExploreMusic(reset=false){if(!exploreBgm)return;sprCancelGuardedAudioStart(exploreBgm);exploreBgm.pause();if(reset){try{exploreBgm.currentTime=0}catch{}}}
     function resumeExploreMusicAfterGimmick(){const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic()}
+    setInterval(()=>syncExploreMusicForTime(),1000);
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)playAudio(arenaBgm,.42)}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();const special=document.getElementById('specialBgm');if(special)special.pause();const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm)arenaBgm.pause()}
-    function startCasinoMusic(){pauseExploreMusic();playAudio(casinoBgm,.38)}
+
+    // SEASIDE BAR BGM BY TIME
+    // 昼（07:00〜15:59）・夕（16:00〜19:59）のみ seasidebar.bgm.mp3 を再生。
+    // 夜（20:00〜06:59）は自動で停止する。BARを開いたまま時間帯をまたいだ場合も追従する。
+    const seasideBarBgm=document.getElementById('seasideBarBgm');
+    let seasideBarBgmPeriod='';
+    function seasideBarBgmEnabledForPeriod(period=currentTokyoPeriod()){
+      return period==='day'||period==='sunset';
+    }
+    function syncSeasideBarMusicForTime({force=false,restart=false}={}){
+      if(!seasideBarBgm)return;
+      const view=document.getElementById('barView');
+      const open=Boolean(view?.classList.contains('open'));
+      const period=currentTokyoPeriod();
+      const changed=seasideBarBgmPeriod!==period;
+      seasideBarBgmPeriod=period;
+      const shouldPlay=open&&seasideBarBgmEnabledForPeriod(period)&&localStorage.getItem('spr-bgm-enabled')!=='off';
+
+      if(!shouldPlay){
+        sprCancelGuardedAudioStart(seasideBarBgm);
+        seasideBarBgm.pause();
+        if(changed||!open){try{seasideBarBgm.currentTime=0}catch{}}
+        return;
+      }
+
+      if(force||changed||seasideBarBgm.paused){
+        void sprStartAudioClean(seasideBarBgm,{
+          volume:.34,
+          loop:true,
+          restart:restart||changed||seasideBarBgm.paused,
+          guard:SPR_AUDIO_START_GUARD_MS
+        });
+      }
+    }
+    function startSeasideBarMusic(){
+      if(!seasideBarBgm)return;
+      casinoBgm.pause();
+      pauseExploreMusic();
+      syncSeasideBarMusicForTime({force:true,restart:true});
+    }
+    function stopSeasideBarMusic(reset=false){
+      if(!seasideBarBgm)return;
+      sprCancelGuardedAudioStart(seasideBarBgm);
+      seasideBarBgm.pause();
+      if(reset){try{seasideBarBgm.currentTime=0}catch{}}
+    }
+    setInterval(()=>syncSeasideBarMusicForTime(),1000);
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS})}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
+    function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
@@ -2704,14 +3235,13 @@ body.night-theme #integratedCafeShell iframe{
     }
     function stopElevatorGlitchSound(){
       if(!casinoElevatorGlitchSound)return;
-      try{casinoElevatorGlitchSound.pause();casinoElevatorGlitchSound.currentTime=0}catch{}
+      sprCancelGuardedAudioStart(casinoElevatorGlitchSound);
+      try{casinoElevatorGlitchSound.pause();casinoElevatorGlitchSound.currentTime=0;casinoElevatorGlitchSound.muted=false}catch{}
     }
     function playElevatorGlitchSound(){
       if(!casinoElevatorGlitchSound)return;
-      casinoElevatorGlitchSound.src=CASINO_ELEVATOR_GLITCH_SOUND;
-      try{casinoElevatorGlitchSound.currentTime=0}catch{}
-      const p=casinoElevatorGlitchSound.play();
-      if(p&&p.catch)p.catch(()=>{});
+      // クリック直後に muted のまま再生権限を確保し、短い無音を挟んで先頭から可聴化する。
+      void sprStartAudioClean(casinoElevatorGlitchSound,{volume:1,loop:false,restart:true,guard:180,respectMaster:false});
     }
     function stopElevatorGlitch(){
       clearTimeout(casinoElevatorGlitchTimer);casinoElevatorGlitchTimer=null;
@@ -2962,6 +3492,9 @@ body.night-theme #integratedCafeShell iframe{
     const roomBelongingsSheet=document.getElementById('roomBelongingsSheet'), roomBelongingsList=document.getElementById('roomBelongingsList');
     const roomServiceCartList=document.getElementById('roomServiceCartList'), roomServiceOrder=document.getElementById('roomServiceOrder');
     const roomContextAction=document.getElementById('roomContextAction'), roomExploreResult=document.getElementById('roomExploreResult');
+    const roomPhoneRing=document.getElementById('roomPhoneRing'), roomPhoneWave=document.getElementById('roomPhoneWave'), roomPhoneFinish=document.getElementById('roomPhoneFinish'), roomPhoneCallPanel=document.getElementById('roomPhoneCallPanel'), roomPhoneCallStatus=document.getElementById('roomPhoneCallStatus');
+    const roomPhoneAnswer=document.getElementById('roomPhoneAnswer'), roomPhoneDecline=document.getElementById('roomPhoneDecline');
+    const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
     let roomServiceCart={};
     const deluxeScenes={
@@ -2979,6 +3512,14 @@ body.night-theme #integratedCafeShell iframe{
       phone:['family_room_phone.jpg','family_room_phone_evening.jpg','family_room_phone_night.jpg'],
       closet:['family_room_closet.jpg','family_room_closet_evening.jpg','family_room_closet_night.jpg'],
       bathroom:['family_room_bathroom.jpg','family_room_bathroom_evening.jpg','family_room_bathroom_night.jpg']
+    };
+    const oceanLagoonScenes={
+      room:['Ocean_Lagoon_Room(2).jpg','Ocean_Lagoon_Room_evening.jpg','Ocean_Lagoon_Room(2)_Night.jpg'],
+      window:['Ocean_Lagoon_window(2).jpg','Ocean_Lagoon_window_evening(1).jpg','Ocean_Lagoon_window(2)_Night.jpg'],
+      desk:['Ocean_Lagoon_desk(2).jpg','Ocean_Lagoon_desk(1).jpg','Ocean_Lagoon_desk(2)_Night.jpg'],
+      phone:['Ocean_Lagoon_phone(3).jpg','Ocean_Lagoon_phone(2).jpg','Ocean_Lagoon_phone(3)_Night.jpg'],
+      closet:['Ocean_Lagoon_closet(2).jpg','Ocean_Lagoon_closet(1).jpg','Ocean_Lagoon_closet(2)_Night.jpg'],
+      bathroom:['Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom_Night.jpg']
     };
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
@@ -2998,11 +3539,20 @@ body.night-theme #integratedCafeShell iframe{
         phone:[[64,54],[64,54],[64,54]],
         closet:[[50,50],[50,50],[50,50]],
         bathroom:[[28,50],[28,50],[28,50]]
+      },
+      oceanLagoon:{
+        room:[[55,50],[55,50],[55,50]],
+        window:[[50,50],[50,50],[50,50]],
+        desk:[[52,54],[52,54],[52,54]],
+        phone:[[70,63],[70,63],[70,63]],
+        closet:[[50,50],[50,50],[50,50]],
+        bathroom:[[35,50],[35,50],[35,50]]
       }
     };
     function roomVisualConfig(room){
       if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
       if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
+      if(/^(30[1-9]|310)$/.test(room))return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
       return null;
     }
     const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
@@ -3021,6 +3571,671 @@ body.night-theme #integratedCafeShell iframe{
     function hasBathroomFoodKey(){return localStorage.getItem('spr-bathroom-food-key')==='1'}
     function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem('spr-bathroom-bloom-state'))||0))}
     function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem('spr-bathroom-bloom-state',String(state));setRemoteFlag('bathroom-bloom-state',state).catch(e=>console.warn('bathroom bloom sync',e));return state}
+
+    // DAY1 ROOM PHONE (Supabase shared event)
+    // 22:00〜翌3:00の間、客室に連続2分滞在すると「部屋単位」で電話が鳴る。
+    // DAY1では飲んだドリンクの種類に関係なく対象。
+    // 同室の誰か1人が電話に出ると全員の着信が止まり、全員が同じ通話イベントへ進む。
+    // 「出ない」は個人の選択。他の同室者の電話は鳴り続け、誰かが出ればその人にも通話イベントが届く。
+    // 誰も出ない場合は、Supabase上の着信開始から1分で missed になる。
+    const ROOM_PHONE_WAIT_MS=2*60*1000;
+    let roomPhoneStayStartedAt=0,roomPhoneTimer=null,roomPhoneCallState='idle',roomPhoneAudioUnlocked=false,roomPhoneLastMessage='';
+    let roomPhoneActiveEvent=null,roomPhoneCreating=false,roomPhoneResolving=false,roomPhoneConversationEventId='';
+    let roomPhoneCallAudioPrimed=false,roomPhoneCallAudioPrimePromise=null,roomPhoneWaveDelayTimer=null,roomPhoneWaveTimer=null,roomPhoneFinishFallbackTimer=null,roomPhoneAudioSequenceEventId='';
+    let roomPhoneRingAudible=false,roomPhoneUiClearTimer=null;
+    // 同室者の「出る／出ない」選択をRealtime Presenceで共有する。
+    // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
+    // 選んだ時だけ3秒後に静かに止める。
+    let roomPhonePresenceChannel=null,roomPhonePresenceReady=false;
+    const roomPhonePresenceSessionKey=`${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    let roomPhoneDeclineStopTimer=null,roomPhoneDeclineStopEventId='',roomPhoneDeclineSilencedEventId='';
+
+    function roomPhoneEligibleNow(){
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=22||hour<3;
+    }
+    function roomPhoneResortDay(){return Math.max(1,Math.min(7,Number(document.documentElement.dataset.resortDay||1)||1))}
+    function roomPhoneDeclinedKey(eventId){
+      const who=encodeURIComponent(localStorage.getItem('spr-player-id')||storedGuestName||'guest');
+      return `spr-room-phone-declined:${eventId}:${who}`;
+    }
+    function roomPhoneDeclinedLocally(){
+      return Boolean(roomPhoneActiveEvent?.id&&localStorage.getItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id))==='1');
+    }
+    // PHONE AUDIO MASTER v4
+    // iPhone / iPad Safari 対策：Web Audio は端末の消音モードで無音になることがあるため、
+    // 着信音は HTMLAudioElement を主系統にする。最初のユーザー操作でミュート再生を開始し、
+    // 2分後は新しく play() せず「すでに再生中の音をアンミュート」して鳴らす。
+    // Web Audio は補助フォールバックとして残す。
+    let roomPhoneAudioContext=null,roomPhoneAudioGain=null,roomPhoneAudioBuffer=null,roomPhoneAudioSource=null,roomPhoneAudioLoadPromise=null;
+    let roomPhoneKeepAliveOsc=null,roomPhoneKeepAliveGain=null,roomPhoneAudioLastError='';
+    let roomPhoneHtmlPrimed=false,roomPhoneHtmlPrimePromise=null;
+    let roomPhoneRingStarting=false;
+
+    function roomPhoneMasterAudioOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
+    function roomPhoneAudioUrl(){return roomPhoneRing?.currentSrc||roomPhoneRing?.src||new URL('room_phone_ring.mp3',window.location.href).href}
+    function setRoomPhoneAudioSessionPlayback(){
+      try{
+        if(navigator.audioSession&&'type' in navigator.audioSession)navigator.audioSession.type='playback';
+      }catch(e){console.warn('room phone audioSession',e)}
+    }
+    function primeRoomPhoneHtmlAudio(){
+      if(!roomPhoneRing||!roomPhoneMasterAudioOn())return Promise.resolve(false);
+      setRoomPhoneAudioSessionPlayback();
+      if(roomPhoneHtmlPrimed&&!roomPhoneRing.paused){
+        roomPhoneAudioUnlocked=true;
+        return Promise.resolve(true);
+      }
+      if(roomPhoneHtmlPrimePromise)return roomPhoneHtmlPrimePromise;
+      try{
+        roomPhoneRing.preload='auto';
+        roomPhoneRing.loop=true;
+        roomPhoneRing.volume=1;
+        roomPhoneRing.muted=true;
+        try{roomPhoneRing.currentTime=0}catch{}
+        const p=roomPhoneRing.play();
+        roomPhoneHtmlPrimePromise=Promise.resolve(p).then(()=>{
+          roomPhoneHtmlPrimed=true;
+          roomPhoneAudioUnlocked=true;
+          roomPhoneHtmlPrimePromise=null;
+          return true;
+        }).catch(e=>{
+          roomPhoneHtmlPrimed=false;
+          roomPhoneAudioUnlocked=false;
+          roomPhoneHtmlPrimePromise=null;
+          roomPhoneAudioLastError=e?.message||String(e);
+          console.warn('room phone HTML audio prime blocked',e);
+          return false;
+        });
+        return roomPhoneHtmlPrimePromise;
+      }catch(e){
+        roomPhoneHtmlPrimed=false;
+        roomPhoneAudioUnlocked=false;
+        roomPhoneAudioLastError=e?.message||String(e);
+        return Promise.resolve(false);
+      }
+    }
+    function ensureRoomPhoneAudioContext(){
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if(!AudioCtx)return null;
+      if(!roomPhoneAudioContext){
+        try{
+          roomPhoneAudioContext=new AudioCtx();
+          roomPhoneAudioGain=roomPhoneAudioContext.createGain();
+          roomPhoneAudioGain.gain.value=1;
+          roomPhoneAudioGain.connect(roomPhoneAudioContext.destination);
+        }catch(e){roomPhoneAudioContext=null;roomPhoneAudioGain=null;return null}
+      }
+      return roomPhoneAudioContext;
+    }
+    function startRoomPhoneKeepAlive(){
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx||ctx.state!=='running'||roomPhoneKeepAliveOsc)return;
+      try{
+        const osc=ctx.createOscillator(),gain=ctx.createGain();
+        osc.frequency.value=20;gain.gain.value=0.000001;
+        osc.connect(gain);gain.connect(ctx.destination);osc.start(0);
+        roomPhoneKeepAliveOsc=osc;roomPhoneKeepAliveGain=gain;
+      }catch{}
+    }
+    function stopRoomPhoneKeepAlive(){
+      if(roomPhoneKeepAliveOsc){try{roomPhoneKeepAliveOsc.stop(0)}catch{}try{roomPhoneKeepAliveOsc.disconnect()}catch{}roomPhoneKeepAliveOsc=null}
+      if(roomPhoneKeepAliveGain){try{roomPhoneKeepAliveGain.disconnect()}catch{}roomPhoneKeepAliveGain=null}
+    }
+    function loadRoomPhoneAudioBuffer(force=false){
+      if(roomPhoneAudioBuffer&&!force)return Promise.resolve(roomPhoneAudioBuffer);
+      if(roomPhoneAudioLoadPromise&&!force)return roomPhoneAudioLoadPromise;
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
+      const url=roomPhoneAudioUrl();
+      roomPhoneAudioLoadPromise=fetch(url,{cache:force?'reload':'no-store'})
+        .then(r=>{if(!r.ok)throw new Error(`room_phone_ring.mp3 HTTP ${r.status}`);return r.arrayBuffer()})
+        .then(a=>ctx.decodeAudioData(a.slice(0)))
+        .then(b=>{roomPhoneAudioBuffer=b;roomPhoneAudioLoadPromise=null;return b})
+        .catch(e=>{roomPhoneAudioLoadPromise=null;roomPhoneAudioLastError=e?.message||String(e);throw e});
+      return roomPhoneAudioLoadPromise;
+    }
+    function armRoomPhoneAudioMaster(){
+      if(!roomPhoneMasterAudioOn())return Promise.resolve(false);
+      primeRoomPhoneCallAudio();
+      setRoomPhoneAudioSessionPlayback();
+      // HTML Audio の準備を最優先。これはユーザー操作中に呼ぶ。
+      const htmlPrime=primeRoomPhoneHtmlAudio();
+      // Web Audio は補助として同時に解除しておく。
+      const ctx=ensureRoomPhoneAudioContext();
+      if(ctx){
+        try{
+          const resume=ctx.state==='running'?Promise.resolve():ctx.resume();
+          Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomPhoneKeepAlive();loadRoomPhoneAudioBuffer().catch(()=>{})}}).catch(()=>{});
+        }catch{}
+      }
+      return Promise.resolve(htmlPrime).then(ok=>{
+        if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+        return ok;
+      });
+    }
+    function disarmRoomPhoneAudioMaster(){
+      stopRoomPhoneKeepAlive();
+      if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}roomPhoneAudioSource=null}
+      if(roomPhoneAudioContext&&roomPhoneAudioContext.state==='running'){try{roomPhoneAudioContext.suspend()}catch{}}
+      if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
+      silenceRoomPhoneCallAudio();
+      roomPhoneHtmlPrimed=false;roomPhoneHtmlPrimePromise=null;roomPhoneAudioUnlocked=false;roomPhoneRingAudible=false;
+    }
+    // ♪が前回からONのままでも、ページ内の最初の操作で電話音声も解除する。
+    document.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
+    document.addEventListener('touchstart',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true,passive:true});
+    document.addEventListener('keydown',()=>{if(roomPhoneMasterAudioOn())armRoomPhoneAudioMaster()},{capture:true});
+
+    function primeRoomPhoneAudio(){
+      if(!roomPhoneMasterAudioOn())return;
+      armRoomPhoneAudioMaster();
+    }
+
+    // 通話音声：電話に出たら room_phone_wave.mp3 を8秒、その後
+    // room_phone_finish.mp3 を最後まで再生して通話終了。
+    // iPhone / iPad Safari対策として、着信音と同じく最初のユーザー操作で
+    // 2つのaudioをミュート再生して待機させる。
+    function primeRoomPhoneCallAudio(){
+      if(!roomPhoneMasterAudioOn()||!roomPhoneWave||!roomPhoneFinish)return Promise.resolve(false);
+      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused)return Promise.resolve(true);
+      if(roomPhoneCallAudioPrimePromise)return roomPhoneCallAudioPrimePromise;
+      const primeOne=(audio)=>{
+        audio.preload='auto';audio.loop=true;audio.volume=1;audio.muted=true;
+        try{audio.currentTime=0}catch{}
+        return Promise.resolve(audio.play());
+      };
+      roomPhoneCallAudioPrimePromise=Promise.all([primeOne(roomPhoneWave),primeOne(roomPhoneFinish)]).then(()=>{
+        roomPhoneCallAudioPrimed=true;roomPhoneCallAudioPrimePromise=null;return true;
+      }).catch(e=>{
+        roomPhoneCallAudioPrimed=false;roomPhoneCallAudioPrimePromise=null;
+        console.warn('room phone call audio prime',e);return false;
+      });
+      return roomPhoneCallAudioPrimePromise;
+    }
+    function silenceRoomPhoneCallAudio(){
+      [roomPhoneWave,roomPhoneFinish].forEach(audio=>{
+        if(!audio)return;
+        sprCancelGuardedAudioStart(audio);
+        try{audio.pause();audio.currentTime=0;audio.muted=true}catch{}
+      });
+      roomPhoneCallAudioPrimed=false;roomPhoneCallAudioPrimePromise=null;
+    }
+    function completeRoomPhoneAudioSequence(eventId){
+      if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
+      if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      if(roomPhoneFinish)roomPhoneFinish.onended=null;
+      silenceRoomPhoneCallAudio();
+      roomPhoneAudioSequenceEventId='';
+      roomPhoneLastMessage='通話が終了した。';
+      updateRoomPhoneUi();
+      // 終話メッセージは確認できる程度だけ表示し、その後は電話パネルごと自動で消す。
+      const finishedEventId=String(eventId);
+      roomPhoneUiClearTimer=setTimeout(()=>{
+        roomPhoneUiClearTimer=null;
+        if(roomPhoneCallState==='answered'&&String(roomPhoneActiveEvent?.id||'')===finishedEventId){
+          roomPhoneLastMessage='';
+          updateRoomPhoneUi();
+        }
+      },2000);
+      window.dispatchEvent(new CustomEvent('spr-room-phone-finished',{detail:{eventId}}));
+    }
+    async function playRoomPhoneFinish(eventId){
+      if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
+      if(roomPhoneWave){sprCancelGuardedAudioStart(roomPhoneWave);try{roomPhoneWave.pause();roomPhoneWave.currentTime=0;roomPhoneWave.muted=true}catch{}}
+      roomPhoneLastMessage='……';updateRoomPhoneUi();
+      if(!roomPhoneMasterAudioOn()||!roomPhoneFinish){completeRoomPhoneAudioSequence(eventId);return}
+      try{
+        roomPhoneFinish.onended=null;
+        const started=await sprStartAudioClean(roomPhoneFinish,{volume:1,loop:false,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(String(eventId)!==String(roomPhoneAudioSequenceEventId))return;
+        if(!started){console.warn('room phone finish blocked');completeRoomPhoneAudioSequence(eventId);return}
+        roomPhoneFinish.onended=()=>completeRoomPhoneAudioSequence(eventId);
+        const d=Number(roomPhoneFinish.duration);
+        const fallbackMs=Number.isFinite(d)&&d>0?Math.ceil(d*1000)+1500:30000;
+        roomPhoneFinishFallbackTimer=setTimeout(()=>completeRoomPhoneAudioSequence(eventId),fallbackMs);
+      }catch(e){console.warn('room phone finish',e);completeRoomPhoneAudioSequence(eventId)}
+    }
+    function startRoomPhoneAudioSequence(row){
+      if(!row?.id)return;
+      const eventId=String(row.id);
+      if(roomPhoneAudioSequenceEventId===eventId)return;
+      if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
+      if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
+      if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      if(roomPhoneFinish)roomPhoneFinish.onended=null;
+      roomPhoneAudioSequenceEventId=eventId;
+      roomPhoneLastMessage='受話器を取った。';updateRoomPhoneUi();
+      const beginWave=async()=>{
+        if(roomPhoneAudioSequenceEventId!==eventId)return;
+        if(roomPhoneMasterAudioOn()&&roomPhoneWave){
+          try{
+            await sprStartAudioClean(roomPhoneWave,{volume:1,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+          }catch(e){console.warn('room phone wave',e)}
+        }
+        if(roomPhoneAudioSequenceEventId!==eventId)return;
+        roomPhoneWaveTimer=setTimeout(()=>{
+          roomPhoneWaveTimer=null;
+          playRoomPhoneFinish(eventId);
+        },8000);
+      };
+      // 受話器を取った直後の「間」を残す。
+      // answered が届いてから1秒間は完全な無音にし、その後に波音を始める。
+      const answeredAt=Date.now();
+      const beginWaveAfterSilence=()=>{
+        if(roomPhoneAudioSequenceEventId!==eventId)return;
+        const remaining=Math.max(0,1000-(Date.now()-answeredAt));
+        if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
+        roomPhoneWaveDelayTimer=setTimeout(()=>{
+          roomPhoneWaveDelayTimer=null;
+          beginWave();
+        },remaining);
+      };
+      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused)beginWaveAfterSilence();
+      else primeRoomPhoneCallAudio().finally(beginWaveAfterSilence);
+    }
+    function roomPhonePresenceChoice(){
+      if(!roomPhoneActiveEvent?.id||roomPhoneCallState!=='ringing')return 'idle';
+      return roomPhoneDeclinedLocally()?'declined':'pending';
+    }
+    function roomPhonePresencePayload(choice=roomPhonePresenceChoice()){
+      return {
+        room_no:String(activeRoom||''),
+        player_id:String(storedPlayerId||''),
+        display_name:String(activeGuest||storedGuestName||'ゲスト'),
+        phone_event_id:roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'',
+        phone_choice:String(choice||'idle'),
+        updated_at:new Date().toISOString()
+      };
+    }
+    async function trackRoomPhonePresence(choice=roomPhonePresenceChoice()){
+      if(!roomPhonePresenceChannel||!roomPhonePresenceReady||!activeRoom)return false;
+      try{await roomPhonePresenceChannel.track(roomPhonePresencePayload(choice));return true}
+      catch(e){console.warn('room phone presence track',e);return false}
+    }
+    function roomPhonePresenceMembers(){
+      if(!roomPhonePresenceChannel?.presenceState)return [];
+      try{
+        const state=roomPhonePresenceChannel.presenceState()||{};
+        return Object.values(state).flat().filter(member=>String(member?.room_no||'')===String(activeRoom||''));
+      }catch{return []}
+    }
+    function roomPhoneEveryonePresentDeclined(){
+      const eventId=roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'';
+      if(!eventId||roomPhoneCallState!=='ringing')return false;
+      const members=roomPhonePresenceMembers();
+      // Presenceがまだ接続できていない場合は、単独利用としてローカル選択を使う。
+      if(!roomPhonePresenceReady||!members.length)return roomPhoneDeclinedLocally();
+      // 同じ部屋にPresenceしている全員が「この着信」に対してdeclinedになった時だけ成立。
+      // event_idが空／違う人は「まだ選んでいない人」として扱う。
+      return members.every(member=>
+        String(member?.phone_event_id||'')===eventId&&String(member?.phone_choice||'')==='declined'
+      );
+    }
+    function cancelRoomPhoneDeclineStop(){
+      if(roomPhoneDeclineStopTimer){clearTimeout(roomPhoneDeclineStopTimer);roomPhoneDeclineStopTimer=null}
+      roomPhoneDeclineStopEventId='';
+    }
+    function softSilenceRoomPhoneRing(){
+      roomPhoneRingAudible=false;
+      roomPhoneRingStarting=false;
+      sprCancelGuardedAudioStart(roomPhoneRing);
+      if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
+      // HTML Audioはpauseせずミュートだけにする。後から未選択者が入った時、
+      // iPhoneでも新しいplay()なしで再び鳴らせるよう再生状態を維持する。
+      if(roomPhoneRing){try{roomPhoneRing.muted=true;roomPhoneRing.loop=true}catch{}}
+    }
+    function evaluateRoomPhoneDeclineState({restart=false}={}){
+      if(roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id){cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';return}
+      const eventId=String(roomPhoneActiveEvent.id);
+      const allDeclined=roomPhoneEveryonePresentDeclined();
+      if(!allDeclined){
+        cancelRoomPhoneDeclineStop();
+        roomPhoneDeclineSilencedEventId='';
+        attemptRoomPhoneRing({restart});
+        return;
+      }
+      // すでにこの着信を全員拒否で静音化済みなら、そのまま維持する。
+      if(roomPhoneDeclineSilencedEventId===eventId){softSilenceRoomPhoneRing();return}
+      // 全員が「出ない」を選んでも、現実の電話のように3秒だけ呼び出し音を残す。
+      attemptRoomPhoneRing({restart});
+      if(roomPhoneDeclineStopTimer&&roomPhoneDeclineStopEventId===eventId)return;
+      cancelRoomPhoneDeclineStop();
+      roomPhoneDeclineStopEventId=eventId;
+      roomPhoneDeclineStopTimer=setTimeout(()=>{
+        roomPhoneDeclineStopTimer=null;roomPhoneDeclineStopEventId='';
+        if(roomPhoneCallState!=='ringing'||String(roomPhoneActiveEvent?.id||'')!==eventId)return;
+        if(roomPhoneEveryonePresentDeclined()){
+          roomPhoneDeclineSilencedEventId=eventId;
+          softSilenceRoomPhoneRing();
+        }else{
+          roomPhoneDeclineSilencedEventId='';
+          attemptRoomPhoneRing();
+        }
+      },3000);
+    }
+    function stopRoomPhonePresence(){
+      cancelRoomPhoneDeclineStop();
+      roomPhoneDeclineSilencedEventId='';
+      roomPhonePresenceReady=false;
+      if(roomPhonePresenceChannel&&window.supabaseClientSpecial){
+        try{roomPhonePresenceChannel.untrack()}catch{}
+        try{window.supabaseClientSpecial.removeChannel(roomPhonePresenceChannel)}catch{}
+      }
+      roomPhonePresenceChannel=null;
+    }
+    async function startRoomPhonePresence(room){
+      stopRoomPhonePresence();
+      if(!window.supabaseClientSpecial||!room)return;
+      const roomAtStart=String(room);
+      const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey}}})
+        .on('presence',{event:'sync'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
+        .on('presence',{event:'join'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
+        .on('presence',{event:'leave'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()});
+      roomPhonePresenceChannel=channel;
+      channel.subscribe(async status=>{
+        if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
+        if(status==='SUBSCRIBED'){
+          roomPhonePresenceReady=true;
+          await trackRoomPhonePresence();
+          evaluateRoomPhoneDeclineState();
+        }
+      });
+    }
+
+    function roomPhoneEventExpired(row=roomPhoneActiveEvent){
+      const end=Date.parse(row?.expires_at||'');
+      return Number.isFinite(end)&&Date.now()>=end;
+    }
+    function startRoomPhoneWebAudio(){
+      if(!roomPhoneMasterAudioOn()||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return false;
+      const ctx=ensureRoomPhoneAudioContext();
+      if(!ctx||ctx.state!=='running'||!roomPhoneAudioBuffer||!roomPhoneAudioGain)return false;
+      if(roomPhoneAudioSource)return true;
+      try{
+        const source=ctx.createBufferSource();source.buffer=roomPhoneAudioBuffer;source.loop=true;source.connect(roomPhoneAudioGain);source.start(0);
+        source.onended=()=>{if(roomPhoneAudioSource===source)roomPhoneAudioSource=null};roomPhoneAudioSource=source;return true;
+      }catch{return false}
+    }
+    function attemptRoomPhoneRing({restart=false}={}){
+      if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return;
+      if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
+      setRoomPhoneAudioSessionPlayback();
+
+      // すでに聞こえている着信音は絶対に先頭へ戻さない。
+      if(roomPhoneRingAudible&&!roomPhoneRing.paused&&!roomPhoneRing.muted)return;
+      // 220msの保護時間中にPresence通知が重なっても、開始処理を二重に走らせない。
+      if(roomPhoneRingStarting)return;
+      roomPhoneRingStarting=true;
+
+      // 初回の着信だけ restart=true で「ミュート → seek → 無音 → seek → unmute」。
+      // 全員拒否後に再び鳴らす時など restart=false の場合は、待機中の続きから自然に戻す。
+      void sprStartAudioClean(roomPhoneRing,{volume:1,loop:true,restart:Boolean(restart),guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+        roomPhoneRingStarting=false;
+        if(roomPhoneCallState!=='ringing'||roomPhoneEventExpired()||!roomPhoneMasterAudioOn()){
+          if(roomPhoneRing)roomPhoneRing.muted=true;
+          return;
+        }
+        if(ok){
+          roomPhoneHtmlPrimed=true;
+          roomPhoneAudioUnlocked=true;
+          roomPhoneRingAudible=true;
+          return;
+        }
+        roomPhoneRingAudible=false;
+        // HTML Audio が復帰できなかった場合だけ Web Audio を最後のフォールバックにする。
+        const ctx=ensureRoomPhoneAudioContext();
+        if(ctx&&ctx.state==='running'){
+          if(roomPhoneAudioBuffer)startRoomPhoneWebAudio();
+          else loadRoomPhoneAudioBuffer().then(()=>startRoomPhoneWebAudio()).catch(()=>{});
+        }
+      }).catch(()=>{roomPhoneRingStarting=false;roomPhoneRingAudible=false});
+    }
+    function stopRoomPhoneRing(){
+      roomPhoneRingAudible=false;
+      roomPhoneRingStarting=false;
+      sprCancelGuardedAudioStart(roomPhoneRing);
+      if(roomPhoneAudioSource){try{roomPhoneAudioSource.stop(0)}catch{}try{roomPhoneAudioSource.disconnect()}catch{}roomPhoneAudioSource=null}
+      if(roomPhoneRing){try{roomPhoneRing.pause();roomPhoneRing.currentTime=0;roomPhoneRing.muted=true}catch{}}
+      roomPhoneHtmlPrimed=false;
+    }
+
+    function testRoomPhoneSound(){
+      const status=document.getElementById('adminMasterStatus');
+      if(!roomPhoneMasterAudioOn()){
+        if(status)status.textContent='着信音テスト：先に右上の♪をONにしてください。';
+        return;
+      }
+      if(!roomPhoneRing){if(status)status.textContent='着信音テスト失敗：audio要素がありません。';return}
+      setRoomPhoneAudioSessionPlayback();
+      // テストは Web Audio を使わず、iPhoneの消音モードでも聞こえるHTML Audioを直接鳴らす。
+      try{
+        if(status)status.textContent='着信音テスト準備中…';
+        sprStartAudioClean(roomPhoneRing,{volume:1,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS,respectMaster:false}).then(ok=>{
+          if(!ok)throw new Error('HTML Audio start failed');
+          if(status)status.textContent='着信音テスト再生中（HTML AUDIO / 3秒）';
+          roomPhoneHtmlPrimed=true;roomPhoneAudioUnlocked=true;roomPhoneRingAudible=true;
+          setTimeout(()=>{
+            // 停止ではなくミュートに戻し、実際の2分後着信に備えて再生状態を維持する。
+            sprCancelGuardedAudioStart(roomPhoneRing);
+            try{roomPhoneRing.muted=true;roomPhoneRing.loop=true;roomPhoneRingAudible=false}catch{}
+            if(status)status.textContent='着信音テスト終了。音が聞こえたか確認してください。';
+          },3000);
+        }).catch(error=>{
+          roomPhoneAudioLastError=error?.message||String(error);
+          if(status)status.textContent='着信音テスト失敗：'+roomPhoneAudioLastError;
+        });
+      }catch(error){
+        roomPhoneAudioLastError=error?.message||String(error);
+        if(status)status.textContent='着信音テスト失敗：'+roomPhoneAudioLastError;
+      }
+    }
+    document.getElementById('adminPhoneSoundTest')?.addEventListener('click',testRoomPhoneSound);
+    function updateRoomPhoneUi(){
+      if(!roomPhoneCallPanel)return;
+      const declined=roomPhoneCallState==='ringing'&&roomPhoneDeclinedLocally();
+      const active=(roomPhoneCallState==='ringing'&&!declined)||(roomPhoneCallState==='answered'&&Boolean(roomPhoneLastMessage));
+      const hasVisual=Boolean(roomVisualConfig(activeRoom));
+      const showMain=hasVisual&&selectedRoomScene==='phone'&&active;
+      const showFallback=!hasVisual&&Boolean(activeRoom)&&active;
+      roomPhoneCallPanel.classList.toggle('hidden',!showMain);
+      roomPhoneCallPanel.classList.toggle('resolved',roomPhoneCallState!=='ringing');
+      if(roomPhoneFallbackPanel){
+        roomPhoneFallbackPanel.classList.toggle('hidden',!showFallback);
+        roomPhoneFallbackPanel.classList.toggle('resolved',roomPhoneCallState!=='ringing');
+      }
+      const message=roomPhoneCallState==='ringing'?'電話が鳴っている。':roomPhoneLastMessage;
+      if(message){
+        roomPhoneCallStatus.textContent=message;
+        if(roomPhoneFallbackStatus)roomPhoneFallbackStatus.textContent=message;
+      }
+    }
+    function startRoomPhoneConversation(row){
+      if(!row?.id||roomPhoneConversationEventId===String(row.id))return;
+      roomPhoneConversationEventId=String(row.id);
+      // 同室の全端末で同じ answered UPDATE を受け取るため、全員同時に
+      // room_phone_wave.mp3（8秒）→ room_phone_finish.mp3 の順で再生する。
+      startRoomPhoneAudioSequence(row);
+      window.dispatchEvent(new CustomEvent('spr-room-phone-answered',{detail:{
+        eventId:row.id,
+        roomNo:String(row.room_no||activeRoom||''),
+        resortDay:Number(row.resort_day||roomPhoneResortDay()),
+        answeredBy:row.answered_by||'',
+        answeredName:row.answered_name||''
+      }}));
+    }
+    async function expireRoomPhoneEvent(){
+      const current=roomPhoneActiveEvent;
+      if(!current?.id||String(current.status)!=='ringing')return;
+      // UIと着信音は1分到達時に即座に止める。DBはserver now()でmissedへ確定する。
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
+      stopRoomPhoneRing();
+      roomPhoneCallState='missed';roomPhoneLastMessage='';updateRoomPhoneUi();trackRoomPhonePresence('idle');
+      if(!window.supabaseClientSpecial)return;
+      try{
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_room_phone_expire',{p_event_id:Number(current.id)});
+        if(error)throw error;
+        if(data)applyRoomPhoneEvent(data,{announce:false});
+      }catch(e){console.warn('room phone expire sync',e)}
+    }
+    function applyRoomPhoneEvent(row,{announce=false}={}){
+      if(!row||!activeRoom||String(row.room_no)!==String(activeRoom))return;
+      if(String(row.service_date||'')!==String(cafeServiceDate())||Number(row.resort_day)!==roomPhoneResortDay())return;
+      const previousStatus=roomPhoneCallState;
+      roomPhoneActiveEvent=row;
+      const status=String(row.status||'');
+      if(status==='ringing'){
+        roomPhoneCallState='ringing';roomPhoneLastMessage='';
+        if(roomPhoneEventExpired(row)){
+          expireRoomPhoneEvent();
+          return;
+        }
+        updateRoomPhoneUi();
+        trackRoomPhonePresence().finally(()=>evaluateRoomPhoneDeclineState({restart:previousStatus!=='ringing'}));
+        evaluateRoomPhoneDeclineState({restart:previousStatus!=='ringing'});
+        return;
+      }
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
+      stopRoomPhoneRing();
+      if(status==='answered'){
+        roomPhoneCallState='answered';
+        roomPhoneLastMessage='受話器を取った。';
+        updateRoomPhoneUi();
+        trackRoomPhonePresence('answered');
+        if(announce||previousStatus==='ringing')startRoomPhoneConversation(row);
+        return;
+      }
+      roomPhoneCallState=status==='missed'?'missed':'idle';
+      roomPhoneLastMessage='';
+      updateRoomPhoneUi();
+      trackRoomPhonePresence('idle');
+    }
+    async function loadRoomPhoneEvent(room=activeRoom){
+      if(!window.supabaseClientSpecial||!room)return null;
+      try{
+        const {data,error}=await window.supabaseClientSpecial
+          .from('spr_room_phone_events')
+          .select('id,room_no,service_date,resort_day,status,ring_started_at,expires_at,answered_at,answered_by,answered_name,missed_at,conversation_key')
+          .eq('room_no',String(room))
+          .eq('service_date',cafeServiceDate())
+          .eq('resort_day',roomPhoneResortDay())
+          .maybeSingle();
+        if(error)throw error;
+        if(activeRoom!==String(room))return null;
+        if(data)applyRoomPhoneEvent(data,{announce:false});
+        return data||null;
+      }catch(e){console.warn('room phone load',e);return null}
+    }
+    async function beginRoomPhoneCall(){
+      if(!activeRoom||roomPhoneActiveEvent||roomPhoneCreating||roomPhoneCallState==='ringing')return;
+      if(!window.supabaseClientSpecial)return;
+      roomPhoneCreating=true;
+      const roomAtStart=String(activeRoom);
+      try{
+        const playerId=await sprPlayerId();
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_room_phone_start',{
+          p_room_no:roomAtStart,
+          p_service_date:cafeServiceDate(),
+          p_resort_day:roomPhoneResortDay(),
+          p_player_id:playerId||null,
+          p_display_name:activeGuest||storedGuestName||null
+        });
+        if(error)throw error;
+        if(activeRoom!==roomAtStart)return;
+        if(data)applyRoomPhoneEvent(data,{announce:false});
+      }catch(e){
+        console.warn('room phone start sync',e);
+        await loadRoomPhoneEvent(roomAtStart);
+      }finally{roomPhoneCreating=false}
+    }
+    async function answerRoomPhoneCall(){
+      if(roomPhoneResolving||roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id)return;
+      if(roomPhoneEventExpired()){expireRoomPhoneEvent();return}
+      roomPhoneResolving=true;
+      try{
+        const playerId=await sprPlayerId();
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_room_phone_answer',{
+          p_event_id:Number(roomPhoneActiveEvent.id),
+          p_player_id:playerId||null,
+          p_display_name:activeGuest||storedGuestName||null
+        });
+        if(error)throw error;
+        if(data)applyRoomPhoneEvent(data,{announce:true});
+      }catch(e){
+        console.warn('room phone answer sync',e);
+        await loadRoomPhoneEvent(activeRoom);
+      }finally{roomPhoneResolving=false}
+    }
+    function declineRoomPhoneCall(){
+      if(roomPhoneCallState!=='ringing'||!roomPhoneActiveEvent?.id)return;
+      localStorage.setItem(roomPhoneDeclinedKey(roomPhoneActiveEvent.id),'1');
+      // 自分が「出ない」を選んでも、同室者に未選択の人がいれば呼び出し音は止めない。
+      // 全員のPresenceがdeclinedになった時だけ3秒カウントを開始する。
+      updateRoomPhoneUi();
+      trackRoomPhonePresence('declined').finally(()=>evaluateRoomPhoneDeclineState());
+      evaluateRoomPhoneDeclineState();
+    }
+    function resolveRoomPhoneCall(result){
+      if(result==='answered')answerRoomPhoneCall();
+      else if(result==='declined')declineRoomPhoneCall();
+    }
+    function checkRoomPhoneStay(){
+      if(!activeRoom||!roomView.classList.contains('room-active'))return;
+      if(roomPhoneCallState==='ringing'){
+        if(roomPhoneEventExpired())expireRoomPhoneEvent();
+        return;
+      }
+      if(roomPhoneActiveEvent){roomPhoneStayStartedAt=0;return}
+      if(!roomPhoneEligibleNow()){roomPhoneStayStartedAt=0;return}
+      if(!roomPhoneStayStartedAt)roomPhoneStayStartedAt=Date.now();
+      if(Date.now()-roomPhoneStayStartedAt>=ROOM_PHONE_WAIT_MS)beginRoomPhoneCall();
+    }
+    function startRoomPhoneStay(){
+      if(roomPhoneTimer)clearInterval(roomPhoneTimer);
+      roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';trackRoomPhonePresence('idle');
+      roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
+      updateRoomPhoneUi();
+      roomPhoneTimer=setInterval(checkRoomPhoneStay,1000);
+      checkRoomPhoneStay();
+    }
+    function stopRoomPhoneStay(){
+      if(roomPhoneTimer){clearInterval(roomPhoneTimer);roomPhoneTimer=null}
+      roomPhoneStayStartedAt=0;roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
+      if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
+      cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
+      if(roomPhoneWaveDelayTimer){clearTimeout(roomPhoneWaveDelayTimer);roomPhoneWaveDelayTimer=null}
+      if(roomPhoneWaveTimer){clearTimeout(roomPhoneWaveTimer);roomPhoneWaveTimer=null}
+      if(roomPhoneFinishFallbackTimer){clearTimeout(roomPhoneFinishFallbackTimer);roomPhoneFinishFallbackTimer=null}
+      roomPhoneAudioSequenceEventId='';
+      if(roomPhoneFinish)roomPhoneFinish.onended=null;
+      silenceRoomPhoneCallAudio();
+      stopRoomPhoneRing();updateRoomPhoneUi();
+    }
+    roomPhoneAnswer?.addEventListener('click',()=>resolveRoomPhoneCall('answered'));
+    roomPhoneDecline?.addEventListener('click',()=>resolveRoomPhoneCall('declined'));
+    document.querySelectorAll('[data-room-phone-answer]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('answered')));
+    document.querySelectorAll('[data-room-phone-decline]').forEach(button=>button.addEventListener('click',()=>resolveRoomPhoneCall('declined')));
+    // 客室内で触れた時は毎回、AudioContext が running か確認して再アームする。
+    roomLounge?.addEventListener('pointerdown',()=>{if(roomPhoneMasterAudioOn()){primeRoomPhoneCallAudio();armRoomPhoneAudioMaster()}},{capture:true,passive:true});
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden&&roomPhoneMasterAudioOn()&&roomPhoneAudioContext?.state==='running'){
+        startRoomPhoneKeepAlive();
+        if(roomPhoneCallState==='ringing')attemptRoomPhoneRing();
+      }
+    });
+    // 初回の解除に失敗した端末でも、客室内で次に触れた瞬間に再度音声を準備する。
+    roomLounge?.addEventListener('pointerdown',()=>{
+      if(!activeRoom||roomPhoneCallState==='ringing'||roomPhoneCallState==='answered')return;
+      if(roomPhoneRing?.paused)primeRoomPhoneAudio();
+    },{passive:true});
+    // Safari がバックグラウンド移行で音声を一時停止した場合、復帰時に着信中なら再試行する。
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden&&roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
+    });
     let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
       if(hernandoBarGlobalOpen)return true;
@@ -3053,28 +4268,285 @@ body.night-theme #integratedCafeShell iframe{
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
     const hernandoVideoScreen=document.getElementById('hernandoVideoScreen'),hernandoBullringVideo=document.getElementById('hernandoBullringVideo');
-    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
-    const hernandoArenaFallback=document.getElementById('hernandoArenaFallback'),hernandoArenaPlay=document.getElementById('hernandoArenaPlay'),hernandoArenaBack=document.getElementById('hernandoArenaBack');
+    const hernandoEncounter=document.getElementById('hernandoEncounter'),hernandoArenaBg=document.getElementById('hernandoArenaBg'),hernandoArenaBgBlur=document.getElementById('hernandoArenaBgBlur'),hernandoArenaBgm=document.getElementById('hernandoArenaBgm');
+    function setHernandoArenaImage(src){
+      if(hernandoArenaBg)hernandoArenaBg.src=src;
+      if(hernandoArenaBgBlur)hernandoArenaBgBlur.src=src;
+    }
+    const hernandoArenaBack=document.getElementById('hernandoArenaBack');
+    const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
+    const hernandoDialogueName=hernandoDialogue?.querySelector('.hernando-dialogue-name');
+    const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline');
+    const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
     // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Public bucket: videos / object: hernandos_bullring.mp4
     const HERNANDO_BULLRING_VIDEO_URL=`${SUPABASE_URL}/storage/v1/object/public/videos/hernandos_bullring.mp4`;
     if(hernandoBullringVideo){hernandoBullringVideo.src=HERNANDO_BULLRING_VIDEO_URL;hernandoBullringVideo.load()}
     const hernandoVideoFallback=document.getElementById('hernandoVideoFallback'),hernandoVideoFallbackText=document.getElementById('hernandoVideoFallbackText');
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
-    let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false;
+    let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false,hernandoEntryWasIntroSeen=false;
+    let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
+    let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
+    let hernandoArenaBgmFadeToken=0;
+    let hernandoDrinkRoundNo=1,hernandoPoisonChoice='';
+
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
+    function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
     function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'||windowSprFlagCache['hernando-intro-seen']===true||windowSprFlagCache['hernando-intro-seen']===1||windowSprFlagCache['hernando-intro-seen']==='1'}
+    function hernandoVisitCount(){return Math.max(0,Number(localStorage.getItem(hernandoVisitCountKey())||windowSprFlagCache['hernando-visit-count']||0))}
     function markHernandoIntroSeen(){
       localStorage.setItem(hernandoIntroSeenKey(),'1');
       windowSprFlagCache['hernando-intro-seen']=true;
       setRemoteFlag('hernando-intro-seen',true).catch(e=>console.warn('hernando intro seen sync',e));
     }
+    function registerHernandoVisit(){
+      let current=hernandoVisitCount();
+      // Older test data may already have the intro-seen flag but no visit count. In that case this entrance is treated as visit #2.
+      if(current===0&&hernandoEntryWasIntroSeen)current=1;
+      const next=current+1;
+      localStorage.setItem(hernandoVisitCountKey(),String(next));windowSprFlagCache['hernando-visit-count']=next;
+      setRemoteFlag('hernando-visit-count',next).catch(e=>console.warn('hernando visit count sync',e));
+      return next;
+    }
+    const HERNANDO_DIALOGUE={
+      1:{
+        intro:[
+          '……へえ、見つけたのか。あの扉を開けた上に、ここまで降りてくるとはな。なかなか度胸がある。',
+          '俺はエルナンド。――ここは俺の《Ruedo》だ。',
+          '上じゃ随分と綺麗な顔をしたリゾートだっただろう？　海、酒、音楽、賭け事……退屈しないよう、よく出来てる。だが、俺には少し足りない。勝つと分かっている勝負も、安全だと分かっている夜も、何度繰り返したところで心臓は鳴らないからな。',
+          '俺が欲しいのは、もう少し――際どい刺激だ。だから、君とちょっとしたゲームをしよう。',
+          '見ての通り、酒は三杯。覚えておけ。――三杯のうち一杯は、必ず毒だ。残り二杯はただの酒。見た目じゃ分からないし、どれが毒かは俺しか知らない。',
+          '君は三杯の中から一つを選ぶ。それを三度。三回続けて毒杯を避けられたら、君の勝ちだ。簡単だろ？',
+          'ただし、毒を口にしたなら、もう遅い。その時点で今夜の挑戦は終わりだ。何が起きるかって？　……そこまで教えたら面白くないだろ。まあ、朝には酔いも醒めてるんじゃないか？',
+          '怖いなら、引き返しても構わない。俺は逃げる奴を追いかけてまで、勝負をさせる趣味はない。',
+          '……ただ。ここまで降りてきた君が、そんなつまらない牡牛じゃないことくらいは期待してる。',
+          '三度、俺の目の前で生き残ってみろ。出来たら――この島で、君の命を一度拾ってくれるものをやる。',
+          '何をくれるのかって？　勝ってから聞け。報酬まで先に見せたら、勝負が安くなる。',
+          'さあ、選べ。――今夜の牡牛。俺の前に立つか、それとも、このまま尻尾を巻いて帰るか。決めるのは君だ。'
+        ],
+        accept:[
+          '……そうこなくちゃな。',
+          'その強がった顔が、三杯目まで残っているか――俺が見届けてやる。',
+          'さあ、始めよう。'
+        ],
+        decline:[
+          '……そうか。残念だ。',
+          'まあ、引き際を知ってるのも悪いことじゃない。命知らずと勇敢は、似ているようで違うからな。',
+          'ただ――ここまで降りてきて、俺の顔まで見ておいて帰るんだ。少しくらい惜しそうな顔をしてくれよ。',
+          '気が変わったら、また来い。その時は今夜より、いい顔を見せてくれ。'
+        ]
+      },
+      2:{
+        intro:[
+          '……また来たのか。いいな。一度ここを知って、それでもまたこの階段を降りてくる。そういう奴は嫌いじゃない。',
+          'ルールは覚えてるな？　三杯のうち一杯が毒。三度、外れを引かなければ君の勝ちだ。',
+          '説明はもういらないだろ。今夜も、俺の前に立つかどうか――それだけ決めろ。',
+          'さあ、どうする。――今夜の牡牛。'
+        ],
+        accept:[
+          '……そうこなくちゃな。',
+          '一度味を知って、それでも戻ってきたんだ。前より少しは、いい顔を見せてくれるんだろ？',
+          'その強がった顔が、三杯目まで残っているか――今夜も俺が見届けてやる。',
+          'さあ、始めよう。'
+        ],
+        decline:[
+          '……そうか。今日は降りるのか。',
+          '構わないさ。俺は逃げる背中を追いかけてまで、勝負をさせる趣味はない。',
+          'ただ、一度ここへ戻ってきたってことは――少しくらい未練があるんだろ？',
+          'その気になったら、また降りてこい。次はもう少し、俺を期待させてくれ。'
+        ]
+      },
+      3:{
+        intro:[
+          'ああ、来たのか。ルールは覚えてるな？　三杯のうち一杯が毒。三度、外れを引かなければ君の勝ちだ。',
+          'ここまで来るのも、もう慣れた顔だな。最初の頃みたいな緊張も、少しは抜けたか？',
+          '……まあ、それでも三杯目まで余裕でいられるかは別の話だけどな。',
+          '今夜も俺の前に立つか。それとも、今日は大人しく帰るか。',
+          'さあ、どうする。――今夜の牡牛。'
+        ],
+        accept:[
+          '……そうこなくちゃな。',
+          '何度来ても、ここで選ぶ瞬間だけは誤魔化せない。',
+          '慣れたつもりでいるなら、その余裕が三杯目まで続くか――今夜も俺が見届けてやる。',
+          'さあ、始めよう。'
+        ],
+        decline:[
+          '……今日はやめておくか。',
+          '構わない。無理に立たせたところで、いい勝負にはならないからな。',
+          'ただ、何度もここまで降りてきてるんだ。次に来る時まで、その気だけは鈍らせるなよ。',
+          '俺はいつでもここにいる。'
+        ]
+      }
+    };
     function clearHernandoDescentTimers(){clearTimeout(hernandoDescentTimerA);clearTimeout(hernandoDescentTimerB);hernandoDescentTimerA=0;hernandoDescentTimerB=0}
     function showHernandoDoorChoice(){
       clearHernandoDescentTimers();
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
     }
     function hideHernandoDoorChoice(){hernandoSecretSequence.classList.remove('open');hernandoSecretSequence.setAttribute('aria-hidden','true')}
+    function playHernandoArenaBgm(restart=false){
+      if(!hernandoArenaBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      sprCancelGuardedAudioStart(hernandoArenaBgm);
+      try{
+        hernandoArenaBgm.loop=true;
+        hernandoArenaBgm.muted=false;
+        hernandoArenaBgm.volume=.42;
+        if(restart&&hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;
+        const p=hernandoArenaBgm.play();
+        if(p&&p.catch)p.catch(e=>console.warn('Hernando BGM play',e));
+      }catch(e){console.warn('Hernando BGM play',e)}
+    }
+    function cancelHernandoArenaBgmFade(restoreVolume=false){
+      hernandoArenaBgmFadeToken++;
+      if(restoreVolume&&hernandoArenaBgm){
+        try{hernandoArenaBgm.volume=.42}catch{}
+      }
+    }
+    function fadeHernandoArenaBgm(targetVolume=.07,duration=3000,onDone=null){
+      if(!hernandoArenaBgm||hernandoArenaBgm.paused){if(typeof onDone==='function')onDone();return}
+      const token=++hernandoArenaBgmFadeToken;
+      const startVolume=Math.max(0,Math.min(1,Number(hernandoArenaBgm.volume)||0));
+      const target=Math.max(0,Math.min(1,Number(targetVolume)||0));
+      const ms=Math.max(1,Number(duration)||1);
+      const started=performance.now();
+      const step=now=>{
+        if(token!==hernandoArenaBgmFadeToken)return;
+        const t=Math.min(1,(now-started)/ms);
+        const eased=1-Math.pow(1-t,2);
+        try{hernandoArenaBgm.volume=startVolume+(target-startVolume)*eased}catch{}
+        if(t<1){requestAnimationFrame(step);return}
+        if(typeof onDone==='function')onDone();
+      };
+      requestAnimationFrame(step);
+    }
+    function hernandoTypeDelay(ch){if(ch==='、')return 90;if(ch==='。'||ch==='？'||ch==='！')return 150;if(ch==='…')return 110;return 34}
+    function finishHernandoDialogueLine(){
+      if(!hernandoDialogueCurrentText)return;
+      hernandoDialogueTypeToken++;
+      hernandoDialogueTyping=false;
+      hernandoDialogueText.textContent=hernandoDialogueCurrentText;
+    }
+    function showHernandoDialogueLine(line){
+      const text=String(line||'');
+      hernandoDialogueCurrentText=text;
+      // 基本はエルナンド名を表示。人魚の護り貝の獲得通知だけはシステム文として名前を消す。
+      if(hernandoDialogueName){
+        const isMermaidShellNotice=hernandoDialogueMode==='drinkWin'&&text.startsWith('人魚の護り貝を手に入れた。');
+        hernandoDialogueName.classList.toggle('hidden',isMermaidShellNotice);
+      }
+      // 初回会話で三杯の酒を説明し始めた瞬間、酒杯の画像へ切り替える。
+      if(hernandoDialogueMode==='intro'&&text.startsWith('見ての通り、酒は三杯。')){
+        setHernandoArenaImage('hernandos_bullring02.jpg');
+      }
+      // 勝利後の2ページ目「約束だ。」から、人魚の護り貝を置いた03画像へ切り替え、その後も維持する。
+      if(hernandoDialogueMode==='drinkWin'&&hernandoDialogueIndex>=1){
+        setHernandoArenaImage('hernandos_bullring03.jpg');
+      }
+      // 「今夜の牡牛にはならない」側は、最後の台詞に入った瞬間から
+      // 闘牛場BGMをゆっくり絞り、退場時のぶつ切り感をなくす。
+      if(hernandoDialogueMode==='decline'&&hernandoDialogueIndex===hernandoDialogueLines.length-1){
+        fadeHernandoArenaBgm(.07,3000);
+      }
+      const token=++hernandoDialogueTypeToken;
+      hernandoDialogueTyping=true;
+      hernandoDialogueText.textContent='';
+      const chars=[...text];
+      const spans=chars.map(ch=>{const span=document.createElement('span');span.className='hernando-dialogue-char';span.textContent=ch;hernandoDialogueText.appendChild(span);return span});
+      const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
+      (async()=>{
+        await new Promise(r=>setTimeout(r,140));
+        if(token!==hernandoDialogueTypeToken)return;
+        await new Promise(requestAnimationFrame);
+        for(let i=0;i<spans.length;i++){
+          if(token!==hernandoDialogueTypeToken)return;
+          spans[i].classList.add('in');
+          await new Promise(r=>setTimeout(r,hernandoTypeDelay(chars[i])));
+        }
+        if(token===hernandoDialogueTypeToken)hernandoDialogueTyping=false;
+      })();
+    }
+    function setHernandoDialogueLines(lines,mode='intro',after='choice'){
+      hernandoDialogueLines=Array.isArray(lines)?lines:[];hernandoDialogueIndex=0;hernandoDialogueMode=mode;hernandoDialogueAfter=after;
+      hernandoDialogueChoices.classList.add('hidden');hernandoDrinkGame?.classList.add('hidden');hernandoDialogueNext.classList.remove('hidden');
+      if(!hernandoDialogueLines.length){hernandoDialogue.classList.add('hidden');return}
+      hernandoDialogue.classList.remove('hidden');
+      showHernandoDialogueLine(hernandoDialogueLines[0]);
+      hernandoDialogueNext.textContent='NEXT　›';
+    }
+    function hernandoUniformChoice(){
+      const options=['right','center','left'];
+      if(window.crypto?.getRandomValues){
+        const limit=Math.floor(0x100000000/3)*3,buf=new Uint32Array(1);let value=0;
+        do{window.crypto.getRandomValues(buf);value=buf[0]}while(value>=limit);
+        return options[value%3];
+      }
+      return options[Math.floor(Math.random()*3)];
+    }
+    function showHernandoDrinkRound(){
+      hernandoDialogueMode='drinkChoice';hernandoDialogueAfter='drinkChoice';hernandoDialogueLines=[];hernandoDialogueIndex=0;
+      setHernandoArenaImage('hernandos_bullring02.jpg');
+      hernandoDialogue.classList.remove('hidden');hernandoDialogueChoices.classList.add('hidden');hernandoDialogueNext.classList.add('hidden');
+      hernandoDrinkGame?.classList.remove('hidden');
+      if(hernandoDrinkRound)hernandoDrinkRound.textContent=`${hernandoDrinkRoundNo} / 3`;
+      hernandoDrinkButtons.forEach(btn=>btn.disabled=false);
+      hernandoPoisonChoice=hernandoUniformChoice();
+      showHernandoDialogueLine(hernandoDrinkRoundNo===1?'どの酒を選ぶ？':`${hernandoDrinkRoundNo}杯目だ。どの酒を選ぶ？`);
+    }
+    function grantMermaidGuardShell(){
+      const qty=belongingCount('mermaidGuardShell')+1;
+      setLocalInventoryQuantity('mermaidGuardShell',qty);
+      return qty;
+    }
+    async function chooseHernandoDrink(choice){
+      if(hernandoDialogueMode!=='drinkChoice'||!choice)return;
+      hernandoDrinkButtons.forEach(btn=>btn.disabled=true);hernandoDrinkGame?.classList.add('hidden');
+      if(choice===hernandoPoisonChoice){
+        setHernandoDialogueLines([
+          '……それを選んだか。',
+          '残念だ。毒杯だ。今夜の勝負はここまで。口にしたなら、もう遅い。',
+          '朝には酔いも醒めてるんじゃないか？　……また立つ気があるなら、次は外せ。'
+        ],'drinkPoison','exit');
+        return;
+      }
+      if(hernandoDrinkRoundNo>=3){
+        const qty=grantMermaidGuardShell();
+        setHernandoDialogueLines([
+          '……三杯とも外したか。いいな。最後までその顔を崩さなかった。',
+          '約束だ。持っていけ。――《人魚の護り貝》だ。',
+          'この島で、何かに命を奪われそうになった時に一度だけ君の身代わりになる。大事に持っておけ。',
+          `人魚の護り貝を手に入れた。所持数は ${qty} 個。`
+        ],'drinkWin','exit');
+        return;
+      }
+      const passed=hernandoDrinkRoundNo;
+      hernandoDrinkRoundNo++;
+      setHernandoDialogueLines([
+        passed===1?'……毒じゃない。まず一杯目は生き残ったな。':'……また毒を外した。あと一杯だ。',
+        'まだ終わりじゃない。次を選べ。'
+      ],'drinkSafe','drinkNext');
+    }
+    function beginHernandoDialogue(visit){
+      hernandoDrinkRoundNo=1;hernandoPoisonChoice='';hernandoDrinkGame?.classList.add('hidden');
+      const key=visit<=1?1:(visit===2?2:3),script=HERNANDO_DIALOGUE[key];
+      setHernandoDialogueLines(script.intro,'intro','choice');
+      hernandoDialogue.dataset.visitGroup=String(key);
+    }
+    function closeHernandoArena(fadeOut=false){
+      hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
+      hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');hernandoDrinkGame?.classList.add('hidden');
+      hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
+      if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
+        fadeHernandoArenaBgm(0,900,()=>{
+          try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        });
+        return;
+      }
+      cancelHernandoArenaBgmFade();
+      sprCancelGuardedAudioStart(hernandoArenaBgm);
+      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+    }
     function showHernandoArena(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
@@ -3082,17 +4554,22 @@ body.night-theme #integratedCafeShell iframe{
       hernandoVideoFallback.classList.remove('show');
       try{hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}catch{}
       hernandoEncounter.classList.add('open');hernandoEncounter.setAttribute('aria-hidden','false');
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      try{hernandoArenaBgm.currentTime=0}catch{}
-      if(hernandoArenaBgm){
-        hernandoArenaBgm.volume=.42;
-        const p=localStorage.getItem('spr-bgm-enabled')==='off'?null:hernandoArenaBgm.play();
-        if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+      // 入場時は通常の闘牛場画像から開始。前回の02表示を次回訪問へ持ち越さない。
+      setHernandoArenaImage('hernandos_bullring01.jpg');
+      if(hernandoArenaBgm&&localStorage.getItem('spr-bgm-enabled')!=='off'){
+        // 初回は導入動画の終了後、この闘牛場表示に切り替わった時点でBGMを開始する。
+        playHernandoArenaBgm(true);
       }
+      const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
     function playHernandoVideo(){
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
+      // 導入動画が終わるまでは闘牛場BGMを再生しない。動画終了後に showHernandoArena() で初めて開始する。
+      if(hernandoArenaBgm){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        }
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
       hernandoVideoStarted=true;
@@ -3106,28 +4583,36 @@ body.night-theme #integratedCafeShell iframe{
     function startHernandoDescent(){
       hideHernandoDoorChoice();
       clearHernandoDescentTimers();
-      // 2回目以降は導入動画を再生せず、そのまま闘牛場へ入る。
-      if(hasSeenHernandoIntro()){
-        showHernandoArena();
-        return;
-      }
+      const introSeen=hasSeenHernandoIntro();hernandoEntryWasIntroSeen=introSeen;
       hernandoVideoStarted=false;
       hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
-      // iPhone/iPadで音声付き動画を自動再生しやすくするため、ユーザー操作中に一度だけ再生権限を確保する。
-      try{
-        hernandoBullringVideo.muted=true;
-        const unlock=hernandoBullringVideo.play();
-        if(unlock&&unlock.then)unlock.then(()=>{
-          if(!hernandoVideoStarted){hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}
-          hernandoBullringVideo.muted=false;
-        }).catch(()=>{hernandoBullringVideo.muted=false});
-      }catch{}
+
+      // 階段演出中は無音。闘牛場BGMはここでは一切再生しない。
+      // 初回は導入動画終了後、2回目以降は闘牛場表示後に初めてBGMを開始する。
+      pauseResortMusic();
+      if(hernandoArenaBgm){
+        sprCancelGuardedAudioStart(hernandoArenaBgm);
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        }
+
+      // 初回だけ、同じユーザー操作中に導入動画の再生権限も確保する。
+      if(!introSeen){
+        try{
+          hernandoBullringVideo.muted=true;
+          const unlock=hernandoBullringVideo.play();
+          if(unlock&&unlock.then)unlock.then(()=>{
+            if(!hernandoVideoStarted){hernandoBullringVideo.pause();hernandoBullringVideo.currentTime=0}
+            hernandoBullringVideo.muted=false;
+          }).catch(()=>{hernandoBullringVideo.muted=false});
+        }catch{}
+      }
       hernandoDescentTimerA=setTimeout(()=>{
         hernandoDescentText.classList.add('fade');
         setTimeout(()=>{hernandoDescentText.textContent='ゆっくりと、階段を降りていった。';hernandoDescentText.classList.remove('fade')},360);
       },1550);
-      hernandoDescentTimerB=setTimeout(playHernandoVideo,3600);
+      // 2回目以降も暗転＋階段演出は毎回表示し、その後だけ導入動画を省略する。
+      hernandoDescentTimerB=setTimeout(()=>{if(introSeen)showHernandoArena();else playHernandoVideo()},3600);
     }
     if(hernandoSecretEnter)hernandoSecretEnter.addEventListener('click',startHernandoDescent);
     if(hernandoSecretCancel)hernandoSecretCancel.addEventListener('click',hideHernandoDoorChoice);
@@ -3140,19 +4625,41 @@ body.night-theme #integratedCafeShell iframe{
       hernandoBullringVideo.addEventListener('ended',()=>{markHernandoIntroSeen();showHernandoArena()});
       hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
-    if(hernandoArenaPlay)hernandoArenaPlay.addEventListener('click',()=>{
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      if(hernandoArenaBgm){
-        hernandoArenaBgm.volume=.42;
-        const p=hernandoArenaBgm.play();if(p&&p.catch)p.catch(()=>{if(hernandoArenaFallback)hernandoArenaFallback.classList.add('show')});
+    // 文字送り中は、会話枠を1回タップすると現在のページだけ全文を即表示する。
+    // NEXT・選択肢・酒杯ボタンの操作とは干渉させない。
+    if(hernandoDialogue)hernandoDialogue.addEventListener('click',e=>{
+      if(e.target.closest('button'))return;
+      if(hernandoDialogueTyping)finishHernandoDialogueLine();
+    });
+    if(hernandoDialogueNext)hernandoDialogueNext.addEventListener('click',()=>{
+      // 文字送りの途中でNEXTを押した場合は、次へ進まず現在の台詞を全文表示する。
+      if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
+      if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;showHernandoDialogueLine(hernandoDialogueLines[hernandoDialogueIndex]);return}
+      if(hernandoDialogueAfter==='choice'){
+        hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');return;
       }
+      if(hernandoDialogueAfter==='drinkGame'){showHernandoDrinkRound();return}
+      if(hernandoDialogueAfter==='drinkNext'){showHernandoDrinkRound();return}
+      if(hernandoDialogueAfter==='arena'){
+        hernandoDialogue.classList.add('hidden');return;
+      }
+      if(hernandoDialogueAfter==='exit'){closeHernandoArena(true);return}
     });
-    if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',()=>{
-      try{hernandoArenaBgm.pause();hernandoArenaBgm.currentTime=0}catch{}
-      if(hernandoArenaFallback)hernandoArenaFallback.classList.remove('show');
-      hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
+    if(hernandoBullAccept)hernandoBullAccept.addEventListener('click',()=>{
+      cancelHernandoArenaBgmFade(true);
+      const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
+      hernandoDrinkRoundNo=1;hernandoPoisonChoice='';
+      setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','drinkGame');
     });
+    if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
+      cancelHernandoArenaBgmFade(true);
+      const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
+      setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
+    });
+    hernandoDrinkButtons.forEach(btn=>btn.addEventListener('click',()=>{void chooseHernandoDrink(btn.dataset.hernandoDrink)}));
+    if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
     function updateRoomContextAction(){
+      updateRoomPhoneUi();
       if(!roomContextAction)return;
       const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.remove('hidden');
       roomContextAction.classList.add('hidden');roomExploreResult.classList.add('hidden');roomContextAction.onclick=null;
@@ -3224,7 +4731,7 @@ body.night-theme #integratedCafeShell iframe{
       roomSceneButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomScene===selectedRoomScene)));
       updateRoomContextAction();
     }
-    function chooseRoomScene(scene){selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true)}
+    function chooseRoomScene(scene){selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing')attemptRoomPhoneRing()}
     function stepRoomScene(amount){const index=roomSceneOrder.indexOf(selectedRoomScene);chooseRoomScene(roomSceneOrder[(index+amount+roomSceneOrder.length)%roomSceneOrder.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
@@ -3263,14 +4770,18 @@ body.night-theme #integratedCafeShell iframe{
     }
     async function startRoomSync(room){
       if(roomRealtimeChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null}
-      roomMessageCache=[];roomServiceCache=[];renderChat();renderRoomServiceHistory();await loadRoomSharedData(room);
+      startRoomPhonePresence(room);
+      roomMessageCache=[];roomServiceCache=[];renderChat();renderRoomServiceHistory();
+      await Promise.all([loadRoomSharedData(room),loadRoomPhoneEvent(room)]);
       if(!window.supabaseClientSpecial||activeRoom!==room)return;
       roomRealtimeChannel=window.supabaseClientSpecial.channel(`spr-room-${room}-${Math.random().toString(36).slice(2)}`)
         .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_messages',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;const msg=roomSharedMessage(payload.new);roomMessageCache.push(msg);roomMessageCache=roomMessageCache.slice(-100);renderChat();if(!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(msg)}})
         .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_service_orders',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;roomServiceCache.push(roomSharedOrder(payload.new));roomServiceCache=roomServiceCache.slice(-20);renderRoomServiceHistory()})
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_phone_events',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;applyRoomPhoneEvent(payload.new,{announce:false})})
+        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_room_phone_events',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;applyRoomPhoneEvent(payload.new,{announce:String(payload.new?.status||'')==='answered'})})
         .subscribe();
     }
-    function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;roomMessageCache=[];roomServiceCache=[]}
+    function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;stopRoomPhonePresence();roomMessageCache=[];roomServiceCache=[]}
 
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
@@ -3287,7 +4798,7 @@ body.night-theme #integratedCafeShell iframe{
     function renderRoomCollection(){
       const grid=document.getElementById('roomCollectionGrid'),progress=document.getElementById('collectionProgress');if(!grid)return;const counts=coasterCounts();const unique=counts.filter(Boolean).length,total=counts.reduce((a,b)=>a+b,0);
       if(progress)progress.textContent=`${unique} / 89 COLLECTION　｜　所持 ${total}枚`;grid.replaceChildren();
-      counts.forEach((count,n)=>{const card=document.createElement('div');card.className='collection-card'+(count?'':' missing');const img=document.createElement('img');img.src=count?`coaster${String(n).padStart(2,'0')}.PNG`:'';img.alt=`No.${String(n).padStart(2,'0')}`;if(!count){img.style.visibility='hidden'}const name=document.createElement('strong');name.textContent=`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('small');qty.textContent=count?`× ${count}`:'未入手';card.append(img,name,qty);
+      counts.forEach((count,n)=>{const card=document.createElement('div');card.className='collection-card'+(count?'':' missing');const img=document.createElement('img');img.src=count?`coaster${String(n).padStart(2,'0')}.PNG`:'';img.alt=count?sprCoasterLabel(n):`No.${String(n).padStart(2,'0')}`;if(!count){img.style.visibility='hidden'}const name=document.createElement('strong');name.textContent=count?sprCoasterLabel(n):`No.${String(n).padStart(2,'0')}`;const qty=document.createElement('small');qty.textContent=count?`× ${count}`:'未入手';card.append(img,name,qty);
         if(count){
           card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',`${img.alt}を拡大表示`);
           const openPreview=()=>openCollectionPreview(img.src,img.alt);
@@ -3298,7 +4809,13 @@ body.night-theme #integratedCafeShell iframe{
         grid.append(card)});
     }
     function renderRoomBelongings(){
-      if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=false;
+      if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=true;
+      const lives=remainingLives();
+      const lifeRow=document.createElement('div');lifeRow.className='belongings-item life-row';
+      const lifeMain=document.createElement('div');lifeMain.className='belongings-main';
+      const hearts=document.createElement('div');hearts.className='life-hearts';
+      for(let i=0;i<3;i++){const h=document.createElement('span');h.className='life-heart'+(i<lives?'':' empty');h.textContent=i<lives?'♥':'♡';hearts.append(h)}
+      lifeRow.append(lifeMain,hearts);roomBelongingsList.append(lifeRow);
       Object.entries(belongingsCatalog).forEach(([key,item])=>{
         const rawCount=Math.max(0,Math.floor(Number(belongings[key]||0)));
         const count=Number.isFinite(item.max)?Math.min(item.max,rawCount):rawCount;
@@ -3317,7 +4834,7 @@ body.night-theme #integratedCafeShell iframe{
         }else{
           const name=document.createElement('strong');name.textContent=item.label;info.append(name);
         }
-        const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail);main.append(info);
+        if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(main,qty);roomBelongingsList.append(row)
       });
       if(!hasAny){const empty=document.createElement('div');empty.className='belongings-empty';empty.textContent='現在、所持品はありません。カジノの景品交換所などで手に入れた品物がここに表示されます。';roomBelongingsList.append(empty)}
@@ -3393,6 +4910,8 @@ body.night-theme #integratedCafeShell iframe{
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
       event.preventDefault();const entered=roomPin.value.trim();const room=entered==='0923'?'501':entered; if(entered==='501'){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
+      // 有効な客室へ入るタップの中で着信音を先に解除しておく。
+      primeRoomPhoneAudio();
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
@@ -3403,14 +4922,14 @@ body.night-theme #integratedCafeShell iframe{
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);
+      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();
     });
     document.getElementById('chatForm').addEventListener('submit',async event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
+    function leaveActiveRoom(){stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}});
@@ -3449,7 +4968,7 @@ body.night-theme #integratedCafeShell iframe{
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache)delete windowSprFlagCache['hernando-intro-seen'];}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];}}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
@@ -3479,7 +4998,7 @@ body.night-theme #integratedCafeShell iframe{
     }catch(e){console.warn('world reset session check',e);return false}
   }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
-    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n\nこの操作を実行しますか？'))return;
+    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者のCHIPは0になります\n\nこの操作を実行しますか？'))return;
     if(!confirm('最終確認です。\n管理人以外の参加者ログインもリセットします。よろしいですか？'))return;
     try{
       resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミック＋参加者ログインを初期化中…';
@@ -3490,10 +5009,16 @@ body.night-theme #integratedCafeShell iframe{
         const c=client();if(c){
           await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing']);
           const {error:runtimeResetError}=await c.rpc('spr_reset_runtime_state');if(runtimeResetError)throw runtimeResetError;
+          // 本番用リセットでは、RPC側の初期値に関係なく全参加者のCHIPを必ず0にする。
+          const {error:chipResetError}=await c.from('players').update({chips:0}).not('id','is',null);
+          if(chipResetError)throw chipResetError;
           // エルナンド導入動画の既読は全プレイヤー分を本番用リセット対象にする。
           // RLS等で削除できない環境でも、hydratePersistentState側で最新RESET以前の既読を無効化する。
-          const {error:hernandoSeenResetError}=await c.from('spr_player_flags').delete().eq('flag_key','hernando-intro-seen');
-          if(hernandoSeenResetError)console.warn('hernando intro seen reset',hernandoSeenResetError);
+          const {error:hernandoSeenResetError}=await c.from('spr_player_flags').delete().in('flag_key',['hernando-intro-seen','hernando-visit-count']);
+          if(hernandoSeenResetError)console.warn('hernando intro/visit reset',hernandoSeenResetError);
+          // ROOM電話イベントも本番用リセット対象。これで同じ夜でも2分後に再テストできる。
+          const {error:roomPhoneResetError}=await c.from('spr_room_phone_events').delete().not('id','is',null);
+          if(roomPhoneResetError)throw roomPhoneResetError;
           await deactivateOtherPlayers(adminId);
         }
       }catch(e){console.warn('special/runtime/login reset',e);throw e}
@@ -3503,7 +5028,7 @@ body.night-theme #integratedCafeShell iframe{
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
       try{const c=client();if(c)await c.from('players').update({last_seen_at:new Date().toISOString()}).eq('id',adminId)}catch(e){console.warn('admin last_seen restore',e)}
-      if(statusEl)statusEl.textContent='初期化完了。他の参加者はログアウトしました。DAY1へ戻ります。';
+      if(statusEl)statusEl.textContent='初期化完了。全参加者のCHIPを0にし、他の参加者はログアウトしました。DAY1へ戻ります。';
       setTimeout(()=>goDay(1),500);
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
@@ -3595,12 +5120,13 @@ body.night-theme #integratedCafeShell iframe{
     parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
-    document.getElementById(&#x27;coasterFile&#x27;).textContent=file;
+    document.getElementById(&#x27;coasterFile&#x27;).textContent=parent.sprCoasterLabel(file);
+    document.getElementById(&#x27;coasterImage&#x27;).alt=parent.sprCoasterLabel(file);
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.add(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);
   };
   document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
-    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
+    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,lines:[&#x27;あら、こちらのカフェは初めてでいらっしゃいますか？ただいま期間限定で、ご利用のお客様へ記念のコースターをお渡ししております。&#x27;,&#x27;最近は、そのコースターをきっかけにお客様同士で絵柄を見せ合ったり、交換を楽しまれることも多いんですよ。アフタヌーンティーのカフェエリアは、ゲストの皆様の交流の場としても開放しております。よろしければ、旅先ならではの素敵な出会いもお楽しみくださいませ。&#x27;]},&#x27;*&#x27;),260);
   };
   // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
@@ -3630,7 +5156,7 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
       cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
-      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;bt.append(im);g.append(bt);
+      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;im.alt=parent.sprCoasterLabel(file);bt.title=im.alt;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
     document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
@@ -3780,12 +5306,13 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
-    document.getElementById(&#x27;coasterFile&#x27;).textContent=file;
+    document.getElementById(&#x27;coasterFile&#x27;).textContent=parent.sprCoasterLabel(file);
+    document.getElementById(&#x27;coasterImage&#x27;).alt=parent.sprCoasterLabel(file);
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.add(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;false&#x27;);
   };
   document.getElementById(&#x27;coasterClose&#x27;).onclick=()=&gt;{
     const modal=document.getElementById(&#x27;coasterModal&#x27;);modal.classList.remove(&#x27;show&#x27;);modal.setAttribute(&#x27;aria-hidden&#x27;,&#x27;true&#x27;);
-    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,text:&#x27;あら、初めてでしたか？ただいま期間限定で、記念のコースターをお配りしているんです。ぜひ旅のお供にしてくださいね！&#x27;},&#x27;*&#x27;),260);
+    if(firstDialogue)setTimeout(()=&gt;parent.postMessage({type:&#x27;spr-cafe-staff-dialogue&#x27;,lines:[&#x27;あら、こちらのカフェは初めてでいらっしゃいますか？ただいま期間限定で、ご利用のお客様へ記念のコースターをお渡ししております。&#x27;,&#x27;最近は、そのコースターをきっかけにお客様同士で絵柄を見せ合ったり、交換を楽しまれることも多いんですよ。アフタヌーンティーのカフェエリアは、ゲストの皆様の交流の場としても開放しております。よろしければ、旅先ならではの素敵な出会いもお楽しみくださいませ。&#x27;]},&#x27;*&#x27;),260);
   };
   // Staff dialogue is rendered by the parent overlay; no in-frame close handler is needed.
 })();
@@ -3815,7 +5342,7 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
       cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;14 DRINKS&#x27;,at:new Date().toISOString()});
-      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;bt.append(im);g.append(bt);
+      const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;im.alt=parent.sprCoasterLabel(file);bt.title=im.alt;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
     document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
@@ -3976,21 +5503,48 @@ window.addEventListener('message',e=>{
 </style>
 <script>
 (()=>{
- const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose');
- let token=0; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose'),card=o?.querySelector('.cafe-staff-card');
+ let token=0,sequence=[],sequenceIndex=-1,currentLine='',typing=false; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ function finishCurrentLine(){
+   if(!typing||!currentLine)return;
+   token++;typing=false;t.textContent=currentLine;
+ }
  async function show(line){
+   currentLine=String(line||'');typing=true;
    const mine=++token;t.textContent='';
-   const chars=[...line],spans=chars.map(ch=>{const s=document.createElement('span');s.className='cafe-staff-char';s.textContent=ch;t.appendChild(s);return s});
+   const chars=[...currentLine],spans=chars.map(ch=>{const s=document.createElement('span');s.className='cafe-staff-char';s.textContent=ch;t.appendChild(s);return s});
    o.classList.add('show');o.setAttribute('aria-hidden','false');
    await wait(650); if(mine!==token)return; await new Promise(requestAnimationFrame);
    for(let i=0;i<spans.length;i++){if(mine!==token)return;spans[i].classList.add('in');const ch=chars[i];let d=82;if(ch==='、')d=260;else if(ch==='。'||ch==='？'||ch==='！')d=460;else if(ch==='…')d=320;await wait(d)}
+   if(mine===token)typing=false;
  }
- function hide(){token++;o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+ function setButton(){c.textContent=(sequence.length&&sequenceIndex<sequence.length-1)?'NEXT　›':'CLOSE　×'}
+ function showSingle(line){sequence=[];sequenceIndex=-1;setButton();show(line)}
+ function showSequence(lines){
+   sequence=(Array.isArray(lines)?lines:[]).map(v=>String(v||'').trim()).filter(Boolean);
+   if(!sequence.length)return;
+   sequenceIndex=0;setButton();show(sequence[0]);
+ }
+ function hide(){token++;typing=false;currentLine='';sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true')}
  // CAFE以外の館内イベントからも、同じスタッフ会話演出を呼び出せるようにする。
- window.__sprShowStaffDialogue=(line)=>show(String(line||''));
+ window.__sprShowStaffDialogue=(line)=>showSingle(String(line||''));
  window.__sprHideStaffDialogue=hide;
- c.addEventListener('click',hide);
- window.addEventListener('message',e=>{const d=e.data||{};if(d.type!=='spr-cafe-staff-dialogue')return;const ok=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].some(f=>f&&f.contentWindow===e.source);if(ok)show(String(d.text||''))});
+ // スタッフの文字送り中も、会話枠を1回タップすると現在のページだけ全文を即表示する。
+ // NEXT/CLOSEボタンは従来どおりの動作を優先する。
+ if(card)card.addEventListener('click',e=>{
+   if(e.target.closest('button'))return;
+   if(typing)finishCurrentLine();
+ });
+ c.addEventListener('click',()=>{
+   if(sequence.length&&sequenceIndex<sequence.length-1){sequenceIndex++;setButton();show(sequence[sequenceIndex]);return}
+   hide();
+ });
+ window.addEventListener('message',e=>{
+   const d=e.data||{};if(d.type!=='spr-cafe-staff-dialogue')return;
+   const ok=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].some(f=>f&&f.contentWindow===e.source);
+   if(!ok)return;
+   if(Array.isArray(d.lines)&&d.lines.length)showSequence(d.lines);else showSingle(String(d.text||''));
+ });
 })();
 </script>
 <script>
