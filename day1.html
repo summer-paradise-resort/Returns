@@ -3916,7 +3916,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       return roomPhoneDeclinedLocally()?'declined':'pending';
     }
     function roomPhonePresencePayload(choice=roomPhonePresenceChoice()){
-      return {
+      const payload={
         room_no:String(activeRoom||''),
         player_id:String(storedPlayerId||''),
         display_name:String(activeGuest||storedGuestName||'ゲスト'),
@@ -3924,6 +3924,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         phone_choice:String(choice||'idle'),
         updated_at:new Date().toISOString()
       };
+      if(typeof roomServiceHorrorPresenceFields==='function')Object.assign(payload,roomServiceHorrorPresenceFields());
+      return payload;
     }
     async function trackRoomPhonePresence(choice=roomPhonePresenceChoice()){
       if(!roomPhonePresenceChannel||!roomPhonePresenceReady||!activeRoom)return false;
@@ -4005,17 +4007,25 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       stopRoomPhonePresence();
       if(!window.supabaseClientSpecial||!room)return;
       const roomAtStart=String(room);
-      const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey}}})
-        .on('presence',{event:'sync'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
-        .on('presence',{event:'join'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()})
-        .on('presence',{event:'leave'},()=>{if(activeRoom!==roomAtStart)return;evaluateRoomPhoneDeclineState()});
+      const syncSharedRoomState=()=>{
+        if(activeRoom!==roomAtStart)return;
+        evaluateRoomPhoneDeclineState();
+        if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
+        if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
+      };
+      const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey},broadcast:{self:true,ack:true}}})
+        .on('presence',{event:'sync'},syncSharedRoomState)
+        .on('presence',{event:'join'},syncSharedRoomState)
+        .on('presence',{event:'leave'},syncSharedRoomState)
+        .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
+        .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
         if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
         if(status==='SUBSCRIBED'){
           roomPhonePresenceReady=true;
           await trackRoomPhonePresence();
-          evaluateRoomPhoneDeclineState();
+          syncSharedRoomState();
         }
       });
     }
@@ -4885,6 +4895,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const ROOM_SERVICE_HORROR_WAIT_MS=10*1000;
     let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='';
     let roomServiceHorrorTimer=null,roomServiceHorrorPending=null;
+    let roomServiceHorrorLocalChoice='idle',roomServiceHorrorResolving=false,roomServiceHorrorLastResolution=null;
+    const roomServiceHorrorResolutionByEvent=new Map(),roomServiceHorrorNgApplying=new Set();
     let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
     let roomServiceDoorbellKeepAliveOsc=null,roomServiceDoorbellKeepAliveGain=null;
 
@@ -4941,10 +4953,102 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function roomServiceHorrorToken(){return `day${roomPhoneResortDay()}:night`}
     function roomServiceHorrorDoneKey(token=roomServiceHorrorToken()){return `spr-room-service-horror:${playerStorageId}:${token}`}
+    function roomServiceHorrorEventKey(token=roomServiceHorrorToken()){return `spr-room-service-horror-event:${playerStorageId}:${token}`}
+    function roomServiceHorrorKnownEventId(){return String(localStorage.getItem(roomServiceHorrorEventKey())||'')}
     function roomServiceHorrorAlreadyDone(){return localStorage.getItem(roomServiceHorrorDoneKey())==='1'}
-    function markRoomServiceHorrorDone(){
+    function markRoomServiceHorrorDone(eventId=''){
       const token=roomServiceHorrorToken();localStorage.setItem(roomServiceHorrorDoneKey(token),'1');
+      if(eventId)localStorage.setItem(roomServiceHorrorEventKey(token),String(eventId));
       setRemoteFlag(`room-service-horror:${token}`,true).catch(error=>console.warn('room service horror flag sync',error));
+    }
+    function normalizeRoomServiceHorrorEvent(payload){
+      const raw=payload?.room_service_event||payload?.event||payload;
+      const eventId=String(raw?.event_id||raw?.eventId||'').trim();
+      const room=String(raw?.room_no||raw?.room||'').trim();
+      const serviceDate=String(raw?.service_date||raw?.serviceDate||'').trim();
+      const resortDay=Math.max(1,Math.min(7,Number(raw?.resort_day||raw?.resortDay)||0));
+      const category=String(raw?.horror_category||raw?.category||'').trim();
+      const outcome=String(raw?.outcome||'').trim();
+      if(!eventId||!room||!serviceDate||!resortDay||!['ng','ominous'].includes(category)||!['hit','empty'].includes(outcome))return null;
+      return {
+        event_id:eventId,
+        room_no:room,
+        service_date:serviceDate,
+        resort_day:resortDay,
+        horror_category:category,
+        drink_name:String(raw?.drink_name||raw?.drinkName||''),
+        outcome,
+        started_at:String(raw?.started_at||raw?.startedAt||new Date().toISOString()),
+        origin_player_id:String(raw?.origin_player_id||raw?.originPlayerId||''),
+        origin_name:String(raw?.origin_name||raw?.originName||'ゲスト')
+      };
+    }
+    function roomServiceHorrorEventApplies(event){
+      return Boolean(event&&activeRoom&&roomView.classList.contains('room-active')&&String(event.room_no)===String(activeRoom)&&event.service_date===cafeServiceDate()&&Number(event.resort_day)===roomPhoneResortDay());
+    }
+    function roomServiceHorrorSerializableEvent(pending=roomServiceHorrorPending){return pending?.event?{...pending.event}:null}
+    function roomServiceHorrorPresenceFields(){
+      const event=roomServiceHorrorSerializableEvent();
+      return {
+        room_service_event_id:event?.event_id||'',
+        room_service_choice:event?String(roomServiceHorrorLocalChoice||'pending'):'idle',
+        room_service_event:event,
+        room_service_resolution:roomServiceHorrorLastResolution?{...roomServiceHorrorLastResolution}:null
+      };
+    }
+    async function sendRoomServiceHorrorBroadcast(event,payload){
+      if(!roomPhonePresenceChannel||!roomPhonePresenceReady||!activeRoom)return false;
+      try{await roomPhonePresenceChannel.send({type:'broadcast',event,payload});return true}
+      catch(error){console.warn(`room service horror ${event}`,error);return false}
+    }
+    function createRoomServiceHorrorEvent(record){
+      const chance=record?.horrorCategory==='ng'?.5:.1;
+      return {
+        event_id:sprSafeUuid(),room_no:String(activeRoom||''),service_date:cafeServiceDate(),resort_day:roomPhoneResortDay(),
+        horror_category:String(record?.horrorCategory||''),drink_name:String(record?.name||''),
+        outcome:roomServiceHorrorRandomHit(chance)?'hit':'empty',started_at:new Date().toISOString(),
+        origin_player_id:String(storedPlayerId||''),origin_name:String(activeGuest||storedGuestName||'ゲスト')
+      };
+    }
+    function applyRoomServiceHorrorStart(payload){
+      const event=normalizeRoomServiceHorrorEvent(payload);if(!roomServiceHorrorEventApplies(event))return false;
+      if(roomServiceHorrorResolutionByEvent.has(event.event_id))return false;
+      const current=roomServiceHorrorPending?.event||null;
+      if(current?.event_id===event.event_id)return true;
+      // 同時に複数端末で発火しても、event_idの小さい1件へ全端末を収束させる。
+      if(current&&String(current.event_id)<String(event.event_id))return false;
+      // すでにこの夜のイベントを終えた人は、別室の二重イベントへ巻き込まない。
+      if(!current&&roomServiceHorrorAlreadyDone()&&roomServiceHorrorKnownEventId()!==event.event_id)return false;
+      if(roomServiceHorrorTimer){clearTimeout(roomServiceHorrorTimer);roomServiceHorrorTimer=null}
+      roomServiceHorrorLocalChoice='pending';roomServiceHorrorLastResolution=null;
+      roomServiceHorrorPending={eventId:event.event_id,event,room:event.room_no,record:{name:event.drink_name,horrorCategory:event.horror_category},stage:'announcement',dialogueStarted:false};
+      markRoomServiceHorrorDone(event.event_id);
+      if(!current)playRoomServiceDoorbell();
+      updateRoomDoorServicePanel();void trackRoomPhonePresence();return true;
+    }
+    function syncRoomServiceHorrorFromPresence(){
+      const members=roomPhonePresenceMembers();
+      const currentId=String(roomServiceHorrorPending?.eventId||'');
+      if(currentId){
+        const resolutions=members.map(member=>member?.room_service_resolution).filter(Boolean).filter(resolution=>String(resolution?.event_id||resolution?.room_service_event?.event_id||'')===currentId);
+        const accepted=resolutions.find(resolution=>String(resolution?.choice||'')==='accepted');
+        const declined=resolutions.find(resolution=>String(resolution?.choice||'')==='declined');
+        if(accepted||declined){void applyRoomServiceHorrorResolution(accepted||declined);return}
+      }
+      const events=members.map(member=>normalizeRoomServiceHorrorEvent(member?.room_service_event)).filter(event=>roomServiceHorrorEventApplies(event)&&!roomServiceHorrorResolutionByEvent.has(event.event_id));
+      if(roomServiceHorrorPending?.event)events.push(roomServiceHorrorPending.event);
+      events.sort((a,b)=>String(a.event_id).localeCompare(String(b.event_id)));
+      if(events[0])applyRoomServiceHorrorStart(events[0]);
+    }
+    function roomServiceHorrorEveryonePresentDeclined(){
+      const eventId=String(roomServiceHorrorPending?.eventId||'');
+      if(!eventId||roomServiceHorrorLocalChoice!=='declined')return false;
+      const members=roomPhonePresenceMembers();
+      if(!roomPhonePresenceReady||!members.length)return true;
+      return members.every(member=>String(member?.room_service_event_id||'')===eventId&&String(member?.room_service_choice||'')==='declined');
+    }
+    function evaluateRoomServiceHorrorDeclineState(){
+      if(roomServiceHorrorEveryonePresentDeclined())void resolveRoomServiceHorror('declined');
     }
     function updateRoomDoorServicePanel(){
       if(!roomDoorServicePanel)return;
@@ -4958,11 +5062,18 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(!show)return;
       if(realOrders.length){
         roomDoorServiceStatus.textContent='ルームサービスが到着している。';
+        roomDoorServiceActions.classList.remove('hidden');
         roomDoorServiceActions.classList.remove('two-actions');
         roomDoorDecline.classList.add('hidden');
         return;
       }
+      if(roomServiceHorrorLocalChoice==='declined'){
+        roomDoorServiceStatus.textContent='受け取りを断った。ほかの宿泊者の選択を待っている。';
+        roomDoorServiceActions.classList.add('hidden');
+        return;
+      }
       roomDoorServiceStatus.textContent='インターホンが鳴った。';
+      roomDoorServiceActions.classList.remove('hidden');
       roomDoorServiceActions.classList.add('two-actions');
       roomDoorDecline.classList.remove('hidden');
     }
@@ -5002,30 +5113,75 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
     roomServiceNgVideo?.addEventListener('ended',closeRoomServiceNgVideo);
     roomServiceNgVideo?.addEventListener('error',()=>roomServiceNgFallback?.classList.remove('hidden'));
-    async function acceptRoomServiceHorror(){
-      const pending=roomServiceHorrorPending;if(!pending)return;
-      roomServiceHorrorPending=null;updateRoomDoorServicePanel();
-      const chance=pending.record.horrorCategory==='ng'?0.5:0.1;
-      if(!roomServiceHorrorRandomHit(chance)){showRoomServiceHorrorResult('外に誰もいない。');return}
-      if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
-      showRoomServiceNgVideo();
+    function normalizeRoomServiceHorrorResolution(payload){
+      const event=normalizeRoomServiceHorrorEvent(payload);if(!event)return null;
+      const choice=String(payload?.choice||payload?.resolution||'');if(!['accepted','declined'].includes(choice))return null;
+      return {...event,room_service_event:event,choice,resolved_by:String(payload?.resolved_by||''),resolved_name:String(payload?.resolved_name||'ゲスト'),resolved_at:String(payload?.resolved_at||new Date().toISOString())};
     }
+    function roomServiceHorrorNgAppliedKey(eventId){return `spr-room-service-horror-ng:${playerStorageId}:${eventId}`}
+    async function applyRoomServiceHorrorResolution(payload){
+      const resolution=normalizeRoomServiceHorrorResolution(payload);if(!resolution||!roomServiceHorrorEventApplies(resolution))return false;
+      const pendingId=String(roomServiceHorrorPending?.eventId||'');
+      // すでに別の呼び鈴イベントを終えた人には、別室からの二重NGを適用しない。
+      if(!pendingId&&roomServiceHorrorAlreadyDone()&&roomServiceHorrorKnownEventId()!==resolution.event_id&&!roomServiceHorrorResolutionByEvent.has(resolution.event_id))return false;
+      if(pendingId&&pendingId!==resolution.event_id){
+        if(pendingId<resolution.event_id)return false;
+        roomServiceHorrorPending=null;
+      }
+      const prior=roomServiceHorrorResolutionByEvent.get(resolution.event_id)||'';
+      // 「受け取る」は「全員が断った」判定より常に優先。ほぼ同時の操作でもNGを取りこぼさない。
+      if(prior==='accepted'||(prior==='declined'&&resolution.choice==='declined'))return false;
+      roomServiceHorrorResolutionByEvent.set(resolution.event_id,resolution.choice);
+      roomServiceHorrorLastResolution=resolution;
+      if(!roomServiceHorrorAlreadyDone()||roomServiceHorrorKnownEventId()!==resolution.event_id)markRoomServiceHorrorDone(resolution.event_id);
+      if(String(roomServiceHorrorPending?.eventId||'')===resolution.event_id)roomServiceHorrorPending=null;
+      roomServiceHorrorLocalChoice='idle';updateRoomDoorServicePanel();void trackRoomPhonePresence();
+      if(resolution.choice==='declined'){
+        if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
+        return true;
+      }
+      if(resolution.outcome!=='hit'){showRoomServiceHorrorResult('扉を開いた。外に誰もいない。');return true}
+      const appliedKey=roomServiceHorrorNgAppliedKey(resolution.event_id);
+      if(localStorage.getItem(appliedKey)!=='1'&&!roomServiceHorrorNgApplying.has(resolution.event_id)){
+        roomServiceHorrorNgApplying.add(resolution.event_id);
+        try{
+          if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
+          localStorage.setItem(appliedKey,'1');
+        }finally{roomServiceHorrorNgApplying.delete(resolution.event_id)}
+      }
+      showRoomServiceNgVideo();return true;
+    }
+    async function resolveRoomServiceHorror(choice){
+      const pending=roomServiceHorrorPending;if(!pending||roomServiceHorrorResolving||!['accepted','declined'].includes(choice))return false;
+      roomServiceHorrorResolving=true;
+      const event={...pending.event};
+      const resolution={...event,room_service_event:event,choice,resolved_by:String(storedPlayerId||''),resolved_name:String(activeGuest||storedGuestName||'ゲスト'),resolved_at:new Date().toISOString()};
+      try{
+        const broadcast=sendRoomServiceHorrorBroadcast('room-service-horror-resolve',resolution);
+        await applyRoomServiceHorrorResolution(resolution);await broadcast;return true;
+      }finally{roomServiceHorrorResolving=false}
+    }
+    async function acceptRoomServiceHorror(){await resolveRoomServiceHorror('accepted')}
     function declineRoomServiceHorror(){
       const pending=roomServiceHorrorPending;if(!pending)return;
-      roomServiceHorrorPending=null;updateRoomDoorServicePanel();
-      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
+      roomServiceHorrorLocalChoice='declined';updateRoomDoorServicePanel();
+      void trackRoomPhonePresence().then(evaluateRoomServiceHorrorDeclineState);evaluateRoomServiceHorrorDeclineState();
     }
     roomDoorReceive?.addEventListener('click',()=>{if(receiveRealRoomService())return;void acceptRoomServiceHorror()});
     roomDoorDecline?.addEventListener('click',declineRoomServiceHorror);
 
-    function stopRoomServiceHorrorStay(){if(roomServiceHorrorTimer){clearTimeout(roomServiceHorrorTimer);roomServiceHorrorTimer=null}roomServiceHorrorPending=null;updateRoomDoorServicePanel()}
+    function stopRoomServiceHorrorStay(){
+      if(roomServiceHorrorTimer){clearTimeout(roomServiceHorrorTimer);roomServiceHorrorTimer=null}
+      roomServiceHorrorPending=null;roomServiceHorrorLocalChoice='idle';roomServiceHorrorLastResolution=null;roomServiceHorrorResolving=false;updateRoomDoorServicePanel();void trackRoomPhonePresence();
+    }
     function scheduleRoomServiceHorrorAttempt(delay=ROOM_SERVICE_HORROR_WAIT_MS){
       if(roomServiceHorrorTimer)clearTimeout(roomServiceHorrorTimer);
       roomServiceHorrorTimer=setTimeout(()=>{
         roomServiceHorrorTimer=null;
         const record=activeRoomServiceHorrorDrink();
         if(!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone()||roomServiceHorrorPending)return;
-        roomServiceHorrorPending={room:String(activeRoom),record,stage:'announcement',dialogueStarted:false};markRoomServiceHorrorDone();playRoomServiceDoorbell();updateRoomDoorServicePanel();
+        const event=createRoomServiceHorrorEvent(record);
+        if(applyRoomServiceHorrorStart(event))void sendRoomServiceHorrorBroadcast('room-service-horror-start',event);
       },Math.max(100,Number(delay)||ROOM_SERVICE_HORROR_WAIT_MS));
     }
     function startRoomServiceHorrorStay(){
