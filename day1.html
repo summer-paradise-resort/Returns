@@ -859,7 +859,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
       <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 79,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
-      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
+      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
@@ -4894,6 +4894,29 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     document.addEventListener('pointerdown',primeRoomServiceDoorbellAudio,{capture:true,passive:true});
     document.addEventListener('touchstart',primeRoomServiceDoorbellAudio,{capture:true,passive:true});
+
+    async function testRoomServiceDoorbellSound(){
+      const status=document.getElementById('adminMasterStatus');
+      if(!roomServiceDoorbell){if(status)status.textContent='ドアベル音テスト失敗：audio要素がありません。';return}
+      if(status)status.textContent='ドアベル音テスト準備中…';
+      try{
+        primeRoomServiceDoorbellAudio();
+        // 本番配達と同じ doorbell.mp3 を、ユーザー操作の直後に直接再生して確認する。
+        roomServiceDoorbell.pause();
+        roomServiceDoorbell.currentTime=0;
+        roomServiceDoorbell.muted=false;
+        roomServiceDoorbell.volume=1;
+        const p=roomServiceDoorbell.play();
+        if(p&&p.then)await p;
+        if(status)status.textContent='ドアベル音テスト再生中。音が聞こえたか確認してください。';
+        const finish=()=>{if(status)status.textContent='ドアベル音テスト終了。音が聞こえたら本番用の音声ファイルは再生可能です。';roomServiceDoorbell.removeEventListener('ended',finish)};
+        roomServiceDoorbell.addEventListener('ended',finish,{once:true});
+        setTimeout(()=>{if(!roomServiceDoorbell.paused&&roomServiceDoorbell.currentTime>0&&status?.textContent.includes('再生中'))status.textContent='ドアベル音テスト再生中。音が聞こえたか確認してください。'},800);
+      }catch(error){
+        if(status)status.textContent='ドアベル音テスト失敗：'+(error?.message||String(error));
+      }
+    }
+    document.getElementById('adminDoorbellSoundTest')?.addEventListener('click',testRoomServiceDoorbellSound);
 
     function updateRoomServiceDeliveryBadge(){
       const due=roomServiceDueOrders();
