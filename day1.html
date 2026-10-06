@@ -4705,6 +4705,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         }
       }
     }
+    const OCEAN_LAGOON_ASSET_VERSION='20261006-02';
+    function roomAssetSrc(config,file){
+      if(config?.key==='oceanLagoon')return `${file}?v=${OCEAN_LAGOON_ASSET_VERSION}`;
+      return file;
+    }
     function updateRoomPhoto(force=false){
       const config=roomVisualConfig(activeRoom);if(!config)return;
       const time=roomTimeIndex();
@@ -4717,7 +4722,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomLounge.classList.add(['time-day','time-sunset','time-night'][time]);
       roomImageError.classList.add('hidden');
       roomPhoto.style.opacity='.35';
-      roomPhoto.src=config.scenes[selectedRoomScene][time];
+      const roomAssetFile=config.scenes[selectedRoomScene][time];
+      roomPhoto.dataset.assetFile=roomAssetFile;
+      roomPhoto.dataset.assetFallback='0';
+      roomPhoto.src=roomAssetSrc(config,roomAssetFile);
       roomScene.dataset.scene=selectedRoomScene;
       const focal=roomScenePositions[config.key][selectedRoomScene][time];
       roomScene.style.setProperty('--scene-x',focal[0]+'%');
@@ -4738,7 +4746,16 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
     roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
     roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
-    roomPhoto.addEventListener('error',()=>roomImageError.classList.remove('hidden'));
+    roomPhoto.addEventListener('error',()=>{
+      const config=roomVisualConfig(activeRoom);
+      const file=roomPhoto.dataset.assetFile||'';
+      if(config?.key==='oceanLagoon'&&file&&roomPhoto.dataset.assetFallback!=='1'){
+        roomPhoto.dataset.assetFallback='1';
+        roomPhoto.src=`https://raw.githubusercontent.com/summer-paradise-resort/Returns/main/${file}?v=${OCEAN_LAGOON_ASSET_VERSION}`;
+        return;
+      }
+      roomImageError.classList.remove('hidden');
+    });
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
