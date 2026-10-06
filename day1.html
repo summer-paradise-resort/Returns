@@ -320,6 +320,21 @@
     .room-service-delivery-title{font-size:18px;letter-spacing:.1em;margin-bottom:13px}
     .room-service-delivery-text{font-size:13px;line-height:2;letter-spacing:.04em;color:#37495a}
     .room-service-delivery-close{width:100%;min-height:44px;margin-top:18px;border:0;background:#0d2743;color:#fff;letter-spacing:.12em}
+    .room-door-service-panel{grid-column:1/-1;padding:14px 13px;border:1px solid rgba(240,216,157,.72);background:rgba(5,18,31,.92);backdrop-filter:blur(9px);color:#fff;text-align:center}
+    .room-door-service-panel.hidden{display:none!important}
+    .room-door-service-status{margin-bottom:10px;color:#f1dfb3;font-size:12px;line-height:1.8;letter-spacing:.08em}
+    .room-door-service-actions{display:grid;grid-template-columns:1fr;gap:9px}
+    .room-door-service-actions.two-actions{grid-template-columns:1fr 1fr}
+    .room-door-service-actions button{min-height:46px;padding:9px 8px;border:1px solid rgba(255,255,255,.42);font-size:12px;line-height:1.55;letter-spacing:.06em}
+    .room-door-receive{background:#f6f0e5;color:#0d2743}
+    .room-door-decline{background:rgba(255,255,255,.05);color:#fff}
+    .room-door-decline.hidden{display:none!important}
+    .room-service-ng-screen{position:fixed;z-index:2147482990;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#000}
+    .room-service-ng-screen.open{display:flex}
+    .room-service-ng-video{display:block;width:min(100%,960px);max-height:100%;object-fit:contain;background:#000}
+    .room-service-ng-close{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;z-index:2;min-width:46px;height:46px;border:1px solid rgba(255,255,255,.72);border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:24px}
+    .room-service-ng-fallback{position:absolute;inset:auto 22px max(34px,env(safe-area-inset-bottom));padding:14px;background:rgba(0,0,0,.72);color:#fff;text-align:center;font-size:12px;line-height:1.8}
+    .room-service-ng-fallback.hidden{display:none!important}
     .room-belongings-sheet{position:absolute;z-index:22;left:0;right:0;bottom:0;height:min(58%,560px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.34);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-belongings-sheet.open{transform:none;visibility:visible}
     .belongings-body{flex:1;min-height:0;overflow-y:auto;padding:14px 15px 20px}
@@ -858,7 +873,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <div class="ticker-label">RESORT INFO</div>
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
-      <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 79,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
+      <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 139,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 999,900 + SPECIAL</button></div>
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
@@ -911,6 +926,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
             <button id="roomServiceDeliveryClose" class="room-service-delivery-close" type="button">CLOSE　×</button>
           </div>
         </div>
+        <div id="roomServiceNgScreen" class="room-service-ng-screen" role="dialog" aria-modal="true" aria-label="NGギミック動画" aria-hidden="true">
+          <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng.mp4" preload="metadata" playsinline webkit-playsinline></video>
+          <button id="roomServiceNgClose" class="room-service-ng-close" type="button" aria-label="動画を閉じる">×</button>
+          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng.mp4 を確認してください。</div>
+        </div>
         <div id="roomScene" class="room-scene hidden">
           <figure>
             <div class="room-photo-area"><img id="roomPhoto" src="" alt="客室の部屋全体"></div>
@@ -926,16 +946,23 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
               <p id="roomWelcome" class="room-welcome"></p>
               <div class="room-view-controls">
                 <button id="roomScenePrev" class="room-scene-arrow" type="button" aria-label="前の場所">‹</button>
-                <button id="roomSceneMenuToggle" class="room-scene-menu-toggle" type="button" aria-expanded="false">場所一覧　1 / 6</button>
+                <button id="roomSceneMenuToggle" class="room-scene-menu-toggle" type="button" aria-expanded="false">場所一覧　1 / 7</button>
                 <button id="roomSceneNext" class="room-scene-arrow" type="button" aria-label="次の場所">›</button>
               </div>
-              <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="room-actions">
                 <div id="roomPhoneCallPanel" class="room-phone-call-panel hidden" aria-live="polite">
                   <div id="roomPhoneCallStatus" class="room-phone-call-status">電話が鳴っている。</div>
                   <div class="room-phone-call-actions">
                     <button id="roomPhoneAnswer" class="room-phone-answer" type="button">電話に出る</button>
                     <button id="roomPhoneDecline" class="room-phone-decline" type="button">出ない</button>
+                  </div>
+                </div>
+                <div id="roomDoorServicePanel" class="room-door-service-panel hidden" aria-live="polite">
+                  <div id="roomDoorServiceStatus" class="room-door-service-status">インターホンが鳴った。</div>
+                  <div id="roomDoorServiceActions" class="room-door-service-actions">
+                    <button id="roomDoorReceive" class="room-door-receive" type="button">ルームサービスを受け取る</button>
+                    <button id="roomDoorDecline" class="room-door-decline hidden" type="button">受け取らない</button>
                   </div>
                 </div>
                 <button id="roomServiceOpen" class="room-service-open" type="button"><span>ルームサービス</span></button>
@@ -949,6 +976,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday1.htmlと同じ場所にアップロードしてください。</p>
           <nav id="roomSceneNav" class="room-scene-nav" aria-label="客室内を眺める" aria-hidden="true">
             <button type="button" data-room-scene="room" aria-pressed="true">部屋全体</button>
+            <button type="button" data-room-scene="door" aria-pressed="false">扉</button>
             <button type="button" data-room-scene="window" aria-pressed="false">窓</button>
             <button type="button" data-room-scene="desk" aria-pressed="false">机</button>
             <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
@@ -1648,6 +1676,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
       else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
+      else if(flagKey.startsWith('room-service-horror:')){const token=flagKey.slice('room-service-horror:'.length),key=`spr-room-service-horror:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
     }
     function collectLocalFlags(){
       const out={};
@@ -1662,8 +1691,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
-      const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`;
-      Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}});
+      const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`;
+      Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}else if(k.startsWith(horrorPrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(horrorPrefix.length);out[`room-service-horror:${token}`]=true}});
       return out;
     }
 
@@ -1720,7 +1749,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -1738,7 +1767,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         else if(localCoasters.length){coasters=localCoasters.map(x=>({...x,client_id:x.client_id||sprSafeUuid()}));localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));await syncCafeCoastersSnapshot()}
         localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
 
-        if(typeof renderPrizeCounter==='function')renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(typeof renderBarOrderState==='function')renderBarOrderState();if(typeof updateCollectionButton==='function')updateCollectionButton();if(typeof renderRoomCollection==='function'&&activeRoom)renderRoomCollection();if(typeof renderTeaExchange==='function')renderTeaExchange();if(typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
+        if(typeof renderPrizeCounter==='function')renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(typeof renderBarOrderState==='function')renderBarOrderState();if(typeof updateCollectionButton==='function')updateCollectionButton();if(typeof renderRoomCollection==='function'&&activeRoom)renderRoomCollection();if(typeof renderTeaExchange==='function')renderTeaExchange();if(typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();if(typeof startRoomServiceHorrorStay==='function'&&activeRoom)startRoomServiceHorrorStay();
         return true;
       }catch(e){console.warn('persistent state hydrate failed',e);return false}
       finally{window.__sprRemoteHydrating=false}
@@ -2287,28 +2316,28 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
 
     // SEASIDE BAR / ドリンク注文
-    // SECURITY CHECKの名前ごとに注文履歴を保存。効能は後からeffectKeyへ割り当て可能です。
+    // SECURITY CHECKの名前ごとに注文履歴を保存。各ドリンクのイベント割り当てもrecordへ保持します。
     const barDrinks=[
-      {no:1,name:'サンセットパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ'},
-      {no:2,name:'マーメイドキス',ingredients:'ライチリキュール × グレープフルーツジュース × ソーダ'},
-      {no:3,name:'パールラグーン',ingredients:'カルーア × ココナッツミルク × ミルク'},
-      {no:4,name:'ライトハウスキーパー',ingredients:'ラム × コーヒーリキュール × ミルク'},
-      {no:5,name:'サマーパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ'},
-      {no:6,name:'セイレーンズソング',ingredients:'ブルーキュラソー × ライチリキュール × ソーダ'},
-      {no:7,name:'ラストサンセット',ingredients:'ブラッドオレンジジュース × カシス × ウォッカ'},
-      {no:8,name:'タイドケイブ',ingredients:'ジン × グレープフルーツジュース × ブルーキュラソー'},
-      {no:9,name:'ワンウェイトリップ',ingredients:'ウォッカ × ブルーキュラソー × エナジードリンク'},
-      {no:10,name:'シェルブリーズ',ingredients:'ホワイトラム × レモンジュース × ソーダ'},
-      {no:11,name:'ラグーンブリーズ',ingredients:'ジン × グレープフルーツジュース × ソーダ'},
-      {no:12,name:'ミッドナイトランタン',ingredients:'ラム × コーラ × ライム'},
-      {no:13,name:'ホワイトピーチ',ingredients:'ココナッツリキュール × ミルク × バニラシロップ'},
-      {no:14,name:'ビーコンライト',ingredients:'ウォッカ × オレンジジュース × グレナデンシロップ'},
-      {no:15,name:'ラストゲスト',ingredients:'赤ワイン × カシス × ベリーシロップ'},
-      {no:16,name:'ムーンタイドグロット',ingredients:'ブルーキュラソー × ピーチリキュール × トニックウォーター'},
-      {no:17,name:'ゴールデンホライズン',ingredients:'オレンジジュース × アプリコットリキュール × シャンパン'},
-      {no:18,name:'ガーディアンフレア',ingredients:'テキーラ × オレンジジュース × グレナデンシロップ'},
-      {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー'},
-      {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター'}
+      {no:1,name:'サンセットパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ',effectKey:'explore:sunset:beach'},
+      {no:2,name:'マーメイドキス',ingredients:'ライチリキュール × グレープフルーツジュース × ソーダ',effectKey:'explore:night:mermaid-cove'},
+      {no:3,name:'パールラグーン',ingredients:'カルーア × ココナッツミルク × ミルク',effectKey:'explore:day:mermaid-cove'},
+      {no:4,name:'ライトハウスキーパー',ingredients:'ラム × コーヒーリキュール × ミルク',effectKey:'explore:night:lighthouse'},
+      {no:5,name:'サマーパラダイス',ingredients:'オレンジジュース × ピーチリキュール × ウォッカ',effectKey:'explore:day:beach'},
+      {no:6,name:'セイレーンズソング',ingredients:'ブルーキュラソー × ライチリキュール × ソーダ',effectKey:'explore:sunset:mermaid-cove'},
+      {no:7,name:'ラストサンセット',ingredients:'ブラッドオレンジジュース × カシス × ウォッカ',effectKey:'room-service:ominous'},
+      {no:8,name:'タイドケイブ',ingredients:'ジン × グレープフルーツジュース × ブルーキュラソー',effectKey:'room-service:ominous'},
+      {no:9,name:'ワンウェイトリップ',ingredients:'ウォッカ × ブルーキュラソー × エナジードリンク',effectKey:'room-service:ng'},
+      {no:10,name:'シェルブリーズ',ingredients:'ホワイトラム × レモンジュース × ソーダ',effectKey:'explore:day:beach'},
+      {no:11,name:'ラグーンブリーズ',ingredients:'ジン × グレープフルーツジュース × ソーダ',effectKey:'explore:night:mermaid-cove'},
+      {no:12,name:'ミッドナイトランタン',ingredients:'ラム × コーラ × ライム',effectKey:'explore:night:beach'},
+      {no:13,name:'ホワイトピーチ',ingredients:'ココナッツリキュール × ミルク × バニラシロップ',effectKey:'room-service:ominous'},
+      {no:14,name:'ビーコンライト',ingredients:'ウォッカ × オレンジジュース × グレナデンシロップ',effectKey:'explore:sunset:lighthouse'},
+      {no:15,name:'ラストゲスト',ingredients:'赤ワイン × カシス × ベリーシロップ',effectKey:'room-service:ng'},
+      {no:16,name:'ムーンタイドグロット',ingredients:'ブルーキュラソー × ピーチリキュール × トニックウォーター',effectKey:'room-service:ominous'},
+      {no:17,name:'ゴールデンホライズン',ingredients:'オレンジジュース × アプリコットリキュール × シャンパン',effectKey:'explore:sunset:beach'},
+      {no:18,name:'ガーディアンフレア',ingredients:'テキーラ × オレンジジュース × グレナデンシロップ',effectKey:'explore:night:lighthouse'},
+      {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー',effectKey:'room-service:ominous'},
+      {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター',effectKey:'room-service:ng'}
     ];
     const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
     const barOrderSheet=document.getElementById('barOrderSheet'), barDrinkList=document.getElementById('barDrinkList');
@@ -2457,7 +2486,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       barOrderConfirm.disabled=true;
       void playSeasideKanpai();
-      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:null};
+      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:drink.effectKey||null};
       try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');renderBarOrderState();return}
       state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
@@ -2522,7 +2551,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&barMenuLightbox.classList.contains('open'))closeBarMenuLightbox()});
 
 
-    // SPECIAL TABLE / 80,000 CHIP EVENT
+    // SPECIAL TABLE / 140,000 CHIP EVENT
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule');
     const emilyOpeners=[
@@ -2857,7 +2886,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.70:.30);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;hiloStatus.textContent=win?'YOU WIN':'SPECIAL DEALER WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'SPECIAL DEALERがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};
           hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low');return;
         }
-        // 80,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
+        // 140,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
         const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')
       };play()
     }
@@ -2956,7 +2985,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function casinoSave(){
       casinoChips=Math.max(0,Math.round(Number(casinoChips)||0));
       queueCasinoChipSync(casinoChips);
-      if(previousCasinoChips<80000&&casinoChips>=80000&&!localStorage.getItem(emilyAnnouncedKey)){
+      if(previousCasinoChips<140000&&casinoChips>=140000&&!localStorage.getItem(emilyAnnouncedKey)){
         localStorage.setItem(emilyAnnouncedKey,'1');setRemoteFlag('emily-special-announced',true).catch(e=>console.warn('Emily flag sync',e));
         seriousEmilyMode=false;
         triggerEmilyInvitation();
@@ -2989,9 +3018,9 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');hideSpecialBroadcast('reset');specialBgm.pause();specialBgm.currentTime=0;specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';
       const specialCountdown=document.getElementById('specialCountdown');if(specialCountdown)specialCountdown.textContent='';syncCasinoBalances();normalResortAnnouncement();
       if(!remoteSaved){alert('CHIPは画面上で変更されましたが、Supabaseへの保存を確認できませんでした。通信またはSupabaseの権限設定を確認してください。');return}
-      alert(serious?'上位SPECIAL TABLE確認用：999,900 CHIP＋本日の特別コース喫食フラグを設定しました。Supabase保存済みです。':'SPECIAL TABLE確認用：79,900 CHIPに設定しました。Supabase保存済みです。');
+      alert(serious?'上位SPECIAL TABLE確認用：999,900 CHIP＋本日の特別コース喫食フラグを設定しました。Supabase保存済みです。':'SPECIAL TABLE確認用：139,900 CHIPに設定しました。Supabase保存済みです。');
     }
-    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('SPECIAL TABLE確認用に79,900 CHIPへリセットしますか？'))await resetEmilyTest(79900,false)});
+    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('SPECIAL TABLE確認用に139,900 CHIPへリセットしますか？'))await resetEmilyTest(139900,false)});
     if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(confirm('上位SPECIAL TABLE確認用に999,900 CHIPへリセットし、本日の特別コース喫食フラグも付与しますか？'))await resetEmilyTest(999900,true)});
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
@@ -3515,9 +3544,13 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
     const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'), roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
     const roomServiceDeliveryNotice=document.getElementById('roomServiceDeliveryNotice'), roomServiceDeliveryText=document.getElementById('roomServiceDeliveryText'), roomServiceDeliveryClose=document.getElementById('roomServiceDeliveryClose');
+    const roomDoorServicePanel=document.getElementById('roomDoorServicePanel'), roomDoorServiceStatus=document.getElementById('roomDoorServiceStatus'), roomDoorServiceActions=document.getElementById('roomDoorServiceActions');
+    const roomDoorReceive=document.getElementById('roomDoorReceive'), roomDoorDecline=document.getElementById('roomDoorDecline');
+    const roomServiceNgScreen=document.getElementById('roomServiceNgScreen'), roomServiceNgVideo=document.getElementById('roomServiceNgVideo'), roomServiceNgClose=document.getElementById('roomServiceNgClose'), roomServiceNgFallback=document.getElementById('roomServiceNgFallback');
     let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
+      door:['room_door.jpg','room_door.jpg','room_door.jpg'],
       window:['Deluxe_Ocean_Window.jpg','Deluxe_Ocean_Window_Sunset.jpg','Deluxe_Ocean_Window_Night.jpg'],
       desk:['Deluxe_Ocean_Desk.jpg','Deluxe_Ocean_Desk_Sunset.jpg','Deluxe_Ocean_Desk_Night.jpg'],
       phone:['Deluxe_Ocean_Phone.jpg','Deluxe_Ocean_Phone_Sunset.jpg','Deluxe_Ocean_Phone_Night.jpg'],
@@ -3526,6 +3559,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     };
     const familyScenes={
       room:['family_room_main.jpg','family_room_main_evening.jpg','family_room_main_night.jpg'],
+      door:['room_door.jpg','room_door.jpg','room_door.jpg'],
       window:['family_room_window.jpg','family_room_window_evening.jpg','family_room_window_night.jpg'],
       desk:['family_room_table.jpg','family_room_table_evening.jpg','family_room_table_night.jpg'],
       phone:['family_room_phone.jpg','family_room_phone_evening.jpg','family_room_phone_night.jpg'],
@@ -3534,17 +3568,20 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     };
     const oceanLagoonScenes={
       room:['Ocean_Lagoon_Room.jpg','Ocean_Lagoon_Room_evening.jpg','Ocean_Lagoon_Room_Night.jpg'],
+      door:['room_door.jpg','room_door.jpg','room_door.jpg'],
       window:['Ocean_Lagoon_window.jpg','Ocean_Lagoon_window_evening.jpg','Ocean_Lagoon_window_Night.jpg'],
       desk:['Ocean_Lagoon_desk.jpg','Ocean_Lagoon_desk_evening.jpg','Ocean_Lagoon_desk_Night.jpg'],
       phone:['Ocean_Lagoon_phone.jpg','Ocean_Lagoon_phone_evening.jpg','Ocean_Lagoon_phone_Night.jpg'],
       closet:['Ocean_Lagoon_closet.jpg','Ocean_Lagoon_closet_evening.jpg','Ocean_Lagoon_closet_Night.jpg'],
       bathroom:['Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom_evening.jpg','Ocean_Lagoon_bathroom_Night.jpg']
     };
+    const doorOnlyScenes={door:['room_door.jpg','room_door.jpg','room_door.jpg']};
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
     const roomScenePositions={
       deluxe:{
         room:[[64,50],[64,50],[64,50]],
+        door:[[50,50],[50,50],[50,50]],
         window:[[48,50],[48,50],[48,50]],
         desk:[[36,55],[36,55],[36,55]],
         phone:[[86,65],[86,65],[86,65]],
@@ -3553,6 +3590,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       },
       family:{
         room:[[55,50],[55,50],[55,50]],
+        door:[[50,50],[50,50],[50,50]],
         window:[[50,50],[50,50],[50,50]],
         desk:[[36,54],[36,54],[36,54]],
         phone:[[64,54],[64,54],[64,54]],
@@ -3561,21 +3599,27 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       },
       oceanLagoon:{
         room:[[55,50],[55,50],[55,50]],
+        door:[[50,50],[50,50],[50,50]],
         window:[[50,50],[50,50],[50,50]],
         desk:[[52,54],[52,54],[52,54]],
         phone:[[70,63],[70,63],[70,63]],
         closet:[[50,50],[50,50],[50,50]],
         bathroom:[[35,50],[35,50],[35,50]]
-      }
+      },
+      suite:{door:[[50,50],[50,50],[50,50]]},
+      villa:{door:[[50,50],[50,50],[50,50]]}
     };
     function roomVisualConfig(room){
       if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
       if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
       if(/^(30[1-9]|310)$/.test(room))return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
+      if(/^40[1-5]$/.test(room))return{key:'suite',label:'SUITE',name:'スイート',scenes:doorOnlyScenes,doorOnly:true};
+      if(room==='501')return{key:'villa',label:'ROYAL VILLA',name:'ロイヤルヴィラ',scenes:doorOnlyScenes,doorOnly:true};
       return null;
     }
-    const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
-    const roomSceneOrder=['room','window','desk','phone','closet','bathroom'];
+    const sceneNames={room:'部屋全体',door:'扉',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
+    const roomSceneOrder=['room','door','window','desk','phone','closet','bathroom'];
+    function activeRoomSceneOrder(config=roomVisualConfig(activeRoom)){return config?roomSceneOrder.filter(scene=>Array.isArray(config.scenes?.[scene])):roomSceneOrder}
     const timeNames=['昼','夕暮れ','夜'];
     let selectedRoomScene='room', shownTime=-1;
     function roomTimeIndex(){
@@ -4679,6 +4723,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
     function updateRoomContextAction(){
       updateRoomPhoneUi();
+      updateRoomDoorServicePanel();
       if(!roomContextAction)return;
       const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.remove('hidden');
       roomContextAction.classList.add('hidden');roomExploreResult.classList.add('hidden');roomContextAction.onclick=null;
@@ -4742,6 +4787,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomLounge.classList.add(['time-day','time-sunset','time-night'][time]);
       roomImageError.classList.add('hidden');
       roomPhoto.style.opacity='.35';
+      const availableScenes=activeRoomSceneOrder(config);
+      if(!availableScenes.includes(selectedRoomScene))selectedRoomScene=availableScenes[0]||'door';
       const roomAssetFile=config.scenes[selectedRoomScene][time];
       roomPhoto.dataset.assetFile=roomAssetFile;
       roomPhoto.dataset.assetFallback='0';
@@ -4752,14 +4799,14 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomScene.style.setProperty('--scene-y',focal[1]+'%');
       roomPhoto.alt=`${config.name}の${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
       roomSceneTitle.textContent=sceneNames[selectedRoomScene];
-      const sceneIndex=roomSceneOrder.indexOf(selectedRoomScene);
-      roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${roomSceneOrder.length}`;
-      roomSceneDots.forEach((dot,index)=>dot.classList.toggle('active',index===sceneIndex));
-      roomSceneButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomScene===selectedRoomScene)));
+      const sceneIndex=availableScenes.indexOf(selectedRoomScene);
+      roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${availableScenes.length}`;
+      roomSceneDots.forEach((dot,index)=>{dot.classList.toggle('hidden',index>=availableScenes.length);dot.classList.toggle('active',index===sceneIndex)});
+      roomSceneButtons.forEach(button=>{const available=availableScenes.includes(button.dataset.roomScene);button.classList.toggle('hidden',!available);button.setAttribute('aria-pressed',String(available&&button.dataset.roomScene===selectedRoomScene))});
       updateRoomContextAction();
     }
-    function chooseRoomScene(scene){selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing')attemptRoomPhoneRing()}
-    function stepRoomScene(amount){const index=roomSceneOrder.indexOf(selectedRoomScene);chooseRoomScene(roomSceneOrder[(index+amount+roomSceneOrder.length)%roomSceneOrder.length])}
+    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing')attemptRoomPhoneRing()}
+    function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
     document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
@@ -4821,16 +4868,27 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
     // ROOM SERVICE DELIVERY / 注文から5分後に到着
     const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
+    const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
+    const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
+    const ROOM_SERVICE_HORROR_WAIT_MS=5*60*1000;
     let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='';
+    let roomServiceHorrorTimer=null,roomServiceHorrorPending=null;
     let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
     let roomServiceDoorbellKeepAliveOsc=null,roomServiceDoorbellKeepAliveGain=null;
 
     function roomServiceDeliveredStorageKey(){return `spr-room-service-delivered:${roomServiceDeliveryPlayerId||playerStorageId||'guest'}`}
+    function roomServiceAlertedStorageKey(){return `spr-room-service-alerted:${roomServiceDeliveryPlayerId||playerStorageId||'guest'}`}
     function loadRoomServiceDeliveredIds(){
       try{const raw=JSON.parse(localStorage.getItem(roomServiceDeliveredStorageKey())||'[]');return new Set(Array.isArray(raw)?raw.map(String):[])}catch{return new Set()}
     }
     function saveRoomServiceDeliveredIds(ids){
       try{localStorage.setItem(roomServiceDeliveredStorageKey(),JSON.stringify([...ids].slice(-200)))}catch{}
+    }
+    function loadRoomServiceAlertedIds(){
+      try{const raw=JSON.parse(localStorage.getItem(roomServiceAlertedStorageKey())||'[]');return new Set(Array.isArray(raw)?raw.map(String):[])}catch{return new Set()}
+    }
+    function markRoomServiceOrdersAlerted(orders){
+      const alerted=loadRoomServiceAlertedIds();orders.forEach(order=>alerted.add(String(order.id)));try{localStorage.setItem(roomServiceAlertedStorageKey(),JSON.stringify([...alerted].slice(-200)))}catch{}
     }
     function markRoomServiceOrdersDelivered(orders){
       const done=loadRoomServiceDeliveredIds();orders.forEach(order=>done.add(String(order.id)));saveRoomServiceDeliveredIds(done);
@@ -4860,6 +4918,104 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function closeRoomServiceDeliveryNotice(){roomServiceDeliveryNotice?.classList.add('hidden')}
     roomServiceDeliveryClose?.addEventListener('click',closeRoomServiceDeliveryNotice);
     roomServiceDeliveryNotice?.addEventListener('click',event=>{if(event.target===roomServiceDeliveryNotice)closeRoomServiceDeliveryNotice()});
+
+    function dueRoomServiceOrdersHere(){return activeRoom?roomServiceDueOrders().filter(order=>String(order.room)===String(activeRoom)):[]}
+    function roomServiceHorrorTimeEligible(){const hour=japanClockParts().hour;return hour>=20||hour<3}
+    function roomServiceHorrorCategory(name){if(ROOM_SERVICE_NG_DRINKS.has(name))return'ng';if(ROOM_SERVICE_OMINOUS_DRINKS.has(name))return'ominous';return''}
+    function activeRoomServiceHorrorDrink(){
+      const now=Date.now();
+      const record=Object.values(loadBarDrinkState()).filter(record=>record&&roomServiceHorrorCategory(record.name)&&now<Number(record.expiresAt||0)).sort((a,b)=>Number(b.orderedAt||0)-Number(a.orderedAt||0))[0]||null;
+      return record?{...record,horrorCategory:roomServiceHorrorCategory(record.name)}:null;
+    }
+    function roomServiceHorrorToken(record){return `${record?.serviceDate||'day'}:${record?.period||'period'}`}
+    function roomServiceHorrorDoneKey(token){return `spr-room-service-horror:${playerStorageId}:${token}`}
+    function roomServiceHorrorAlreadyDone(record){return localStorage.getItem(roomServiceHorrorDoneKey(roomServiceHorrorToken(record)))==='1'}
+    function markRoomServiceHorrorDone(record){
+      const token=roomServiceHorrorToken(record);localStorage.setItem(roomServiceHorrorDoneKey(token),'1');
+      setRemoteFlag(`room-service-horror:${token}`,true).catch(error=>console.warn('room service horror flag sync',error));
+    }
+    function updateRoomDoorServicePanel(){
+      if(!roomDoorServicePanel)return;
+      const onDoor=Boolean(activeRoom&&roomView.classList.contains('room-active')&&selectedRoomScene==='door');
+      const realOrders=onDoor?dueRoomServiceOrdersHere():[];
+      const fakeHere=onDoor&&roomServiceHorrorPending&&String(roomServiceHorrorPending.room)===String(activeRoom);
+      const fakePending=fakeHere&&roomServiceHorrorPending.stage==='choice';
+      const show=realOrders.length>0||fakePending;
+      roomDoorServicePanel.classList.toggle('hidden',!show);
+      if(fakeHere&&roomServiceHorrorPending.stage==='announcement')showRoomServiceHorrorArrivalDialogue();
+      if(!show)return;
+      if(realOrders.length){
+        roomDoorServiceStatus.textContent='ルームサービスが到着している。';
+        roomDoorServiceActions.classList.remove('two-actions');
+        roomDoorDecline.classList.add('hidden');
+        return;
+      }
+      roomDoorServiceStatus.textContent='インターホンが鳴った。';
+      roomDoorServiceActions.classList.add('two-actions');
+      roomDoorDecline.classList.remove('hidden');
+    }
+    function showRoomServiceHorrorArrivalDialogue(){
+      const pending=roomServiceHorrorPending;if(!pending||pending.dialogueStarted)return;
+      pending.dialogueStarted=true;
+      const revealChoices=()=>{if(roomServiceHorrorPending!==pending)return;pending.stage='choice';updateRoomDoorServicePanel()};
+      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('失礼します、ルームサービスをお届けに参りました。',revealChoices,'スタッフ');
+      else revealChoices();
+    }
+    function receiveRealRoomService(){
+      const orders=dueRoomServiceOrdersHere();if(!orders.length)return false;
+      markRoomServiceOrdersDelivered(orders);showRoomServiceDeliveryNotice(orders);updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();return true;
+    }
+    function roomServiceHorrorRandomHit(probability){
+      let value=Math.random();
+      try{const values=new Uint32Array(1);crypto.getRandomValues(values);value=values[0]/4294967296}catch{}
+      return value<probability;
+    }
+    function closeRoomServiceNgVideo(){
+      if(!roomServiceNgScreen)return;
+      try{roomServiceNgVideo.pause();roomServiceNgVideo.currentTime=0}catch{}
+      roomServiceNgScreen.classList.remove('open');roomServiceNgScreen.setAttribute('aria-hidden','true');
+    }
+    function showRoomServiceNgVideo(){
+      if(!roomServiceNgScreen||!roomServiceNgVideo)return;
+      roomServiceNgFallback?.classList.add('hidden');roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
+      try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
+    }
+    roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
+    roomServiceNgVideo?.addEventListener('ended',closeRoomServiceNgVideo);
+    roomServiceNgVideo?.addEventListener('error',()=>roomServiceNgFallback?.classList.remove('hidden'));
+    async function acceptRoomServiceHorror(){
+      const pending=roomServiceHorrorPending;if(!pending)return;
+      roomServiceHorrorPending=null;markRoomServiceHorrorDone(pending.record);updateRoomDoorServicePanel();
+      const chance=pending.record.horrorCategory==='ng'?0.5:0.1;
+      if(!roomServiceHorrorRandomHit(chance)){setExploreMessage('外に誰もいない。');return}
+      if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
+      showRoomServiceNgVideo();
+    }
+    function declineRoomServiceHorror(){
+      const pending=roomServiceHorrorPending;if(!pending)return;
+      roomServiceHorrorPending=null;markRoomServiceHorrorDone(pending.record);updateRoomDoorServicePanel();
+      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
+    }
+    roomDoorReceive?.addEventListener('click',()=>{if(receiveRealRoomService())return;void acceptRoomServiceHorror()});
+    roomDoorDecline?.addEventListener('click',declineRoomServiceHorror);
+
+    function stopRoomServiceHorrorStay(){if(roomServiceHorrorTimer){clearTimeout(roomServiceHorrorTimer);roomServiceHorrorTimer=null}roomServiceHorrorPending=null;updateRoomDoorServicePanel()}
+    function scheduleRoomServiceHorrorAttempt(delay=ROOM_SERVICE_HORROR_WAIT_MS){
+      if(roomServiceHorrorTimer)clearTimeout(roomServiceHorrorTimer);
+      roomServiceHorrorTimer=setTimeout(()=>{
+        roomServiceHorrorTimer=null;
+        const record=activeRoomServiceHorrorDrink();
+        if(!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone(record)||roomServiceHorrorPending)return;
+        if(roomServiceDeliveryOrders.some(order=>Number(order.createdAt||0)>=Number(record.orderedAt||0)))return;
+        if(roomServicePendingOrders().length){scheduleRoomServiceHorrorAttempt(60*1000);return}
+        roomServiceHorrorPending={room:String(activeRoom),record,stage:'announcement',dialogueStarted:false};playRoomServiceDoorbell();updateRoomDoorServicePanel();
+      },Math.max(100,Number(delay)||ROOM_SERVICE_HORROR_WAIT_MS));
+    }
+    function startRoomServiceHorrorStay(){
+      if(roomServiceHorrorPending&&String(roomServiceHorrorPending.room)===String(activeRoom)){updateRoomDoorServicePanel();return}
+      if(roomServiceHorrorTimer)return;
+      const record=activeRoomServiceHorrorDrink();if(roomServiceHorrorTimeEligible()&&record&&!roomServiceHorrorAlreadyDone(record))scheduleRoomServiceHorrorAttempt();
+    }
 
     function ensureRoomServiceDoorbellContext(){
       const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return null;
@@ -4935,11 +5091,15 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function evaluateRoomServiceDeliveries(){
       const due=roomServiceDueOrders();
-      if(!due.length){updateRoomServiceDeliveryBadge();return}
+      if(!due.length){updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();return}
       if(activeRoom&&roomView.classList.contains('room-active')){
         const here=due.filter(order=>String(order.room)===String(activeRoom));
-        if(here.length){markRoomServiceOrdersDelivered(here);playRoomServiceDoorbell();showRoomServiceDeliveryNotice(here)}
+        if(here.length){
+          const alerted=loadRoomServiceAlertedIds(),newlyArrived=here.filter(order=>!alerted.has(String(order.id)));
+          if(newlyArrived.length){markRoomServiceOrdersAlerted(newlyArrived);playRoomServiceDoorbell()}
+        }
       }
+      updateRoomDoorServicePanel();
       updateRoomServiceDeliveryBadge();
     }
     async function refreshRoomServiceDeliveryOrders(){
@@ -5101,7 +5261,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      selectedRoomScene='room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();
+      selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
     });
     document.getElementById('chatForm').addEventListener('submit',async event=>{
@@ -5109,7 +5269,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
+    function leaveActiveRoom(){stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
@@ -5196,6 +5356,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           // RLS等で削除できない環境でも、hydratePersistentState側で最新RESET以前の既読を無効化する。
           const {error:hernandoSeenResetError}=await c.from('spr_player_flags').delete().in('flag_key',['hernando-intro-seen','hernando-visit-count']);
           if(hernandoSeenResetError)console.warn('hernando intro/visit reset',hernandoSeenResetError);
+          const {error:roomServiceHorrorResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-service-horror:%');
+          if(roomServiceHorrorResetError)console.warn('room service horror reset',roomServiceHorrorResetError);
           // ROOM電話イベントも本番用リセット対象。これで同じ夜でも2分後に再テストできる。
           const {error:roomPhoneResetError}=await c.from('spr_room_phone_events').delete().not('id','is',null);
           if(roomPhoneResetError)throw roomPhoneResetError;
@@ -5665,7 +5827,7 @@ window.addEventListener('message',e=>{
 
 <div id="cafeStaffOverlay" class="cafe-staff-overlay" aria-hidden="true">
   <div class="cafe-staff-card" role="dialog" aria-modal="true">
-    <div class="cafe-staff-name">STAFF</div>
+    <div id="cafeStaffName" class="cafe-staff-name">STAFF</div>
     <div id="cafeStaffText" class="cafe-staff-text"></div>
     <button id="cafeStaffClose" class="cafe-staff-close" type="button">CLOSE　×</button>
   </div>
@@ -5683,8 +5845,8 @@ window.addEventListener('message',e=>{
 </style>
 <script>
 (()=>{
- const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose'),card=o?.querySelector('.cafe-staff-card');
- let token=0,sequence=[],sequenceIndex=-1,currentLine='',typing=false; const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ const o=document.getElementById('cafeStaffOverlay'),t=document.getElementById('cafeStaffText'),c=document.getElementById('cafeStaffClose'),n=document.getElementById('cafeStaffName'),card=o?.querySelector('.cafe-staff-card');
+ let token=0,sequence=[],sequenceIndex=-1,currentLine='',typing=false,onClose=null; const wait=ms=>new Promise(r=>setTimeout(r,ms));
  function finishCurrentLine(){
    if(!typing||!currentLine)return;
    token++;typing=false;t.textContent=currentLine;
@@ -5699,15 +5861,16 @@ window.addEventListener('message',e=>{
    if(mine===token)typing=false;
  }
  function setButton(){c.textContent=(sequence.length&&sequenceIndex<sequence.length-1)?'NEXT　›':'CLOSE　×'}
- function showSingle(line){sequence=[];sequenceIndex=-1;setButton();show(line)}
- function showSequence(lines){
+ function showSingle(line,done=null,name='STAFF'){sequence=[];sequenceIndex=-1;onClose=typeof done==='function'?done:null;if(n)n.textContent=name||'STAFF';setButton();show(line)}
+ function showSequence(lines,done=null,name='STAFF'){
    sequence=(Array.isArray(lines)?lines:[]).map(v=>String(v||'').trim()).filter(Boolean);
    if(!sequence.length)return;
-   sequenceIndex=0;setButton();show(sequence[0]);
+   onClose=typeof done==='function'?done:null;if(n)n.textContent=name||'STAFF';sequenceIndex=0;setButton();show(sequence[0]);
  }
- function hide(){token++;typing=false;currentLine='';sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+ function hide(){const done=onClose;onClose=null;token++;typing=false;currentLine='';sequence=[];sequenceIndex=-1;setButton();o.classList.remove('show');o.setAttribute('aria-hidden','true');if(typeof done==='function')setTimeout(done,0)}
  // CAFE以外の館内イベントからも、同じスタッフ会話演出を呼び出せるようにする。
- window.__sprShowStaffDialogue=(line)=>showSingle(String(line||''));
+ window.__sprShowStaffDialogue=(line,done=null,name='STAFF')=>showSingle(String(line||''),done,name);
+ window.__sprShowStaffDialogueSequence=(lines,done=null,name='STAFF')=>showSequence(lines,done,name);
  window.__sprHideStaffDialogue=hide;
  // スタッフの文字送り中も、会話枠を1回タップすると現在のページだけ全文を即表示する。
  // NEXT/CLOSEボタンは従来どおりの動作を優先する。
