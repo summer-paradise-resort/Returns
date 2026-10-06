@@ -356,6 +356,7 @@
     .room-fallback button:first-of-type{background:#f6f0e5;color:#0d2743;border-color:#f6f0e5}
     .room-mapping{font-size:12px;line-height:1.9;color:#4c5661}
     .room-scene[data-scene="phone"] .room-kicker,.room-scene[data-scene="phone"] .room-welcome{display:none}
+    .room-lounge.hernando-poisoned .room-scene[data-scene="phone"] .room-welcome{display:block}
     .room-scene[data-scene="phone"] .room-scene-title{font-size:20px;margin:0 0 4px}
     .room-scene[data-scene="phone"] .room-view-controls{margin-top:6px}
     .room-scene[data-scene="phone"] .room-scene-dots{margin:7px 0}
@@ -1684,6 +1685,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
       else if(flagKey==='hernando-visit-count'){const n=Math.max(0,Number(value)||0);if(n)localStorage.setItem(`spr-hernando-visit-count:${playerStorageId}`,String(n));else localStorage.removeItem(`spr-hernando-visit-count:${playerStorageId}`)}
+      else if(flagKey==='hernando-poison-until'){const until=Math.max(0,Number(value)||0);if(until)localStorage.setItem(`spr-hernando-poison-until:${playerStorageId}`,String(until));else localStorage.removeItem(`spr-hernando-poison-until:${playerStorageId}`)}
       else if(flagKey.startsWith('cafe-order:')){const d=flagKey.slice('cafe-order:'.length),pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const d=flagKey.split(':')[1],pid=encodeURIComponent(storedGuestName||'guest');if(bool(value))localStorage.setItem(`spr-cafe-drink-ticket-used:${pid}:${d}`,'1');else localStorage.removeItem(`spr-cafe-drink-ticket-used:${pid}:${d}`)}
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
@@ -1701,6 +1703,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
       if(localStorage.getItem(`spr-hernando-intro-seen:${playerStorageId}`)==='1')out['hernando-intro-seen']=true;
       const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
+      const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${cafeDate}`)==='1'||localStorage.getItem(`spr-cafe-order-${cafeDate}`)==='1')out[`cafe-order:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${cafeDate}`]=true;
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`;
@@ -1761,7 +1764,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -4321,8 +4324,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     document.addEventListener('visibilitychange',()=>{
       if(!document.hidden&&roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
     });
-    let hernandoBarGlobalOpen=localStorage.getItem('spr-hernando-bar-global-open')==='1';
+    const HERNANDO_AVAILABLE_FROM_DAY=2;
+    function hernandoEventEnabled(){return Number(document.documentElement.dataset.resortDay||1)>=HERNANDO_AVAILABLE_FROM_DAY}
+    let hernandoBarGlobalOpen=hernandoEventEnabled()&&localStorage.getItem('spr-hernando-bar-global-open')==='1';
     async function refreshHernandoBarGlobalOpen(){
+      if(!hernandoEventEnabled()){hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');return false}
       if(hernandoBarGlobalOpen)return true;
       if(!window.supabaseClientSpecial)return false;
       try{
@@ -4333,6 +4339,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       return false;
     }
     async function publishHernandoBarDiscovery(){
+      if(!hernandoEventEnabled())return false;
       hernandoBarGlobalOpen=true;localStorage.setItem('spr-hernando-bar-global-open','1');
       if(!window.supabaseClientSpecial)return;
       try{
@@ -4343,7 +4350,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         if(error)throw error;
       }catch(e){console.warn('hernando bar discovery sync',e)}
     }
-    if(window.supabaseClientSpecial){
+    if(hernandoEventEnabled()&&window.supabaseClientSpecial){
       refreshHernandoBarGlobalOpen();
       window.supabaseClientSpecial.channel('hernando-bar-discovery').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{if(payload.new?.announcement_type==='hernando-bar-discovered'){hernandoBarGlobalOpen=true;localStorage.setItem('spr-hernando-bar-global-open','1');updateRoomContextAction()}}).subscribe();
     }
@@ -4374,6 +4381,32 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
     let hernandoArenaBgmFadeToken=0;
     let hernandoDrinkRoundNo=1,hernandoPoisonChoice='';
+
+    function hernandoPoisonStorageKey(){return `spr-hernando-poison-until:${playerStorageId}`}
+    function hernandoPoisonUntil(){return Math.max(0,Number(localStorage.getItem(hernandoPoisonStorageKey())||windowSprFlagCache['hernando-poison-until']||0))}
+    function nextHernandoPoisonExpiry(){
+      const dateKey=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      let expiry=new Date(`${dateKey}T07:00:00+09:00`).getTime();
+      if(expiry<=Date.now())expiry+=24*60*60*1000;
+      return expiry;
+    }
+    function isHernandoPoisoned(){
+      if(!hernandoEventEnabled())return false;
+      const until=hernandoPoisonUntil();
+      if(until>Date.now())return true;
+      if(until){localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until']}
+      return false;
+    }
+    async function activateHernandoPoison(){
+      if(!hernandoEventEnabled())return 0;
+      const until=nextHernandoPoisonExpiry();
+      localStorage.setItem(hernandoPoisonStorageKey(),String(until));
+      windowSprFlagCache['hernando-poison-until']=until;
+      setRemoteFlag('hernando-poison-until',until).catch(e=>console.warn('hernando poison sync',e));
+      if(activeRoom)updateRoomPhoto(true);
+      return until;
+    }
+    window.__sprIsHernandoPoisoned=isHernandoPoisoned;
 
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
@@ -4465,6 +4498,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     };
     function clearHernandoDescentTimers(){clearTimeout(hernandoDescentTimerA);clearTimeout(hernandoDescentTimerB);hernandoDescentTimerA=0;hernandoDescentTimerB=0}
     function showHernandoDoorChoice(){
+      if(!hernandoEventEnabled())return;
       clearHernandoDescentTimers();
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
     }
@@ -4587,6 +4621,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(hernandoDialogueMode!=='drinkChoice'||!choice)return;
       hernandoDrinkButtons.forEach(btn=>btn.disabled=true);hernandoDrinkGame?.classList.add('hidden');
       if(choice===hernandoPoisonChoice){
+        void activateHernandoPoison();
         setHernandoDialogueLines([
           '……それを選んだか。',
           '残念だ。毒杯だ。今夜の勝負はここまで。口にしたなら、もう遅い。',
@@ -4750,6 +4785,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.remove('hidden');
       roomContextAction.classList.add('hidden');roomExploreResult.classList.add('hidden');roomContextAction.onclick=null;
       if(selectedRoomScene==='closet'){
+        // エルナンドの闘牛場は DAY 2 から。DAY 1 では探索回数も進めない。
+        if(!hernandoEventEnabled())return;
         const opened=localStorage.getItem(closetDoorKey())==='1';
         const canEnter=opened||hernandoBarGlobalOpen;
         roomContextAction.textContent=canEnter?'クローゼットの奥に入る':'クローゼットを調べる';roomContextAction.classList.remove('hidden');
@@ -4821,6 +4858,18 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomScene.style.setProperty('--scene-y',focal[1]+'%');
       roomPhoto.alt=`${config.name}の${sceneNames[selectedRoomScene]}・${timeNames[time]}`;
       roomSceneTitle.textContent=sceneNames[selectedRoomScene];
+      const poisoned=typeof window.__sprIsHernandoPoisoned==='function'&&window.__sprIsHernandoPoisoned();
+      roomLounge.classList.toggle('hernando-poisoned',Boolean(poisoned));
+      const poisonRoomMessages={
+        room:'部屋に戻った。何も変わっていないはずなのに、少しだけ広く見える。',
+        door:'扉は閉まっている。ドアスコープの向こうだけ、照明が消えている。',
+        window:'海が見える。こんなに近かっただろうか。',
+        desk:'机の前に椅子がある。……一脚多い。',
+        phone:'電話機は静かだ。着信履歴に、知らない部屋番号が残っている。',
+        closet:'バスローブが掛けられている。一着だけ濡れている。',
+        bathroom:'洗面台には特に変わったところはない。鏡の中だけ、照明が少し暗い。'
+      };
+      document.getElementById('roomWelcome').textContent=poisoned?(poisonRoomMessages[selectedRoomScene]||'何かが、いつもと少し違う。'):`${activeGuest||storedGuestName||'ゲスト'}さん、いらっしゃいませ。`;
       const sceneIndex=availableScenes.indexOf(selectedRoomScene);
       roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${availableScenes.length}`;
       roomSceneDots.forEach((dot,index)=>{dot.classList.toggle('hidden',index>=availableScenes.length);dot.classList.toggle('active',index===sceneIndex)});
@@ -5481,7 +5530,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;try{btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';await publishMarker(DAY_TYPE,'DAY:'+day);setDayUI(day);goDay(day)}catch(e){alert('DAY切替に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='切替失敗';}finally{btn.disabled=false}}));
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];}}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];}}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
@@ -5549,7 +5598,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     finally{resetBtn.disabled=false}
   });
   // A discovery only counts if it happened after the latest world reset.
-  window.refreshHernandoBarGlobalOpen=async function(){try{const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
+  window.refreshHernandoBarGlobalOpen=async function(){try{if(Number(document.documentElement.dataset.resortDay||1)<2){hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return false}const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
   function onShared(payload){
     const row=payload&&payload.new;if(!row)return;
     if(row.announcement_type===DAY_TYPE){const d=Number(String(row.message).replace(/\D/g,''));if(d>=1&&d<=7){setDayUI(d);if(d!==THIS_DAY)goDay(d)}}
@@ -6149,6 +6198,26 @@ window.addEventListener('message',e=>{
       }
     }
   };
+  const poisonMessages={
+    beach:{
+      camera:'撮った写真を確認する。波打ち際に、自分と同じ服を着た人が立っている。顔までは写っていない。',
+      telescope:'沖を覗く。遠くに人影が見える。こちらに背を向けているはずなのに、なぜか目が合った気がした。',
+      fishing:'糸が沈む。魚とは違う重さが、ゆっくりとこちらへ近づいてくる。途中でふっと軽くなった。',
+      snorkel:'こちらのシュノーケルをお使いください。\n水中で名前を呼ばれても、返事はしないでください。'
+    },
+    lighthouse:{
+      camera:'海を撮影した。写真の中央に、海面からこちらを見上げる人影が写っている。肉眼では何も見えない。',
+      telescope:'沖を覗く。波の間に人影が見える。望遠鏡を外すと何もいない。もう一度覗くと、さっきより近い。',
+      fishing:'糸が真下へ強く引かれる。巻き上げるたび、水面の下の影もゆっくり浮かんでくる。糸を離すと、影だけが残った。',
+      snorkel:'灯台から海への飛び込みは禁止されています。\n海面から手を振られても、応じる必要はありません。'
+    },
+    mermaids_cove:{
+      camera:'水面を撮る。写真には、自分の足元まで水が来ている。実際の水際は、ずっと向こうにある。',
+      telescope:'入り江の奥を覗く。岩陰から人の顔のようなものが見える。望遠鏡を外しても、同じ場所からこちらを見ている。',
+      fishing:'何かが掛かる。引き上げる直前、糸の先から小さく笑う声がした。手を止めると、声も止まった。',
+      snorkel:'水中でスタッフを見かけても近づかないでください。\n我々は海に入りませんので。'
+    }
+  };
   let selectedSpot='';
   function explorePeriod(){
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
@@ -6168,6 +6237,15 @@ window.addEventListener('message',e=>{
     }
     return message;
   }
+  function showPoisonMessage(actionKey){
+    const message=poisonMessages?.[selectedSpot]?.[actionKey]||'何かが、いつもと違って見える。';
+    if(actionMessage){
+      if(actionMessageText)actionMessageText.textContent=message;
+      actionMessage.classList.remove('hidden');
+    }
+    return message;
+  }
+  function explorePoisoned(){return typeof window.__sprIsHernandoPoisoned==='function'&&window.__sprIsHernandoPoisoned()}
   window.__sprExploreFallbackMessage=(spotKey,actionKey,period=explorePeriod())=>fallbackMessages?.[spotKey]?.[actionKey]?.[period]||'';
   function openLocation(spotKey){
     const spot=spots[spotKey];
@@ -6192,8 +6270,22 @@ window.addEventListener('message',e=>{
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
     const actionKey=btn.dataset.exploreAction;
     btn.dataset.selectedSpot=selectedSpot;
-    // 灯台でシュノーケルを選んだ場合だけ、CAFEの初回コースター時と同じ
-    // スタッフ会話演出で注意される。通常の探索コメントカードは出さない。
+
+    // 毒杯を引いた後は、翌朝7:00まで探索文が100%異常な内容へ切り替わる。
+    if(explorePoisoned()){
+      clearActionMessage();
+      const line=poisonMessages?.[selectedSpot]?.[actionKey]||'何かが、いつもと違って見える。';
+      // シュノーケルのみ、スタッフに声をかけられる形式。
+      // 灯台だけはスタッフ会話ではなく、特殊な注意表示として出す。
+      if(actionKey==='snorkel'&&selectedSpot!=='lighthouse'&&typeof window.__sprShowStaffDialogue==='function'){
+        window.__sprShowStaffDialogue(line);
+      }else{
+        showPoisonMessage(actionKey);
+      }
+      return;
+    }
+
+    // 通常時：灯台でシュノーケルを選んだ場合だけ、スタッフ会話演出で注意される。
     if(selectedSpot==='lighthouse' && actionKey==='snorkel'){
       clearActionMessage();
       const period=explorePeriod();
