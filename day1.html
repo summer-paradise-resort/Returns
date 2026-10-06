@@ -4870,7 +4870,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
     const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
     const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
-    const ROOM_SERVICE_HORROR_WAIT_MS=5*60*1000;
+    const ROOM_SERVICE_HORROR_WAIT_MS=10*1000;
     let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='';
     let roomServiceHorrorTimer=null,roomServiceHorrorPending=null;
     let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
@@ -4927,11 +4927,11 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const record=Object.values(loadBarDrinkState()).filter(record=>record&&roomServiceHorrorCategory(record.name)&&now<Number(record.expiresAt||0)).sort((a,b)=>Number(b.orderedAt||0)-Number(a.orderedAt||0))[0]||null;
       return record?{...record,horrorCategory:roomServiceHorrorCategory(record.name)}:null;
     }
-    function roomServiceHorrorToken(record){return `${record?.serviceDate||'day'}:${record?.period||'period'}`}
-    function roomServiceHorrorDoneKey(token){return `spr-room-service-horror:${playerStorageId}:${token}`}
-    function roomServiceHorrorAlreadyDone(record){return localStorage.getItem(roomServiceHorrorDoneKey(roomServiceHorrorToken(record)))==='1'}
-    function markRoomServiceHorrorDone(record){
-      const token=roomServiceHorrorToken(record);localStorage.setItem(roomServiceHorrorDoneKey(token),'1');
+    function roomServiceHorrorToken(){return `day${roomPhoneResortDay()}:night`}
+    function roomServiceHorrorDoneKey(token=roomServiceHorrorToken()){return `spr-room-service-horror:${playerStorageId}:${token}`}
+    function roomServiceHorrorAlreadyDone(){return localStorage.getItem(roomServiceHorrorDoneKey())==='1'}
+    function markRoomServiceHorrorDone(){
+      const token=roomServiceHorrorToken();localStorage.setItem(roomServiceHorrorDoneKey(token),'1');
       setRemoteFlag(`room-service-horror:${token}`,true).catch(error=>console.warn('room service horror flag sync',error));
     }
     function updateRoomDoorServicePanel(){
@@ -4985,7 +4985,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     roomServiceNgVideo?.addEventListener('error',()=>roomServiceNgFallback?.classList.remove('hidden'));
     async function acceptRoomServiceHorror(){
       const pending=roomServiceHorrorPending;if(!pending)return;
-      roomServiceHorrorPending=null;markRoomServiceHorrorDone(pending.record);updateRoomDoorServicePanel();
+      roomServiceHorrorPending=null;updateRoomDoorServicePanel();
       const chance=pending.record.horrorCategory==='ng'?0.5:0.1;
       if(!roomServiceHorrorRandomHit(chance)){setExploreMessage('外に誰もいない。');return}
       if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
@@ -4993,7 +4993,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function declineRoomServiceHorror(){
       const pending=roomServiceHorrorPending;if(!pending)return;
-      roomServiceHorrorPending=null;markRoomServiceHorrorDone(pending.record);updateRoomDoorServicePanel();
+      roomServiceHorrorPending=null;updateRoomDoorServicePanel();
       if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
     }
     roomDoorReceive?.addEventListener('click',()=>{if(receiveRealRoomService())return;void acceptRoomServiceHorror()});
@@ -5005,16 +5005,14 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       roomServiceHorrorTimer=setTimeout(()=>{
         roomServiceHorrorTimer=null;
         const record=activeRoomServiceHorrorDrink();
-        if(!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone(record)||roomServiceHorrorPending)return;
-        if(roomServiceDeliveryOrders.some(order=>Number(order.createdAt||0)>=Number(record.orderedAt||0)))return;
-        if(roomServicePendingOrders().length){scheduleRoomServiceHorrorAttempt(60*1000);return}
-        roomServiceHorrorPending={room:String(activeRoom),record,stage:'announcement',dialogueStarted:false};playRoomServiceDoorbell();updateRoomDoorServicePanel();
+        if(!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone()||roomServiceHorrorPending)return;
+        roomServiceHorrorPending={room:String(activeRoom),record,stage:'announcement',dialogueStarted:false};markRoomServiceHorrorDone();playRoomServiceDoorbell();updateRoomDoorServicePanel();
       },Math.max(100,Number(delay)||ROOM_SERVICE_HORROR_WAIT_MS));
     }
     function startRoomServiceHorrorStay(){
       if(roomServiceHorrorPending&&String(roomServiceHorrorPending.room)===String(activeRoom)){updateRoomDoorServicePanel();return}
       if(roomServiceHorrorTimer)return;
-      const record=activeRoomServiceHorrorDrink();if(roomServiceHorrorTimeEligible()&&record&&!roomServiceHorrorAlreadyDone(record))scheduleRoomServiceHorrorAttempt();
+      const record=activeRoomServiceHorrorDrink();if(roomServiceHorrorTimeEligible()&&record&&!roomServiceHorrorAlreadyDone())scheduleRoomServiceHorrorAttempt();
     }
 
     function ensureRoomServiceDoorbellContext(){
