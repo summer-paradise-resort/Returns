@@ -24,16 +24,19 @@
     .music-toggle.off{opacity:.38}
     .menu-lines{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
     .menu-lines i{display:block;height:1px;background:currentColor;width:100%}
-    .story-menu{position:fixed;inset:0;z-index:90;background:rgba(255,255,255,.985);overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s}
+    /* STORY MENU: resort background visible through a deep-blue translucent layer */
+    .story-menu{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,rgba(9,53,91,.57),rgba(4,27,49,.72)),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s;color:#fff}
     .story-menu.open{opacity:1;visibility:visible;transform:none}
-    .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:rgba(255,255,255,.97)}
-    .story-menu-close{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font-size:28px}
-    .story-menu-content{max-width:680px;margin:auto;padding:38px 22px 60px}
-    .story-menu-content>p{text-align:center;font:10px Georgia,serif;letter-spacing:.28em;color:var(--gold)}
-    .story-menu-content>h2{text-align:center;font-size:25px;font-weight:500;letter-spacing:.12em;margin:8px 0 30px}
-    .story-item{border-top:1px solid #e7dfd1}.story-item:last-child{border-bottom:1px solid #e7dfd1}
-    .story-toggle{width:100%;padding:18px 4px;border:0;background:transparent;color:var(--navy);display:flex;justify-content:space-between;text-align:left;font-size:14px}
-    .story-copy{display:none;padding:0 4px 20px;color:#4c5661;font-size:12px;line-height:2}.story-item.open .story-copy{display:block}
+    .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.18);position:sticky;top:0;background:rgba(10,61,103,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    .story-menu-top .brand-name{color:#f0d89d}
+    .story-menu-close{width:44px;height:44px;border:0;background:transparent;color:#fff;font-size:28px}
+    .story-menu-content{max-width:680px;margin:auto;padding:38px 22px 60px;text-shadow:0 2px 10px rgba(0,0,0,.22)}
+    .story-menu-content>p{text-align:center;font:10px Georgia,serif;letter-spacing:.28em;color:#f0d89d}
+    .story-menu-content>h2{text-align:center;font-size:25px;font-weight:500;letter-spacing:.12em;margin:8px 0 30px;color:#fff}
+    .story-item{border-top:1px solid rgba(255,255,255,.30)}.story-item:last-child{border-bottom:1px solid rgba(255,255,255,.30)}
+    .story-toggle{width:100%;padding:18px 4px;border:0;background:transparent;color:#fff;display:flex;justify-content:space-between;text-align:left;font-size:14px;text-shadow:0 2px 9px rgba(0,0,0,.25)}
+    .story-toggle span{color:#f0d89d}
+    .story-copy{display:none;padding:0 4px 20px;color:rgba(255,255,255,.88);font-size:12px;line-height:2;text-shadow:0 2px 9px rgba(0,0,0,.30)}.story-item.open .story-copy{display:block}
     .hero{min-height:430px;display:flex;align-items:flex-end;padding:42px 24px 54px;color:white;position:relative;background:linear-gradient(90deg,rgba(5,22,39,.66),rgba(5,22,39,.06)),linear-gradient(0deg,rgba(4,18,31,.48),transparent 65%),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;transition:background-image .45s ease,background-position .45s ease}
     .hero-copy{max-width:560px;text-shadow:0 2px 12px rgba(0,0,0,.36)}
     .eyebrow{font:11px Georgia,serif;letter-spacing:.3em;color:#f0d89d;margin:0 0 14px}
