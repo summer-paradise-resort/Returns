@@ -3061,37 +3061,36 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     window.__sprPauseExploreBgmForGimmick=pauseExploreMusic;
     window.__sprResumeExploreBgmAfterGimmick=resumeExploreMusicAfterGimmick;
 
-    // SEASIDE BAR BGM BY TIME
-    // 昼（07:00〜15:59）・夕（16:00〜19:59）のみ seasidebar.bgm.mp3 を再生。
-    // 夜（20:00〜06:59）は自動で停止する。BARを開いたまま時間帯をまたいだ場合も追従する。
+    // SEASIDE BAR BGM
+    // 昼・夕・夜を問わず、BARを開いていて♪がONなら seasidebar.bgm.mp3 を再生する。
+    // BARを開く操作そのものを再生開始のユーザー操作として使い、iPhone / iPadでもBGMを開始しやすくする。
     const seasideBarBgm=document.getElementById('seasideBarBgm');
-    let seasideBarBgmPeriod='';
-    function seasideBarBgmEnabledForPeriod(period=currentTokyoPeriod()){
-      return period==='day'||period==='sunset';
+    function seasideBarBgmEnabledForPeriod(){
+      return true;
     }
     function syncSeasideBarMusicForTime({force=false,restart=false}={}){
       if(!seasideBarBgm)return;
       const view=document.getElementById('barView');
       const open=Boolean(view?.classList.contains('open'));
-      const period=currentTokyoPeriod();
-      const changed=seasideBarBgmPeriod!==period;
-      seasideBarBgmPeriod=period;
-      const shouldPlay=open&&seasideBarBgmEnabledForPeriod(period)&&localStorage.getItem('spr-bgm-enabled')!=='off';
+      const shouldPlay=open&&localStorage.getItem('spr-bgm-enabled')!=='off';
 
       if(!shouldPlay){
         sprCancelGuardedAudioStart(seasideBarBgm);
         seasideBarBgm.pause();
-        if(changed||!open){try{seasideBarBgm.currentTime=0}catch{}}
+        if(!open){try{seasideBarBgm.currentTime=0}catch{}}
         return;
       }
 
-      if(force||changed||seasideBarBgm.paused){
-        void sprStartAudioClean(seasideBarBgm,{
-          volume:.34,
-          loop:true,
-          restart:restart||changed||seasideBarBgm.paused,
-          guard:SPR_AUDIO_START_GUARD_MS
-        });
+      seasideBarBgm.preload='auto';
+      seasideBarBgm.loop=true;
+      seasideBarBgm.muted=false;
+      seasideBarBgm.volume=.34;
+      if(restart){try{seasideBarBgm.currentTime=0}catch{}}
+
+      if(force||seasideBarBgm.paused){
+        // BARカードのタップ直後に直接 play() する。BGMは乾杯SEとは完全に独立。
+        const p=seasideBarBgm.play();
+        if(p&&p.catch)p.catch(e=>console.warn('seaside bar bgm',e));
       }
     }
     function startSeasideBarMusic(){
