@@ -3425,6 +3425,14 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       closet:['family_room_closet.jpg','family_room_closet_evening.jpg','family_room_closet_night.jpg'],
       bathroom:['family_room_bathroom.jpg','family_room_bathroom_evening.jpg','family_room_bathroom_night.jpg']
     };
+    const oceanLagoonScenes={
+      room:['Ocean_Lagoon_Room.jpg','Ocean_Lagoon_Room_evening.jpg','Ocean_Lagoon_Room_Night.jpg'],
+      window:['Ocean_Lagoon_window.jpg','Ocean_Lagoon_window_evening.jpg','Ocean_Lagoon_window_Night.jpg'],
+      desk:['Ocean_Lagoon_desk.jpg','Ocean_Lagoon_desk_evening.jpg','Ocean_Lagoon_desk_Night.jpg'],
+      phone:['Ocean_Lagoon_phone.jpg','Ocean_Lagoon_phone_evening.jpg','Ocean_Lagoon_phone_Night.jpg'],
+      closet:['Ocean_Lagoon_closet.jpg','Ocean_Lagoon_closet_evening.jpg','Ocean_Lagoon_closet_Night.jpg'],
+      bathroom:['Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom_evening.jpg','Ocean_Lagoon_bathroom_Night.jpg']
+    };
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
     const roomScenePositions={
@@ -3443,11 +3451,20 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         phone:[[64,54],[64,54],[64,54]],
         closet:[[50,50],[50,50],[50,50]],
         bathroom:[[28,50],[28,50],[28,50]]
+      },
+      oceanLagoon:{
+        room:[[55,50],[55,50],[55,50]],
+        window:[[50,50],[50,50],[50,50]],
+        desk:[[36,54],[36,54],[36,54]],
+        phone:[[64,54],[64,54],[64,54]],
+        closet:[[50,50],[50,50],[50,50]],
+        bathroom:[[28,50],[28,50],[28,50]]
       }
     };
     function roomVisualConfig(room){
       if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
       if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
+      if(/^(30[1-9]|310)$/.test(room))return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
       return null;
     }
     const sceneNames={room:'部屋全体',window:'窓',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
