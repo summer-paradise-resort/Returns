@@ -3599,6 +3599,17 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       closet:['Ocean_Lagoon_closet.jpg','Ocean_Lagoon_closet_evening.jpg','Ocean_Lagoon_closet_Night.jpg'],
       bathroom:['Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom_evening.jpg','Ocean_Lagoon_bathroom_Night.jpg']
     };
+    // Ocean Grand Suite（401〜405号室）: 画像名の大文字小文字はGitHub上のファイル名に一致させる。
+    // 3枚の並びは昼（7:00〜15:59）、夕（16:00〜19:59）、夜（20:00〜6:59）。
+    const suiteScenes={
+      room:['Ocean_Grand_Suite_Room.jpg','Ocean_Grand_Suite_Room_evening.jpg','Ocean_Grand_Suite_Room_Night.jpg'],
+      door:['room_door.jpg','room_door.jpg','room_door.jpg'],
+      window:['Ocean_Grand_Suite_Window.jpg','Ocean_Grand_Suite_Window_evening.jpg','Ocean_Grand_Suite_Window_Night.jpg'],
+      desk:['Ocean_Grand_Suite_desk.jpg','Ocean_Grand_Suite_desk_evening.jpg','Ocean_Grand_Suite_desk_Night.jpg'],
+      phone:['Ocean_Grand_Suite_phone.jpg','Ocean_Grand_Suite_phone_evening.jpg','Ocean_Grand_Suite_phone_Night.jpg'],
+      closet:['Ocean_Grand_Suite_Closet.jpg','Ocean_Grand_Suite_Closet_evening.jpg','Ocean_Grand_Suite_Closet_Night.jpg'],
+      bathroom:['Ocean_Grand_Suite_bathroom.jpg','Ocean_Grand_Suite_bathroom_evening.jpg','Ocean_Grand_Suite_bathroom_Night.jpg']
+    };
     const doorOnlyScenes={door:['room_door.jpg','room_door.jpg','room_door.jpg']};
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
@@ -3630,14 +3641,23 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         closet:[[50,50],[50,50],[50,50]],
         bathroom:[[35,50],[35,50],[35,50]]
       },
-      suite:{door:[[50,50],[50,50],[50,50]]},
+      // 専用写真は各場所を主役とした構図。中央基準で余計な端が切れにくいように配置。
+      suite:{
+        room:[[50,50],[50,50],[50,50]],
+        door:[[50,50],[50,50],[50,50]],
+        window:[[50,50],[50,50],[50,50]],
+        desk:[[50,50],[50,50],[50,50]],
+        phone:[[50,50],[50,50],[50,50]],
+        closet:[[50,50],[50,50],[50,50]],
+        bathroom:[[50,50],[50,50],[50,50]]
+      },
       villa:{door:[[50,50],[50,50],[50,50]]}
     };
     function roomVisualConfig(room){
       if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
       if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
       if(/^(30[1-9]|310)$/.test(room))return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
-      if(/^40[1-5]$/.test(room))return{key:'suite',label:'SUITE',name:'スイート',scenes:doorOnlyScenes,doorOnly:true};
+      if(/^40[1-5]$/.test(room))return{key:'suite',label:'OCEAN GRAND SUITE',name:'スイート',scenes:suiteScenes};
       if(room==='501')return{key:'villa',label:'ROYAL VILLA',name:'ロイヤルヴィラ',scenes:doorOnlyScenes,doorOnly:true};
       return null;
     }
@@ -4891,8 +4911,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       }
     }
     const OCEAN_LAGOON_ASSET_VERSION='20261006-02';
+    const SUITE_ASSET_VERSION='20261008-01';
     function roomAssetSrc(config,file){
       if(config?.key==='oceanLagoon')return `${file}?v=${OCEAN_LAGOON_ASSET_VERSION}`;
+      if(config?.key==='suite')return `${file}?v=${SUITE_ASSET_VERSION}`;
       return file;
     }
     function updateRoomPhoto(force=false){
@@ -4948,9 +4970,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     roomPhoto.addEventListener('error',()=>{
       const config=roomVisualConfig(activeRoom);
       const file=roomPhoto.dataset.assetFile||'';
-      if(config?.key==='oceanLagoon'&&file&&roomPhoto.dataset.assetFallback!=='1'){
+      if((config?.key==='oceanLagoon'||config?.key==='suite')&&file&&roomPhoto.dataset.assetFallback!=='1'){
         roomPhoto.dataset.assetFallback='1';
-        roomPhoto.src=`https://raw.githubusercontent.com/summer-paradise-resort/Returns/main/${file}?v=${OCEAN_LAGOON_ASSET_VERSION}`;
+        const assetVersion=config.key==='suite'?SUITE_ASSET_VERSION:OCEAN_LAGOON_ASSET_VERSION;
+        roomPhoto.src=`https://raw.githubusercontent.com/summer-paradise-resort/Returns/main/${file}?v=${assetVersion}`;
         return;
       }
       roomImageError.classList.remove('hidden');
