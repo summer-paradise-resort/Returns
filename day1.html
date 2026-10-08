@@ -420,7 +420,7 @@
     @media(max-width:520px){.bar-order-content{padding-left:14px;padding-right:14px}.bar-menu-pages{margin-left:-14px;margin-right:-14px}.bar-order-confirm-wrap{margin-left:-14px;margin-right:-14px}.bar-drink-item{grid-template-columns:31px minmax(0,1fr) auto;padding:11px 9px}.bar-drink-item strong{font-size:12px}.bar-drink-item small{font-size:9px}}
 
     /* SEASIDE BAR BACKGROUND PLACEMENT
-       案内ページには拡大背景を置かず、ドリンク注文画面だけに seaside_bar.jpg を使用する。 */
+       案内ページの1枚目・トップカード・ドリンク注文画面は、時間帯に応じて同じBAR画像へ切り替える。 */
     #barView{
       background:#fff;
       isolation:auto;
@@ -458,6 +458,7 @@
 
     /* 「ドリンクを注文する」後の選択画面だけ、元のBAR画像を全面背景にする。 */
     #barOrderSheet{
+      --bar-order-bg:url("seaside_bar.jpg");
       background:#071a2b;
       isolation:isolate;
     }
@@ -469,7 +470,7 @@
       pointer-events:none;
       background:
         linear-gradient(180deg,rgba(4,15,25,.36),rgba(4,15,25,.58)),
-        url("seaside_bar.jpg") center center/cover no-repeat;
+        var(--bar-order-bg) center center/cover no-repeat;
       transform:scale(1.04);
     }
     #barOrderSheet::after{
@@ -912,7 +913,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
-          <img src="ocean_view_room.jpg" alt="オーシャンビューの客室">
+          <img id="roomHomeCardImage" src="ocean_view_room.jpg" alt="オーシャンビューの客室">
           <div class="card-body"><h3 class="card-title">ROOM<span id="roomDeliveryBadge" class="room-delivery-badge hidden" aria-label="ルームサービス到着"></span></h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
         </button>
         <button class="card" type="button" data-open="exploreView">
@@ -924,7 +925,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
         </button>
         <button class="card" type="button" data-open="barView">
-          <img src="seaside_bar.jpg" alt="シーサイドバー">
+          <img id="barHomeCardImage" src="seaside_bar.jpg" alt="シーサイドバー">
           <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
         </button>
         <button class="card" type="button" data-open="casinoView">
@@ -1238,7 +1239,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
   <section class="subview" id="barView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
-    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
+    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img id="barGalleryHeroImage" src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
     <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p>
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
@@ -6378,6 +6379,12 @@ window.addEventListener('message',e=>{
     mermaids_cove:document.getElementById('exploreCoveGalleryImage')
   };
   const exploreHomeCardImage=document.getElementById('exploreHomeCardImage');
+  const roomHomeCardImages={day:'ocean_view_room.jpg',sunset:'ocean_view_room_evening.jpg',night:'ocean_view_room_night.jpg'};
+  const barTimedImages={day:'seaside_bar.jpg',sunset:'seaside_bar_evening.jpg',night:'seaside_bar_night.jpg'};
+  const roomHomeCardImage=document.getElementById('roomHomeCardImage');
+  const barHomeCardImage=document.getElementById('barHomeCardImage');
+  const barGalleryHeroImage=document.getElementById('barGalleryHeroImage');
+  let shownResortTimeImagePeriod='';
   let shownExplorePeriod='';
   // 探索で再生する3本は、すべてSupabase Storageの公開videosバケットから取得。
   const exploreEventVideoScreen=document.getElementById('exploreEventVideoScreen');
@@ -6548,6 +6555,9 @@ window.addEventListener('message',e=>{
     const images=exploreSpotImages[spotKey];
     return images?(images[period]||images.day):'';
   }
+  function currentTimedImage(imageMap,period=explorePeriod()){
+    return imageMap?(imageMap[period]||imageMap.day||''):'';
+  }
   function syncExploreImages(force=false){
     const period=explorePeriod();
     if(!force&&shownExplorePeriod===period)return;
@@ -6566,6 +6576,18 @@ window.addEventListener('message',e=>{
       locationBg.style.backgroundImage=`url("${currentExploreImage(selectedSpot,period)}")`;
     }
   }
+  function syncResortTimeImages(force=false){
+    const period=explorePeriod();
+    if(!force&&shownResortTimeImagePeriod===period)return;
+    shownResortTimeImagePeriod=period;
+    const roomImage=currentTimedImage(roomHomeCardImages,period);
+    const barImage=currentTimedImage(barTimedImages,period);
+    if(roomHomeCardImage&&roomHomeCardImage.getAttribute('src')!==roomImage)roomHomeCardImage.src=roomImage;
+    if(barHomeCardImage&&barHomeCardImage.getAttribute('src')!==barImage)barHomeCardImage.src=barImage;
+    if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)barGalleryHeroImage.src=barImage;
+    const barOrderSheet=document.getElementById('barOrderSheet');
+    if(barOrderSheet)barOrderSheet.style.setProperty('--bar-order-bg',`url("${barImage}")`);
+  }
   // 配信直後などに時間帯別の画像が見つからない場合は、昼の画像で表示を保つ。
   Object.entries(exploreGalleryImages).forEach(([spotKey,img])=>{
     img?.addEventListener('error',()=>{
@@ -6577,12 +6599,25 @@ window.addEventListener('message',e=>{
     const fallback=exploreSpotImages.lighthouse.day;
     if(exploreHomeCardImage.getAttribute('src')!==fallback)exploreHomeCardImage.src=fallback;
   });
-  syncExploreImages(true);
-  setInterval(()=>syncExploreImages(),30000);
-  document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden)syncExploreImages();
+  roomHomeCardImage?.addEventListener('error',()=>{
+    const fallback=roomHomeCardImages.day;
+    if(roomHomeCardImage.getAttribute('src')!==fallback)roomHomeCardImage.src=fallback;
   });
-  window.addEventListener('focus',()=>syncExploreImages());
+  barHomeCardImage?.addEventListener('error',()=>{
+    const fallback=barTimedImages.day;
+    if(barHomeCardImage.getAttribute('src')!==fallback)barHomeCardImage.src=fallback;
+  });
+  barGalleryHeroImage?.addEventListener('error',()=>{
+    const fallback=barTimedImages.day;
+    if(barGalleryHeroImage.getAttribute('src')!==fallback)barGalleryHeroImage.src=fallback;
+  });
+  syncExploreImages(true);
+  syncResortTimeImages(true);
+  setInterval(()=>{syncExploreImages();syncResortTimeImages();},30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden){syncExploreImages();syncResortTimeImages();}
+  });
+  window.addEventListener('focus',()=>{syncExploreImages();syncResortTimeImages();});
 
   function clearActionMessage(){
     if(!actionMessage)return;
