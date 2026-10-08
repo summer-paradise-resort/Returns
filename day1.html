@@ -1093,7 +1093,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
       <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
-      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">シュノーケルを使う<small>SNORKEL</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"><div id="exploreActionMessageText" class="explore-action-message-text"></div><button id="exploreActionMessageClose" class="explore-action-message-close" type="button">CLOSE</button></div></div>
+      <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">ダイビングをする<small>DIVING</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"><div id="exploreActionMessageText" class="explore-action-message-text"></div><button id="exploreActionMessageClose" class="explore-action-message-close" type="button">CLOSE</button></div></div>
     </section>
     <div id="lighthouseDayTelescopeScreen" class="explore-special-video" role="dialog" aria-modal="true" aria-label="灯台の望遠鏡イベント動画" aria-hidden="true">
       <video id="lighthouseDayTelescopeVideo" playsinline webkit-playsinline preload="none" controls controlsList="nodownload" aria-label="昼の灯台から望遠鏡を覗いたときの映像"></video>
@@ -6471,7 +6471,7 @@ window.addEventListener('message',e=>{
       camera:'撮った写真を確認する。波打ち際に、自分と同じ服を着た人が立っている。顔までは写っていない。',
       telescope:'沖を覗く。遠くに人影が見える。こちらに背を向けているはずなのに、なぜか目が合った気がした。',
       fishing:'糸が沈む。魚とは違う重さが、ゆっくりとこちらへ近づいてくる。途中でふっと軽くなった。',
-      snorkel:'こちらのシュノーケルをお使いください。\n水中で名前を呼ばれても、返事はしないでください。'
+      snorkel:'ダイビングをされる際は、どうぞお気をつけください。\n水中で名前を呼ばれても、返事はしないでください。'
     },
     lighthouse:{
       camera:'海を撮影した。写真の中央に、海面からこちらを見上げる人影が写っている。肉眼では何も見えない。',
@@ -6543,7 +6543,7 @@ window.addEventListener('message',e=>{
     if(explorePoisoned()){
       clearActionMessage();
       const line=poisonMessages?.[selectedSpot]?.[actionKey]||'何かが、いつもと違って見える。';
-      // シュノーケルのみ、スタッフに声をかけられる形式。
+      // ダイビングのみ、スタッフに声をかけられる形式。
       // 灯台だけはスタッフ会話ではなく、特殊な注意表示として出す。
       if(actionKey==='snorkel'&&selectedSpot!=='lighthouse'&&typeof window.__sprShowStaffDialogue==='function'){
         window.__sprShowStaffDialogue(line);
@@ -6560,7 +6560,7 @@ window.addEventListener('message',e=>{
       return;
     }
 
-    // 通常時：灯台でシュノーケルを選んだ場合だけ、スタッフ会話演出で注意される。
+    // 通常時：灯台でダイビングを選んだ場合だけ、スタッフ会話演出で注意される。
     if(selectedSpot==='lighthouse' && actionKey==='snorkel'){
       clearActionMessage();
       const period=explorePeriod();
