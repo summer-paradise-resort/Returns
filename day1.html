@@ -564,6 +564,10 @@
     }
     /* BAR MENU LIGHTBOX */
     .bar-menu-page{position:relative}
+
+    /* INTERACTION TUNING
+       iPhoneでのダブルタップ拡大を起こしにくくし、連打しやすくする。 */
+    button,a,summary,.card,.menu-item,.explore-choice-btn,.explore-location-action,.casino-enter,.story-toggle,.back{touch-action:manipulation}
     .bar-menu-zoom-trigger{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;touch-action:manipulation;cursor:zoom-in}
     .bar-menu-zoom-trigger:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
     .bar-menu-zoom-trigger img{width:100%;height:auto;display:block}
@@ -767,7 +771,6 @@ body.night-theme .info p,
 body.night-theme .room-mapping,
 body.night-theme .bar-period-card p,
 body.night-theme .bar-drink-item small,
-body.night-theme .bar-order-status-mini,
 body.night-theme .bar-selection,
 body.night-theme .tea-exchange-note,
 body.night-theme .tea-exchange-empty,
@@ -776,6 +779,10 @@ body.night-theme .admin-master-panel summary,
 body.night-theme .admin-master-status,
 body.night-theme .story-copy{
   color:#c9d1d8;
+}
+body.night-theme .bar-order-status-mini{
+  color:#f1dfb3;
+  text-shadow:0 1px 2px rgba(0,0,0,.28);
 }
 body.night-theme .resort-ticker:not(.alert){
   background:#0d2743;
@@ -912,7 +919,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
-          <img id="roomHomeCardImage" src="ocean_view_room.jpg" alt="オーシャンビューの客室">
+          <img id="roomHomeCardImage" src="Deluxe_Ocean_Window.jpg" alt="オーシャンビューの客室">
           <div class="card-body"><h3 class="card-title">ROOM<span id="roomDeliveryBadge" class="room-delivery-badge hidden" aria-label="ルームサービス到着"></span></h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
         </button>
         <button class="card" type="button" data-open="exploreView">
@@ -6378,7 +6385,7 @@ window.addEventListener('message',e=>{
     mermaids_cove:document.getElementById('exploreCoveGalleryImage')
   };
   const exploreHomeCardImage=document.getElementById('exploreHomeCardImage');
-  const roomHomeCardImages={day:'ocean_view_room.jpg',sunset:'ocean_view_room_evening.jpg',night:'ocean_view_room_night.jpg'};
+  const roomHomeCardImages={day:'Deluxe_Ocean_Window.jpg',sunset:'Deluxe_Ocean_Window_Sunset.jpg',night:'Deluxe_Ocean_Window_Night.jpg'};
   const barTimedImages={day:'seaside_bar.jpg',sunset:'seaside_bar_evening.jpg',night:'seaside_bar_night.jpg'};
   const roomHomeCardImage=document.getElementById('roomHomeCardImage');
   const barHomeCardImage=document.getElementById('barHomeCardImage');
@@ -6657,6 +6664,21 @@ window.addEventListener('message',e=>{
     if(!document.hidden){syncExploreImages();syncResortTimeImages();}
   });
   window.addEventListener('focus',()=>{syncExploreImages();syncResortTimeImages();});
+
+  const DOUBLE_TAP_GUARD_SELECTOR='button,a,summary,.card,.menu-item,.explore-choice-btn,.explore-location-action,.casino-enter,.story-toggle,.back';
+  let lastRapidTapTime=0;
+  let lastRapidTapTarget=null;
+  document.addEventListener('touchend',event=>{
+    const target=event.target instanceof Element ? event.target.closest(DOUBLE_TAP_GUARD_SELECTOR) : null;
+    if(!target)return;
+    const now=Date.now();
+    const isRapidSameTarget=lastRapidTapTarget===target && now-lastRapidTapTime<280;
+    lastRapidTapTime=now;
+    lastRapidTapTarget=target;
+    if(!isRapidSameTarget)return;
+    event.preventDefault();
+    if(typeof target.click==='function')target.click();
+  },{passive:false});
 
   function clearActionMessage(){
     if(!actionMessage)return;
