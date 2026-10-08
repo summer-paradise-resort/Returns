@@ -674,7 +674,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
     .admin-master-panel{margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 
-    /* DAY1 / 昼の灯台・望遠鏡イベント専用動画 */
+    /* DAY1 / 探索イベント動画（灯台の望遠鏡・夜のダイビング） */
     .explore-special-video{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden}
     .explore-special-video.open{display:flex}
     .explore-special-video video{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;background:#000}
@@ -1095,12 +1095,12 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       <div class="explore-location-head"><button id="exploreLocationBack" class="explore-location-back" type="button">← BACK</button><div class="explore-location-title"><strong id="exploreLocationEn">BEACH</strong><small id="exploreLocationJp">ビーチ</small></div><div></div></div>
       <div class="explore-location-sheet"><div class="explore-location-kicker">EXPLORE ACTION</div><div class="explore-location-actions"><button class="explore-location-action" type="button" data-explore-action="camera">カメラで撮影する<small>CAMERA</small></button><button class="explore-location-action" type="button" data-explore-action="telescope">小型望遠鏡を使う<small>TELESCOPE</small></button><button class="explore-location-action" type="button" data-explore-action="fishing">釣竿で釣りをする<small>FISHING ROD</small></button><button class="explore-location-action" type="button" data-explore-action="snorkel">ダイビングをする<small>DIVING</small></button></div><div id="exploreActionMessage" class="explore-action-message hidden" aria-live="polite"><div id="exploreActionMessageText" class="explore-action-message-text"></div><button id="exploreActionMessageClose" class="explore-action-message-close" type="button">CLOSE</button></div></div>
     </section>
-    <div id="lighthouseDayTelescopeScreen" class="explore-special-video" role="dialog" aria-modal="true" aria-label="灯台の望遠鏡イベント動画" aria-hidden="true">
-      <video id="lighthouseDayTelescopeVideo" playsinline webkit-playsinline preload="none" controls controlsList="nodownload" aria-label="昼の灯台から望遠鏡を覗いたときの映像"></video>
-      <button id="lighthouseDayTelescopeClose" type="button" class="explore-special-video-close" aria-label="動画を閉じる">×</button>
-      <div id="lighthouseDayTelescopeError" class="explore-special-video-error hidden" role="status">
-        動画を読み込めませんでした。Supabase Storage の videos / lighthouse_day_telescope.mp4 を確認してください。
-        <button id="lighthouseDayTelescopeRetry" type="button">もう一度再生</button>
+    <div id="exploreEventVideoScreen" class="explore-special-video" role="dialog" aria-modal="true" aria-label="探索イベント動画" aria-hidden="true">
+      <video id="exploreEventVideo" playsinline webkit-playsinline preload="none" controls controlsList="nodownload" aria-label="探索で発見した映像"></video>
+      <button id="exploreEventVideoClose" type="button" class="explore-special-video-close" aria-label="動画を閉じる">×</button>
+      <div id="exploreEventVideoError" class="explore-special-video-error hidden" role="status">
+        <span id="exploreEventVideoErrorText">動画を読み込めませんでした。</span>
+        <button id="exploreEventVideoRetry" type="button">もう一度再生</button>
       </div>
     </div>
   </section>
@@ -6341,57 +6341,72 @@ window.addEventListener('message',e=>{
   const actionMessageText=document.getElementById('exploreActionMessageText');
   const actionMessageClose=document.getElementById('exploreActionMessageClose');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
-  const lighthouseVideoScreen=document.getElementById('lighthouseDayTelescopeScreen');
-  const lighthouseVideo=document.getElementById('lighthouseDayTelescopeVideo');
-  const lighthouseVideoClose=document.getElementById('lighthouseDayTelescopeClose');
-  const lighthouseVideoError=document.getElementById('lighthouseDayTelescopeError');
-  const lighthouseVideoRetry=document.getElementById('lighthouseDayTelescopeRetry');
-  // エルナンドの闘牛場と同じ Supabase Storage 公開動画バケット。
-  const LIGHTHOUSE_DAY_TELESCOPE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co/storage/v1/object/public/videos/lighthouse_day_telescope.mp4';
-  const LIGHTHOUSE_DAY_DRINKS=new Set(['サマーパラダイス','シェルブリーズ']);
-  function hasLighthouseDayTelescopeDrink(){
-    if(document.documentElement.dataset.resortDay!=='1'||explorePeriod()!=='day')return false;
+  // 探索で再生する3本は、すべてSupabase Storageの公開videosバケットから取得。
+  const exploreEventVideoScreen=document.getElementById('exploreEventVideoScreen');
+  const exploreEventVideo=document.getElementById('exploreEventVideo');
+  const exploreEventVideoClose=document.getElementById('exploreEventVideoClose');
+  const exploreEventVideoError=document.getElementById('exploreEventVideoError');
+  const exploreEventVideoErrorText=document.getElementById('exploreEventVideoErrorText');
+  const exploreEventVideoRetry=document.getElementById('exploreEventVideoRetry');
+  const EXPLORE_VIDEO_BASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co/storage/v1/object/public/videos/';
+  const DAY1_EXPLORE_VIDEO_EVENTS=[
+    {spot:'lighthouse',period:'day',action:'telescope',drinks:['サマーパラダイス','シェルブリーズ'],filename:'lighthouse_day_telescope.mp4',label:'昼の灯台で望遠鏡を使ったときの映像'},
+    {spot:'beach',period:'night',action:'snorkel',drinks:['ミッドナイトランタン'],filename:'beach_night_diving.mp4',label:'夜のビーチでダイビングをしたときの映像'},
+    {spot:'mermaids_cove',period:'night',action:'snorkel',drinks:['ラグーンブリーズ','マーメイドキス'],filename:'mermaids_cove_night_diving.mp4',label:'夜の人魚の入り江でダイビングをしたときの映像'}
+  ];
+  // 画面上は「ダイビングをする」。snorkelは既存の探索アクションIDとして維持する。
+  function matchingDay1ExploreVideo(spotKey,actionKey){
+    if(document.documentElement.dataset.resortDay!=='1')return null;
+    const period=explorePeriod();
     const drink=typeof window.getCurrentBarDrinkEffect==='function'?window.getCurrentBarDrinkEffect():null;
-    return Boolean(drink&&drink.period==='day'&&LIGHTHOUSE_DAY_DRINKS.has(drink.name)&&Date.now()<Number(drink.expiresAt||0));
+    if(!drink||drink.period!==period||Date.now()>=Number(drink.expiresAt||0))return null;
+    return DAY1_EXPLORE_VIDEO_EVENTS.find(event=>event.spot===spotKey&&event.period===period&&event.action===actionKey&&event.drinks.includes(drink.name))||null;
   }
-  function closeLighthouseDayTelescopeVideo(){
-    if(!lighthouseVideoScreen)return;
-    try{lighthouseVideo.pause();lighthouseVideo.currentTime=0;lighthouseVideo.removeAttribute('src');lighthouseVideo.load()}catch{}
-    lighthouseVideoScreen.classList.remove('open');
-    lighthouseVideoScreen.setAttribute('aria-hidden','true');
-    lighthouseVideoError?.classList.add('hidden');
+  let activeExploreVideoEvent=null;
+  function closeExploreEventVideo(){
+    if(!exploreEventVideoScreen)return;
+    // 画面を先に閉じてからソースを解除（解除時のerrorイベントを表示しない）。
+    exploreEventVideoScreen.classList.remove('open');
+    exploreEventVideoScreen.setAttribute('aria-hidden','true');
+    try{exploreEventVideo.pause();exploreEventVideo.removeAttribute('src');exploreEventVideo.load()}catch{}
+    exploreEventVideoError?.classList.add('hidden');
+    activeExploreVideoEvent=null;
     window.__sprExploreVideoPlaying=false;
     window.__sprResumeExploreBgmAfterGimmick?.();
   }
-  function startLighthouseDayTelescopePlayback(){
-    if(!lighthouseVideo)return;
-    lighthouseVideoError?.classList.add('hidden');
+  function startExploreEventVideoPlayback(){
+    if(!exploreEventVideo||!activeExploreVideoEvent)return;
+    exploreEventVideoError?.classList.add('hidden');
     try{
-      lighthouseVideo.pause();
-      lighthouseVideo.src=LIGHTHOUSE_DAY_TELESCOPE_URL;
-      lighthouseVideo.currentTime=0;
-      const play=lighthouseVideo.play();
+      exploreEventVideo.pause();
+      exploreEventVideo.src=EXPLORE_VIDEO_BASE_URL+activeExploreVideoEvent.filename;
+      exploreEventVideo.currentTime=0;
+      const play=exploreEventVideo.play();
       if(play?.catch)play.catch(()=>{
-        if(lighthouseVideoScreen?.classList.contains('open'))lighthouseVideoError?.classList.remove('hidden');
+        if(exploreEventVideoScreen?.classList.contains('open'))exploreEventVideoError?.classList.remove('hidden');
       });
     }catch{
-      lighthouseVideoError?.classList.remove('hidden');
+      exploreEventVideoError?.classList.remove('hidden');
     }
   }
-  function openLighthouseDayTelescopeVideo(){
-    if(!lighthouseVideoScreen||!lighthouseVideo)return;
+  function openExploreEventVideo(event){
+    if(!exploreEventVideoScreen||!exploreEventVideo||!event)return;
     clearActionMessage();
+    activeExploreVideoEvent=event;
+    exploreEventVideoScreen.setAttribute('aria-label',event.label);
+    exploreEventVideo.setAttribute('aria-label',event.label);
+    if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent=`動画を読み込めませんでした。Supabase Storage の videos / ${event.filename} を確認してください。`;
     window.__sprExploreVideoPlaying=true;
     window.__sprPauseExploreBgmForGimmick?.();
-    lighthouseVideoScreen.classList.add('open');
-    lighthouseVideoScreen.setAttribute('aria-hidden','false');
-    startLighthouseDayTelescopePlayback();
+    exploreEventVideoScreen.classList.add('open');
+    exploreEventVideoScreen.setAttribute('aria-hidden','false');
+    startExploreEventVideoPlayback();
   }
-  lighthouseVideoClose?.addEventListener('click',closeLighthouseDayTelescopeVideo);
-  lighthouseVideoRetry?.addEventListener('click',startLighthouseDayTelescopePlayback);
-  lighthouseVideo?.addEventListener('ended',closeLighthouseDayTelescopeVideo);
-  lighthouseVideo?.addEventListener('error',()=>{
-    if(lighthouseVideoScreen?.classList.contains('open'))lighthouseVideoError?.classList.remove('hidden');
+  exploreEventVideoClose?.addEventListener('click',closeExploreEventVideo);
+  exploreEventVideoRetry?.addEventListener('click',startExploreEventVideoPlayback);
+  exploreEventVideo?.addEventListener('ended',closeExploreEventVideo);
+  exploreEventVideo?.addEventListener('error',()=>{
+    if(exploreEventVideoScreen?.classList.contains('open'))exploreEventVideoError?.classList.remove('hidden');
   });
   const spots={
     beach:{label:'ビーチ',en:'BEACH',image:'summer_paradise_beach.jpg'},
@@ -6553,10 +6568,11 @@ window.addEventListener('message',e=>{
       return;
     }
 
-    // DAY1: 昼の灯台＋指定ドリンク＋小型望遠鏡 → 特別動画。
-    // ドリンク未注文・別のドリンク・別の時間帯なら従来の探索文章に戻る。
-    if(selectedSpot==='lighthouse'&&actionKey==='telescope'&&hasLighthouseDayTelescopeDrink()){
-      openLighthouseDayTelescopeVideo();
+    // DAY1: ドリンク・時間帯・探索場所・アクションの4条件が一致したときだけ動画を再生。
+    // その他の組み合わせは既存の探索文章・スタッフ会話のまま。
+    const videoEvent=matchingDay1ExploreVideo(selectedSpot,actionKey);
+    if(videoEvent){
+      openExploreEventVideo(videoEvent);
       return;
     }
 
