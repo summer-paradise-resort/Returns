@@ -65,7 +65,7 @@
     .subhead{height:66px;position:sticky;top:0;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;z-index:2;padding:0 12px}
     .back{width:44px;height:44px;border:0;background:transparent;color:var(--navy);font:12px Georgia,serif}
     .subhead-title{text-align:center;font:11px Georgia,serif;letter-spacing:.18em;color:var(--gold)}
-    .gallery{overflow:hidden;background:#e8e3da;touch-action:pan-y}
+    .gallery{overflow:hidden;background:#e8e3da;touch-action:pan-x pinch-zoom;overscroll-behavior:contain}
     .track{display:flex;transition:transform .35s ease}
     .slide{flex:0 0 100%;aspect-ratio:16/10}
     .slide img{height:100%;object-fit:cover}
@@ -386,7 +386,7 @@
     .bar-order-panel .bar-order-kicker{font:10px Georgia,serif;letter-spacing:.24em;color:var(--gold);margin-bottom:8px}
     .bar-order-panel p{margin:0 0 15px!important;font-size:12px!important;line-height:1.9!important;color:#52606c!important}
     .bar-order-open{width:100%;min-height:48px;border:1px solid var(--gold2);background:var(--navy);color:#fff;font-size:13px;letter-spacing:.12em;padding:12px 16px}
-    .bar-order-status-mini{margin-top:12px;font-size:11px;line-height:1.8;color:#7f6944}
+    .bar-order-status-mini{margin-top:12px;font-size:11px;line-height:1.8;color:#52606c}
     .bar-order-sheet{position:fixed;inset:0;z-index:66;background:#fff;overflow-y:auto;overscroll-behavior:contain;transform:translateY(100%);visibility:hidden;transition:transform .28s ease,visibility .28s}
     .bar-order-sheet.open{transform:none;visibility:visible}
     .bar-order-head{position:sticky;top:0;z-index:4;min-height:66px;display:grid;grid-template-columns:52px 1fr 52px;align-items:center;background:rgba(255,255,255,.97);border-bottom:1px solid #eee8dc;padding:0 12px;backdrop-filter:blur(10px)}
@@ -398,7 +398,7 @@
     .bar-period-card small{display:block;color:var(--gold);font:10px Georgia,serif;letter-spacing:.12em;margin-bottom:8px}
     .bar-period-card p{font-size:12px;line-height:1.85;color:#4c5a67;margin:0}
     .bar-menu-title{text-align:center;margin:24px 0 13px;font:13px Georgia,serif;letter-spacing:.22em;color:var(--gold)}
-    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pinch-zoom;overscroll-behavior-x:contain}
     .bar-menu-pages::-webkit-scrollbar{display:none}
     .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
     .bar-menu-page img{width:100%;height:auto;display:block}
@@ -582,6 +582,7 @@
        Tappable images must not block vertical page scrolling.
        Swipe galleries keep horizontal swipe handling while the browser owns vertical pan. */
     .room-scene{touch-action:pan-y}
+    .room-photo-area{touch-action:pan-x pinch-zoom}
     .collection-card:not(.missing),.bar-menu-zoom-trigger{touch-action:manipulation}
 
 
@@ -780,9 +781,9 @@ body.night-theme .admin-master-status,
 body.night-theme .story-copy{
   color:#c9d1d8;
 }
-body.night-theme .bar-order-status-mini{
-  color:#f1dfb3;
-  text-shadow:0 1px 2px rgba(0,0,0,.28);
+body.night-theme #barView .bar-order-panel .bar-order-status-mini{
+  color:#52606c;
+  text-shadow:none;
 }
 body.night-theme .resort-ticker:not(.alert){
   background:#0d2743;
@@ -3584,7 +3585,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',306:'オーシャンラグーン',307:'オーシャンラグーン',308:'オーシャンラグーン',309:'オーシャンラグーン',310:'オーシャンラグーン',
       401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
     };
-    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sheetTouchStart=0;
+    let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sceneTouchStartY=0, sheetTouchStart=0;
     const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), roomError=document.getElementById('roomError');
     const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
     const roomScene=document.getElementById('roomScene'), roomPhoto=document.getElementById('roomPhoto'), roomImageError=document.getElementById('roomImageError');
@@ -5000,8 +5001,18 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
     document.getElementById('roomSceneNext').addEventListener('click',()=>stepRoomScene(1));
     roomSceneMenuToggle.addEventListener('click',()=>{const open=!roomSceneNav.classList.contains('open');roomSceneNav.classList.toggle('open',open);roomSceneNav.setAttribute('aria-hidden',String(!open));roomSceneMenuToggle.setAttribute('aria-expanded',String(open))});
-    roomScene.addEventListener('touchstart',event=>{sceneTouchStart=event.touches[0].clientX},{passive:true});
-    roomScene.addEventListener('touchend',event=>{if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;const diff=event.changedTouches[0].clientX-sceneTouchStart;if(Math.abs(diff)>45)stepRoomScene(diff<0?1:-1)},{passive:true});
+    roomScene.addEventListener('touchstart',event=>{
+      if(event.touches.length!==1)return;
+      sceneTouchStart=event.touches[0].clientX;
+      sceneTouchStartY=event.touches[0].clientY;
+    },{passive:true});
+    roomScene.addEventListener('touchend',event=>{
+      if(chatSheet.classList.contains('open')||roomServiceSheet.classList.contains('open')||roomBelongingsSheet.classList.contains('open')||roomSceneNav.classList.contains('open'))return;
+      if(!event.changedTouches.length)return;
+      const diffX=event.changedTouches[0].clientX-sceneTouchStart;
+      const diffY=event.changedTouches[0].clientY-sceneTouchStartY;
+      if(Math.abs(diffX)>45&&Math.abs(diffX)>Math.abs(diffY)*1.2)stepRoomScene(diffX<0?1:-1);
+    },{passive:true});
     roomPhoto.addEventListener('error',()=>{
       const config=roomVisualConfig(activeRoom);
       const file=roomPhoto.dataset.assetFile||'';
@@ -5626,11 +5637,23 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
     const galleries={};
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
-      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0;
+      const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0,startY=0,swipeEligible=false;
       const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
       function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
-      gallery.addEventListener('touchstart',e=>{startX=e.touches[0].clientX},{passive:true});
-      gallery.addEventListener('touchend',e=>{const diff=e.changedTouches[0].clientX-startX;if(Math.abs(diff)>40)show(index+(diff<0?1:-1));},{passive:true});
+      gallery.addEventListener('touchstart',e=>{
+        swipeEligible=e.touches.length===1;
+        if(!swipeEligible)return;
+        startX=e.touches[0].clientX;
+        startY=e.touches[0].clientY;
+      },{passive:true});
+      gallery.addEventListener('touchend',e=>{
+        if(!swipeEligible||!e.changedTouches.length)return;
+        swipeEligible=false;
+        const dx=e.changedTouches[0].clientX-startX;
+        const dy=e.changedTouches[0].clientY-startY;
+        if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.2)show(index+(dx<0?1:-1));
+      },{passive:true});
+      gallery.addEventListener('touchcancel',()=>{swipeEligible=false},{passive:true});
       galleries[name]=show;
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
