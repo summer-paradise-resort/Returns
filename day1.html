@@ -1479,7 +1479,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       document.body.classList.toggle('night-theme',night);
       document.documentElement.classList.toggle('night-theme',night);
 
-      // CAFE is rendered in srcdoc iframes, so give those pages the same night palette too.
+      // CAFE is rendered in srcdoc iframes, so give those pages the same time-based background / night palette too.
       document.querySelectorAll('#integratedCafeShell iframe').forEach(frame=>{
         const applyToFrame=()=>{
           try{
@@ -1487,6 +1487,15 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
             if(!doc||!doc.documentElement)return;
             doc.documentElement.classList.toggle('spr-night',night);
             if(doc.body)doc.body.classList.toggle('spr-night',night);
+
+            if(frame.id==='integratedCafeHome'&&doc.body){
+              const homeBg=period==='night'
+                ? '#071a2b url("cafe_floor_night.jpg") center/cover fixed no-repeat'
+                : period==='sunset'
+                  ? '#fff url("cafe_floor_evening.jpg") center/cover fixed no-repeat'
+                  : '#fff url("cafe_floor.jpg") center/cover fixed no-repeat';
+              doc.body.style.setProperty('background',homeBg,'important');
+            }
 
             let style=doc.getElementById('sprIframeNightTheme');
             if(!style){
@@ -1496,7 +1505,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
                 ? 'linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("the_pearl_terrace_i.jpg") center/cover fixed no-repeat'
                 : (frame.id==='integratedCafeMarine')
                   ? 'linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("marine_bloom_cafe_i.jpg") center/cover fixed no-repeat'
-                  : '#071a2b url("cafe_floor.jpg") center/cover fixed no-repeat';
+                  : '#071a2b url("cafe_floor_night.jpg") center/cover fixed no-repeat';
               style.textContent=`
                 html.spr-night,html.spr-night body{background-color:#071a2b!important;color:#f6f2e8!important}
                 html.spr-night body{background:${bg}!important}
