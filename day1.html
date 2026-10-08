@@ -526,6 +526,18 @@
     .explore-destination-panel>h3{margin-bottom:2px}
     .explore-location-page{position:fixed;inset:0;z-index:96;background:#071a2b;color:#fff;overflow:hidden}
     .explore-location-bg{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;transform:scale(1.01)}
+    /* 場所ごとに被写体の見せ方を最適化。横長の画像を縦長スマホに表示する際の偏りを防ぐ。 */
+    /* ビーチ：空を抑え、波打ち際・青い海・リゾートの海岸線を主役にする。 */
+    .explore-location-bg[data-spot="beach"]{background-size:auto 124%;background-position:78% 84%}
+    /* 灯台：塔が画面外へ切れないよう横位置を左寄りにし、頂部から階段まで見せる。 */
+    .explore-location-bg[data-spot="lighthouse"]{background-size:cover;background-position:30% center}
+    /* 人魚の入り江：水面と岩場を主役にする既存の構図を維持。 */
+    .explore-location-bg[data-spot="mermaids_cove"]{background-size:auto 122%;background-position:center 72%}
+    .gallery[data-gallery="explore"] #exploreBeachGalleryImage{object-position:74% 63%}
+    .gallery[data-gallery="explore"] #exploreLighthouseGalleryImage{object-position:37% 50%}
+    .gallery[data-gallery="explore"] #exploreCoveGalleryImage{object-position:center 65%}
+    /* ホームの探索入口にも時間変化を反映し、灯台が主役になるように切り取る。 */
+    #exploreHomeCardImage{object-position:36% 50%}
     .explore-location-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,15,27,.48) 0%,rgba(3,15,27,.12) 35%,rgba(3,15,27,.32) 58%,rgba(3,15,27,.88) 100%)}
     .explore-location-head{position:absolute;z-index:2;top:0;left:0;right:0;min-height:72px;display:grid;grid-template-columns:70px 1fr 70px;align-items:center;padding:max(8px,env(safe-area-inset-top)) 14px 8px;background:linear-gradient(180deg,rgba(3,15,27,.72),transparent);color:#fff}
     .explore-location-back{width:56px;height:44px;border:0;background:transparent;color:#fff;font:12px Georgia,serif;letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.75)}
@@ -904,7 +916,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <div class="card-body"><h3 class="card-title">ROOM<span id="roomDeliveryBadge" class="room-delivery-badge hidden" aria-label="ルームサービス到着"></span></h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
         </button>
         <button class="card" type="button" data-open="exploreView">
-          <img src="lighthouse.jpg" alt="島の灯台">
+          <img id="exploreHomeCardImage" src="lighthouse.jpg" alt="島の灯台">
           <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
         </button>
         <button class="card" type="button" data-open="restaurantView">
@@ -1085,7 +1097,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   <section class="subview" id="exploreView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
     <div class="gallery" data-gallery="explore"><div class="track">
-      <div class="slide"><img src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
+      <div class="slide"><img id="exploreBeachGalleryImage" src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img id="exploreLighthouseGalleryImage" src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img id="exploreCoveGalleryImage" src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
     </div></div><div class="dots" data-dots="explore"></div>
     <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel explore-destination-panel"><h3>行き先を選ぶ</h3><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div></div>
     <audio id="exploreBgm" src="explore_bgm.mp3" loop preload="auto"></audio>
@@ -6341,6 +6353,32 @@ window.addEventListener('message',e=>{
   const actionMessageText=document.getElementById('exploreActionMessageText');
   const actionMessageClose=document.getElementById('exploreActionMessageClose');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
+  // 探索3エリアの画像は昼・夕・夜で統一して切り替える。
+  // ファイル名はリポジトリにアップロードした画像と完全一致（大文字・小文字も区別）。
+  const exploreSpotImages={
+    beach:{
+      day:'summer_paradise_beach.jpg',
+      sunset:'summer_paradise_beach_evening.jpg',
+      night:'summer_paradise_beach_night.jpg'
+    },
+    lighthouse:{
+      day:'lighthouse.jpg',
+      sunset:'lighthouse_evening.jpg',
+      night:'lighthouse_night.jpg'
+    },
+    mermaids_cove:{
+      day:'mermaids_cove.jpg',
+      sunset:'mermaids_cove_evening.jpg',
+      night:'mermaids_cove_night.jpg'
+    }
+  };
+  const exploreGalleryImages={
+    beach:document.getElementById('exploreBeachGalleryImage'),
+    lighthouse:document.getElementById('exploreLighthouseGalleryImage'),
+    mermaids_cove:document.getElementById('exploreCoveGalleryImage')
+  };
+  const exploreHomeCardImage=document.getElementById('exploreHomeCardImage');
+  let shownExplorePeriod='';
   // 探索で再生する3本は、すべてSupabase Storageの公開videosバケットから取得。
   const exploreEventVideoScreen=document.getElementById('exploreEventVideoScreen');
   const exploreEventVideo=document.getElementById('exploreEventVideo');
@@ -6506,6 +6544,46 @@ window.addEventListener('message',e=>{
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
     return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
   }
+  function currentExploreImage(spotKey,period=explorePeriod()){
+    const images=exploreSpotImages[spotKey];
+    return images?(images[period]||images.day):'';
+  }
+  function syncExploreImages(force=false){
+    const period=explorePeriod();
+    if(!force&&shownExplorePeriod===period)return;
+    shownExplorePeriod=period;
+    // 探索一覧の3枚 + ホームの灯台サムネイル。
+    Object.entries(exploreGalleryImages).forEach(([spotKey,img])=>{
+      const filename=currentExploreImage(spotKey,period);
+      if(img&&img.getAttribute('src')!==filename)img.src=filename;
+    });
+    const homeImage=currentExploreImage('lighthouse',period);
+    if(exploreHomeCardImage&&exploreHomeCardImage.getAttribute('src')!==homeImage){
+      exploreHomeCardImage.src=homeImage;
+    }
+    // 探索先の画面を開いている最中にも、時間が変われば背景を更新。
+    if(selectedSpot&&!locationPage.classList.contains('hidden')){
+      locationBg.style.backgroundImage=`url("${currentExploreImage(selectedSpot,period)}")`;
+    }
+  }
+  // 配信直後などに時間帯別の画像が見つからない場合は、昼の画像で表示を保つ。
+  Object.entries(exploreGalleryImages).forEach(([spotKey,img])=>{
+    img?.addEventListener('error',()=>{
+      const fallback=exploreSpotImages[spotKey].day;
+      if(img.getAttribute('src')!==fallback)img.src=fallback;
+    });
+  });
+  exploreHomeCardImage?.addEventListener('error',()=>{
+    const fallback=exploreSpotImages.lighthouse.day;
+    if(exploreHomeCardImage.getAttribute('src')!==fallback)exploreHomeCardImage.src=fallback;
+  });
+  syncExploreImages(true);
+  setInterval(()=>syncExploreImages(),30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)syncExploreImages();
+  });
+  window.addEventListener('focus',()=>syncExploreImages());
+
   function clearActionMessage(){
     if(!actionMessage)return;
     if(actionMessageText)actionMessageText.textContent='';
@@ -6535,7 +6613,10 @@ window.addEventListener('message',e=>{
     if(!spot)return;
     selectedSpot=spotKey;
     clearActionMessage();
-    locationBg.style.backgroundImage=`url("${spot.image}")`;
+    locationBg.dataset.spot=spotKey;
+    locationBg.style.backgroundImage=`url("${currentExploreImage(spotKey)}")`;
+    // ビューへ入った瞬間も、離れたページから戻った直後も時間変化を反映。
+    syncExploreImages();
     locationEn.textContent=spot.en;
     locationJp.textContent=spot.label;
     locationPage.classList.remove('hidden');
