@@ -297,8 +297,7 @@
     .villa-pool-water::before{content:"";position:absolute;inset:-18%;background:linear-gradient(112deg,transparent 20%,rgba(210,252,255,.17) 43%,transparent 66%);filter:blur(24px);mix-blend-mode:screen;opacity:.34;animation:villaPoolLight 9s ease-in-out infinite alternate;pointer-events:none}
     .villa-pool-water::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,63,90,.02) 0%,rgba(0,57,91,.08) 50%,rgba(0,24,56,.62) 100%);pointer-events:none}
     .villa-pool-bubbles{position:absolute;z-index:2;inset:0;overflow:hidden;pointer-events:none}
-    .villa-pool-bubble{position:absolute;left:var(--x);bottom:-16vh;width:var(--bubble-w);height:var(--bubble-h);border:1px solid rgba(237,253,255,.62);border-radius:var(--bubble-radius);background:radial-gradient(ellipse at 30% 23%,rgba(255,255,255,.78) 0 7%,rgba(218,249,255,.22) 19%,rgba(159,231,244,.05) 63%,rgba(255,255,255,.16) 82%,transparent 100%);box-shadow:inset -2px -3px 7px rgba(0,88,132,.25),0 0 7px rgba(222,251,255,.18);filter:blur(var(--bubble-blur));opacity:0;transform-origin:54% 62%;animation:villaBubbleRise var(--duration) ease-in var(--delay) infinite;animation-play-state:paused}
-    .villa-pool-bubble::after{content:"";position:absolute;left:18%;top:12%;width:26%;height:18%;border-radius:62% 38% 55% 45%;background:rgba(255,255,255,.58);filter:blur(.35px);transform:rotate(-18deg)}
+    .villa-pool-bubble{position:absolute;left:var(--x);bottom:-16vh;width:var(--size);height:var(--size);border:1px solid rgba(255,255,255,.72);border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.84) 0 8%,rgba(255,255,255,.18) 22%,rgba(255,255,255,.03) 64%);box-shadow:inset -2px -3px 6px rgba(0,102,166,.2),0 0 8px rgba(229,252,255,.28);opacity:0;animation:villaBubbleRise var(--duration) ease-in var(--delay) infinite;animation-play-state:paused}
     .villa-pool-experience.underwater .villa-pool-bubble{animation-play-state:running}
     .villa-pool-copy{position:absolute;z-index:3;left:24px;right:24px;bottom:max(34px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff;opacity:0;transform:translateY(12px);transition:opacity .55s ease,transform .55s ease;text-shadow:0 2px 12px rgba(0,70,120,.7)}
     .villa-pool-experience.ready .villa-pool-copy{opacity:1;transform:none}
@@ -309,7 +308,7 @@
     .villa-pool-chat{display:flex;align-items:center;justify-content:center;gap:9px;background:rgba(247,242,230,.9);color:#0b3d59}
     .villa-pool-exit{background:rgba(0,51,84,.54);color:#fff}
     .room-chat-sheet.pool-over-water{position:fixed;z-index:2147483002;left:0;right:0;bottom:0}
-    @keyframes villaBubbleRise{0%{transform:translate3d(0,16vh,0) rotate(var(--rotation)) scale(.52);opacity:0}11%{opacity:var(--bubble-alpha)}35%{transform:translate3d(var(--drift-a),-33vh,0) rotate(calc(var(--rotation) + 24deg)) scale(.76);opacity:var(--bubble-alpha)}68%{transform:translate3d(var(--drift-b),-79vh,0) rotate(calc(var(--rotation) - 18deg)) scale(.96);opacity:var(--bubble-alpha)}100%{transform:translate3d(var(--drift-end),-128vh,0) rotate(var(--rotation-end)) scale(1.13);opacity:0}}
+    @keyframes villaBubbleRise{0%{transform:translate3d(0,16vh,0) scale(.52);opacity:0}11%{opacity:var(--bubble-alpha)}35%{transform:translate3d(var(--drift-a),-33vh,0) scale(.76);opacity:var(--bubble-alpha)}68%{transform:translate3d(var(--drift-b),-79vh,0) scale(.96);opacity:var(--bubble-alpha)}100%{transform:translate3d(var(--drift-end),-128vh,0) scale(1.13);opacity:0}}
     @keyframes villaPoolLight{from{transform:translate3d(-5%,1%,0) rotate(-3deg) scale(1)}to{transform:translate3d(6%,-2%,0) rotate(4deg) scale(1.08)}}
     @media(prefers-reduced-motion:reduce){.villa-pool-water,.villa-pool-copy{transition-duration:.01ms}.villa-pool-water::before{animation:none}.villa-pool-bubble{animation-duration:12s}}
     .room-explore-result{grid-column:1/-1;padding:10px 12px;background:rgba(7,21,35,.78);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:11px;line-height:1.8;letter-spacing:.03em}
@@ -1053,7 +1052,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
         <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="auto" playsinline></audio>
-        <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" loop playsinline></audio>
+        <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="auto" playsinline></audio>
         <div id="roomServiceDeliveryNotice" class="room-service-delivery-notice hidden" role="dialog" aria-modal="true" aria-live="assertive">
           <div class="room-service-delivery-card">
@@ -3963,18 +3962,18 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function stopVillaPoolAudioForMaster(){cancelVillaPoolAudio(true)}
     function startVillaPoolNowAudio(token=villaPoolAudioToken,restart=true){
       if(token!==villaPoolAudioToken||!villaPoolNowAudio||!villaPoolAudioMasterOn()||!villaPoolExperience?.classList.contains('open'))return;
-      villaPoolNowAudio.loop=true;
+      villaPoolNowAudio.loop=false;
       villaPoolNowAudio.volume=.56;
       if(!villaPoolNowAudio.paused){
         try{if(restart&&villaPoolNowAudio.readyState>0)villaPoolNowAudio.currentTime=0;villaPoolNowAudio.muted=false}catch{}
         return;
       }
-      void sprStartAudioClean(villaPoolNowAudio,{volume:.56,loop:true,restart,guard:SPR_AUDIO_START_GUARD_MS});
+      void sprStartAudioClean(villaPoolNowAudio,{volume:.56,loop:false,restart,guard:SPR_AUDIO_START_GUARD_MS});
     }
     function primeVillaPoolNowAudio(token){
       if(token!==villaPoolAudioToken||!villaPoolNowAudio||!villaPoolAudioMasterOn())return;
       try{
-        villaPoolNowAudio.loop=true;villaPoolNowAudio.volume=.56;villaPoolNowAudio.muted=true;
+        villaPoolNowAudio.loop=false;villaPoolNowAudio.volume=.56;villaPoolNowAudio.muted=true;
         if(villaPoolNowAudio.readyState>0)villaPoolNowAudio.currentTime=0;
         const play=villaPoolNowAudio.play();if(play?.catch)play.catch(()=>{});
       }catch{}
@@ -4008,20 +4007,14 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       for(let i=0;i<27;i+=1){
         const bubble=document.createElement('span');
         bubble.className='villa-pool-bubble';
-        const radiusA=38+(i*17)%28,radiusB=42+(i*23)%30,radiusC=36+(i*29)%31,radiusD=40+(i*31)%27;
         bubble.style.setProperty('--x',`${(i*37+7)%96}%`);
-        bubble.style.setProperty('--bubble-w',`${5+(i*13)%20}px`);
-        bubble.style.setProperty('--bubble-h',`${7+(i*17)%25}px`);
-        bubble.style.setProperty('--bubble-radius',`${radiusA}% ${radiusB}% ${radiusC}% ${radiusD}% / ${radiusD}% ${radiusA}% ${radiusB}% ${radiusC}%`);
-        bubble.style.setProperty('--bubble-blur',`${(i%4)*.18}px`);
+        bubble.style.setProperty('--size',`${5+(i*13)%20}px`);
         bubble.style.setProperty('--bubble-alpha',`${.48+(i%6)*.065}`);
         bubble.style.setProperty('--duration',`${6.8+((i*7)%49)/10}s`);
         bubble.style.setProperty('--delay',`${((i*11)%61)/10}s`);
         bubble.style.setProperty('--drift-a',`${-19+(i*17)%39}px`);
         bubble.style.setProperty('--drift-b',`${-30+(i*23)%61}px`);
         bubble.style.setProperty('--drift-end',`${-38+(i*29)%77}px`);
-        bubble.style.setProperty('--rotation',`${-28+(i*19)%57}deg`);
-        bubble.style.setProperty('--rotation-end',`${-90+(i*37)%181}deg`);
         fragment.append(bubble);
       }
       villaPoolBubbles.append(fragment);
