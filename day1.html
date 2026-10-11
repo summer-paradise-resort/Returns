@@ -1313,7 +1313,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
-    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img id="casinoGalleryHeroImage" src="casino_blue_shell_day.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
+    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img data-casino-gallery-slot="1" src="casino.gallery01_day.jpg" alt="カジノ・ブルーシェル館内 1"></div><div class="slide"><img data-casino-gallery-slot="2" src="casino.gallery02_day.jpg" alt="カジノ・ブルーシェル館内 2"></div><div class="slide"><img data-casino-gallery-slot="3" src="casino.gallery03_day.jpg" alt="カジノ・ブルーシェル館内 3"></div></div></div><div class="dots" data-dots="casino"></div>
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
@@ -3340,7 +3340,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     window.addEventListener('focus',()=>{refreshCasinoChipsFromSupabase()});
 
     // CASINO GALLERY
-    // casino.gallery01.jpg から連番で探索。連番が途切れたところで終了。
+    // 昼: casino.gallery01_day.jpg / 夕: casino.gallery01_evening.jpg / 夜: casino.gallery01.jpg
+    // から連番で探索。連番が途切れたところで終了する。
     const casinoGalleryImage=document.getElementById('casinoGalleryImage');
     const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
@@ -3353,17 +3354,16 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const casinoElevatorMovie=document.getElementById('casinoElevatorMovie');
     const casinoElevatorVideoClose=document.getElementById('casinoElevatorVideoClose');
     const casinoElevatorVideoError=document.getElementById('casinoElevatorVideoError');
-    const CASINO_ELEVATOR_TRIGGER_FILE='casino.gallery08.jpg';
+    const CASINO_ELEVATOR_TRIGGER_INDEX=7;
     const CASINO_ELEVATOR_MOVIE='casino.elevator.mp4';
     const CASINO_ELEVATOR_GLITCH_SOUND='casino.glitch.mp3';
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
-    let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false;
+    let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false,casinoGalleryLoadedPeriod='';
     let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
 
     function hasJokerForElevator(){return belongingCount('jokerCard')>0}
     function isCasinoElevatorSlide(){
-      const src=String(casinoGalleryFiles[casinoGalleryIndex]||'').split('?')[0];
-      return src.endsWith(CASINO_ELEVATOR_TRIGGER_FILE);
+      return casinoGalleryIndex===CASINO_ELEVATOR_TRIGGER_INDEX;
     }
     function stopElevatorGlitchSound(){
       if(!casinoElevatorGlitchSound)return;
@@ -3445,21 +3445,41 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         img.src=src;
       });
     }
-    async function discoverCasinoGallery(){
-      if(casinoGalleryDiscovered)return casinoGalleryFiles;
-      if(casinoGalleryDiscoveryPromise)return casinoGalleryDiscoveryPromise;
+    function casinoGalleryTimePeriod(){
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
+    }
+    function casinoGalleryFileName(index,period=casinoGalleryTimePeriod()){
+      const number=String(index).padStart(2,'0');
+      const suffix=period==='day'?'_day':period==='sunset'?'_evening':'';
+      return `casino.gallery${number}${suffix}.jpg`;
+    }
+    async function discoverCasinoGallery(force=false){
+      const requestedPeriod=casinoGalleryTimePeriod();
+      if(!force&&casinoGalleryDiscovered&&casinoGalleryLoadedPeriod===requestedPeriod)return casinoGalleryFiles;
+      if(casinoGalleryDiscoveryPromise){
+        await casinoGalleryDiscoveryPromise;
+        if(casinoGalleryLoadedPeriod===requestedPeriod)return casinoGalleryFiles;
+      }
       casinoGalleryDiscoveryPromise=(async()=>{
         const found=[];
         // 画面を開く前にバックグラウンドで読み込む。ファイル名などの準備表示は出さない。
         for(let i=1;i<=30;i++){
-          const src=`casino.gallery${String(i).padStart(2,'0')}.jpg`;
-          const ok=await probeCasinoGalleryFile(src);
+          let src=casinoGalleryFileName(i,requestedPeriod);
+          let ok=await probeCasinoGalleryFile(src);
+          // 昼・夕の画像が1枚だけ欠けていても、同じ番号の夜画像でギャラリーを維持する。
+          if(!ok&&requestedPeriod!=='night'){
+            const fallback=casinoGalleryFileName(i,'night');
+            ok=await probeCasinoGalleryFile(fallback);
+            if(ok)src=fallback;
+          }
           if(!ok)break;
           found.push(src);
         }
         casinoGalleryFiles=found;
         casinoGalleryIndex=Math.min(casinoGalleryIndex,Math.max(0,found.length-1));
         casinoGalleryDiscovered=true;
+        casinoGalleryLoadedPeriod=requestedPeriod;
         if(found.length)renderCasinoGallery();
         return found;
       })().finally(()=>{casinoGalleryDiscoveryPromise=null});
@@ -3514,6 +3534,12 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     });
     // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
     discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
+    window.__sprSyncCasinoGalleryPeriod=async(force=false)=>{
+      const period=casinoGalleryTimePeriod();
+      if(!force&&casinoGalleryDiscovered&&casinoGalleryLoadedPeriod===period)return;
+      await discoverCasinoGallery(true);
+      if(casinoLevel==='gallery')renderCasinoGallery();
+    };
     window.addEventListener('storage',e=>{if(e.key===belongingsKey&&casinoLevel==='gallery')updateCasinoElevatorAccess()});
     window.addEventListener('focus',()=>{if(casinoLevel==='gallery')updateCasinoElevatorAccess()});
 
@@ -6440,7 +6466,7 @@ window.addEventListener('message',e=>{
   const barHomeCardImage=document.getElementById('barHomeCardImage');
   const barGalleryHeroImage=document.getElementById('barGalleryHeroImage');
   const casinoHomeCardImage=document.getElementById('casinoHomeCardImage');
-  const casinoGalleryHeroImage=document.getElementById('casinoGalleryHeroImage');
+  const casinoGalleryTopImages=[...document.querySelectorAll('#casinoView img[data-casino-gallery-slot]')];
   let shownResortTimeImagePeriod='';
   let shownExplorePeriod='';
   // 探索で再生する3本は、すべてSupabase Storageの公開videosバケットから取得。
@@ -6711,7 +6737,15 @@ window.addEventListener('message',e=>{
     if(barHomeCardImage&&barHomeCardImage.getAttribute('src')!==barImage)barHomeCardImage.src=barImage;
     if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)barGalleryHeroImage.src=barImage;
     if(casinoHomeCardImage&&casinoHomeCardImage.getAttribute('src')!==casinoImage)casinoHomeCardImage.src=casinoImage;
-    if(casinoGalleryHeroImage&&casinoGalleryHeroImage.getAttribute('src')!==casinoImage)casinoGalleryHeroImage.src=casinoImage;
+    const casinoGallerySuffix=period==='day'?'_day':period==='sunset'?'_evening':'';
+    casinoGalleryTopImages.forEach(img=>{
+      const number=String(img.dataset.casinoGallerySlot||'1').padStart(2,'0');
+      const next=`casino.gallery${number}${casinoGallerySuffix}.jpg`;
+      if(img.getAttribute('src')!==next)img.src=next;
+    });
+    if(typeof window.__sprSyncCasinoGalleryPeriod==='function'){
+      window.__sprSyncCasinoGalleryPeriod(force).catch(error=>console.warn('casino gallery time sync',error));
+    }
     const barOrderSheet=document.getElementById('barOrderSheet');
     if(barOrderSheet)barOrderSheet.style.setProperty('--bar-order-bg',`url("${barImage}")`);
   }
@@ -6738,10 +6772,16 @@ window.addEventListener('message',e=>{
     const fallback=barTimedImages.day;
     if(barGalleryHeroImage.getAttribute('src')!==fallback)barGalleryHeroImage.src=fallback;
   });
-  // カジノの時間別画像がまだ配信されていない場合は、以前の外観写真を表示する。
-  [casinoHomeCardImage,casinoGalleryHeroImage].forEach(img=>{
-    img?.addEventListener('error',()=>{
-      const fallback='blue_shell_casino.jpg';
+  // ホームのカジノ画像が未配信の場合は、以前の外観写真を表示する。
+  casinoHomeCardImage?.addEventListener('error',()=>{
+    const fallback='blue_shell_casino.jpg';
+    if(casinoHomeCardImage.getAttribute('src')!==fallback)casinoHomeCardImage.src=fallback;
+  });
+  // カジノページ上部の3枚で時間別画像が欠けた場合は、同じ番号の夜画像を表示する。
+  casinoGalleryTopImages.forEach(img=>{
+    img.addEventListener('error',()=>{
+      const number=String(img.dataset.casinoGallerySlot||'1').padStart(2,'0');
+      const fallback=`casino.gallery${number}.jpg`;
       if(img.getAttribute('src')!==fallback)img.src=fallback;
     });
   });
