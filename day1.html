@@ -50,6 +50,11 @@
     .notice{max-width:760px;margin:0 auto 24px;padding:15px 17px;border:1px solid var(--line);background:var(--cream);font-size:12px;line-height:1.9;letter-spacing:.04em;text-align:center}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
     .card{padding:0;text-align:left;background:#fff;color:inherit;border:1px solid rgba(168,123,47,.18);box-shadow:0 8px 24px rgba(13,39,67,.08);transition:transform .2s,box-shadow .2s}
+    /* 夕（16:00〜19:59）：ホームページの白背景だけを淡い夕暮れ色にする。 */
+    body.resort-evening{background:#f7e3dc}
+    body.resort-evening #day1Home{background:linear-gradient(170deg,#fff4ec 0%,#f9e9df 44%,#f2d8d3 100%)}
+    body.resort-evening #day1Home .card{background:#fffaf6;border-color:rgba(168,123,47,.28)}
+    body.resort-evening footer{background:#f2d8d3;border-top-color:#e5c6ba}
     .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(13,39,67,.13)}
     .card img{height:170px;object-fit:cover}
     .card-body{padding:16px 15px 17px}
@@ -936,7 +941,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
         </button>
         <button class="card" type="button" data-open="casinoView">
-          <img src="blue_shell_casino.jpg" alt="カジノ・ブルーシェル">
+          <img id="casinoHomeCardImage" src="casino_blue_shell_day.jpg" alt="カジノ・ブルーシェル">
           <div class="card-body"><h3 class="card-title">カジノへ行く</h3><div class="card-en">CASINO BLUE SHELL</div><p class="card-desc">海辺の夜を彩る、ブルーシェルのゲームテーブル。</p><div class="view">ENTER CASINO　›</div></div>
         </button>
       </div>
@@ -1293,7 +1298,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
-    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img src="blue_shell_casino.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
+    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img id="casinoGalleryHeroImage" src="casino_blue_shell_day.jpg" alt="カジノ外観"></div><div class="slide"><img src="blue_shell_casino_e.jpg" alt="カジノ入口"></div><div class="slide"><img src="blue_shell_casino_t.jpg" alt="ゲームテーブル"></div></div></div><div class="dots" data-dots="casino"></div>
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
@@ -6422,9 +6427,12 @@ window.addEventListener('message',e=>{
   const exploreHomeCardImage=document.getElementById('exploreHomeCardImage');
   const roomHomeCardImages={day:'Deluxe_Ocean_Window.jpg',sunset:'Deluxe_Ocean_Window_Sunset.jpg',night:'Deluxe_Ocean_Window_Night.jpg'};
   const barTimedImages={day:'seaside_bar.jpg',sunset:'seaside_bar_evening.jpg',night:'seaside_bar_night.jpg'};
+  const casinoTimedImages={day:'casino_blue_shell_day.jpg',sunset:'casino_blue_shell_evening.jpg',night:'casino_blue_shell_night.jpg'};
   const roomHomeCardImage=document.getElementById('roomHomeCardImage');
   const barHomeCardImage=document.getElementById('barHomeCardImage');
   const barGalleryHeroImage=document.getElementById('barGalleryHeroImage');
+  const casinoHomeCardImage=document.getElementById('casinoHomeCardImage');
+  const casinoGalleryHeroImage=document.getElementById('casinoGalleryHeroImage');
   let shownResortTimeImagePeriod='';
   let shownExplorePeriod='';
   // 探索で再生する3本は、すべてSupabase Storageの公開videosバケットから取得。
@@ -6689,9 +6697,13 @@ window.addEventListener('message',e=>{
     shownResortTimeImagePeriod=period;
     const roomImage=currentTimedImage(roomHomeCardImages,period);
     const barImage=currentTimedImage(barTimedImages,period);
+    const casinoImage=currentTimedImage(casinoTimedImages,period);
+    document.body.classList.toggle('resort-evening',period==='sunset');
     if(roomHomeCardImage&&roomHomeCardImage.getAttribute('src')!==roomImage)roomHomeCardImage.src=roomImage;
     if(barHomeCardImage&&barHomeCardImage.getAttribute('src')!==barImage)barHomeCardImage.src=barImage;
     if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)barGalleryHeroImage.src=barImage;
+    if(casinoHomeCardImage&&casinoHomeCardImage.getAttribute('src')!==casinoImage)casinoHomeCardImage.src=casinoImage;
+    if(casinoGalleryHeroImage&&casinoGalleryHeroImage.getAttribute('src')!==casinoImage)casinoGalleryHeroImage.src=casinoImage;
     const barOrderSheet=document.getElementById('barOrderSheet');
     if(barOrderSheet)barOrderSheet.style.setProperty('--bar-order-bg',`url("${barImage}")`);
   }
@@ -6717,6 +6729,13 @@ window.addEventListener('message',e=>{
   barGalleryHeroImage?.addEventListener('error',()=>{
     const fallback=barTimedImages.day;
     if(barGalleryHeroImage.getAttribute('src')!==fallback)barGalleryHeroImage.src=fallback;
+  });
+  // カジノの時間別画像がまだ配信されていない場合は、以前の外観写真を表示する。
+  [casinoHomeCardImage,casinoGalleryHeroImage].forEach(img=>{
+    img?.addEventListener('error',()=>{
+      const fallback='blue_shell_casino.jpg';
+      if(img.getAttribute('src')!==fallback)img.src=fallback;
+    });
   });
   // 画像未反映時は従来の写真で表示を保つ（再アップロード後は自動で再試行）。
   document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
