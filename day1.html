@@ -50,11 +50,29 @@
     .notice{max-width:760px;margin:0 auto 24px;padding:15px 17px;border:1px solid var(--line);background:var(--cream);font-size:12px;line-height:1.9;letter-spacing:.04em;text-align:center}
     .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
     .card{padding:0;text-align:left;background:#fff;color:inherit;border:1px solid rgba(168,123,47,.18);box-shadow:0 8px 24px rgba(13,39,67,.08);transition:transform .2s,box-shadow .2s}
-    /* 夕（16:00〜19:59）：ホームページの白背景だけを淡い夕暮れ色にする。 */
+    /* 夕（16:00〜19:59）：館内全体を淡い桃色グラデーションにする。 */
     body.resort-evening{background:#f7e3dc}
     body.resort-evening #day1Home{background:linear-gradient(170deg,#fff4ec 0%,#f9e9df 44%,#f2d8d3 100%)}
     body.resort-evening #day1Home .card{background:#fffaf6;border-color:rgba(168,123,47,.28)}
     body.resort-evening footer{background:#f2d8d3;border-top-color:#e5c6ba}
+    body.resort-evening .subview:not(#roomView):not(#hernandoBarView){background:linear-gradient(170deg,#fff7f1 0%,#fbece4 46%,#f4ddd7 100%)}
+    body.resort-evening .subhead{background:rgba(255,247,242,.96);border-bottom-color:#e5c8bc}
+    body.resort-evening .gallery{background:#ecd7cd}
+    body.resort-evening .dots{background:linear-gradient(180deg,rgba(255,248,244,.95),rgba(246,223,215,.88))}
+    body.resort-evening .dot{background:#dbcabf}
+    body.resort-evening .info{background:linear-gradient(180deg,rgba(255,250,246,.72),rgba(249,233,223,.88))}
+    body.resort-evening .info p{color:#4f4a4c}
+    body.resort-evening .meta{color:#8a766f}
+    body.resort-evening .panel,
+    body.resort-evening .notice,
+    body.resort-evening .menu-item,
+    body.resort-evening .room-entry,
+    body.resort-evening .tea-exchange,
+    body.resort-evening .explore-destination-panel,
+    body.resort-evening .casino-card{background:rgba(255,250,246,.92);border-color:#e4c8bb}
+    body.resort-evening .casino-card{color:#0d2743;background:linear-gradient(180deg,rgba(255,249,245,.97),rgba(246,226,217,.95))}
+    body.resort-evening .casino-card p{color:#5e5450}
+    body.resort-evening .casino-enter{background:#fffaf6}
     .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(13,39,67,.13)}
     .card img{height:170px;object-fit:cover}
     .card-body{padding:16px 15px 17px}
