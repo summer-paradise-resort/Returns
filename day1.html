@@ -357,6 +357,20 @@
     .service-history{display:grid;gap:7px;margin-top:8px}
     .service-history-item{padding:10px 11px;background:var(--message-bg);border:1px solid rgba(130,110,76,.16);font-size:11px;line-height:1.7}
     .service-history-item small{color:var(--sheet-muted)}
+    /* Delivered room-service food images: same photography for every room and hour. */
+    .room-service-food-gallery{position:absolute;z-index:37;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(15px + env(safe-area-inset-top)) 0 calc(15px + env(safe-area-inset-bottom));background:rgba(2,11,21,.96);color:#fff;overflow:auto;overscroll-behavior:contain}
+    .room-service-food-gallery.hidden{display:none!important}
+    .room-service-food-stage{position:relative;width:min(100%,960px);max-height:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center}
+    .room-service-food-kicker{font:11px Georgia,serif;letter-spacing:.25em;color:#e8d39d;text-align:center;padding:0 16px}
+    .room-service-food-photo{position:relative;width:100%;background:#071421;flex:0 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+    .room-service-food-photo img{width:100%;height:auto;max-height:calc(100dvh - 174px - env(safe-area-inset-top) - env(safe-area-inset-bottom));object-fit:contain;user-select:none;-webkit-user-select:none}
+    .room-service-food-close{position:absolute;z-index:2;top:10px;right:12px;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(255,255,255,.85);background:rgba(3,15,26,.75);color:#fff;font:30px/1 Arial,sans-serif;box-shadow:0 3px 14px rgba(0,0,0,.35)}
+    .room-service-food-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;line-height:2;padding:48px 24px;background:rgba(5,19,32,.95);color:#fff;font-size:13px}
+    .room-service-food-info{padding:0 20px 4px;text-align:center}
+    .room-service-food-name{font-size:17px;font-weight:400;letter-spacing:.09em;line-height:1.6}
+    .room-service-food-count{margin-top:5px;font:11px Georgia,serif;letter-spacing:.17em;color:#e8d39d}
+    .room-service-food-drinks{margin-top:9px;font-size:11px;line-height:1.8;color:rgba(255,255,255,.73)}
+    @media(max-width:520px){.room-service-food-stage{gap:10px}.room-service-food-name{font-size:15px}.room-service-food-photo img{max-height:calc(100dvh - 190px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}}
     .room-service-delivery-notice{position:absolute;z-index:35;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(3,14,25,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
     .room-service-delivery-notice.hidden{display:none!important}
     .room-service-delivery-card{width:min(420px,100%);padding:24px 20px 20px;background:rgba(251,248,241,.98);border:1px solid rgba(199,164,93,.62);box-shadow:0 18px 45px rgba(0,0,0,.34);text-align:center;color:#0d2743}
@@ -1054,6 +1068,21 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="auto" playsinline></audio>
+        <div id="roomServiceFoodGallery" class="room-service-food-gallery hidden" role="dialog" aria-modal="true" aria-label="届いたお食事" aria-hidden="true">
+          <div class="room-service-food-stage">
+            <div class="room-service-food-kicker">ROOM SERVICE — DELIVERED</div>
+            <div class="room-service-food-photo">
+              <img id="roomServiceFoodImage" src="" alt="届いたお食事">
+              <div id="roomServiceFoodError" class="room-service-food-error hidden" role="status">料理の画像を読み込めません。<br>画像ファイルのアップロードと名前をご確認ください。</div>
+              <button id="roomServiceFoodClose" class="room-service-food-close" type="button" aria-label="次の料理へ進む、または閉じる">×</button>
+            </div>
+            <div class="room-service-food-info">
+              <div id="roomServiceFoodName" class="room-service-food-name"></div>
+              <div id="roomServiceFoodCount" class="room-service-food-count"></div>
+              <div id="roomServiceFoodDrinks" class="room-service-food-drinks"></div>
+            </div>
+          </div>
+        </div>
         <div id="roomServiceDeliveryNotice" class="room-service-delivery-notice hidden" role="dialog" aria-modal="true" aria-live="assertive">
           <div class="room-service-delivery-card">
             <div class="room-service-delivery-kicker">ROOM SERVICE</div>
@@ -1181,7 +1210,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
               <div class="service-item" data-service-item="ミネラルウォーター"><div><strong>ミネラルウォーター</strong><small>STILL WATER</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
               <div class="service-item" data-service-item="スパークリングワイン"><div><strong>スパークリングワイン</strong><small>ALCOHOL</small></div><div class="service-qty"><button type="button" data-service-minus>−</button><span data-service-qty>0</span><button type="button" data-service-plus>＋</button></div></div>
             </div>
-            <div class="service-cart"><div class="service-cart-title">ご注文内容</div><div id="roomServiceCartList" class="service-cart-list">商品をお選びください。</div><button id="roomServiceOrder" class="service-order-btn" type="button" disabled>この内容で注文する</button><div id="roomServiceResult" class="service-result hidden" aria-live="polite"></div></div>
+            <div class="service-cart"><div class="service-cart-title">ご注文内容</div><div id="roomServiceCartList" class="service-cart-list">商品をお選びください。</div><div id="roomServiceCartHint" class="service-cart-list" style="padding-top:6px">お食事またはデザートと、ドリンクをそれぞれお選びください。</div><button id="roomServiceOrder" class="service-order-btn" type="button" disabled>この内容で注文する</button><div id="roomServiceResult" class="service-result hidden" aria-live="polite"></div></div>
             <div class="service-section-title">この客室の注文履歴</div>
             <div id="roomServiceHistory" class="service-history"></div>
           </div>
@@ -3814,6 +3843,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
     const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'), roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
+    const roomServiceFoodGallery=document.getElementById('roomServiceFoodGallery'),roomServiceFoodImage=document.getElementById('roomServiceFoodImage'),roomServiceFoodName=document.getElementById('roomServiceFoodName'),roomServiceFoodCount=document.getElementById('roomServiceFoodCount'),roomServiceFoodDrinks=document.getElementById('roomServiceFoodDrinks'),roomServiceFoodClose=document.getElementById('roomServiceFoodClose'),roomServiceFoodError=document.getElementById('roomServiceFoodError');
+    const roomServiceCartHint=document.getElementById('roomServiceCartHint');
     const roomServiceDeliveryNotice=document.getElementById('roomServiceDeliveryNotice'), roomServiceDeliveryText=document.getElementById('roomServiceDeliveryText'), roomServiceDeliveryClose=document.getElementById('roomServiceDeliveryClose');
     const roomDoorServicePanel=document.getElementById('roomDoorServicePanel'), roomDoorServiceStatus=document.getElementById('roomDoorServiceStatus'), roomDoorServiceActions=document.getElementById('roomDoorServiceActions');
     const roomDoorReceive=document.getElementById('roomDoorReceive'), roomDoorDecline=document.getElementById('roomDoorDecline');
@@ -5434,11 +5465,23 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;stopRoomPhonePresence();roomMessageCache=[];roomServiceCache=[]}
 
     // ROOM SERVICE DELIVERY / 注文から5分後に到着
+    // Food photo names: upload these seven JPG files alongside day1.html.
+    const ROOM_SERVICE_FOOD_IMAGES=new Map([
+      ['クラブサンド','room_service_club_sandwich.jpg'],
+      ['ポルチーニ茸のクリームリゾット','room_service_porcini_risotto.jpg'],
+      ['牛フィレ肉のステーキ','room_service_beef_steak.jpg'],
+      ['チキンのクリームパスタ','room_service_chicken_pasta.jpg'],
+      ['特製デミグラスオムライス','room_service_omurice.jpg'],
+      ['ショコラケーキ','room_service_chocolate_cake.jpg'],
+      ['苺のタルト','room_service_strawberry_tart.jpg']
+    ]);
+    const ROOM_SERVICE_DRINK_NAMES=new Set(['コーヒー','ミルクティー','カフェモカ','トロピカルフルーツジュース','ローズレモネード','ミネラルウォーター','スパークリングワイン']);
     const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
     const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
     const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
     const ROOM_SERVICE_HORROR_WAIT_MS=10*1000;
-    let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='';
+    let roomServiceDeliveryOrders=[],roomServiceDeliveryTimer=null,roomServiceDeliveryPlayerId='',roomServiceEntryAutoReceiveRoom='';
+    let roomServiceFoodGalleryQueue=[],roomServiceFoodGalleryIndex=0,roomServiceFoodGalleryRoom='';
     let roomServiceHorrorTimer=null,roomServiceHorrorPending=null;
     let roomServiceHorrorLocalChoice='idle',roomServiceHorrorResolving=false,roomServiceHorrorLastResolution=null;
     const roomServiceHorrorResolutionByEvent=new Map(),roomServiceHorrorNgApplying=new Set();
@@ -5462,6 +5505,59 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function markRoomServiceOrdersDelivered(orders){
       const done=loadRoomServiceDeliveredIds();orders.forEach(order=>done.add(String(order.id)));saveRoomServiceDeliveredIds(done);
     }
+    function roomServiceGalleryStorageKey(room){return `spr-room-service-photos:${handoffPlayerId||playerStorageId||'guest'}:${room}`}
+    function saveRoomServiceFoodGallery(){
+      if(!roomServiceFoodGalleryRoom)return;
+      try{if(roomServiceFoodGalleryQueue.length)localStorage.setItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom),JSON.stringify({queue:roomServiceFoodGalleryQueue,index:roomServiceFoodGalleryIndex}));else localStorage.removeItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom))}catch{}
+    }
+    function displayRoomServiceFoodGallery(){
+      if(!roomServiceFoodGallery||!roomServiceFoodGalleryQueue.length||!activeRoom||roomServiceFoodGalleryRoom!==String(activeRoom))return;
+      const item=roomServiceFoodGalleryQueue[roomServiceFoodGalleryIndex];if(!item)return;
+      roomServiceFoodName.textContent=item.name+(item.qty>1?` × ${item.qty}`:'');
+      roomServiceFoodCount.textContent=`${roomServiceFoodGalleryIndex+1} / ${roomServiceFoodGalleryQueue.length}　・　右上の × で${roomServiceFoodGalleryIndex+1<roomServiceFoodGalleryQueue.length?'次の料理へ':'閉じる'}`;
+      roomServiceFoodDrinks.textContent=item.drinks?'お飲み物：'+item.drinks:'';
+      roomServiceFoodError.classList.add('hidden');
+      roomServiceFoodImage.alt=item.name;roomServiceFoodImage.src=item.image;
+      roomServiceFoodGallery.classList.remove('hidden');roomServiceFoodGallery.setAttribute('aria-hidden','false');
+      saveRoomServiceFoodGallery();
+    }
+    roomServiceFoodImage?.addEventListener('error',()=>{if(roomServiceFoodGallery?.classList.contains('hidden'))return;roomServiceFoodError?.classList.remove('hidden')});
+    roomServiceFoodImage?.addEventListener('load',()=>roomServiceFoodError?.classList.add('hidden'));
+    function restoreRoomServiceFoodGallery(room){
+      try{
+        const stored=JSON.parse(localStorage.getItem(roomServiceGalleryStorageKey(room))||'null');
+        if(!stored||!Array.isArray(stored.queue)||!stored.queue.length)return false;
+        roomServiceFoodGalleryRoom=String(room);roomServiceFoodGalleryQueue=stored.queue.filter(item=>item&&ROOM_SERVICE_FOOD_IMAGES.has(item.name));
+        roomServiceFoodGalleryIndex=Math.max(0,Math.min(roomServiceFoodGalleryQueue.length-1,Math.floor(Number(stored.index)||0)));
+        if(roomServiceFoodGalleryQueue.length){displayRoomServiceFoodGallery();return true}
+      }catch(error){console.warn('room service gallery restore',error)}
+      return false;
+    }
+    function showRoomServiceFoodGallery(orders){
+      const merged=new Map(),drinks=new Map();
+      orders.forEach(order=>(order.items||[]).forEach(item=>{
+        const name=String(item?.name||'').trim(),qty=Math.max(1,Math.floor(Number(item?.qty)||1));
+        if(ROOM_SERVICE_FOOD_IMAGES.has(name))merged.set(name,(merged.get(name)||0)+qty);
+        else if(ROOM_SERVICE_DRINK_NAMES.has(name))drinks.set(name,(drinks.get(name)||0)+qty);
+      }));
+      if(!merged.size){showRoomServiceDeliveryNotice(orders);return}
+      const beverageText=[...drinks].map(([name,qty])=>`${name} × ${qty}`).join(' ／ ');
+      const next=[...merged].map(([name,qty])=>({name,qty,image:ROOM_SERVICE_FOOD_IMAGES.get(name),drinks:beverageText}));
+      const current=String(activeRoom||'');
+      // Unseen images survive a reload. New deliveries append to the current slideshow.
+      if(roomServiceFoodGalleryRoom!==current){roomServiceFoodGalleryQueue=[];roomServiceFoodGalleryIndex=0;roomServiceFoodGalleryRoom=current}
+      if(!roomServiceFoodGalleryQueue.length){
+        try{const saved=JSON.parse(localStorage.getItem(roomServiceGalleryStorageKey(current))||'null');if(saved?.queue?.length){roomServiceFoodGalleryQueue=saved.queue;roomServiceFoodGalleryIndex=Math.max(0,Number(saved.index)||0)}}catch{}
+      }
+      roomServiceFoodGalleryQueue.push(...next);displayRoomServiceFoodGallery();
+    }
+    function advanceRoomServiceFoodGallery(){
+      if(roomServiceFoodGalleryIndex+1<roomServiceFoodGalleryQueue.length){roomServiceFoodGalleryIndex++;displayRoomServiceFoodGallery();return}
+      roomServiceFoodGalleryQueue=[];roomServiceFoodGalleryIndex=0;saveRoomServiceFoodGallery();
+      roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');
+      if(roomServiceFoodImage)roomServiceFoodImage.removeAttribute('src');
+    }
+    roomServiceFoodClose?.addEventListener('click',advanceRoomServiceFoodGallery);
     function normalizeRoomServiceDeliveryOrder(row){
       return {id:String(row.id),room:String(row.room_no||''),items:Array.isArray(row.items)?row.items:[],createdAt:Date.parse(row.created_at||'')||Date.now()};
     }
@@ -5639,7 +5735,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     }
     function receiveRealRoomService(){
       const orders=dueRoomServiceOrdersHere();if(!orders.length)return false;
-      markRoomServiceOrdersDelivered(orders);showRoomServiceDeliveryNotice(orders);updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();return true;
+      markRoomServiceOrdersDelivered(orders);showRoomServiceFoodGallery(orders);updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();return true;
     }
     function roomServiceHorrorRandomHit(probability){
       let value=Math.random();
@@ -5837,6 +5933,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,player_id,items,created_at').eq('player_id',playerId).gte('created_at',since).order('created_at',{ascending:true}).limit(50);
         if(error)throw error;
         roomServiceDeliveryOrders=(data||[]).map(normalizeRoomServiceDeliveryOrder);
+        if(roomServiceEntryAutoReceiveRoom&&activeRoom===roomServiceEntryAutoReceiveRoom&&roomView.classList.contains('room-active'))receiveRealRoomService();
+        roomServiceEntryAutoReceiveRoom='';
         evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
       }catch(error){console.warn('room service delivery sync',error)}
     }
@@ -5851,7 +5949,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
-      roomServiceOrder.disabled=!selected.length;
+      const hasFood=selected.some(([name])=>ROOM_SERVICE_FOOD_IMAGES.has(name));
+      const hasDrink=selected.some(([name])=>ROOM_SERVICE_DRINK_NAMES.has(name));
+      roomServiceOrder.disabled=!(hasFood&&hasDrink);
+      if(roomServiceCartHint)roomServiceCartHint.textContent=!hasFood&&!hasDrink?'お食事またはデザートと、ドリンクをそれぞれお選びください。':!hasFood?'ドリンクのみのご注文はできません。お食事またはデザートを1点以上お選びください。':!hasDrink?'ドリンクを1点以上お選びください。':'ご注文いただけます。';
       document.querySelectorAll('[data-service-item]').forEach(item=>{const name=item.dataset.serviceItem;item.querySelector('[data-service-qty]').textContent=String(roomServiceCart[name]||0)});
     }
     function renderRoomServiceHistory(){
@@ -5964,7 +6065,10 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       item.querySelector('[data-service-plus]').addEventListener('click',()=>{roomServiceCart[name]=Math.min(9,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
     });
     roomServiceOrder.addEventListener('click',async()=>{
-      if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));if(!items.length)return;
+      if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));
+      if(!items.some(item=>ROOM_SERVICE_FOOD_IMAGES.has(item.name))||!items.some(item=>ROOM_SERVICE_DRINK_NAMES.has(item.name))){
+        renderRoomServiceCart();roomServiceResult.textContent='お食事またはデザートと、ドリンクをそれぞれ1点以上お選びください。';roomServiceResult.classList.remove('hidden');return;
+      }
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
       try{primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
         roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);
@@ -5989,14 +6093,19 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
+      // Arrivals while outside ROOM are shown immediately, with no door interaction.
+      roomServiceEntryAutoReceiveRoom=room;
+      restoreRoomServiceFoodGallery(room);
+      receiveRealRoomService(); // orders already cached by this page
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
+      void refreshRoomServiceDeliveryOrders(); // also load orders created on another device
     });
     document.getElementById('chatForm').addEventListener('submit',async event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
+    function leaveActiveRoom(){closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceEntryAutoReceiveRoom='';roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
@@ -6022,7 +6131,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       gallery.addEventListener('touchcancel',()=>{swipeEligible=false},{passive:true});
       galleries[name]=show;
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(roomServiceFoodGallery&&!roomServiceFoodGallery.classList.contains('hidden')){advanceRoomServiceFoodGallery();return}if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
     setTimeout(()=>hydratePersistentState(),0);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)hydratePersistentState()});
     window.addEventListener('focus',()=>hydratePersistentState());
