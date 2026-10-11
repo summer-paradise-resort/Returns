@@ -928,7 +928,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
         </button>
         <button class="card" type="button" data-open="restaurantView">
-          <img src="the_pearl_terrace_e.jpg" alt="The Pearl Terrace">
+          <img id="restaurantHomeCardImage" data-cafe-scene="sunset_terrace" src="sunset_terrace_day.jpg" alt="レストラン＆カフェのテラス">
           <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
         </button>
         <button class="card" type="button" data-open="barView">
@@ -1157,7 +1157,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     <div class="gallery" data-gallery="teaSalon"><div class="track">
       <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace"></div>
       <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe"></div>
-      <div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Afternoon Tea"></div>
+      <div class="slide"><img data-tea-scene="pearl_terrace_afternoon_tea" src="pearl_terrace_afternoon_tea_day.jpg" alt="The Pearl Terraceのアフタヌーンティー"></div>
+      <div class="slide"><img data-tea-scene="marine_bloom_afternoon_tea" src="marine_bloom_afternoon_tea_day.jpg" alt="Marine Bloom Cafeのアフタヌーンティー"></div>
     </div></div><div class="dots" data-dots="teaSalon"></div>
     <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES</div>
       <p>チケットを使用して、特別なアフタヌーンティーのひとときをお楽しみいただけます。</p>
@@ -6663,10 +6664,17 @@ window.addEventListener('message',e=>{
     'marine_bloom_cafe_i':'marine_bloom_cafe_i'
   };
   function syncRestaurantCafeImages(){
-    const suffix=explorePeriod()==='sunset'?'evening':explorePeriod();
-    document.querySelectorAll('.gallery img[data-cafe-scene]').forEach(img=>{
+    const period=explorePeriod();
+    const suffix=period==='sunset'?'evening':period;
+    // レストランのトップカードと既存のギャラリーを同じ時間帯で切り替える。
+    document.querySelectorAll('img[data-cafe-scene]').forEach(img=>{
       const base=img.dataset.cafeScene;
       const next=base+'_'+suffix+'.jpg';
+      if(img.getAttribute('src')!==next)img.src=next;
+    });
+    // 新しく追加した2店舗のアフタヌーンティー画像（昼・夕・夜）。
+    document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
+      const next=img.dataset.teaScene+'_'+suffix+'.jpg';
       if(img.getAttribute('src')!==next)img.src=next;
     });
     // The menu backdrop in the main document uses the same time-specific assets.
@@ -6709,6 +6717,15 @@ window.addEventListener('message',e=>{
   barGalleryHeroImage?.addEventListener('error',()=>{
     const fallback=barTimedImages.day;
     if(barGalleryHeroImage.getAttribute('src')!==fallback)barGalleryHeroImage.src=fallback;
+  });
+  // 画像未反映時は従来の写真で表示を保つ（再アップロード後は自動で再試行）。
+  document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
+    img.addEventListener('error',()=>{
+      if(img.getAttribute('src')!=='marine_bloom_cafe_t.jpg')img.src='marine_bloom_cafe_t.jpg';
+    });
+  });
+  document.getElementById('restaurantHomeCardImage')?.addEventListener('error',event=>{
+    if(event.currentTarget.getAttribute('src')!=='the_pearl_terrace_e.jpg')event.currentTarget.src='the_pearl_terrace_e.jpg';
   });
   syncExploreImages(true);
   syncResortTimeImages(true);
