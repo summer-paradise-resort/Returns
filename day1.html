@@ -829,6 +829,18 @@ body.night-theme .tea-party-compose input{
 body.night-theme .room-entry input::placeholder,
 body.night-theme .chat-compose input::placeholder,
 body.night-theme .tea-party-compose input::placeholder{color:#aeb9c3}
+/* Keep the ROOM entry action visible against the dark night theme. */
+body.night-theme #roomEntry .primary-btn{
+  display:block;
+  background:#204766;
+  color:#fff;
+  border:1px solid #c7a45d;
+  box-shadow:0 4px 14px rgba(0,0,0,.23);
+}
+body.night-theme #roomEntry .primary-btn:focus-visible{
+  outline:2px solid #f0d89d;
+  outline-offset:2px;
+}
 body.night-theme #integratedCafeShell,
 body.night-theme #integratedCafeShell iframe{
   background:#071a2b;
@@ -3240,8 +3252,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(reset){try{seasideBarBgm.currentTime=0}catch{}}
     }
     setInterval(()=>syncSeasideBarMusicForTime(),1000);
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS})}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
     function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
@@ -6322,6 +6334,20 @@ function cafeIsOpenNow(){
   const h=Number(parts.find(p=>p.type==='hour')?.value||0);
   return h>=10||h<3;
 }
+// CAFE uses the same master ♪ setting as the rest of the resort.
+// This function runs directly in the CAFE-opening user gesture for iOS playback.
+function syncIntegratedCafeMasterBgm(){
+  const shouldPlay=integratedCafeShell.classList.contains('open') && localStorage.getItem('spr-bgm-enabled')!=='off';
+  if(!shouldPlay){integratedCafeBgm.pause();return;}
+  integratedCafeBgm.volume=.34;
+  if(integratedCafeBgm.paused){
+    try{
+      const result=integratedCafeBgm.play();
+      if(result&&result.catch)result.catch(e=>console.warn('CAFE BGM start',e));
+    }catch(e){console.warn('CAFE BGM start',e)}
+  }
+}
+window.__sprSyncIntegratedCafeBgm=syncIntegratedCafeMasterBgm;
 async function openIntegratedCafe(){
   if(!cafeIsOpenNow()){
     alert('CAFEの営業時間は10:00〜翌3:00です。');
@@ -6332,10 +6358,7 @@ async function openIntegratedCafe(){
   showIntegratedCafePage('home');
   if(typeof applyGlobalNightTheme==='function')applyGlobalNightTheme(currentTokyoPeriod());
   document.body.style.overflow='hidden';
-  try{
-    // This call occurs directly inside the user's CAFE button tap, like the casino BGM.
-    if(integratedCafeBgm.paused) await integratedCafeBgm.play();
-  }catch(e){ console.warn('CAFE BGM start',e); }
+  syncIntegratedCafeMasterBgm();
 }
 function closeIntegratedCafe(){
   integratedCafeShell.classList.remove('open');
