@@ -179,16 +179,12 @@
     .casino-gallery-screen .casino-screen-title{font-size:22px;line-height:1.1;margin:0;padding-top:1px}
     .casino-gallery-screen .casino-screen-sub{font-size:11px;line-height:1.35;margin:0 0 1px}
     /* All gallery photographs share a responsive 16:9 frame, matching the 1600x900 reference. */
-    .casino-gallery-stage{position:relative;isolation:isolate;width:min(100%,calc((100dvh - 210px) * 16 / 9));height:auto;aspect-ratio:16 / 9;max-height:100%;min-height:0;align-self:center;justify-self:center;background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:none;--casino-gallery-bg:none;touch-action:pan-x;overscroll-behavior:none}
+    .casino-gallery-stage{position:relative;isolation:isolate;width:min(100%,calc((100dvh - 210px) * 16 / 9));height:auto;aspect-ratio:16 / 9;max-height:100%;min-height:0;align-self:center;justify-self:center;transform:translateY(clamp(-96px,-7dvh,-48px));background:#03111d;border:1px solid rgba(221,191,119,.30);overflow:hidden;box-shadow:none;--casino-gallery-bg:none;touch-action:pan-x;overscroll-behavior:none}
     .casino-gallery-stage::before,.casino-gallery-stage::after{content:none!important;display:none!important}
     .casino-gallery-stage img{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;object-position:center center;opacity:0;transition:opacity .28s ease;filter:none;background:#03111d}
     .casino-gallery-stage img.ready{opacity:1}
-    .casino-gallery-shade{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent 66%,rgba(2,11,19,.58) 100%)}
     .casino-gallery-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;color:rgba(255,255,255,.72);font-size:12px;line-height:2;letter-spacing:.05em}
     .casino-gallery-empty.hidden{display:none}
-    .casino-gallery-caption{position:absolute;left:14px;right:14px;bottom:10px;z-index:3;display:flex;justify-content:space-between;align-items:end;gap:12px;color:#fff}
-    .casino-gallery-caption strong{font:13px Georgia,serif;letter-spacing:.15em;font-weight:400;color:#f0d89d}
-    .casino-gallery-caption span{font:9px Georgia,serif;letter-spacing:.13em;color:rgba(255,255,255,.78)}
     .casino-gallery-dots{display:flex;justify-content:center;align-items:center;gap:7px;min-height:11px;flex-wrap:nowrap;overflow:hidden;touch-action:none}
     .casino-gallery-dots button{width:7px;height:7px;flex:0 0 7px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.25)}
     .casino-gallery-dots button.active{background:#d7bc79}
@@ -1346,12 +1342,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
         <p class="casino-screen-sub">館内を見て回る</p>
         <div id="casinoGalleryStage" class="casino-gallery-stage">
           <img id="casinoGalleryImage" src="" alt="カジノ館内">
-          <div class="casino-gallery-shade"></div>
           <div id="casinoGalleryEmpty" class="casino-gallery-empty hidden" aria-hidden="true"></div>
-          <div class="casino-gallery-caption">
-            <strong id="casinoGalleryLabel">CASINO BLUE SHELL</strong>
-            <span id="casinoGalleryCounter">00 / 00</span>
-          </div>
           <button id="casinoElevatorButton" class="casino-elevator-button hidden" type="button">エレベーターに乗る。</button>
         </div>
         <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
@@ -3352,7 +3343,6 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     // casino.gallery01.jpg から連番で探索。連番が途切れたところで終了。
     const casinoGalleryImage=document.getElementById('casinoGalleryImage');
     const casinoGalleryEmpty=document.getElementById('casinoGalleryEmpty');
-    const casinoGalleryCounter=document.getElementById('casinoGalleryCounter');
     const casinoGalleryDots=document.getElementById('casinoGalleryDots');
     const casinoGalleryStage=document.getElementById('casinoGalleryStage');
     const casinoGalleryHint=document.getElementById('casinoGalleryHint');
@@ -3480,7 +3470,6 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       const has=total>0;
       casinoGalleryEmpty.classList.add('hidden');
       casinoGalleryEmpty.setAttribute('aria-hidden','true');
-      casinoGalleryCounter.textContent=has?`${String(casinoGalleryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`:'';
       casinoGalleryDots.replaceChildren();
       if(!has){
         casinoGalleryImage.removeAttribute('src');
