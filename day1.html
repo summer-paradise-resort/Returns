@@ -1128,9 +1128,9 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   <section class="subview" id="restaurantView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">RESTAURANT &amp; CAFÉ</div><div></div></div>
     <div class="gallery" data-gallery="restaurant"><div class="track">
-      <div class="slide"><img src="sunset_terrace.jpg" alt="サンセットテラス"></div>
-      <div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace 店内"></div>
-      <div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe 店内"></div>
+      <div class="slide"><img data-cafe-scene="sunset_terrace" src="sunset_terrace_day.jpg" alt="サンセットテラス"></div>
+      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace 店内"></div>
+      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe 店内"></div>
     </div></div><div class="dots" data-dots="restaurant"></div>
     <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
       <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご利用方法をお選びください。</p>
@@ -1155,8 +1155,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
   <section class="subview" id="teaSalonView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">AFTERNOON TEA SALON</div><div></div></div>
     <div class="gallery" data-gallery="teaSalon"><div class="track">
-      <div class="slide"><img src="the_pearl_terrace_i.jpg" alt="The Pearl Terrace"></div>
-      <div class="slide"><img src="marine_bloom_cafe_i.jpg" alt="Marine Bloom Cafe"></div>
+      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace"></div>
+      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe"></div>
       <div class="slide"><img src="marine_bloom_cafe_t.jpg" alt="Afternoon Tea"></div>
     </div></div><div class="dots" data-dots="teaSalon"></div>
     <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES</div>
@@ -6656,6 +6656,25 @@ window.addEventListener('message',e=>{
       locationBg.style.backgroundImage=`url("${currentExploreImage(selectedSpot,period)}")`;
     }
   }
+  // RESTAURANT & CAFÉ: three gallery locations follow Japan local time.
+  const restaurantTimeImages={
+    'sunset_terrace':'sunset_terrace',
+    'the_pearl_terrace_i':'the_pearl_terrace_i',
+    'marine_bloom_cafe_i':'marine_bloom_cafe_i'
+  };
+  function syncRestaurantCafeImages(){
+    const suffix=explorePeriod()==='sunset'?'evening':explorePeriod();
+    document.querySelectorAll('.gallery img[data-cafe-scene]').forEach(img=>{
+      const base=img.dataset.cafeScene;
+      const next=base+'_'+suffix+'.jpg';
+      if(img.getAttribute('src')!==next)img.src=next;
+    });
+    // The menu backdrop in the main document uses the same time-specific assets.
+    document.querySelectorAll('[data-cafe-background]').forEach(el=>{
+      const base=el.dataset.cafeBackground;
+      el.style.backgroundImage='linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("'+base+'_'+suffix+'.jpg")';
+    });
+  }
   function syncResortTimeImages(force=false){
     const period=explorePeriod();
     if(!force&&shownResortTimeImagePeriod===period)return;
@@ -6693,11 +6712,12 @@ window.addEventListener('message',e=>{
   });
   syncExploreImages(true);
   syncResortTimeImages(true);
-  setInterval(()=>{syncExploreImages();syncResortTimeImages();},30000);
+  syncRestaurantCafeImages();
+  setInterval(()=>{syncExploreImages();syncResortTimeImages();syncRestaurantCafeImages();},30000);
   document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden){syncExploreImages();syncResortTimeImages();}
+    if(!document.hidden){syncExploreImages();syncResortTimeImages();syncRestaurantCafeImages();}
   });
-  window.addEventListener('focus',()=>{syncExploreImages();syncResortTimeImages();});
+  window.addEventListener('focus',()=>{syncExploreImages();syncResortTimeImages();syncRestaurantCafeImages();});
 
   const DOUBLE_TAP_GUARD_SELECTOR='button,a,summary,.card,.menu-item,.explore-choice-btn,.explore-location-action,.casino-enter,.story-toggle,.back';
   let lastRapidTapTime=0;
