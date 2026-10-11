@@ -979,6 +979,21 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 .tea-exchange-item>span:last-child{margin-left:auto;white-space:nowrap}
 .collection-card strong{line-height:1.6;overflow-wrap:anywhere}
 </style>
+<style id="teaSalonCafeFloorStyles">
+/* AFTERNOON TEA SALON: enter directly into the café floor; image follows Tokyo time. */
+#teaSalonView{isolation:isolate;--tea-salon-photo:url("cafe_floor.jpg");background-color:#f7f1e7}
+#teaSalonView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(255,252,247,.61),rgba(255,250,242,.76)),var(--tea-salon-photo);background-position:center center;background-size:cover;background-repeat:no-repeat;transform:scale(1.035)}
+#teaSalonView>.gallery,#teaSalonView>.dots,#teaSalonView>.info{position:relative;z-index:1}
+#teaSalonView>.info{background:rgba(255,252,247,.53);-webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px)}
+#teaSalonView .panel{background:rgba(251,248,241,.87)}
+#teaSalonView .tea-exchange,#teaSalonView .tea-party-box{background:rgba(251,248,241,.88)}
+body.resort-evening #teaSalonView{background-color:#f5e2d7}
+body.resort-evening #teaSalonView>.info{background:rgba(255,245,238,.56)}
+body.night-theme #teaSalonView{background-color:#071a2b;color:#f6f2e8}
+body.night-theme #teaSalonView::before{background-image:linear-gradient(180deg,rgba(6,21,37,.70),rgba(5,19,34,.85)),var(--tea-salon-photo)}
+body.night-theme #teaSalonView>.info{background:rgba(7,26,43,.44)}
+body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchange,body.night-theme #teaSalonView .tea-party-box{background:rgba(13,39,67,.89)}
+</style>
 </head>
 <body>
   <header>
@@ -1278,7 +1293,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
       <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご利用方法をお選びください。</p>
         <div class="menu-list">
-          <button id="sunsetTerraceOpen" class="menu-item" type="button">サンセットテラス<small>DINNER &amp; SEA VIEW / MENU</small></button>
+          <button id="sunsetTerraceOpen" class="menu-item" type="button">サンセットテラス<small>DINNER &amp; SEA VIEW / 11:00〜23:00</small></button>
           <button class="menu-item cafe-entry" type="button" data-cafe-mode="normal">CAFE<small>The Pearl Terrace / Marine Bloom Cafe　10:00〜翌3:00</small></button>
           <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>チケットをお持ちのお客様</small></button>
         </div>
@@ -1296,11 +1311,12 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
   <!-- Sunset Terrace is a separate screen, preserving the parent restaurant gallery underneath. -->
   <section class="subview" id="sunsetTerraceView" aria-hidden="true" style="--terrace-photo:url('sunset_terrace_day.jpg')">
+    <audio id="sunsetTerraceBgm" src="sunset_terrace_bgm.mp3" preload="auto" loop></audio>
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SUNSET TERRACE</div><div></div></div>
     <div class="sunset-terrace-content">
       <p class="terrace-kicker">DINNER BY THE SEA</p>
       <h2 class="terrace-heading">SUNSET TERRACE</h2>
-      <div class="terrace-subheading">サンセットテラス</div>
+      <div class="terrace-subheading">サンセットテラス　/　営業時間 11:00〜23:00</div>
       <p class="terrace-description">波音と水平線に包まれる、楽園のディナー。<br>お好きなお料理とドリンクを一品ずつお選びください。</p>
       <div class="terrace-menu-card">
         <h3 class="terrace-menu-label">DINING MENU<span>お食事 ・ 全5品</span></h3>
@@ -1327,7 +1343,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     </div>
   </section>
 
-  <section class="subview" id="teaSalonView" aria-hidden="true">
+  <section class="subview" id="teaSalonView" aria-hidden="true" style="--tea-salon-photo:url('cafe_floor.jpg')">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">AFTERNOON TEA SALON</div><div></div></div>
     <div class="gallery" data-gallery="teaSalon"><div class="track">
       <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace"></div>
@@ -2166,8 +2182,8 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();if(id==='sunsetTerraceView'){pauseResortMusic();syncSunsetTerraceMusic();}if(id==='teaSalonView'){pauseResortMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';if(view.id==='sunsetTerraceView')syncSunsetTerraceMusic();if(view.id==='teaSalonView'&&typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
     scheduleHeroBackgroundRefresh();
@@ -3190,15 +3206,28 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const sunsetTerraceOrder=document.getElementById('sunsetTerraceOrder');
     const sunsetTerraceOrderStatus=document.getElementById('sunsetTerraceOrderStatus');
     let selectedSunsetFood=null,selectedSunsetDrink=null;
-    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>openView('sunsetTerraceView'));
+    function sunsetTerraceIsOpenNow(){
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=11&&hour<23;
+    }
+    function syncSunsetTerraceHours(resetMessage=false){
+      const isOpen=sunsetTerraceIsOpenNow();
+      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=!isOpen||!(selectedSunsetFood&&selectedSunsetDrink);
+      if(sunsetTerraceOrderStatus){
+        if(!isOpen) sunsetTerraceOrderStatus.textContent='営業時間は11:00〜23:00です。営業時間外はご注文いただけません。';
+        else if(resetMessage||sunsetTerraceOrderStatus.textContent.startsWith('営業時間は11:00〜23:00'))
+          sunsetTerraceOrderStatus.textContent='お食事とドリンクをそれぞれお選びください。';
+      }
+    }
+    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>{openView('sunsetTerraceView');syncSunsetTerraceHours(true);});
+    setInterval(()=>{if(document.getElementById('sunsetTerraceView')?.classList.contains('open'))syncSunsetTerraceHours();},30000);
     const chooseSunsetOption=(selector,chosen)=>{
       document.querySelectorAll(selector).forEach(button=>{
         const active=button===chosen;
         button.classList.toggle('selected',active);
         button.setAttribute('aria-pressed',String(active));
       });
-      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=!(selectedSunsetFood&&selectedSunsetDrink);
-      if(sunsetTerraceOrderStatus)sunsetTerraceOrderStatus.textContent='お食事とドリンクをそれぞれお選びください。';
+      syncSunsetTerraceHours(true);
     };
     document.querySelectorAll('.sunset-terrace-food').forEach(button=>button.addEventListener('click',()=>{
       selectedSunsetFood=button;
@@ -3209,6 +3238,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       chooseSunsetOption('.sunset-terrace-drink',button);
     }));
     if(sunsetTerraceOrder)sunsetTerraceOrder.addEventListener('click',()=>{
+      if(!sunsetTerraceIsOpenNow()){syncSunsetTerraceHours(true);return;}
       if(!selectedSunsetFood||!selectedSunsetDrink)return;
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
@@ -3469,8 +3499,20 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(reset){try{seasideBarBgm.currentTime=0}catch{}}
     }
     setInterval(()=>syncSeasideBarMusicForTime(),1000);
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
+    function syncSunsetTerraceMusic(){
+      const audio=document.getElementById('sunsetTerraceBgm');
+      if(!audio)return;
+      const shouldPlay=document.getElementById('sunsetTerraceView')?.classList.contains('open') && localStorage.getItem('spr-bgm-enabled')!=='off';
+      if(!shouldPlay){sprCancelGuardedAudioStart(audio);audio.pause();return;}
+      document.getElementById('integratedCafeBgm')?.pause();
+      audio.volume=.34;audio.loop=true;
+      if(audio.paused){
+        try{const p=audio.play();if(p&&p.catch)p.catch(e=>console.warn('Sunset Terrace BGM start',e));}
+        catch(e){console.warn('Sunset Terrace BGM start',e)}
+      }
+    }
+    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const terraceBgm=document.getElementById('sunsetTerraceBgm');if(terraceBgm){sprCancelGuardedAudioStart(terraceBgm);terraceBgm.pause()}const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
     function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
@@ -5554,7 +5596,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       if(!roomServiceFoodGallery||!roomServiceFoodGalleryQueue.length||!activeRoom||roomServiceFoodGalleryRoom!==String(activeRoom))return;
       const item=roomServiceFoodGalleryQueue[roomServiceFoodGalleryIndex];if(!item)return;
       roomServiceFoodName.textContent=item.name+(item.qty>1?` × ${item.qty}`:'');
-      roomServiceFoodCount.textContent=`${roomServiceFoodGalleryIndex+1} / ${roomServiceFoodGalleryQueue.length}　・　右上の × で${roomServiceFoodGalleryIndex+1<roomServiceFoodGalleryQueue.length?'次の料理へ':'閉じる'}`;
+      roomServiceFoodCount.textContent=`${roomServiceFoodGalleryIndex+1} / ${roomServiceFoodGalleryQueue.length}`;
       roomServiceFoodDrinks.textContent=item.drinks?'お飲み物：'+item.drinks:'';
       roomServiceFoodError.classList.add('hidden');
       roomServiceFoodImage.alt=item.name;roomServiceFoodImage.src=item.image;
@@ -6789,7 +6831,9 @@ function cafeIsOpenNow(){
 // CAFE uses the same master ♪ setting as the rest of the resort.
 // This function runs directly in the CAFE-opening user gesture for iOS playback.
 function syncIntegratedCafeMasterBgm(){
-  const shouldPlay=integratedCafeShell.classList.contains('open') && localStorage.getItem('spr-bgm-enabled')!=='off';
+  const teaOpen=document.getElementById('teaSalonView')?.classList.contains('open');
+  const terraceOpen=document.getElementById('sunsetTerraceView')?.classList.contains('open');
+  const shouldPlay=(integratedCafeShell.classList.contains('open')||teaOpen) && !terraceOpen && localStorage.getItem('spr-bgm-enabled')!=='off';
   if(!shouldPlay){integratedCafeBgm.pause();return;}
   integratedCafeBgm.volume=.34;
   if(integratedCafeBgm.paused){
@@ -7198,6 +7242,14 @@ window.addEventListener('message',e=>{
       terraceView.style.setProperty('--terrace-photo',`url("${terraceImg}")`);
       terraceView.dataset.terracePeriod=period;
     }
+    // アフタヌーンティーに入った時点でCAFEフロアのアップ写真を背景表示。
+    // CAFEのトップ画面と同じ昼・夕・夜の3画像を使用する。
+    const teaView=document.getElementById('teaSalonView');
+    if(teaView){
+      const teaFloorPhoto=period==='night'?'cafe_floor_night.jpg':period==='sunset'?'cafe_floor_evening.jpg':'cafe_floor.jpg';
+      teaView.style.setProperty('--tea-salon-photo',`url("${teaFloorPhoto}")`);
+      teaView.dataset.teaPeriod=period;
+    }
     // 新しく追加した2店舗のアフタヌーンティー画像（昼・夕・夜）。
     document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
       const next=img.dataset.teaScene+'_'+suffix+'.jpg';
@@ -7209,6 +7261,7 @@ window.addEventListener('message',e=>{
       el.style.backgroundImage='linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("'+base+'_'+suffix+'.jpg")';
     });
   }
+  window.__sprSyncRestaurantCafeImages=syncRestaurantCafeImages;
   function syncResortTimeImages(force=false){
     const period=explorePeriod();
     if(!force&&shownResortTimeImagePeriod===period)return;
