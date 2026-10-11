@@ -729,6 +729,32 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 </style>
 
 
+
+<style id="sunsetTerraceDedicatedStyles">
+/* SUNSET TERRACE — independent in-page view, with time-matched zoomed photo backdrop */
+#sunsetTerraceView{isolation:isolate;background:#071a2b;color:#fff;--terrace-photo:url("sunset_terrace_day.jpg")}
+#sunsetTerraceView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(4,17,32,.46),rgba(3,15,29,.78) 58%,rgba(3,14,27,.89)),var(--terrace-photo);background-position:center center;background-size:cover;transform:scale(1.035)}
+#sunsetTerraceView .subhead{position:sticky;z-index:3;background:rgba(5,24,42,.95);border-bottom:1px solid rgba(216,182,112,.45)}
+#sunsetTerraceView .subhead .back{color:#f9f0db}
+#sunsetTerraceView .subhead-title{color:#e8c886}
+#sunsetTerraceView .sunset-terrace-content{position:relative;z-index:1;width:min(720px,100%);min-height:calc(100dvh - 66px);margin:0 auto;padding:36px 18px max(70px,env(safe-area-inset-bottom));color:#fff}
+#sunsetTerraceView .terrace-kicker{text-align:center;color:#e7c785;font:11px Georgia,serif;letter-spacing:.28em;margin:0 0 11px}
+#sunsetTerraceView .terrace-heading{font:400 clamp(27px,8vw,38px)/1.5 Georgia,'Yu Mincho',serif;letter-spacing:.16em;text-align:center;margin:0}
+#sunsetTerraceView .terrace-subheading{margin:7px 0 24px;text-align:center;letter-spacing:.16em;color:#d8bb80;font-size:13px}
+#sunsetTerraceView .terrace-description{text-align:center;line-height:2.05;font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.94);text-shadow:0 2px 9px rgba(0,0,0,.5);margin:0 0 22px}
+#sunsetTerraceView .terrace-menu-card{padding:22px 16px;margin-top:18px;background:rgba(6,25,43,.82);border:1px solid rgba(220,187,122,.66);box-shadow:0 12px 35px rgba(0,0,0,.24);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#sunsetTerraceView .terrace-menu-label{margin:3px 0 15px;text-align:center;font:11px Georgia,serif;letter-spacing:.25em;color:#e6c784}
+#sunsetTerraceView .terrace-menu-label span{display:block;margin-top:7px;font-size:15px;letter-spacing:.11em;color:#fff;font-family:'Yu Mincho',serif}
+#sunsetTerraceView .terrace-options{display:grid;gap:10px}
+#sunsetTerraceView .terrace-option{display:block;width:100%;padding:15px 14px;text-align:left;color:#f6f2e9;background:rgba(13,44,68,.90);border:1px solid rgba(214,186,128,.45);line-height:1.65;transition:background .15s,border-color .15s}
+#sunsetTerraceView .terrace-option strong{display:block;font-size:14px;font-weight:500;letter-spacing:.065em}
+#sunsetTerraceView .terrace-option small{display:block;margin-top:5px;color:#d1dbe1;font-size:11px;line-height:1.65}
+#sunsetTerraceView .terrace-option.selected,#sunsetTerraceView .terrace-option[aria-pressed="true"]{background:rgba(79,66,50,.96);border-color:#efcb7f;box-shadow:inset 3px 0 #eac47d}
+#sunsetTerraceView .terrace-order{display:block;width:100%;min-height:51px;margin-top:22px;border:1px solid #efcf8a;background:#e1bf79;color:#0d2743;letter-spacing:.16em;font-size:14px}
+#sunsetTerraceView .terrace-order:disabled{opacity:.5;cursor:default}
+#sunsetTerraceView .terrace-order-status{margin:13px 0 0;padding:13px 10px;min-height:48px;text-align:center;line-height:1.9;font-size:12px;color:#f1e6cf;background:rgba(5,20,36,.67);border:1px solid rgba(222,185,112,.37)}
+@media(max-width:520px){#sunsetTerraceView .sunset-terrace-content{padding-top:29px}#sunsetTerraceView .terrace-menu-card{padding:17px 13px}#sunsetTerraceView .terrace-option{padding:14px 12px}}
+</style>
 <style id="sprGlobalNightTheme">
 /* GLOBAL NIGHT THEME: 20:00–06:59 (Asia/Tokyo)
    The daytime / sunset design stays unchanged. */
@@ -829,6 +855,16 @@ body.night-theme .tea-party-compose input{
 body.night-theme .room-entry input::placeholder,
 body.night-theme .chat-compose input::placeholder,
 body.night-theme .tea-party-compose input::placeholder{color:#aeb9c3}
+/* Night story menu: reveal the actual page behind the overlay, instead of
+   painting an almost opaque navy background over it. */
+body.night-theme .story-menu{
+  background:rgba(5,23,41,.66);
+  -webkit-backdrop-filter:blur(2px);
+  backdrop-filter:blur(2px);
+}
+body.night-theme .story-menu-top{
+  background:rgba(5,25,45,.82);
+}
 /* Keep the ROOM entry action visible against the dark night theme. */
 body.night-theme #roomEntry .primary-btn{
   display:block;
@@ -1172,7 +1208,6 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
           <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>チケットをお持ちのお客様</small></button>
         </div>
 
-      <div id="sunsetTerraceMenu" class="panel hidden"><h3>SUNSET TERRACE / 仮メニュー</h3><p>現在はイベント確認用の仮メニューです。</p><div class="menu-list"><button class="menu-item sunset-meal" type="button" data-meal="スペシャルコース">スペシャルコース<small>SPECIAL COURSE / 夜の特別条件</small></button><button class="menu-item sunset-meal" type="button" data-meal="シーフードプレート">シーフードプレート<small>SEAFOOD PLATE</small></button><button class="menu-item sunset-meal" type="button" data-meal="サンセットディナー">サンセットディナー<small>CHEF'S DINNER</small></button></div><p id="sunsetMealResult" class="bar-selection" aria-live="polite"></p></div>
       <div id="cafeMenu" class="panel hidden"><h3>CAFÉ / DINING MENU</h3><p>カフェのお食事メニューをお選びください。</p><div class="menu-list">
         <button class="menu-item cafe-meal" type="button" data-cafe-meal="ラボ・デ・トロ" data-closet-key="1">ラボ・デ・トロ（スペイン風 牛テールの煮込み）</button>
         <button class="menu-item cafe-meal" type="button" data-cafe-meal="オーシャン・グリル">オーシャン・グリル（白身魚と魚介のハーブグリル）</button>
@@ -1181,6 +1216,39 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
       </div><p id="cafeMealResult" class="bar-selection" aria-live="polite"></p></div>
         <p id="teaTicketMessage" class="bar-selection" aria-live="polite">アフタヌーンティーチケット（2名様用／4名様用）は、The Pearl Terrace / Marine Bloom Cafe のどちらでもご利用いただけます。</p>
       </div>
+    </div>
+  </section>
+
+  <!-- Sunset Terrace is a separate screen, preserving the parent restaurant gallery underneath. -->
+  <section class="subview" id="sunsetTerraceView" aria-hidden="true" style="--terrace-photo:url('sunset_terrace_day.jpg')">
+    <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SUNSET TERRACE</div><div></div></div>
+    <div class="sunset-terrace-content">
+      <p class="terrace-kicker">DINNER BY THE SEA</p>
+      <h2 class="terrace-heading">SUNSET TERRACE</h2>
+      <div class="terrace-subheading">サンセットテラス</div>
+      <p class="terrace-description">波音と水平線に包まれる、楽園のディナー。<br>お好きなお料理とドリンクを一品ずつお選びください。</p>
+      <div class="terrace-menu-card">
+        <h3 class="terrace-menu-label">DINING MENU<span>お食事 ・ 全5品</span></h3>
+        <div class="terrace-options" id="sunsetTerraceFoods" role="group" aria-label="サンセットテラスのお料理">
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="スペシャルコース" aria-pressed="false"><strong>アンコール ― 星降るサンセットコース</strong><small>牛フィレ肉のロースト、季節野菜、赤ワインソースを贅沢に</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="夕凪のシトラスグリル" aria-pressed="false"><strong>夕凪のシトラスグリル</strong><small>真鯛の香草グリルに、爽やかな柑橘バターソース</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="パームガーデン・チキン" aria-pressed="false"><strong>パームガーデン・チキン</strong><small>皮目を香ばしく焼いたハーブチキンと彩り野菜</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="ブルーラグーン・ライス" aria-pressed="false"><strong>ブルーラグーン・ライス</strong><small>ココナッツ香るターメリックライスとローストチキン</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="トロピカル・ガーデンプレート" aria-pressed="false"><strong>トロピカル・ガーデンプレート</strong><small>アボカド、グリル野菜、フルーツを彩ったガーデンディッシュ</small></button>
+        </div>
+      </div>
+      <div class="terrace-menu-card">
+        <h3 class="terrace-menu-label">DRINK MENU<span>ドリンク ・ 全5品</span></h3>
+        <div class="terrace-options" id="sunsetTerraceDrinks" role="group" aria-label="サンセットテラスのドリンク">
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="サンセット・ロゼ" aria-pressed="false"><strong>サンセット・ロゼ</strong><small>ロゼワインと赤い果実のフルーティーなカクテル</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="オーシャン・スプリッツ" aria-pressed="false"><strong>オーシャン・スプリッツ</strong><small>白ワインとシトラスの爽やかなスパークリング</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="パール・スパークル" aria-pressed="false"><strong>パール・スパークル</strong><small>白ぶどうとソーダのノンアルコールカクテル</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="トロピカル・アイスティー" aria-pressed="false"><strong>トロピカル・アイスティー</strong><small>マンゴーとジャスミンの香りが広がるアイスティー</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="スターライト・ココ" aria-pressed="false"><strong>スターライト・ココ</strong><small>ココナッツミルクとバニラのデザートドリンク（ノンアルコール）</small></button>
+        </div>
+      </div>
+      <button id="sunsetTerraceOrder" class="terrace-order" type="button" disabled>お料理とドリンクを注文する</button>
+      <p class="terrace-order-status" id="sunsetTerraceOrderStatus" role="status" aria-live="polite">お食事とドリンクをそれぞれお選びください。</p>
     </div>
   </section>
 
@@ -2024,7 +2092,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
     const views = [...document.querySelectorAll('.subview')];
     function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
     scheduleHeroBackgroundRefresh();
@@ -3013,9 +3081,41 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
     const hiloBetMinus=document.getElementById('hiloBetMinus'), hiloBetPlus=document.getElementById('hiloBetPlus'), hiloStart=document.getElementById('hiloStart');
     const hiloHigh=document.getElementById('hiloHigh'), hiloLow=document.getElementById('hiloLow'), hiloRefill=document.getElementById('hiloRefill');
 
-    const sunsetTerraceOpen=document.getElementById('sunsetTerraceOpen'),sunsetTerraceMenu=document.getElementById('sunsetTerraceMenu'),sunsetMealResult=document.getElementById('sunsetMealResult');
-    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>sunsetTerraceMenu.classList.toggle('hidden'));
-    document.querySelectorAll('.sunset-meal').forEach(button=>button.addEventListener('click',()=>{const meal=button.dataset.meal;if(meal==='スペシャルコース'){localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));}sunsetMealResult.textContent=`「${meal}」を注文しました。${meal==='スペシャルコース'?' 今夜、特別な何かが起こるかもしれません。':''}`}));
+    // SUNSET TERRACE / 専用ページ・料理＋ドリンク各1品の注文
+    const sunsetTerraceOpen=document.getElementById('sunsetTerraceOpen');
+    const sunsetTerraceOrder=document.getElementById('sunsetTerraceOrder');
+    const sunsetTerraceOrderStatus=document.getElementById('sunsetTerraceOrderStatus');
+    let selectedSunsetFood=null,selectedSunsetDrink=null;
+    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>openView('sunsetTerraceView'));
+    const chooseSunsetOption=(selector,chosen)=>{
+      document.querySelectorAll(selector).forEach(button=>{
+        const active=button===chosen;
+        button.classList.toggle('selected',active);
+        button.setAttribute('aria-pressed',String(active));
+      });
+      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=!(selectedSunsetFood&&selectedSunsetDrink);
+      if(sunsetTerraceOrderStatus)sunsetTerraceOrderStatus.textContent='お食事とドリンクをそれぞれお選びください。';
+    };
+    document.querySelectorAll('.sunset-terrace-food').forEach(button=>button.addEventListener('click',()=>{
+      selectedSunsetFood=button;
+      chooseSunsetOption('.sunset-terrace-food',button);
+    }));
+    document.querySelectorAll('.sunset-terrace-drink').forEach(button=>button.addEventListener('click',()=>{
+      selectedSunsetDrink=button;
+      chooseSunsetOption('.sunset-terrace-drink',button);
+    }));
+    if(sunsetTerraceOrder)sunsetTerraceOrder.addEventListener('click',()=>{
+      if(!selectedSunsetFood||!selectedSunsetDrink)return;
+      const meal=selectedSunsetFood.dataset.meal;
+      const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
+      const drinkName=selectedSunsetDrink.dataset.drink;
+      // Preserve the existing serious Emily event flag, now on confirmed Encore order.
+      if(meal==='スペシャルコース'){
+        localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());
+        setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));
+      }
+      sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。どうぞ楽園のひとときをお楽しみください。`;
+    });
 
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
@@ -6739,6 +6839,13 @@ window.addEventListener('message',e=>{
       const next=base+'_'+suffix+'.jpg';
       if(img.getAttribute('src')!==next)img.src=next;
     });
+    // サンセットテラス専用ページのアップ背景も昼・夕・夜で切り替える。
+    const terraceView=document.getElementById('sunsetTerraceView');
+    if(terraceView){
+      const terraceImg='sunset_terrace_'+suffix+'.jpg';
+      terraceView.style.setProperty('--terrace-photo',`url("${terraceImg}")`);
+      terraceView.dataset.terracePeriod=period;
+    }
     // 新しく追加した2店舗のアフタヌーンティー画像（昼・夕・夜）。
     document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
       const next=img.dataset.teaScene+'_'+suffix+'.jpg';
