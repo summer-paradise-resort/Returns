@@ -754,6 +754,27 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
     .explore-special-video video{display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;background:#000;pointer-events:none;-webkit-touch-callout:none}
     .explore-special-video-error{position:absolute;left:18px;right:18px;bottom:max(50px,env(safe-area-inset-bottom));z-index:2;padding:16px;background:rgba(4,16,28,.94);border:1px solid rgba(255,255,255,.35);color:#fff;text-align:center;font-size:12px;line-height:1.8}
     .explore-special-video-error button{display:block;margin:12px auto 0;min-height:42px;padding:8px 20px;border:1px solid #e2c98c;background:rgba(255,255,255,.08);color:#fff}
+
+    /* MYSTERY BOX / KNIFE — existing site typography and colours */
+    .mystery-action{min-height:38px;border:1px solid #b99b64;background:#f3e9d6;color:#172b3f;padding:8px 12px;font-size:12px;letter-spacing:.07em;cursor:pointer}
+    .mystery-action:disabled{opacity:.45;cursor:default}
+    .mystery-sheet-row{align-items:center}
+    .mystery-sheet-side{display:flex;gap:8px;flex-direction:column;align-items:center}
+    .mystery-modal{position:fixed;inset:0;z-index:2147482950;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,13,27,.88);color:#f7f1e7;backdrop-filter:blur(7px);overflow:auto}
+    .mystery-modal.hidden{display:none!important}
+    .mystery-dialog{max-width:470px;width:100%;max-height:90dvh;overflow-y:auto;text-align:center;padding:28px 20px;background:linear-gradient(145deg,#122e46,#061726);border:1px solid #c7a45d;box-shadow:0 18px 70px rgba(0,0,0,.5)}
+    .mystery-kicker{font:12px Georgia,serif;letter-spacing:.27em;color:#dfc283;margin-bottom:15px}
+    .mystery-dialog h3{font-size:20px;line-height:1.6;font-weight:400;letter-spacing:.08em;margin:0 0 12px}
+    .mystery-dialog p{font-size:13px;line-height:2.05;white-space:pre-wrap;margin:8px 0 18px}
+    .mystery-dialog .mystery-result-art{font-size:46px;margin:8px 0 14px}
+    .mystery-choices{display:grid;gap:10px;margin-top:18px}
+    .mystery-choices button{min-height:46px;background:rgba(247,240,222,.07);border:1px solid #ae9662;color:#f7f1e7;font:13px 'Yu Mincho',serif;padding:11px}
+    .mystery-choices button:disabled{opacity:.4}
+    .mystery-choices button.mystery-cancel{border-color:rgba(255,255,255,.32);color:#bdb9b1}
+    .mystery-message{font-size:11px;color:#e7d7aa;line-height:1.8;min-height:0}
+    .casino-emily-talk{min-height:42px;width:100%;border:1px solid #b99b64;background:rgba(4,20,34,.9);color:#f1d7a0;font:12px 'Yu Mincho',serif;letter-spacing:.12em}
+    .casino-gallery-screen:has(.casino-emily-talk:not(.hidden)){grid-template-rows:auto auto minmax(0,1fr) auto auto auto}
+    
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -790,6 +811,44 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 #sunsetTerraceView .terrace-order:disabled{opacity:.5;cursor:default}
 #sunsetTerraceView .terrace-order-status{margin:13px 0 0;padding:13px 10px;min-height:48px;text-align:center;line-height:1.9;font-size:12px;color:#f1e6cf;background:rgba(5,20,36,.67);border:1px solid rgba(222,185,112,.37)}
 @media(max-width:520px){#sunsetTerraceView .sunset-terrace-content{padding-top:29px}#sunsetTerraceView .terrace-menu-card{padding:17px 13px}#sunsetTerraceView .terrace-option{padding:14px 12px}}
+/* 7:00–15:59: turn every navy dining/drink panel white, retaining gold outlines. */
+#sunsetTerraceView[data-terrace-period="day"] .terrace-menu-card{background:rgba(255,255,255,.96);color:#0d2743;border-color:rgba(168,123,47,.75);box-shadow:0 12px 35px rgba(6,27,48,.13)}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-menu-label{color:#986d27}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-menu-label span{color:#0d2743}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-option{background:#fff;color:#0d2743;border-color:rgba(168,123,47,.45)}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-option small{color:#536477}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-option.selected,
+#sunsetTerraceView[data-terrace-period="day"] .terrace-option[aria-pressed="true"]{background:#fff2dc;color:#0d2743;border-color:#bb8b3e;box-shadow:inset 4px 0 #bb8b3e}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-order-status{background:rgba(255,255,255,.97);color:#0d2743;border-color:rgba(168,123,47,.5)}
+#sunsetTerraceView[data-terrace-period="day"] .subhead{background:rgba(255,255,255,.97);border-color:rgba(168,123,47,.45)}
+#sunsetTerraceView[data-terrace-period="day"] .subhead .back{color:#0d2743}
+#sunsetTerraceView[data-terrace-period="day"] .subhead-title{color:#986d27}
+/* One shared, time-independent food photo per dish, shown only after a confirmed order. */
+#sunsetTerraceView .terrace-food-preview{position:fixed;inset:0;z-index:30;display:flex;justify-content:center;align-items:center;overflow-y:auto;padding:max(20px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom));background:rgba(3,14,25,.96);color:#fff}
+#sunsetTerraceView .terrace-food-preview.hidden{display:none!important}
+#sunsetTerraceView .terrace-food-stage{width:min(100%,960px);max-height:100%;display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center}
+#sunsetTerraceView .terrace-food-kicker{margin:0;padding:0 16px;font:11px Georgia,serif;letter-spacing:.24em;color:#e8cf96}
+#sunsetTerraceView .terrace-food-picture{position:relative;width:100%;background:#071a2b;display:flex;align-items:center;justify-content:center;min-height:170px}
+#sunsetTerraceView .terrace-food-picture img{display:block;width:100%;max-height:min(68dvh,720px);height:auto;object-fit:contain;user-select:none;-webkit-user-select:none}
+#sunsetTerraceView .terrace-food-image-error{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#071a2b;color:#fff;line-height:1.9;font-size:12px}
+#sunsetTerraceView .terrace-food-caption{padding:0 20px;line-height:1.8}
+#sunsetTerraceView .terrace-food-name{margin:0;color:#fff;font-size:17px;letter-spacing:.08em;font-weight:400}
+#sunsetTerraceView .terrace-food-drink{margin:7px 0 0;font-size:11px;color:#e8cf96}
+#sunsetTerraceView .terrace-food-return{align-self:center;width:min(300px,calc(100% - 40px));min-height:46px;margin:3px 20px 0;border:1px solid #d8ba77;background:rgba(216,186,119,.12);color:#f5ead5;font-size:12px;letter-spacing:.12em}
+#sunsetTerraceView .terrace-gift-note{margin:22px 4px 0;text-align:center;color:#f2dba4;font-size:11px;line-height:1.85;letter-spacing:.045em}
+#sunsetTerraceView[data-terrace-period="day"] .terrace-gift-note{color:#f5e5be;text-shadow:0 2px 8px rgba(0,0,0,.9)}
+#sunsetTerraceView .terrace-ticket-modal{position:fixed;z-index:45;inset:0;padding:20px;display:flex;align-items:center;justify-content:center;background:rgba(3,15,27,.87);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#sunsetTerraceView .terrace-ticket-dialog{width:min(440px,94vw);padding:29px 23px 24px;background:#fffaf1;color:#0d2743;text-align:center;border:1px solid #d8b97a;box-shadow:0 20px 55px rgba(0,0,0,.42)}
+#sunsetTerraceView .terrace-ticket-kicker{color:#957131;font:10px Georgia,serif;letter-spacing:.22em;margin-bottom:16px}
+#sunsetTerraceView .terrace-ticket-art{width:min(260px,90%);min-height:124px;margin:0 auto 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px double #bd9a59;outline:1px solid #bd9a59;outline-offset:4px;background:linear-gradient(130deg,#fff8e8,#e7cf9b,#fff8e8);color:#274058;box-shadow:0 6px 24px rgba(161,124,53,.12)}
+#sunsetTerraceView .terrace-ticket-art span{font:12px Georgia,serif;letter-spacing:.21em}
+#sunsetTerraceView .terrace-ticket-art b{font:30px Georgia,serif;color:#a77e36}
+#sunsetTerraceView .terrace-ticket-art small{font:9px Georgia,serif;letter-spacing:.25em}
+#sunsetTerraceView .terrace-ticket-dialog h3{font-size:17px;font-weight:500;letter-spacing:.06em;margin:12px 0}
+#sunsetTerraceView .terrace-ticket-dialog p{font-size:12px;line-height:1.9;margin:11px 0;color:#536171}
+#sunsetTerraceView .terrace-ticket-dialog .terrace-ticket-count{font-size:11px;color:#9a702a}
+#sunsetTerraceView .terrace-ticket-close{width:100%;min-height:45px;border:1px solid #b79553;background:#0d2743;color:#fff;margin-top:9px;letter-spacing:.1em}
+@media(max-width:520px){#sunsetTerraceView .terrace-food-stage{gap:10px}#sunsetTerraceView .terrace-food-name{font-size:15px}#sunsetTerraceView .terrace-food-picture img{max-height:65dvh}}
 </style>
 <style id="sprGlobalNightTheme">
 /* GLOBAL NIGHT THEME: 20:00–06:59 (Asia/Tokyo)
@@ -1260,6 +1319,18 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     </div>
   </section>
 
+
+  <div id="mysteryBoxModal" class="mystery-modal hidden" role="dialog" aria-modal="true" aria-label="ミステリーボックス" aria-hidden="true">
+    <div class="mystery-dialog">
+      <div id="mysteryBoxKicker" class="mystery-kicker">MYSTERY BOX</div>
+      <div id="mysteryBoxArt" class="mystery-result-art">✧</div>
+      <h3 id="mysteryBoxTitle">ミステリーボックス</h3>
+      <p id="mysteryBoxText"></p>
+      <div id="mysteryBoxChoices" class="mystery-choices"></div>
+      <p id="mysteryBoxStatus" class="mystery-message" aria-live="polite"></p>
+    </div>
+  </div>
+
   <section class="subview" id="exploreView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
     <div class="gallery" data-gallery="explore"><div class="track">
@@ -1321,11 +1392,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       <div class="terrace-menu-card">
         <h3 class="terrace-menu-label">DINING MENU<span>お食事 ・ 全5品</span></h3>
         <div class="terrace-options" id="sunsetTerraceFoods" role="group" aria-label="サンセットテラスのお料理">
-          <button type="button" class="terrace-option sunset-terrace-food" data-meal="星降るグリルステーキ" aria-pressed="false"><strong>星降るグリルステーキ</strong><small>やわらかな牛フィレ肉のグリルに、季節野菜と赤ワインソースを添えた贅沢な一皿</small></button>
-          <button type="button" class="terrace-option sunset-terrace-food" data-meal="サンセット・シーフードグリル" aria-pressed="false"><strong>サンセット・シーフードグリル</strong><small>海老や白身魚を香ばしく焼き上げ、柑橘とハーブの香りを添えた南国風グリルプレート</small></button>
-          <button type="button" class="terrace-option sunset-terrace-food" data-meal="アイランド・ハーブチキン" aria-pressed="false"><strong>アイランド・ハーブチキン</strong><small>皮目を香ばしく焼いたハーブチキンに、彩り野菜と爽やかなソースを合わせたリゾートディッシュ</small></button>
-          <button type="button" class="terrace-option sunset-terrace-food" data-meal="ブルーラグーン・ガーリックライス" aria-pressed="false"><strong>ブルーラグーン・ガーリックライス</strong><small>ガーリックの香り豊かなライスに、ジューシーなグリルチキンと南国野菜を添えた満足感ある一皿</small></button>
-          <button type="button" class="terrace-option sunset-terrace-food" data-meal="トロピカル・ガーデンプレート" aria-pressed="false"><strong>トロピカル・ガーデンプレート</strong><small>アボカド、グリル野菜、フルーツを美しく盛り合わせた、南国リゾートらしい華やかなプレート</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="星降るグリルステーキ" data-food-image="sunset_terrace_food_starlit_steak.jpg" aria-pressed="false"><strong>星降るグリルステーキ</strong><small>やわらかな牛フィレ肉のグリルに、季節野菜と赤ワインソースを添えた贅沢な一皿</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="エメラルド・ハーバーフィッシュ" data-food-image="sunset_terrace_food_emerald_fish.jpg" aria-pressed="false"><strong>エメラルド・ハーバーフィッシュ</strong><small>香ばしく焼き上げた白身魚に、鮮やかなハーブソースと柑橘を合わせた爽やかな一皿</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="ゴールデン・アイランドチキン" data-food-image="sunset_terrace_food_golden_chicken.jpg" aria-pressed="false"><strong>ゴールデン・アイランドチキン</strong><small>ジューシーに焼き上げたチキンに、スパイス香るソースとターメリックライスを合わせた南国らしい華やかな一皿</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="コーラル・シュリンプパスタ" data-food-image="sunset_terrace_food_coral_shrimp_pasta.jpg" aria-pressed="false"><strong>コーラル・シュリンプパスタ</strong><small>海老の旨みをまとった珊瑚色のソースで仕上げた、彩り豊かなリゾートパスタ</small></button>
+          <button type="button" class="terrace-option sunset-terrace-food" data-meal="トロピカル・ガーデンプレート" data-food-image="sunset_terrace_food_tropical_garden.jpg" aria-pressed="false"><strong>トロピカル・ガーデンプレート</strong><small>アボカド、グリル野菜、フルーツを美しく盛り合わせた、南国リゾートらしい華やかなプレート</small></button>
         </div>
       </div>
       <div class="terrace-menu-card">
@@ -1338,8 +1409,33 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="スターライト・ココ" aria-pressed="false"><strong>スターライト・ココ</strong><small>ココナッツミルクとバニラがやさしく広がるデザートドリンク（ノンアルコール）</small></button>
         </div>
       </div>
+      <p class="terrace-gift-note">SPECIAL GIFT　・　お食事をご注文のお客様へ、ミステリーボックス・チケットを1日1枚プレゼント</p>
       <button id="sunsetTerraceOrder" class="terrace-order" type="button" disabled>お料理とドリンクを注文する</button>
       <p class="terrace-order-status" id="sunsetTerraceOrderStatus" role="status" aria-live="polite">お食事とドリンクをそれぞれお選びください。</p>
+    </div>
+    <div id="sunsetTerraceFoodPreview" class="terrace-food-preview hidden" role="dialog" aria-label="ご注文のお料理" aria-modal="true" aria-hidden="true">
+      <div class="terrace-food-stage">
+        <p class="terrace-food-kicker">SUNSET TERRACE · DINING</p>
+        <div class="terrace-food-picture">
+          <img id="sunsetTerraceFoodImage" alt="ご注文のお料理">
+          <div id="sunsetTerraceFoodImageError" class="terrace-food-image-error hidden" role="status">お料理の写真を読み込めません。<br>指定のJPG画像をアップロードしてください。</div>
+        </div>
+        <div class="terrace-food-caption">
+          <h3 id="sunsetTerraceFoodName" class="terrace-food-name"></h3>
+          <p id="sunsetTerraceFoodDrink" class="terrace-food-drink"></p>
+        </div>
+        <button id="sunsetTerraceFoodReturn" type="button" class="terrace-food-return">メニューに戻る</button>
+      </div>
+    </div>
+    <div id="sunsetTerraceTicketModal" class="terrace-ticket-modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="sunsetTerraceTicketTitle">
+      <div class="terrace-ticket-dialog">
+        <div class="terrace-ticket-kicker">A GIFT FROM SUNSET TERRACE</div>
+        <div class="terrace-ticket-art" aria-hidden="true"><span>MYSTERY BOX</span><b>✧</b><small>ADMISSION TICKET</small></div>
+        <h3 id="sunsetTerraceTicketTitle">ミステリーボックス・チケット</h3>
+        <p>チケットを1枚獲得しました。<br>ROOMの所持品からご確認いただけます。</p>
+        <p id="sunsetTerraceTicketCount" class="terrace-ticket-count"></p>
+        <button id="sunsetTerraceTicketClose" class="terrace-ticket-close" type="button">閉じる</button>
+      </div>
     </div>
   </section>
 
@@ -1426,6 +1522,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
         <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
+        <button id="hernandoBullKnife" class="hernando-dialogue-choice hidden" type="button">エルナンドを刺す</button>
       </div>
       <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
         <div id="hernandoDrinkRound" class="hernando-drink-round">1 / 3</div>
@@ -1519,6 +1616,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
         <div class="casino-gallery-actions">
           <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
+          <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
         </div>
       </div>
       <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
@@ -1650,7 +1748,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ14杯を注文できます。ランダムコースター14枚付き。',max:Infinity},
       jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
-      mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity}
+      mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
+      mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'ROOMの所持品から開封できます。',max:Infinity},
+      mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
+      mysteryLetter:{label:'封蝋の手紙',detail:'ミステリーボックスから届いた、謎めいた手紙。',max:Infinity}
     };
     const heroSection=document.getElementById('heroSection');
     const heroTimeBackgrounds={
@@ -1925,6 +2026,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
+      else if(flagKey==='emily-met'){const k=`spr-emily-met:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
+      else if(flagKey==='sunset-mystery-intro-seen'){const k=`spr-sunset-mystery-intro-seen:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey.startsWith('sunset-mystery-awarded:')){const k=`spr-sunset-mystery-awarded:${playerStorageId}:${flagKey.slice('sunset-mystery-awarded:'.length)}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
       else if(flagKey==='hernando-visit-count'){const n=Math.max(0,Number(value)||0);if(n)localStorage.setItem(`spr-hernando-visit-count:${playerStorageId}`,String(n));else localStorage.removeItem(`spr-hernando-visit-count:${playerStorageId}`)}
       else if(flagKey==='hernando-poison-until'){const until=Math.max(0,Number(value)||0);if(until)localStorage.setItem(`spr-hernando-poison-until:${playerStorageId}`,String(until));else localStorage.removeItem(`spr-hernando-poison-until:${playerStorageId}`)}
@@ -1944,6 +2048,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(localStorage.getItem(`spr-bathroom-food-key:${dayScope}`)==='1')out[`bathroom-food-key:${dayScope}`]=true;
       const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
+      if(localStorage.getItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`)==='1')out['sunset-mystery-intro-seen']=true;
+      const mysteryAwardPrefix=`spr-sunset-mystery-awarded:${playerStorageId}:`;
+      Object.keys(localStorage).filter(k=>k.startsWith(mysteryAwardPrefix)&&localStorage.getItem(k)==='1').forEach(k=>{out[`sunset-mystery-awarded:${k.slice(mysteryAwardPrefix.length)}`]=true});
       if(localStorage.getItem(`spr-hernando-intro-seen:${playerStorageId}`)==='1')out['hernando-intro-seen']=true;
       const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
       const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
@@ -1995,6 +2102,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
             const staleForReset=!!(latestWorldResetAt&&updatedAt&&updatedAt<=latestWorldResetAt);
             if(key==='lifeHearts'&&staleForReset){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3;return}
             if(key==='mermaidGuardShell'&&staleForReset){belongings.mermaidGuardShell=0;inventoryBootstrap.mermaidGuardShell=0;return}
+            if(key==='mysteryBoxTicket'&&staleForReset){belongings.mysteryBoxTicket=0;inventoryBootstrap.mysteryBoxTicket=0;return}
+            if(key==='mysteryKnife'&&staleForReset){belongings.mysteryKnife=0;inventoryBootstrap.mysteryKnife=0;return}
             let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);belongings[key]=qty;
           });
         }else if(Object.values(localBelongings).some(v=>Number(v)>0)){
@@ -2007,7 +2116,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -2850,7 +2959,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       await sleep(Math.max(1900,delay));
     }
+    const emilyMetFlagKey=`spr-emily-met:${playerStorageId}`;
+    function hasMetEmily(){return localStorage.getItem(emilyMetFlagKey)==='1'||windowSprFlagCache['emily-met']===true||localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1'||localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1'||windowSprFlagCache['emily-special-announced']===true||windowSprFlagCache['emily-serious-announced']===true}
+    function syncEmilyTalkButton(){const btn=document.getElementById('casinoEmilyTalk');if(btn)btn.classList.toggle('hidden',!hasMetEmily())}
     async function triggerEmilyInvitation(){
+      localStorage.setItem(emilyMetFlagKey,'1');setRemoteFlag('emily-met',true).catch(e=>console.warn('Emily meet sync',e));syncEmilyTalkButton();
       if(!specialOverlay)return; casinoBgm.pause(); specialBgm.pause(); specialBgm.currentTime=0; specialBgm.volume=.42; specialBgm.muted=true; playAudio(specialBgm,.42);
       specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.innerHTML=''; // 台詞が終わるまでは選択肢を表示しない
@@ -2869,6 +2982,34 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
+    async function talkToEmilyAgain(){
+      if(!hasMetEmily()||!specialOverlay)return;
+      specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
+      specialActions.replaceChildren();casinoBgm.pause();
+      await specialSay('運のみぞ知る','───あら。またお会いしたわね。',900);
+      await specialSay('運のみぞ知る','今度は、何を賭けてくださるの？',1000);
+      const close=()=>{specialActions.replaceChildren();specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');startCasinoMusic()};
+      const endBtn=document.createElement('button');endBtn.textContent='会話を終える';endBtn.onclick=close;
+      specialActions.append(endBtn);
+      if(belongingCount('mysteryKnife')>0){
+        const knifeBtn=document.createElement('button');knifeBtn.textContent='エミリーを刺す';
+        knifeBtn.onclick=async()=>{
+          if(!confirm('ナイフを1本消費して、エミリーを刺しますか？'))return;
+          knifeBtn.disabled=true;endBtn.disabled=true;
+          try{
+            if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+            specialActions.replaceChildren();
+            setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
+            await specialSay('運のみぞ知る','───……まあ。そう来るのね。',700);
+            await specialSay('運のみぞ知る','ふふ……本当に、退屈させない方。',700);
+            await specialSay('運のみぞ知る','でも、これで勝ったと思わないことね。',700);
+            specialActions.append(endBtn);endBtn.disabled=false;
+          }catch(e){alert('使用できませんでした：'+String(e.message||e));knifeBtn.disabled=false;endBtn.disabled=false}
+        };
+        specialActions.insertBefore(knifeBtn,endBtn);
+      }
+    }
+    document.getElementById('casinoEmilyTalk')?.addEventListener('click',()=>void talkToEmilyAgain());
     async function resolveSpecialPlayerId(){
       // SECURITY CHECKで入力した名前をプレイヤー識別の基準にする。
       // Supabase内部でUUIDが必要なテーブルには、この名前に対応するplayers.idを自動取得／作成して使用する。
@@ -3205,21 +3346,87 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const sunsetTerraceOpen=document.getElementById('sunsetTerraceOpen');
     const sunsetTerraceOrder=document.getElementById('sunsetTerraceOrder');
     const sunsetTerraceOrderStatus=document.getElementById('sunsetTerraceOrderStatus');
+    const sunsetTerraceFoodPreview=document.getElementById('sunsetTerraceFoodPreview');
+    const sunsetTerraceFoodImage=document.getElementById('sunsetTerraceFoodImage');
+    const sunsetTerraceFoodImageError=document.getElementById('sunsetTerraceFoodImageError');
+    const sunsetTerraceFoodName=document.getElementById('sunsetTerraceFoodName');
+    const sunsetTerraceFoodDrink=document.getElementById('sunsetTerraceFoodDrink');
+    const sunsetTerraceFoodReturn=document.getElementById('sunsetTerraceFoodReturn');
+    const sunsetTerraceTicketModal=document.getElementById('sunsetTerraceTicketModal');
+    const sunsetTerraceTicketClose=document.getElementById('sunsetTerraceTicketClose');
+    const sunsetTerraceTicketCount=document.getElementById('sunsetTerraceTicketCount');
     let selectedSunsetFood=null,selectedSunsetDrink=null;
+    let pendingTerraceTicket=null,terraceOrderBusy=false;
+    function showSunsetTerraceTicket(){
+      if(!sunsetTerraceTicketModal)return;
+      if(sunsetTerraceTicketCount)sunsetTerraceTicketCount.textContent=`現在の所持枚数：${belongingCount('mysteryBoxTicket')}枚`;
+      sunsetTerraceTicketModal.classList.remove('hidden');
+      sunsetTerraceTicketModal.setAttribute('aria-hidden','false');
+      sunsetTerraceTicketClose?.focus({preventScroll:true});
+    }
+    function closeSunsetTerraceTicket(){
+      sunsetTerraceTicketModal?.classList.add('hidden');
+      sunsetTerraceTicketModal?.setAttribute('aria-hidden','true');
+    }
+    sunsetTerraceTicketClose?.addEventListener('click',closeSunsetTerraceTicket);
+    function showPendingTerraceTicket(){
+      const gift=pendingTerraceTicket;pendingTerraceTicket=null;
+      if(!gift)return;
+      if(gift.first&&typeof window.__sprShowStaffDialogueSequence==='function'){
+        window.__sprShowStaffDialogueSequence([
+          'サンセットテラスへようこそ。お食事をお楽しみいただいたお客様へ、当テラスから小さな贈り物がございます。',
+          'こちらは「ミステリーボックス・チケット」でございます。お食事のご利用につき、一日一枚お渡ししております。中身は開けてからのお楽しみ。どうぞ旅の記念にお持ちくださいませ。'
+        ],showSunsetTerraceTicket);
+      }else showSunsetTerraceTicket();
+    }
+    function closeSunsetTerraceFoodPreview(){
+      sunsetTerraceFoodPreview?.classList.add('hidden');
+      sunsetTerraceFoodPreview?.setAttribute('aria-hidden','true');
+      if(sunsetTerraceFoodImage)sunsetTerraceFoodImage.removeAttribute('src');
+      sunsetTerraceFoodReturn?.blur();
+      showPendingTerraceTicket();
+    }
+    function showSunsetTerraceFoodPreview(mealName,drinkName,imageFilename){
+      if(!sunsetTerraceFoodPreview||!sunsetTerraceFoodImage||!imageFilename)return;
+      sunsetTerraceFoodName.textContent=mealName;
+      sunsetTerraceFoodDrink.textContent='お飲み物：'+drinkName;
+      sunsetTerraceFoodImage.alt=mealName;
+      sunsetTerraceFoodImageError?.classList.add('hidden');
+      sunsetTerraceFoodPreview.classList.remove('hidden');
+      sunsetTerraceFoodPreview.setAttribute('aria-hidden','false');
+      // Use the same file at every time of day; show a friendly fallback until the JPG is uploaded.
+      sunsetTerraceFoodImage.src=imageFilename;
+      sunsetTerraceFoodReturn?.focus({preventScroll:true});
+    }
+    sunsetTerraceFoodImage?.addEventListener('error',()=>{
+      if(!sunsetTerraceFoodPreview?.classList.contains('hidden'))sunsetTerraceFoodImageError?.classList.remove('hidden');
+    });
+    sunsetTerraceFoodImage?.addEventListener('load',()=>sunsetTerraceFoodImageError?.classList.add('hidden'));
+    sunsetTerraceFoodReturn?.addEventListener('click',closeSunsetTerraceFoodPreview);
+    sunsetTerraceFoodPreview?.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeSunsetTerraceFoodPreview();}
+    });
     function sunsetTerraceIsOpenNow(){
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=11&&hour<23;
     }
     function syncSunsetTerraceHours(resetMessage=false){
       const isOpen=sunsetTerraceIsOpenNow();
-      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=!isOpen||!(selectedSunsetFood&&selectedSunsetDrink);
+      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=terraceOrderBusy||!isOpen||!(selectedSunsetFood&&selectedSunsetDrink);
       if(sunsetTerraceOrderStatus){
         if(!isOpen) sunsetTerraceOrderStatus.textContent='営業時間は11:00〜23:00です。営業時間外はご注文いただけません。';
         else if(resetMessage||sunsetTerraceOrderStatus.textContent.startsWith('営業時間は11:00〜23:00'))
           sunsetTerraceOrderStatus.textContent='お食事とドリンクをそれぞれお選びください。';
       }
     }
-    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>{openView('sunsetTerraceView');syncSunsetTerraceHours(true);});
+    if(sunsetTerraceOpen)sunsetTerraceOpen.addEventListener('click',()=>{
+      if(!sunsetTerraceIsOpenNow()){
+        alert('サンセットテラスの営業時間は11:00〜23:00です。');
+        return;
+      }
+      pendingTerraceTicket=null;closeSunsetTerraceFoodPreview();closeSunsetTerraceTicket();
+      openView('sunsetTerraceView');syncSunsetTerraceHours(true);
+    });
     setInterval(()=>{if(document.getElementById('sunsetTerraceView')?.classList.contains('open'))syncSunsetTerraceHours();},30000);
     const chooseSunsetOption=(selector,chosen)=>{
       document.querySelectorAll(selector).forEach(button=>{
@@ -3237,18 +3444,54 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       selectedSunsetDrink=button;
       chooseSunsetOption('.sunset-terrace-drink',button);
     }));
-    if(sunsetTerraceOrder)sunsetTerraceOrder.addEventListener('click',()=>{
+    function terraceMysteryAwardKey(date=tokyoDateKey()){
+      return `spr-sunset-mystery-awarded:${playerStorageId}:${resortDayToken()}:${date}`;
+    }
+    async function awardSunsetMysteryTicket(){
+      // 料理の注文で1日1枚だけ進呈。日付／DAY／宿泊者単位で重複を防ぐ。
+      const day=tokyoDateKey(),flagKey=`sunset-mystery-awarded:${resortDayToken()}:${day}`;
+      const localKey=terraceMysteryAwardKey(day);
+      if(localStorage.getItem(localKey)==='1'||windowSprFlagCache[flagKey]===true)return {newTicket:false};
+      // The Supabase inventory RPC keeps the count across devices when online.
+      // Fallback caches the ticket locally and uploads a snapshot when a connection is available.
+      let newCount=null;
+      try{newCount=await remoteInventoryAdjust('mysteryBoxTicket',1)}
+      catch(e){console.warn('mystery ticket remote award',e)}
+      if(newCount!==null)setLocalInventoryQuantity('mysteryBoxTicket',newCount,{sync:false});
+      else setLocalInventoryQuantity('mysteryBoxTicket',belongingCount('mysteryBoxTicket')+1);
+      localStorage.setItem(localKey,'1');
+      windowSprFlagCache[flagKey]=true;
+      setRemoteFlag(flagKey,true).catch(e=>console.warn('mystery ticket date sync',e));
+      const introKey=`spr-sunset-mystery-intro-seen:${playerStorageId}`;
+      const first=localStorage.getItem(introKey)!=='1'&&windowSprFlagCache['sunset-mystery-intro-seen']!==true;
+      if(first){
+        localStorage.setItem(introKey,'1');
+        setRemoteFlag('sunset-mystery-intro-seen',true).catch(e=>console.warn('mystery ticket staff sync',e));
+      }
+      return {newTicket:true,first};
+    }
+    if(sunsetTerraceOrder)sunsetTerraceOrder.addEventListener('click',async()=>{
+      if(terraceOrderBusy)return;
       if(!sunsetTerraceIsOpenNow()){syncSunsetTerraceHours(true);return;}
       if(!selectedSunsetFood||!selectedSunsetDrink)return;
+      terraceOrderBusy=true;sunsetTerraceOrder.disabled=true;
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
       const drinkName=selectedSunsetDrink.dataset.drink;
-      // 本気のエミリーの条件：料理ではなく、赤ワイン『アンコール』の注文確定時に記録する。
+      // The Emily "Encore" condition remains unchanged.
       if(drinkName==='アンコール'){
         localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());
         setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));
       }
-      sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。どうぞ楽園のひとときをお楽しみください。`;
+      try{
+        const gift=await awardSunsetMysteryTicket();
+        pendingTerraceTicket=gift.newTicket?gift:null;
+        sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。${gift.newTicket?'ミステリーボックス・チケットを1枚プレゼントいたします。':'本日のミステリーボックス・チケットはお渡し済みです。'}`;
+        showSunsetTerraceFoodPreview(foodName,drinkName,selectedSunsetFood.dataset.foodImage);
+      }catch(e){
+        console.warn('Sunset Terrace order failed',e);
+        sunsetTerraceOrderStatus.textContent='ご注文の処理を完了できませんでした。もう一度お試しください。';
+      }finally{terraceOrderBusy=false;syncSunsetTerraceHours();}
     });
 
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
@@ -3525,7 +3768,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
       else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
       else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL');renderPrizeCounter()}
-      else if(level==='gallery'){casinoGalleryScreen.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','GALLERY')}
+      else if(level==='gallery'){casinoGalleryScreen.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','GALLERY');syncEmilyTalkButton()}
       else if(level==='blackjack'){blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK','CASINO BLUE SHELL');updateCasinoHud();renderBlackjack()}
       else if(level==='hilo'){hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','CASINO BLUE SHELL');updateHiloHud();renderHilo()}
     }
@@ -4558,6 +4801,22 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         }
       },3000);
     }
+    // ROOM participation for server-side knife checks; refresh the session every 15 seconds.
+    async function syncMysteryRoomPresence(room){
+      const playerId=await sprPlayerId(),c=window.supabaseClientSpecial;
+      if(!playerId||!c)return;
+      try{const {error}=await c.rpc('spr_mystery_room_checkin',{p_player_id:playerId,p_room:String(room||'')});if(error)throw error}
+      catch(e){console.warn('mystery room presence sync',e)}
+    }
+    setInterval(()=>{
+      if(activeRoom&&roomView.classList.contains('room-active')){
+        void syncMysteryRoomPresence(activeRoom);
+        // Reconcile hearts after a knife strike from another device.
+        if(window.supabaseClientSpecial&&roomBelongingsSheet?.classList.contains('open')){
+          remoteInventoryAdjust('lifeHearts',0).then(n=>{if(n!==null&&n!==remainingLives())setLocalInventoryQuantity('lifeHearts',n,{sync:false})}).catch(e=>console.warn('hearts refresh',e));
+        }
+      }
+    },15000);
     function stopRoomPhonePresence(){
       cancelRoomPhoneDeclineStop();
       roomPhoneDeclineSilencedEventId='';
@@ -4587,6 +4846,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         .on('presence',{event:'sync'},syncSharedRoomState)
         .on('presence',{event:'join'},payload=>{announceRoomPresenceJoin(payload,roomAtStart);syncSharedRoomState()})
         .on('presence',{event:'leave'},syncSharedRoomState)
+        .on('broadcast',{event:'mystery-knife-strike'},({payload})=>{
+          if(String(payload?.target_id||'')!==String(storedPlayerId||'')||String(payload?.room_no||'')!==String(activeRoom||''))return;
+          remoteInventoryAdjust('lifeHearts',0).then(n=>{if(n!==null)setLocalInventoryQuantity('lifeHearts',n,{sync:false})}).catch(e=>console.warn('knife heart refresh',e));
+        })
         .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
         .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)});
       roomPhonePresenceChannel=channel;
@@ -4594,6 +4857,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
         if(status==='SUBSCRIBED'){
           roomPhonePresenceReady=true;
+          void syncMysteryRoomPresence(roomAtStart);
           await trackRoomPhonePresence();
           syncSharedRoomState();
         }
@@ -4940,7 +5204,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
     const hernandoDialogueName=hernandoDialogue?.querySelector('.hernando-dialogue-name');
-    const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline');
+    const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline'),hernandoBullKnife=document.getElementById('hernandoBullKnife');
     const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
     // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Public bucket: videos / object: hernandos_bullring.mp4
@@ -5328,7 +5592,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
       if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;showHernandoDialogueLine(hernandoDialogueLines[hernandoDialogueIndex]);return}
       if(hernandoDialogueAfter==='choice'){
-        hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');return;
+        hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');
+        hernandoBullKnife?.classList.toggle('hidden',belongingCount('mysteryKnife')<1);return;
       }
       if(hernandoDialogueAfter==='drinkGame'){showHernandoDrinkRound();return}
       if(hernandoDialogueAfter==='drinkNext'){showHernandoDrinkRound();return}
@@ -5347,6 +5612,20 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       cancelHernandoArenaBgmFade(true);
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
+    });
+    hernandoBullKnife?.addEventListener('click',async()=>{
+      if(!confirm('ナイフを1本消費して、エルナンドを刺しますか？'))return;
+      hernandoBullKnife.disabled=true;
+      try{
+        if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        setRemoteFlag('hernando-knife-event-seen',true).catch(e=>console.warn('hernando knife flag',e));
+        setHernandoDialogueLines([
+          '──おい。……今、何をした？',
+          'はは……いい度胸じゃねえか。牡牛が角を向ける前に、客の方から牙を剥くとはな。',
+          '覚えておけよ。ここで流れたものは、砂の下まで消えやしねえ。'
+        ],'knifeEvent','exit');
+      }catch(e){alert('使用できませんでした：'+String(e.message||e))}
+      finally{hernandoBullKnife.disabled=false}
     });
     hernandoDrinkButtons.forEach(btn=>btn.addEventListener('click',()=>{void chooseHernandoDrink(btn.dataset.hernandoDrink)}));
     if(hernandoArenaBack)hernandoArenaBack.addEventListener('click',closeHernandoArena);
@@ -6056,6 +6335,147 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         }
         grid.append(card)});
     }
+    // MYSTERY BOX: 35% coaster, 1% knife; the other 64% are provisional rewards.
+    // Each is awarded to the opening player only. Hearts are NEVER transferred.
+    const mysteryBoxModal=document.getElementById('mysteryBoxModal');
+    const mysteryBoxTitle=document.getElementById('mysteryBoxTitle');
+    const mysteryBoxText=document.getElementById('mysteryBoxText');
+    const mysteryBoxArt=document.getElementById('mysteryBoxArt');
+    const mysteryBoxChoices=document.getElementById('mysteryBoxChoices');
+    const mysteryBoxStatus=document.getElementById('mysteryBoxStatus');
+    let mysteryBusy=false;
+    function mysteryClose(){if(mysteryBusy)return;mysteryBoxModal.classList.add('hidden');mysteryBoxModal.setAttribute('aria-hidden','true');renderRoomBelongings()}
+    function mysteryShow(title,body,actions=[],art='✧'){
+      mysteryBoxTitle.textContent=title;mysteryBoxText.textContent=body;mysteryBoxArt.textContent=art;mysteryBoxStatus.textContent='';mysteryBoxChoices.replaceChildren();
+      actions.forEach(({label,run,cancel=false})=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(cancel)b.className='mystery-cancel';b.addEventListener('click',run);mysteryBoxChoices.append(b)});
+      mysteryBoxModal.classList.remove('hidden');mysteryBoxModal.setAttribute('aria-hidden','false');
+    }
+    async function mysteryConsumeInventory(key){
+      // The inventory RPC is atomic for one item. Never locally assume an online success.
+      const current=await authoritativeInventoryCount(key);
+      if(current<=0){setLocalInventoryQuantity(key,0,{sync:false});return false}
+      if(window.supabaseClientSpecial){
+        const next=await remoteInventoryAdjust(key,-1);
+        if(next===null)throw new Error('プレイヤー認証が必要です。');
+        // RPC implementations may clamp zero on failure; verify against the before count.
+        if(next>=current)throw new Error('アイテムの消費を確認できませんでした。');
+        setLocalInventoryQuantity(key,next,{sync:false});return true;
+      }
+      setLocalInventoryQuantity(key,current-1);return true;
+    }
+    async function mysteryGrantItem(key,amount=1){
+      const count=belongingCount(key);
+      const max=key==='jokerCard'?4:Infinity;
+      if(count>=max)return false;
+      const actual=Math.min(amount,max-count);
+      if(window.supabaseClientSpecial){const next=await remoteInventoryAdjust(key,actual);if(next===null)throw new Error('景品を保存できませんでした。');setLocalInventoryQuantity(key,next,{sync:false})}
+      else setLocalInventoryQuantity(key,count+actual);
+      return true;
+    }
+    function mysteryPick(){
+      const n=(()=>{if(window.crypto?.getRandomValues){const v=new Uint32Array(1);window.crypto.getRandomValues(v);return v[0]/4294967296}return Math.random()})();
+      // cumulative thresholds: 35 / 60 / 72 / 82 / 89 / 94 / 99 / 100
+      if(n<.35)return 'coaster';if(n<.60)return 'chips';if(n<.72)return 'cafeDrinkTicket';
+      if(n<.82)return 'extraDrinkTicket';if(n<.89)return 'jokerCard';
+      if(n<.94)return 'mermaidGuardShell';if(n<.99)return 'mysteryLetter';return 'mysteryKnife';
+    }
+    async function mysteryGrantReward(reward){
+      if(reward==='coaster'){
+        const number=Math.floor(Math.random()*89),file=`coaster${String(number).padStart(2,'0')}.PNG`;
+        const cards=loadCoasterInventory();cards.push({client_id:sprSafeUuid(),venue:'MYSTERY BOX',file,meal:'ミステリーボックス',drink:'',at:new Date().toISOString()});
+        localStorage.setItem(coasterInventoryKey,JSON.stringify(cards));
+        try{await syncCafeCoastersSnapshot()}catch(e){console.warn('mystery coaster sync',e)}
+        updateCollectionButton();renderRoomCollection();return {title:'コースターを手に入れた！',text:sprCoasterLabel(file),art:'✦'};
+      }
+      if(reward==='chips'){
+        const amount=[1000,3000,5000,10000][Math.floor(Math.random()*4)];
+        // synchronise the latest balance to avoid resetting other casino winnings
+        await refreshCasinoChipsFromSupabase();casinoChips+=amount;casinoSave();syncCasinoBalances();return {title:'カジノチップ',text:`${amount.toLocaleString()} CHIPを獲得しました。`,art:'◈'};
+      }
+      if(reward==='mysteryLetter'){
+        await mysteryGrantItem(reward);return {title:'封蝋の手紙',text:'封蝋の手紙を手に入れました。ROOMの所持品から読むことができます。',art:'✉'};
+      }
+      const received=await mysteryGrantItem(reward);
+      if(!received)return {title:'上限に達しています',text:'JOKER CARDは4枚までしか所持できません。',art:'◇'};
+      const labels={cafeDrinkTicket:'CAFEドリンクチケット',extraDrinkTicket:'追加ドリンクチケット',jokerCard:'JOKER CARD',mermaidGuardShell:'人魚の護り貝',mysteryKnife:'ナイフ'};
+      return {title:labels[reward]+'を手に入れた！',text:reward==='mysteryKnife'?'ROOMの所持品から使用できます。エルナンドやエミリーとの特殊イベントでも、使用時に1本消費します。':'所持品に追加しました。',art:reward==='mysteryKnife'?'†':'✧'};
+    }
+    function openMysteryBoxPrompt(){
+      if(localStorage.getItem(`spr-mystery-pending:${playerStorageId}`)){mysteryShow('景品の受け取りが保留中です','前回の景品の保存が完了していません。チケットを追加消費せず、もう一度受け取りをお試しください。',[{label:'景品の受け取りを再試行',run:()=>void mysteryRetryPending()},{label:'閉じる',run:mysteryClose,cancel:true}],'◇');return}
+      mysteryShow('ミステリーボックス',`チケットを1枚使用して開封しますか？\n所持チケット：${belongingCount('mysteryBoxTicket')}枚`,[
+        {label:'チケットを使って開ける',run:()=>void mysteryOpenBox()},
+        {label:'やめる',run:mysteryClose,cancel:true}
+      ],'✧');
+    }
+    async function mysteryOpenBox(){
+      if(mysteryBusy)return;mysteryBusy=true;mysteryBoxStatus.textContent='箱を開封しています……';mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try{
+        if(!await mysteryConsumeInventory('mysteryBoxTicket'))throw new Error('チケットがありません。');
+        const reward=mysteryPick();
+        let outcome;
+        try{outcome=await mysteryGrantReward(reward)}catch(e){
+          // keep a retriable pending reward so a transient server failure cannot silently lose the draw
+          localStorage.setItem(`spr-mystery-pending:${playerStorageId}`,JSON.stringify({reward,at:Date.now()}));
+          throw new Error('景品の保存に失敗しました。次回開封する前に、サポートへご連絡ください。');
+        }
+        localStorage.removeItem(`spr-mystery-pending:${playerStorageId}`);
+        mysteryShow(outcome.title,outcome.text,[{label:'受け取る',run:mysteryClose}],outcome.art);
+        renderRoomBelongings();
+      }catch(e){mysteryBoxStatus.textContent=e?.message||'開封できませんでした。';mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=false)}
+      finally{mysteryBusy=false}
+    }
+    async function mysteryRetryPending(){
+      if(mysteryBusy)return;
+      let pending;try{pending=JSON.parse(localStorage.getItem(`spr-mystery-pending:${playerStorageId}`)||'null')}catch{}
+      if(!pending?.reward){mysteryClose();return}
+      mysteryBusy=true;mysteryBoxStatus.textContent='再受取中……';mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try{
+        const result=await mysteryGrantReward(pending.reward);
+        localStorage.removeItem(`spr-mystery-pending:${playerStorageId}`);
+        mysteryShow(result.title,result.text,[{label:'受け取る',run:mysteryClose}],result.art);
+        renderRoomBelongings();
+      }catch(e){mysteryBoxStatus.textContent='再受取できませんでした：'+String(e.message||e);mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=false)}
+      finally{mysteryBusy=false}
+    }
+    function openMysteryLetter(){
+      const lines=['「この箱を開けたのは、あなたで何人目でしょうね。」','「七日目の朝には、誰も信じてはなりません。」','「あの女が笑っているうちは、まだ勝負は終わっていない。」'];
+      mysteryShow('封蝋の手紙',lines[Math.floor(Math.random()*lines.length)],[{label:'閉じる',run:mysteryClose}],'✉');
+    }
+    function openMysteryKnifePrompt(){
+      if(!activeRoom||!roomView.classList.contains('room-active'))return;
+      const candidates=roomPhonePresenceMembers().filter(m=>String(m?.player_id||'')&&String(m.player_id)!==String(storedPlayerId||'')&&String(m.room_no||'')===String(activeRoom));
+      const unique=[...new Map(candidates.map(m=>[String(m.player_id),m])).values()];
+      const actions=unique.map(m=>({label:String(m.display_name||'ゲスト')+' を選ぶ',run:()=>mysteryChooseRoomTarget(m)}));
+      actions.push({label:'やめる',run:mysteryClose,cancel:true});
+      mysteryShow('誰を刺しますか？',unique.length?'現在、同じROOMに滞在している相手を選んでください。\nナイフは1本消費します。':'現在、同じROOMに刺せる相手がいません。\n他のプレイヤーが入室するまでお待ちください。',actions,'†');
+    }
+    function mysteryChooseRoomTarget(member){
+      const targetName=String(member.display_name||'ゲスト');
+      mysteryShow('使用確認',`${targetName}の♥️を1つ減らしますか？\nあなたの♥️は増えません。`,[
+        {label:'ナイフを使用する',run:()=>void mysteryAttackRoomPlayer(member)},
+        {label:'やめる',run:mysteryClose,cancel:true}
+      ],'†');
+    }
+    async function mysteryAttackRoomPlayer(member){
+      if(mysteryBusy||!activeRoom)return;mysteryBusy=true;mysteryBoxStatus.textContent='確認中……';mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=true);
+      try{
+        const target=String(member.player_id||''),room=String(activeRoom);
+        const still=roomPhonePresenceMembers().some(m=>String(m.player_id)===target&&String(m.room_no)===room);
+        if(!still||target===String(storedPlayerId))throw new Error('相手はすでにROOMにいません。');
+        const attacker=await sprPlayerId(),c=window.supabaseClientSpecial;
+        if(!attacker||!c)throw new Error('オンライン接続が必要です。');
+        const {data,error}=await c.rpc('spr_mystery_knife_strike',{p_attacker:attacker,p_target:target,p_room:room});
+        if(error)throw error;
+        if(!data?.success)throw new Error(data?.message||'ナイフを使用できませんでした。');
+        setLocalInventoryQuantity('mysteryKnife',Number(data.knife_remaining),{sync:false});
+        if(roomPhonePresenceChannel)void roomPhonePresenceChannel.send({type:'broadcast',event:'mystery-knife-strike',payload:{target_id:target,room_no:room}}).catch(e=>console.warn('knife broadcast',e));
+        mysteryShow('ナイフを使用した',`${String(member.display_name||'ゲスト')}の♥️が1つ減りました。\nあなたの♥️は変わりません。`,[{label:'閉じる',run:mysteryClose}],'†');
+        renderRoomBelongings();
+      }catch(e){mysteryBoxStatus.textContent=String(e.message||'実行できませんでした。')+'\nSupabaseにナイフ機能のSQL設定が必要な場合があります。';mysteryBoxChoices.querySelectorAll('button').forEach(b=>b.disabled=false)}
+      finally{mysteryBusy=false}
+    }
+    async function mysteryConsumeKnifeForNpc(){return mysteryConsumeInventory('mysteryKnife')}
+
     function renderRoomBelongings(){
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=true;
       const lives=remainingLives();
@@ -6083,7 +6503,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           const name=document.createElement('strong');name.textContent=item.label;info.append(name);
         }
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
-        const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;row.append(main,qty);roomBelongingsList.append(row)
+        const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
+        const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'){
+          const action=document.createElement('button');action.type='button';action.className='mystery-action';
+          action.textContent=key==='mysteryBoxTicket'?'ボックスを開ける':key==='mysteryKnife'?'使用する':'手紙を読む';
+          action.addEventListener('click',()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else openMysteryLetter()});
+          side.append(action);
+        }
+        row.append(main,side);roomBelongingsList.append(row)
       });
       if(!hasAny){const empty=document.createElement('div');empty.className='belongings-empty';empty.textContent='現在、所持品はありません。カジノの景品交換所などで手に入れた品物がここに表示されます。';roomBelongingsList.append(empty)}
     }
@@ -6187,7 +6615,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceEntryAutoReceiveRoom='';roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
+    function leaveActiveRoom(){void syncMysteryRoomPresence('');if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceEntryAutoReceiveRoom='';roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
@@ -6213,7 +6641,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       gallery.addEventListener('touchcancel',()=>{swipeEligible=false},{passive:true});
       galleries[name]=show;
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(roomServiceFoodGallery&&!roomServiceFoodGallery.classList.contains('hidden')){advanceRoomServiceFoodGallery();return}if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')){mysteryClose();return}if(sunsetTerraceFoodPreview&&!sunsetTerraceFoodPreview.classList.contains('hidden')){closeSunsetTerraceFoodPreview();return}if(roomServiceFoodGallery&&!roomServiceFoodGallery.classList.contains('hidden')){advanceRoomServiceFoodGallery();return}if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
     setTimeout(()=>hydratePersistentState(),0);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)hydratePersistentState()});
     window.addEventListener('focus',()=>hydratePersistentState());
