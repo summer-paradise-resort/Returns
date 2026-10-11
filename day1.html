@@ -1269,7 +1269,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 
   <section class="subview" id="barView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
-    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img id="barGalleryHeroImage" src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
+    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img id="barGalleryHeroImage" src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img id="barGalleryLoungeImage" src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
     <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p>
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
@@ -6461,10 +6461,12 @@ window.addEventListener('message',e=>{
   const exploreHomeCardImage=document.getElementById('exploreHomeCardImage');
   const roomHomeCardImages={day:'Deluxe_Ocean_Window.jpg',sunset:'Deluxe_Ocean_Window_Sunset.jpg',night:'Deluxe_Ocean_Window_Night.jpg'};
   const barTimedImages={day:'seaside_bar.jpg',sunset:'seaside_bar_evening.jpg',night:'seaside_bar_night.jpg'};
+  const barLoungeTimedImages={day:'seaside_lounge.jpg',sunset:'seaside_lounge_evening.jpg',night:'seaside_lounge_night.jpg'};
   const casinoTimedImages={day:'casino_blue_shell_day.jpg',sunset:'casino_blue_shell_evening.jpg',night:'casino_blue_shell_night.jpg'};
   const roomHomeCardImage=document.getElementById('roomHomeCardImage');
   const barHomeCardImage=document.getElementById('barHomeCardImage');
   const barGalleryHeroImage=document.getElementById('barGalleryHeroImage');
+  const barGalleryLoungeImage=document.getElementById('barGalleryLoungeImage');
   const casinoHomeCardImage=document.getElementById('casinoHomeCardImage');
   const casinoGalleryTopImages=[...document.querySelectorAll('#casinoView img[data-casino-gallery-slot]')];
   let shownResortTimeImagePeriod='';
@@ -6736,6 +6738,8 @@ window.addEventListener('message',e=>{
     if(roomHomeCardImage&&roomHomeCardImage.getAttribute('src')!==roomImage)roomHomeCardImage.src=roomImage;
     if(barHomeCardImage&&barHomeCardImage.getAttribute('src')!==barImage)barHomeCardImage.src=barImage;
     if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)barGalleryHeroImage.src=barImage;
+    const barLoungeImage=currentTimedImage(barLoungeTimedImages,period);
+    if(barGalleryLoungeImage&&barGalleryLoungeImage.getAttribute('src')!==barLoungeImage)barGalleryLoungeImage.src=barLoungeImage;
     if(casinoHomeCardImage&&casinoHomeCardImage.getAttribute('src')!==casinoImage)casinoHomeCardImage.src=casinoImage;
     const casinoGallerySuffix=period==='day'?'_day':period==='sunset'?'_evening':'';
     casinoGalleryTopImages.forEach(img=>{
