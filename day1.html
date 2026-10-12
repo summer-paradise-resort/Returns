@@ -1193,6 +1193,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="auto" loop playsinline></audio>
         <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
         <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="auto" playsinline></audio>
+        <audio id="roomDoorOpenAudio" src="room_door_open.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="auto" playsinline></audio>
@@ -2128,7 +2129,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function applyRemoteFlagToLocal(flagKey,value){
       const bool=v=>v===true||v===1||v==='1';
-      if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`)}
+      if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
       else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
       else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
@@ -3085,20 +3086,20 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       day:[
         '昼の賭けは、嘘をつくのが下手なの。自信も迷いも、お日様に透かされてしまうから。',
         '幸運が欲しい？　それなら、失っても笑えるものだけを賭けなさい。笑えないものを差し出した瞬間、遊びは呪いになるわ。',
-        '確率は未来を教えるものではないの。負けた人を慰めるための、美しい言い訳よ。',
+        'アーサー・グレイについて？　当時の彼は、このリゾートの建設にずいぶんな額を投じた、出資者のひとりよ。人望にも人脈にも恵まれていたけれど……お披露目の日に連れてきたのは、奥様ではなく、不倫相手の女性だったわ。\n\nどうして私が、そんなことまで知っているのかですって？\n\n――さあ、どうしてかしらね。ふふ。',
         '今日のあなたは、勝つ人の顔ではないわね。賭けずにはいられない人の顔。……私は、そちらのほうが好きよ。'
       ],
       sunset:[
         '夕暮れは、このカジノがいちばん美しく嘘をつく時間よ。負けたチップまで、金色に輝いて見えるでしょう？',
-        '人魚の歌が閉じ込められた貝を手に入れたら、大切にしておきなさい。運に見放された時、あなたの代わりに砕けてくれるかもしれないから。',
-        '夕陽が沈むまでに勝負を決めたい人は多いけれど、運は時計を見ないわ。焦っている人から順に、からかうだけ。',
+        '人魚の歌が閉じ込められた貝を手に入れたら、大切にしておきなさい。運に見放された夜、あなたの代わりに砕けてくれるかもしれないから。',
+        'アーサーは、その女性の目の前で夕暮れの灯台から海へ飛び込んだの。あのお方へ身を差し出したつもりだったのでしょうけれど……海は彼を返したわ。贄として望まれなかった男に残ったのは、冷たい塩の味だけ。',
         '賭けから降りるのは臆病ではないの。次に何を賭けるか選び直せる人だけが、本当の勝負師よ。'
       ],
       night:[
         '夜になると、チップの音が少しだけ甘く聞こえるでしょう？　危険なものほど、耳に心地よい音を覚えているの。',
-        '夜の海から馬の嘶きが聞こえたら、すぐに逃げなさい。好奇心は、ときに命まで賭け金へ変えてしまうものよ。決して、その姿を確かめようと振り返らないこと。',
-        '幸運は借りられる。でも、返す日を教えてはくれない。今夜よく勝てたなら、明日のあなたは少し慎重になさい。',
-        '夜の運は、名前を呼ばれるのを待っているわ。呼び返すなら覚悟なさい。幸運も不運も、一度聞いた声をよく覚えているから。'
+        '夜の海から馬のいななきが聞こえたら、すぐに逃げなさい。好奇心は、ときに命まで賭け金へ変えてしまうものよ。決して、その姿を確かめようと振り返らないこと。',
+        '海が眠っているように見える？　いいえ。あのお方は、深いところで夢を見ていらっしゃるだけ。いつか瞼を開かれる、その瞬間を思うと……ふふ、胸が震えるわ。',
+        '灯台から戻ったアーサーの影は、一つ多かった――そう話す人もいるわ。でも、あのお方の贄にさえ選ばれなかった男の影がいくつあろうと、私にはどうでもいいこと。'
       ]
     };
     const emilyCasualSpecialDialogue=[
@@ -3150,7 +3151,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       progress.last_by_period[period]=id;saveEmilyCasualProgress(progress);
       return{special:false,lines:[pool[index]]};
     }
-    function hasMetEmily(){return localStorage.getItem(emilyMetFlagKey)==='1'||windowSprFlagCache['emily-met']===true||localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1'||localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1'||windowSprFlagCache['emily-special-announced']===true||windowSprFlagCache['emily-serious-announced']===true}
+    // ギャラリーでの再会話は、最初の140,000 CHIP到達時に招待会話が発生した記録だけで解放する。
+    // その後オールインを受けたか断ったか、また勝負の結果がどうなったかは解放条件に含めない。
+    function hasSeenFirstEmilyInvitation(){return localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1'||windowSprFlagCache['emily-special-announced']===true}
     function positionEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
       const photo=document.getElementById('casinoGalleryStage');
@@ -3168,7 +3171,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function syncEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
       const spacer=document.getElementById('casinoEmilyTalkSpacer');
-      const hidden=!isEmilyTalkGallerySlide()||!hasMetEmily();
+      const hidden=!isEmilyTalkGallerySlide()||!hasSeenFirstEmilyInvitation();
       btn?.classList.toggle('hidden',hidden);
       spacer?.classList.toggle('hidden',hidden);
       const dialogue=document.getElementById('casinoEmilyConversation');
@@ -3226,11 +3229,17 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       });
       emilyCasualChoices.classList.remove('hidden');
     }
-    function emilyCasualSay(line,nextAction){
+    function revealEmilyCasualLine(){
+      if(!emilyCasualTyping)return false;
+      stopEmilyCasualTyping();emilyCasualSpans.forEach(span=>span.classList.add('in'));
+      return true;
+    }
+    function emilyCasualSay(line,nextAction,{showNext=true}={}){
       stopEmilyCasualTyping();
       emilyCasualNextAction=nextAction;
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
-      emilyCasualNext.classList.remove('hidden');
+      emilyCasualNext.textContent='NEXT　›';
+      emilyCasualNext.classList.toggle('hidden',!showNext);
       emilyCasualText.replaceChildren();
       const chars=Array.from(String(line));
       emilyCasualSpans=chars.map(char=>{
@@ -3251,47 +3260,50 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function emilyCasualRunLines(lines,done,index=0){
       if(index>=lines.length){done?.();return}
-      emilyCasualSay(lines[index],()=>emilyCasualRunLines(lines,done,index+1));
+      const isLast=index===lines.length-1;
+      emilyCasualSay(lines[index],isLast?null:()=>emilyCasualRunLines(lines,done,index+1),{showNext:!isLast});
+      if(isLast)done?.();
     }
     function emilyCasualNextClick(){
-      if(emilyCasualTyping){
-        stopEmilyCasualTyping();emilyCasualSpans.forEach(span=>span.classList.add('in'));
-        return;
-      }
+      if(revealEmilyCasualLine())return;
       emilyCasualNextAction?.();
     }
     emilyCasualNext.addEventListener('click',emilyCasualNextClick);
+    emilyCasualOverlay.addEventListener('click',event=>{
+      if(event.target.closest('button'))return;
+      revealEmilyCasualLine();
+    });
     function emilyCasualAfterGreeting(){
       emilyCasualChoiceButtons([
-        {label:'会話を終える',click:closeEmilyCasualDialogue},
+        {label:'CLOSE',click:closeEmilyCasualDialogue},
         ...(belongingCount('mysteryKnife')>0?[{label:'エミリーを刺す',click:emilyCasualKnifeConfirm}]:[])
       ]);
     }
     function emilyCasualKnifeConfirm(){
-      emilyCasualSay('───まあ……その手に持っているものは、何かしら？',()=>{
-        emilyCasualChoiceButtons([
-          {label:'ナイフを使用する',click:()=>void emilyCasualUseKnife()},
-          {label:'やめる',click:emilyCasualAfterGreeting}
-        ]);
-      });
+      emilyCasualSay('───まあ……その手に持っているものは、何かしら？',null,{showNext:false});
+      emilyCasualChoiceButtons([
+        {label:'ナイフを使用する',click:()=>void emilyCasualUseKnife()},
+        {label:'やめる',click:emilyCasualAfterGreeting}
+      ]);
     }
     async function emilyCasualUseKnife(){
       emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
-        emilyCasualSay('───……まあ。そう来るのね。',()=>
-          emilyCasualSay('ふふ……本当に、退屈させない方。',()=>
-            emilyCasualSay('でも、これで勝ったと思わないことね。',()=>
-              emilyCasualChoiceButtons([{label:'会話を終える',click:closeEmilyCasualDialogue}]))));
+        emilyCasualRunLines([
+          '───……まあ。そう来るのね。',
+          'ふふ……本当に、退屈させない方。',
+          'でも、これで勝ったと思わないことね。'
+        ],()=>emilyCasualChoiceButtons([{label:'CLOSE',click:closeEmilyCasualDialogue}]));
       }catch(e){
-        emilyCasualSay('───あら。今は使えないようね。',()=>emilyCasualChoiceButtons([
-          {label:'会話を終える',click:closeEmilyCasualDialogue}
+        emilyCasualRunLines(['───あら。今は使えないようね。'],()=>emilyCasualChoiceButtons([
+          {label:'CLOSE',click:closeEmilyCasualDialogue}
         ]));console.warn('Emily knife',e);
       }
     }
     function talkToEmilyAgain(){
-      if(!hasMetEmily()||!emilyCasualOverlay||!isEmilyTalkGallerySlide())return;
+      if(!hasSeenFirstEmilyInvitation()||!emilyCasualOverlay||!isEmilyTalkGallerySlide())return;
       const dialogue=nextEmilyCasualDialogue();
       emilyCasualOverlay.classList.remove('hidden');
       emilyCasualOverlay.setAttribute('aria-hidden','false');
@@ -4552,7 +4564,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const roomPhoneAnswer=document.getElementById('roomPhoneAnswer'), roomPhoneDecline=document.getElementById('roomPhoneDecline');
     const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
-    const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'), roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
+    const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'),roomDoorOpenAudio=document.getElementById('roomDoorOpenAudio'),roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
     const roomServiceFoodGallery=document.getElementById('roomServiceFoodGallery'),roomServiceFoodImage=document.getElementById('roomServiceFoodImage'),roomServiceFoodName=document.getElementById('roomServiceFoodName'),roomServiceFoodCount=document.getElementById('roomServiceFoodCount'),roomServiceFoodDrinks=document.getElementById('roomServiceFoodDrinks'),roomServiceFoodClose=document.getElementById('roomServiceFoodClose'),roomServiceFoodError=document.getElementById('roomServiceFoodError');
     const roomServiceCartHint=document.getElementById('roomServiceCartHint');
     const roomServiceDeliveryNotice=document.getElementById('roomServiceDeliveryNotice'), roomServiceDeliveryText=document.getElementById('roomServiceDeliveryText'), roomServiceDeliveryClose=document.getElementById('roomServiceDeliveryClose');
@@ -4861,6 +4873,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(memberId&&storedPlayerId&&memberId===String(storedPlayerId))return;
         if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
         const key=memberId||memberName;if(announced.has(key))return;announced.add(key);
+        playRoomDoorOpenSound();
         showRoomEntryNotice(memberName);
       });
     }
@@ -6247,11 +6260,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!window.supabaseClientSpecial||!room)return;
       try{
         const [m,o]=await Promise.all([
-          window.supabaseClientSpecial.from('spr_room_messages').select('id,room_no,player_id,display_name,body,created_at').eq('room_no',room).order('created_at',{ascending:false}).limit(100),
+          // 通常チャットは滞在中だけの一時会話。過去ログは再読込せず、
+          // 永続共有が必要なルームサービス受取記録だけを読み込む。
+          window.supabaseClientSpecial.from('spr_room_messages').select('id,room_no,player_id,display_name,body,created_at').eq('room_no',room).like('body',`${ROOM_SERVICE_RECEIPT_PREFIX}%`).order('created_at',{ascending:false}).limit(100),
           window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,player_id,display_name,items,created_at').eq('room_no',room).order('created_at',{ascending:false}).limit(20)
         ]);if(m.error)throw m.error;if(o.error)throw o.error;if(activeRoom!==room)return;
-        const messageRows=(m.data||[]).reverse(),receipts=[];
-        roomMessageCache=messageRows.filter(row=>{const receipt=parseRoomServiceReceiptMessage(row);if(receipt){receipts.push(receipt);return false}return true}).map(roomSharedMessage);
+        const messageRows=(m.data||[]).reverse(),receipts=messageRows.map(parseRoomServiceReceiptMessage).filter(Boolean);
+        roomMessageCache=[];
         roomServiceCache=(o.data||[]).reverse().map(roomSharedOrder);renderChat();renderRoomServiceHistory();
         receipts.forEach(receipt=>applyRoomServiceReceipt(receipt,{announce:true}));
       }catch(e){console.warn('room shared load',e)}
@@ -6293,6 +6308,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     let roomServiceHorrorLocalChoice='idle',roomServiceHorrorResolving=false,roomServiceHorrorLastResolution=null;
     const roomServiceHorrorResolutionByEvent=new Map(),roomServiceHorrorNgApplying=new Set();
     let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
+    let roomDoorOpenBuffer=null,roomDoorOpenLoadPromise=null;
     let roomServiceDoorbellKeepAliveOsc=null,roomServiceDoorbellKeepAliveGain=null;
     const villaPoolSharedAudioBuffers=new Map();
     let villaPoolSharedAudioLoadPromise=null;
@@ -6707,10 +6723,29 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       roomServiceDoorbellLoadPromise=fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`doorbell.mp3 HTTP ${r.status}`);return r.arrayBuffer()}).then(a=>ctx.decodeAudioData(a.slice(0))).then(buffer=>{roomServiceDoorbellBuffer=buffer;roomServiceDoorbellLoadPromise=null;return buffer}).catch(error=>{roomServiceDoorbellLoadPromise=null;console.warn('room service doorbell load',error);throw error});
       return roomServiceDoorbellLoadPromise;
     }
+    function loadRoomDoorOpenBuffer(){
+      if(roomDoorOpenBuffer)return Promise.resolve(roomDoorOpenBuffer);
+      if(roomDoorOpenLoadPromise)return roomDoorOpenLoadPromise;
+      const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
+      const url=roomDoorOpenAudio?.currentSrc||roomDoorOpenAudio?.src||new URL('room_door_open.mp3',window.location.href).href;
+      roomDoorOpenLoadPromise=fetch(url,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`room_door_open.mp3 HTTP ${response.status}`);return response.arrayBuffer()}).then(data=>ctx.decodeAudioData(data.slice(0))).then(buffer=>{roomDoorOpenBuffer=buffer;roomDoorOpenLoadPromise=null;return buffer}).catch(error=>{roomDoorOpenLoadPromise=null;console.warn('room door open sound load',error);throw error});
+      return roomDoorOpenLoadPromise;
+    }
     function primeRoomServiceDoorbellAudio(){
       const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return;
-      try{const resume=ctx.state==='running'?Promise.resolve():ctx.resume();Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomServiceDoorbellKeepAlive();loadRoomServiceDoorbellBuffer().catch(()=>{})}}).catch(()=>{})}catch{}
+      try{const resume=ctx.state==='running'?Promise.resolve():ctx.resume();Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomServiceDoorbellKeepAlive();loadRoomServiceDoorbellBuffer().catch(()=>{});loadRoomDoorOpenBuffer().catch(()=>{})}}).catch(()=>{})}catch{}
       if(roomServiceDoorbell){try{roomServiceDoorbell.preload='auto';roomServiceDoorbell.load()}catch{}}
+      if(roomDoorOpenAudio){try{roomDoorOpenAudio.preload='auto';roomDoorOpenAudio.load()}catch{}}
+    }
+    function playRoomDoorOpenSound(){
+      if(!roomPhoneMasterAudioOn())return false;
+      const ctx=ensureRoomServiceDoorbellContext();
+      if(ctx&&ctx.state==='running'&&roomDoorOpenBuffer){
+        try{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=roomDoorOpenBuffer;gain.gain.value=1;source.connect(gain);gain.connect(ctx.destination);source.start(0);return true}catch{}
+      }
+      if(ctx&&ctx.state==='running'&&!roomDoorOpenBuffer)loadRoomDoorOpenBuffer().catch(()=>{});
+      if(roomDoorOpenAudio){try{roomDoorOpenAudio.currentTime=0;roomDoorOpenAudio.muted=false;roomDoorOpenAudio.volume=1;const play=roomDoorOpenAudio.play();if(play?.catch)play.catch(error=>console.warn('room door open sound play',error));return true}catch{}}
+      return false;
     }
     function loadVillaPoolSharedAudioBuffers(){
       if(villaPoolSharedAudioBuffers.has('enter')&&villaPoolSharedAudioBuffers.has('exit'))return Promise.resolve(villaPoolSharedAudioBuffers);
