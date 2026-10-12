@@ -782,6 +782,35 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
     .mystery-message{font-size:11px;color:#e7d7aa;line-height:1.8;min-height:0}
     .casino-emily-talk{min-height:42px;width:100%;border:1px solid #b99b64;background:rgba(4,20,34,.9);color:#f1d7a0;font:12px 'Yu Mincho',serif;letter-spacing:.12em}
     .casino-gallery-screen:has(.casino-emily-talk:not(.hidden)){grid-template-rows:auto auto minmax(0,1fr) auto auto auto}
+
+/* EMILY CASUAL CONVERSATION — move only the button; preserve the gallery photograph's
+   original 16:9 size, transform, position and grid layout exactly. */
+#casinoEmilyTalk:not(.hidden){
+  /* Absolute positioning never affects the gallery's 16:9 image or its grid. */
+  position:absolute;z-index:9;transform:none;
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+  background:rgba(5,22,36,.95);
+  border-color:rgba(228,196,124,.85);
+}
+.casino-emily-talk-spacer{display:block;height:42px;width:100%;pointer-events:none}
+.casino-emily-talk-spacer.hidden{display:none!important}
+/* Lower-screen dialogue styled like the Hernando / resort-staff conversations.
+   It is a separate overlay, not the full-screen ALL-IN invitation. */
+.casino-emily-conversation{position:fixed;inset:0;z-index:141;display:flex;align-items:flex-end;justify-content:center;padding:0 12px max(16px,env(safe-area-inset-bottom));background:transparent;color:#f6efe3;pointer-events:auto}
+.casino-emily-conversation.hidden{display:none!important}
+.casino-emily-dialogue{width:min(720px,100%);padding:18px 18px 16px;border:1px solid rgba(227,194,125,.60);background:rgba(7,12,18,.94);box-shadow:0 14px 45px rgba(0,0,0,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.casino-emily-dialogue-name{font:11px Georgia,'Yu Mincho',serif;letter-spacing:.22em;color:#e3c27d;margin-bottom:11px}
+.casino-emily-dialogue-text{min-height:64px;font:15px/2 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.055em;color:#fff;white-space:pre-wrap}
+.casino-emily-char{display:inline;opacity:0;filter:blur(1.2px);transition:opacity .17s ease,filter .2s ease}
+.casino-emily-char.in{opacity:1;filter:blur(0)}
+.casino-emily-dialogue-next{display:block;width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.55);background:rgba(12,42,63,.88);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
+.casino-emily-dialogue-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.casino-emily-dialogue-choices button{min-height:46px;padding:10px 7px;border:1px solid rgba(227,194,125,.48);background:rgba(17,39,52,.92);color:#fff;font:12px 'Yu Mincho',serif;line-height:1.6}
+.casino-emily-dialogue-choices button:first-child{background:rgba(115,33,39,.88)}
+.casino-emily-dialogue-choices button:disabled{opacity:.45}
+@media(max-width:520px){.casino-emily-dialogue{padding:16px 15px 14px}.casino-emily-dialogue-text{font-size:14px;min-height:56px}.casino-emily-dialogue-choices{grid-template-columns:1fr}}
+/* The guest information prize is a single administrator-supplied JPG, not a database table. */
+.mystery-dialog .mystery-result-art img.mystery-guest-image{display:block;width:auto;max-width:100%;max-height:65dvh;object-fit:contain;margin:0 auto}
     
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1588,6 +1617,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 
 
 
+  <!-- Independent dialogue: never pauses casino BGM, never changes gallery photo position. -->
+  <div id="casinoEmilyConversation" class="casino-emily-conversation hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-label="運のみぞ知るとの会話">
+    <div class="casino-emily-dialogue">
+      <div class="casino-emily-dialogue-name">運のみぞ知る</div>
+      <div id="casinoEmilyDialogueText" class="casino-emily-dialogue-text" aria-live="polite"></div>
+      <button id="casinoEmilyDialogueNext" class="casino-emily-dialogue-next" type="button">NEXT　›</button>
+      <div id="casinoEmilyDialogueChoices" class="casino-emily-dialogue-choices hidden"></div>
+    </div>
+  </div>
   <div id="specialOverlay" class="special-overlay" aria-hidden="true">
     <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="auto"></audio>
     <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">UNKNOWN</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
@@ -1642,6 +1680,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <div class="casino-gallery-actions">
           <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
           <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
+          <span id="casinoEmilyTalkSpacer" class="casino-emily-talk-spacer hidden" aria-hidden="true"></span>
           <button id="casinoVipDoor" class="casino-vip-door hidden" type="button">通路の奥の扉を開ける　›</button>
           <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
         </div>
@@ -1812,7 +1851,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
-      mysteryGuestFoodList:{label:'宿泊者嗜好調査票',detail:'宿泊者の苦手な食べ物が記された秘密の資料。',max:Infinity},
+      mysteryGuestFoodList:{label:'宿泊者情報',detail:'島に滞在する宿泊者の情報をまとめた一枚の資料。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
       mysteryLetter:{label:'封蝋の手紙',detail:'ミステリーボックスから届いた、謎めいた手紙。',max:Infinity},
       mysteryPostcard01:{label:'ポストカード・名前を呼ぶ海鳥',detail:'異変動物ポストカード No.01',max:Infinity},
@@ -3032,7 +3071,30 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     const emilyMetFlagKey=`spr-emily-met:${playerStorageId}`;
     function hasMetEmily(){return localStorage.getItem(emilyMetFlagKey)==='1'||windowSprFlagCache['emily-met']===true||localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1'||localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1'||windowSprFlagCache['emily-special-announced']===true||windowSprFlagCache['emily-serious-announced']===true}
-    function syncEmilyTalkButton(){const btn=document.getElementById('casinoEmilyTalk');if(btn)btn.classList.toggle('hidden',!hasMetEmily())}
+    function positionEmilyTalkButton(){
+      const btn=document.getElementById('casinoEmilyTalk');
+      const photo=document.getElementById('casinoGalleryStage');
+      const screen=document.getElementById('casinoGalleryScreen');
+      if(!btn||!photo||!screen||btn.classList.contains('hidden'))return;
+      // Place the talk button directly BELOW the photograph, which is visually shifted
+      // up by existing gallery CSS. The photograph itself is never resized or moved.
+      const r=photo.getBoundingClientRect(),g=screen.getBoundingClientRect();
+      if(r.width<1||g.width<1)return;
+      const left=Math.max(10,r.left-g.left+12);
+      btn.style.left=`${left}px`;
+      btn.style.width=`${Math.max(160,Math.min(g.width-left-10,r.width-24))}px`;
+      btn.style.top=`${Math.max(56,Math.min(g.height-55,r.bottom-g.top+11))}px`;
+    }
+    function syncEmilyTalkButton(){
+      const btn=document.getElementById('casinoEmilyTalk');
+      const spacer=document.getElementById('casinoEmilyTalkSpacer');
+      const hidden=!hasMetEmily();
+      btn?.classList.toggle('hidden',hidden);
+      spacer?.classList.toggle('hidden',hidden);
+      if(!hidden)requestAnimationFrame(positionEmilyTalkButton);
+    }
+    window.addEventListener('resize',()=>requestAnimationFrame(positionEmilyTalkButton));
+    window.addEventListener('orientationchange',()=>requestAnimationFrame(positionEmilyTalkButton));
     async function triggerEmilyInvitation(){
       localStorage.setItem(emilyMetFlagKey,'1');setRemoteFlag('emily-met',true).catch(e=>console.warn('Emily meet sync',e));syncEmilyTalkButton();
       if(!specialOverlay)return; casinoBgm.pause(); specialBgm.pause(); specialBgm.currentTime=0; specialBgm.volume=.42; specialBgm.muted=true; playAudio(specialBgm,.42);
@@ -3053,32 +3115,102 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
       document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
     }
-    async function talkToEmilyAgain(){
-      if(!hasMetEmily()||!specialOverlay)return;
-      specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
-      specialActions.replaceChildren();casinoBgm.pause();
-      await specialSay('運のみぞ知る','───あら。またお会いしたわね。',900);
-      await specialSay('運のみぞ知る','今度は、何を賭けてくださるの？',1000);
-      const close=()=>{specialActions.replaceChildren();specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');startCasinoMusic()};
-      const endBtn=document.createElement('button');endBtn.textContent='会話を終える';endBtn.onclick=close;
-      specialActions.append(endBtn);
-      if(belongingCount('mysteryKnife')>0){
-        const knifeBtn=document.createElement('button');knifeBtn.textContent='エミリーを刺す';
-        knifeBtn.onclick=async()=>{
-          if(!confirm('ナイフを1本消費して、エミリーを刺しますか？'))return;
-          knifeBtn.disabled=true;endBtn.disabled=true;
-          try{
-            if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
-            specialActions.replaceChildren();
-            setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
-            await specialSay('運のみぞ知る','───……まあ。そう来るのね。',700);
-            await specialSay('運のみぞ知る','ふふ……本当に、退屈させない方。',700);
-            await specialSay('運のみぞ知る','でも、これで勝ったと思わないことね。',700);
-            specialActions.append(endBtn);endBtn.disabled=false;
-          }catch(e){alert('使用できませんでした：'+String(e.message||e));knifeBtn.disabled=false;endBtn.disabled=false}
-        };
-        specialActions.insertBefore(knifeBtn,endBtn);
+    // 再会話はエルナンドと同じ「名前＋文字が浮かぶ＋NEXT」形式。
+    // カジノ写真とBGMには一切手を加えない（スペシャル勝負の導入は従来どおり）。
+    const emilyCasualOverlay=document.getElementById('casinoEmilyConversation');
+    const emilyCasualText=document.getElementById('casinoEmilyDialogueText');
+    const emilyCasualNext=document.getElementById('casinoEmilyDialogueNext');
+    const emilyCasualChoices=document.getElementById('casinoEmilyDialogueChoices');
+    let emilyCasualTypingTimer=null,emilyCasualTyping=false,emilyCasualSpans=[],emilyCasualNextAction=null;
+    function stopEmilyCasualTyping(){
+      if(emilyCasualTypingTimer!==null)clearTimeout(emilyCasualTypingTimer);
+      emilyCasualTypingTimer=null;
+      emilyCasualTyping=false;
+    }
+    function closeEmilyCasualDialogue(){
+      stopEmilyCasualTyping();emilyCasualSpans=[];emilyCasualNextAction=null;
+      emilyCasualOverlay.classList.add('hidden');
+      emilyCasualOverlay.setAttribute('aria-hidden','true');
+      emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
+      emilyCasualText.replaceChildren();
+      // casinoBgm is intentionally left playing; do not call startCasinoMusic()/pause().
+    }
+    function emilyCasualChoiceButtons(options){
+      emilyCasualNext.classList.add('hidden');
+      emilyCasualChoices.replaceChildren();
+      options.forEach(({label,click})=>{
+        const button=document.createElement('button');button.type='button';button.textContent=label;
+        button.addEventListener('click',click);emilyCasualChoices.append(button);
+      });
+      emilyCasualChoices.classList.remove('hidden');
+    }
+    function emilyCasualSay(line,nextAction){
+      stopEmilyCasualTyping();
+      emilyCasualNextAction=nextAction;
+      emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
+      emilyCasualNext.classList.remove('hidden');
+      emilyCasualText.replaceChildren();
+      const chars=Array.from(String(line));
+      emilyCasualSpans=chars.map(char=>{
+        const span=document.createElement('span');span.className='casino-emily-char';span.textContent=char;
+        emilyCasualText.appendChild(span);return span;
+      });
+      emilyCasualTyping=true;
+      let index=0;
+      function tick(){
+        if(!emilyCasualTyping)return;
+        if(index>=emilyCasualSpans.length){stopEmilyCasualTyping();return;}
+        emilyCasualSpans[index].classList.add('in');
+        const char=chars[index++];
+        const wait=char==='。'||char==='？'||char==='！'?230:char==='、'||char==='…'?140:45;
+        emilyCasualTypingTimer=setTimeout(tick,wait);
       }
+      tick();
+    }
+    function emilyCasualNextClick(){
+      if(emilyCasualTyping){
+        stopEmilyCasualTyping();emilyCasualSpans.forEach(span=>span.classList.add('in'));
+        return;
+      }
+      emilyCasualNextAction?.();
+    }
+    emilyCasualNext.addEventListener('click',emilyCasualNextClick);
+    function emilyCasualAfterGreeting(){
+      emilyCasualChoiceButtons([
+        {label:'会話を終える',click:closeEmilyCasualDialogue},
+        ...(belongingCount('mysteryKnife')>0?[{label:'エミリーを刺す',click:emilyCasualKnifeConfirm}]:[])
+      ]);
+    }
+    function emilyCasualKnifeConfirm(){
+      emilyCasualSay('───まあ……その手に持っているものは、何かしら？',()=>{
+        emilyCasualChoiceButtons([
+          {label:'ナイフを使用する',click:()=>void emilyCasualUseKnife()},
+          {label:'やめる',click:emilyCasualAfterGreeting}
+        ]);
+      });
+    }
+    async function emilyCasualUseKnife(){
+      emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
+      try{
+        if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
+        emilyCasualSay('───……まあ。そう来るのね。',()=>
+          emilyCasualSay('ふふ……本当に、退屈させない方。',()=>
+            emilyCasualSay('でも、これで勝ったと思わないことね。',()=>
+              emilyCasualChoiceButtons([{label:'会話を終える',click:closeEmilyCasualDialogue}]))));
+      }catch(e){
+        emilyCasualSay('───あら。今は使えないようね。',()=>emilyCasualChoiceButtons([
+          {label:'会話を終える',click:closeEmilyCasualDialogue}
+        ]));console.warn('Emily knife',e);
+      }
+    }
+    function talkToEmilyAgain(){
+      if(!hasMetEmily()||!emilyCasualOverlay||casinoLevel!=='gallery')return;
+      emilyCasualOverlay.classList.remove('hidden');
+      emilyCasualOverlay.setAttribute('aria-hidden','false');
+      emilyCasualSay('───あら。またお会いしたわね。',()=>
+        emilyCasualSay('今度は、何を賭けてくださるの？',emilyCasualAfterGreeting));
+      // NO casinoBgm.pause(), specialBgm.play(), fullscreen specialOverlay.
     }
     document.getElementById('casinoEmilyTalk')?.addEventListener('click',()=>void talkToEmilyAgain());
     async function resolveSpecialPlayerId(){
@@ -3896,6 +4028,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,casinoVipRoom,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
+      if(level!=='gallery'&&typeof closeEmilyCasualDialogue==='function')closeEmilyCasualDialogue();
       if(casinoLevel==='gallery'&&level!=='gallery'&&typeof window.__sprLeaveCasinoGalleryElevator==='function')window.__sprLeaveCasinoGalleryElevator();
       hideCasinoScreens();casinoLevel=level;
       if(['hub','games','prize','gallery'].includes(level)&&casinoVipMode)setVipMode(false);
@@ -4180,6 +4313,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         updateCasinoVipDoorAccess();
       };
       preload.src=src;
+      requestAnimationFrame(positionEmilyTalkButton);
       casinoGalleryFiles.forEach((_,index)=>{
         const dot=document.createElement('button');
         dot.type='button';
@@ -6596,7 +6730,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         const n=Math.max(1,Math.min(7,Number(reward.slice(-2))||1));const card=POSTCARD_GUIDE[n-1];
         title='異変動物ポストカード';description=`No.${String(n).padStart(2,'0')} ${card.name}\n${card.bio}\n撮影場所：${card.place}\n所持品からいつでも読み返せます。`;art='✉';
       }else if(reward==='mysteryGuestFoodList'){
-        title='宿泊者嗜好調査票';description='ホテルの内部資料らしき紙を入手しました。\nROOMの所持品から開くと、事前に登録された宿泊者の苦手な食べ物を確認できます。';art='▤';
+        title='宿泊者情報';description='宿泊者の情報をまとめた秘密の資料を入手しました。\nROOMの所持品からいつでも閲覧できます。';art='▤';
       }else if(reward==='mysteryKnife'){
         title='ナイフ';description='ナイフを1本手に入れました。ROOMでは同室者の♥️を1つ減らせます（奪った♥️は自分には増えません）。エルナンドやエミリーにも使用できます。いずれも使用ごとに1本消費します。';art='†';
       }else{title='景品を受け取りました';description='所持品をご確認ください。'}
@@ -6646,15 +6780,22 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const n=Number(String(key).slice(-2));const card=POSTCARD_GUIDE[n-1];if(!card)return;
       mysteryShow(`No.${String(n).padStart(2,'0')} ${card.name}`,`${card.bio}\n\n撮影場所：${card.place}`, [{label:'閉じる',run:mysteryClose}],'✉');mysteryAttachPostcardImage(n);
     }
-    async function openMysteryGuestFoodList(){
-      const c=window.supabaseClientSpecial,player=await sprPlayerId();
-      if(!c||!player){mysteryShow('宿泊者嗜好調査票','オンライン接続が必要です。',[{label:'閉じる',run:mysteryClose}],'▤');return}
-      try{
-        const {data,error}=await c.rpc('spr_mystery_guest_food_list',{p_player_id:player});if(error)throw error;
-        const entries=Array.isArray(data)?data:[];
-        const text=entries.length?entries.map(item=>`${String(item.name||'宿泊者')}　—　${String(item.food||'未記入')}`).join('\n'):'調査票はまだ準備されていません。';
-        mysteryShow('宿泊者嗜好調査票',text,[{label:'閉じる',run:mysteryClose}],'▤');
-      }catch(e){mysteryShow('宿泊者嗜好調査票',String(e?.message||'調査票を読み込めません。'),[{label:'閉じる',run:mysteryClose}],'▤')}
+    // 宿泊者情報は管理者が後から用意する1枚の画像だけで表示する。
+    // SQL の spr_mystery_guest_food_list は呼ばない（プレイヤー別の登録も不要）。
+    function openMysteryGuestFoodList(){
+      const file='mystery_guest_info.jpg';
+      mysteryShow('宿泊者情報','宿泊者の情報が記された資料。',[{label:'閉じる',run:mysteryClose}],'▤');
+      const img=document.createElement('img');
+      img.className='mystery-guest-image';img.alt='宿泊者情報';img.loading='eager';
+      img.addEventListener('load',()=>{
+        mysteryBoxText.textContent='';
+      },{once:true});
+      img.addEventListener('error',()=>{
+        mysteryBoxArt.textContent='▤';
+        mysteryBoxText.textContent='資料はまだ準備中です。\n画像が完成したら mystery_guest_info.jpg の名前でアップロードしてください。';
+      },{once:true});
+      mysteryBoxArt.replaceChildren(img);
+      img.src=file;
     }
     if(buyMysteryDraw)buyMysteryDraw.addEventListener('click',()=>openMysteryBoxPrompt(false));
     if(useMysteryFreeTicket)useMysteryFreeTicket.addEventListener('click',()=>openMysteryBoxPrompt(true));
@@ -6725,8 +6866,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
         if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='mysteryGuestFoodList'?'資料を見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='mysteryGuestFoodList')void openMysteryGuestFoodList();else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
