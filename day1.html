@@ -795,6 +795,23 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 
 
+<style id="casinoVipRoomStyles">
+/* Existing hidden corridor photograph is the only doorway visual; no additional entrance art. */
+.casino-vip-door{width:100%;min-height:43px;border:1px solid rgba(210,184,119,.55);background:linear-gradient(120deg,rgba(12,30,45,.93),rgba(34,32,28,.94));color:#efdbab;font:12px 'Yu Mincho',serif;letter-spacing:.13em}
+.casino-vip-door-notice{margin:0;text-align:center;color:#f3dbab;font-size:11px;line-height:1.7}
+.casino-vip-room{background:radial-gradient(ellipse at 50% 35%,rgba(94,74,43,.20),transparent 65%)}
+.casino-vip-eyebrow{text-align:center;margin:0;color:#cab37a;letter-spacing:.31em;font:10px Georgia,serif}
+.casino-vip-room .casino-screen-title{font-size:26px}
+.casino-vip-stake-note{text-align:center;padding:18px 12px;line-height:2;border:1px solid rgba(219,190,119,.4);color:#ead7a9;background:rgba(5,19,31,.82);font:12px Georgia,serif;letter-spacing:.1em}
+.casino-vip-stake-note small{color:#c9c4bc;font:10px/1.8 'Yu Mincho',serif;letter-spacing:normal}
+.casino-vip-game-card{border-color:#bc9b54;background:linear-gradient(145deg,rgba(65,53,35,.9),rgba(10,24,33,.98))}
+.casino-vip-active .casino-game-head{border-bottom-color:rgba(228,189,99,.6)}
+.casino-vip-active .casino-table{border-color:rgba(225,186,94,.64);background:radial-gradient(ellipse at center,#31423e 0%,#192b30 60%,#0a181f 100%)}
+.casino-vip-active .casino-table::before{content:'PRIVATE TABLE';font-size:clamp(18px,5vw,26px);letter-spacing:.16em}
+.casino-vip-active .bet-panel{border-color:rgba(227,184,86,.5)}
+.casino-vip-active .bet-quick button{font:clamp(10px,3vw,13px) Georgia,serif;letter-spacing:0;padding:4px 2px}
+.casino-vip-active .bet-quick button:disabled{opacity:.28}
+</style>
 <style id="sunsetTerraceDedicatedStyles">
 /* SUNSET TERRACE — independent in-page view, with time-matched zoomed photo backdrop */
 #sunsetTerraceView{isolation:isolate;background:#071a2b;color:#fff;--terrace-photo:url("sunset_terrace_day.jpg")}
@@ -1625,6 +1642,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <div class="casino-gallery-actions">
           <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
           <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
+          <button id="casinoVipDoor" class="casino-vip-door hidden" type="button">通路の奥の扉を開ける　›</button>
+          <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
         </div>
       </div>
       <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
@@ -1633,6 +1652,18 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <button id="casinoElevatorVideoClose" class="casino-elevator-video-close" type="button" aria-label="動画を閉じる">×</button>
         <video id="casinoElevatorMovie" src="casino.elevator.mp4" preload="metadata" playsinline></video>
         <div id="casinoElevatorVideoError" class="casino-elevator-video-error hidden">動画を読み込めませんでした。</div>
+      </div>
+
+      <div id="casinoVipRoom" class="casino-screen casino-vip-room hidden">
+        <p class="casino-vip-eyebrow">PRIVATE GAMING SALON</p>
+        <h2 class="casino-screen-title">PRIVATE ROOM</h2>
+        <p class="casino-screen-sub">静かな地下階段の先にある、限られたお客様だけの特別なテーブル。<br>ご入室には1,000,000 CHIP以上の所持が必要です。</p>
+        <div class="casino-vip-stake-note">BET　100,000 / 1,000,000 / 5,000,000 CHIP<br><small>実際に賭けられる金額は現在の所持チップまでとなります。</small></div>
+        <div class="casino-game-grid">
+          <button class="casino-menu-card casino-vip-game-card" type="button" data-vip-casino-game="blackjack"><strong>BLACKJACK</strong><span>ハイステークス・ブラックジャック</span><small>TO THE TABLE　›</small></button>
+          <button class="casino-menu-card casino-vip-game-card" type="button" data-vip-casino-game="hilo"><strong>HIGH &amp; LOW</strong><span>ハイステークス・ハイ＆ロー</span><small>TO THE TABLE　›</small></button>
+        </div>
+        <button class="casino-return" type="button" data-casino-return="gallery">地下通路へ戻る</button>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -1664,11 +1695,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
                 <strong>ミステリーボックス</strong>
                 <small>MYSTERY BOX / 1回 20,000 CHIP・1日最大7回（朝7:00リセット）</small>
                 <div class="mystery-counter-rates" aria-label="ミステリーボックス景品確率">
-                  <span>50%　ランダムコースター</span>
-                  <span>28%　ヴィラ宿泊チケット（限定7枚）</span>
-                  <span>16%　？？？</span>
-                  <span>5%　？？？</span>
-                  <span>1%　？？？</span>
+                  <span>60%　ランダムコースター</span>
+                  <span>16%　記念品【JOKER】カード</span>
+                  <span>8%　ヴィラ宿泊チケット（限定7枚）</span>
+                  <span>8%　？？？</span>
+                  <span>7.5%　？？？</span>
+                  <span>0.5%　？？？</span>
                 </div>
               </div>
               <div class="prize-item-side mystery-counter-side">
@@ -3363,7 +3395,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const casinoGame=document.getElementById('casinoGame');
     const casinoEnter=document.getElementById('casinoEnter'), casinoExit=document.getElementById('casinoExit');
     const casinoBgm=document.getElementById('casinoBgm');
-    const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize'), casinoGalleryScreen=document.getElementById('casinoGalleryScreen');
+    const casinoHub=document.getElementById('casinoHub'), casinoGameSelect=document.getElementById('casinoGameSelect'), casinoPrize=document.getElementById('casinoPrize'), casinoGalleryScreen=document.getElementById('casinoGalleryScreen'),casinoVipRoom=document.getElementById('casinoVipRoom'),casinoVipDoor=document.getElementById('casinoVipDoor'),casinoVipDoorNotice=document.getElementById('casinoVipDoorNotice');
     const blackjackScreen=document.getElementById('blackjackScreen'), hiloScreen=document.getElementById('hiloScreen');
     const casinoHeaderTitle=document.getElementById('casinoHeaderTitle'), casinoHeaderSub=document.getElementById('casinoHeaderSub');
     const casinoTableMenu=document.getElementById('casinoTableMenu'), casinoPrizeMenu=document.getElementById('casinoPrizeMenu'), casinoGalleryMenu=document.getElementById('casinoGalleryMenu');
@@ -3433,12 +3465,22 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       sunsetTerraceFoodImageError?.classList.add('hidden');
       sunsetTerraceFoodPreview.classList.remove('hidden');
       sunsetTerraceFoodPreview.setAttribute('aria-hidden','false');
-      // Use the same file at every time of day; show a friendly fallback until the JPG is uploaded.
+      // GitHub Pages files are case-sensitive; try the original name and common JPG case variants.
+      const alternatives=[imageFilename,imageFilename.replace(/\.jpg$/i,'.JPG'),imageFilename.replace(/\.jpg$/i,'.jpeg')];
+      sunsetTerraceFoodImage.dataset.imageCandidates=JSON.stringify([...new Set(alternatives)]);
+      sunsetTerraceFoodImage.dataset.imageTry='0';
       sunsetTerraceFoodImage.src=imageFilename;
       sunsetTerraceFoodReturn?.focus({preventScroll:true});
     }
     sunsetTerraceFoodImage?.addEventListener('error',()=>{
-      if(!sunsetTerraceFoodPreview?.classList.contains('hidden'))sunsetTerraceFoodImageError?.classList.remove('hidden');
+      if(sunsetTerraceFoodPreview?.classList.contains('hidden'))return;
+      const candidates=JSON.parse(sunsetTerraceFoodImage.dataset.imageCandidates||'[]');
+      const next=Number(sunsetTerraceFoodImage.dataset.imageTry||0)+1;
+      if(next<candidates.length){sunsetTerraceFoodImage.dataset.imageTry=String(next);sunsetTerraceFoodImage.src=candidates[next];return}
+      if(sunsetTerraceFoodImageError){
+        sunsetTerraceFoodImageError.textContent='お料理の写真が見つかりません。GitHubへのアップロード名を確認してください： '+(candidates[0]||'');
+        sunsetTerraceFoodImageError.classList.remove('hidden');
+      }
     });
     sunsetTerraceFoodImage?.addEventListener('load',()=>sunsetTerraceFoodImageError?.classList.add('hidden'));
     sunsetTerraceFoodReturn?.addEventListener('click',closeSunsetTerraceFoodPreview);
@@ -3522,14 +3564,17 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());
         setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));
       }
+      // 注文は受付時点で成立。ギフトの通信が失敗しても写真を表示し、注文自体をエラーにしない。
+      sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。お料理をお楽しみください。`;
+      showSunsetTerraceFoodPreview(foodName,drinkName,selectedSunsetFood.dataset.foodImage);
       try{
         const gift=await awardSunsetMysteryTicket();
         pendingTerraceTicket=gift.newTicket?gift:null;
         sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。${gift.newTicket?'ミステリーボックス・チケットを1枚プレゼントいたします。':'本日のミステリーボックス・チケットはお渡し済みです。'}`;
-        showSunsetTerraceFoodPreview(foodName,drinkName,selectedSunsetFood.dataset.foodImage);
+        if(gift.newTicket&&sunsetTerraceFoodPreview?.classList.contains('hidden'))showPendingTerraceTicket();
       }catch(e){
-        console.warn('Sunset Terrace order failed',e);
-        sunsetTerraceOrderStatus.textContent='ご注文の処理を完了できませんでした。もう一度お試しください。';
+        console.warn('Sunset Terrace gift award failed (meal order retained)',e);
+        sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。チケット付与を確認できませんでした。通信状態をご確認ください。`;
       }finally{terraceOrderBusy=false;syncSunsetTerraceHours();}
     });
 
@@ -3562,7 +3607,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     let previousCasinoChips=casinoChips;
     let casinoChipSyncChain=Promise.resolve();
     let casinoChipRefreshPromise=null;
-    let casinoLevel='hub';
+    let casinoLevel='hub', casinoVipMode=false;
     let blackjackBet=100, blackjackBetStep=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
     let hiloBet=100, hiloBetStep=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
     const bjSuits=['♠','♥','♦','♣'], bjRanks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -3608,6 +3653,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           if(typeof renderPrizeCounter==='function'&&casinoLevel==='prize')renderPrizeCounter();
           if(typeof updateCasinoHud==='function'&&casinoLevel==='blackjack')updateCasinoHud();
           if(typeof updateHiloHud==='function'&&casinoLevel==='hilo')updateHiloHud();
+          if(typeof syncVipBetButtons==='function')syncVipBetButtons();
         }
         return casinoChips;
       })().catch(error=>{console.warn('casino chip refresh failed',error);return casinoChips}).finally(()=>{casinoChipRefreshPromise=null});
@@ -3650,7 +3696,56 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(confirm('上位SPECIAL TABLE確認用に49,999,900 CHIPへリセットし、本日の赤ワイン「アンコール」注文フラグも付与しますか？'))await resetEmilyTest(49999900,true)});
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
-    function syncCasinoBalances(){casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips)}
+    function syncCasinoBalances(){
+      casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips);
+      if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
+    }
+    function casinoMinBet(){return casinoVipMode?100000:100}
+    function casinoBetUnit(){return casinoVipMode?100000:100}
+    function casinoBetCeiling(){const unit=casinoBetUnit();return Math.floor(casinoChips/unit)*unit}
+    function syncVipBetButtons(){
+      const levels=casinoVipMode?[100000,1000000,5000000]:[100,500,1000];
+      for(const [selector,attr] of [['[data-bet]','bet'],['[data-hilo-bet]','hiloBet']]){
+        document.querySelectorAll(selector).forEach((button,index)=>{
+          button.dataset[attr]=String(levels[index]);
+          button.textContent=casinoVipMode?casinoMoney(levels[index]):String(levels[index]);
+          button.disabled=casinoVipMode&&casinoChips<levels[index];
+        });
+      }
+    }
+    function setVipMode(enabled){
+      casinoVipMode=!!enabled;
+      casinoGame.classList.toggle('casino-vip-active',casinoVipMode);
+      const baseline=casinoMinBet();
+      blackjackBet=baseline;blackjackBetStep=baseline;hiloBet=baseline;hiloBetStep=baseline;
+      syncVipBetButtons();
+    }
+    function goToCasinoVip(){
+      if(casinoLevel!=='gallery'||casinoGalleryIndex!==5)return;
+      if(casinoChips<1000000){if(casinoVipDoorNotice){casinoVipDoorNotice.textContent='鍵は開かない。1,000,000 CHIP以上をお持ちのお客様だけが通れるようだ。';casinoVipDoorNotice.classList.remove('hidden');}return}
+      setVipMode(true);showCasinoLevel('vip');
+    }
+    casinoVipDoor?.addEventListener('click',async()=>{
+      // Refresh chip authority before granting entry (local display is just a cache).
+      await refreshCasinoChipsFromSupabase();goToCasinoVip();
+    });
+    document.querySelectorAll('[data-vip-casino-game]').forEach(button=>button.addEventListener('click',()=>{
+      if(casinoLevel!=='vip')return;
+      const game=button.dataset.vipCasinoGame;
+      specialSelectedGame=null;seriousEmilyMode=false;document.body.classList.remove('special-table-playing');
+      if(game==='hilo'){
+        hiloScreen.querySelector('.hand-zone h3').textContent='CURRENT CARD';
+        hiloScreen.querySelectorAll('.hand-zone h3')[1].textContent='NEXT CARD';
+        hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.remove('hidden');
+      }else{
+        blackjackScreen.querySelector('.hand-zone h3').textContent='DEALER';
+        blackjackScreen.querySelectorAll('.hand-zone h3')[1].textContent='YOU';
+        actionPanel.classList.add('hidden');betPanel.classList.remove('hidden');
+      }
+      (game==='hilo'?hiloScreen:blackjackScreen).querySelector('.casino-return').textContent='プライベートルームへ戻る';
+      (game==='hilo'?hiloScreen:blackjackScreen).querySelector('.casino-return').dataset.casinoReturn='vip';
+      showCasinoLevel(game);
+    }));
     function renderPrizeCounter(message=''){
       const tea2=belongingCount('afternoonTeaTicket2'), tea4=belongingCount('afternoonTeaTicket4'), extra=belongingCount('extraDrinkTicket'), cafe=belongingCount('cafeDrinkTicket');
       afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
@@ -3799,18 +3894,22 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
-    function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
+    function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,casinoVipRoom,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
     function showCasinoLevel(level){
       if(casinoLevel==='gallery'&&level!=='gallery'&&typeof window.__sprLeaveCasinoGalleryElevator==='function')window.__sprLeaveCasinoGalleryElevator();
-      hideCasinoScreens();casinoLevel=level;syncCasinoBalances();
+      hideCasinoScreens();casinoLevel=level;
+      if(['hub','games','prize','gallery'].includes(level)&&casinoVipMode)setVipMode(false);
+      syncCasinoBalances();
+      if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
       casinoGame.classList.toggle('gallery-lock',level==='gallery');
       if(level==='gallery')casinoGame.scrollTop=0;
       if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
       else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
+      else if(level==='vip'){casinoVipRoom.classList.remove('hidden');setCasinoHeader('PRIVATE ROOM','BLUE SHELL / LOWER LEVEL')}
       else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL');renderPrizeCounter();void refreshMysteryCounter()}
       else if(level==='gallery'){casinoGalleryScreen.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','GALLERY');syncEmilyTalkButton()}
-      else if(level==='blackjack'){blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK','CASINO BLUE SHELL');updateCasinoHud();renderBlackjack()}
-      else if(level==='hilo'){hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW','CASINO BLUE SHELL');updateHiloHud();renderHilo()}
+      else if(level==='blackjack'){blackjackScreen.classList.remove('hidden');setCasinoHeader('BLACKJACK',casinoVipMode?'PRIVATE TABLE':'CASINO BLUE SHELL');updateCasinoHud();renderBlackjack()}
+      else if(level==='hilo'){hiloScreen.classList.remove('hidden');setCasinoHeader('HIGH & LOW',casinoVipMode?'PRIVATE TABLE':'CASINO BLUE SHELL');updateHiloHud();renderHilo()}
     }
     function cancelActiveCasinoRound(){
       if(bjActive){casinoChips+=blackjackBet;bjActive=false;dealerHidden=false;actionPanel.classList.add('hidden');betPanel.classList.remove('hidden');setCasinoStatus('ラウンドを終了しました。BETは返却されました。')}
@@ -3821,15 +3920,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function casinoBack(){
       if(casinoLevel==='hub'){exitCasinoExperience();return}
       if(casinoLevel==='games'||casinoLevel==='prize'||casinoLevel==='gallery'){showCasinoLevel('hub');return}
-      if(casinoLevel==='blackjack'||casinoLevel==='hilo'){cancelActiveCasinoRound();showCasinoLevel('games')}
+      if(casinoLevel==='vip'){showCasinoLevel('gallery');return}
+      if(casinoLevel==='blackjack'||casinoLevel==='hilo'){cancelActiveCasinoRound();showCasinoLevel(casinoVipMode?'vip':'games')}
     }
 
     function updateCasinoHud(){
-      syncCasinoBalances();betAmountEl.textContent=casinoMoney(blackjackBet);casinoBetIndicator.textContent=`BET ${casinoMoney(blackjackBet)}`;
-      document.querySelectorAll('[data-bet]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.bet)===blackjackBetStep));
-      const disabled=bjActive;betMinus.disabled=disabled;betPlus.disabled=disabled;document.querySelectorAll('[data-bet]').forEach(b=>b.disabled=disabled);dealButton.disabled=disabled||casinoChips<10;
-      casinoRefill.classList.toggle('hidden',casinoChips>=10||bjActive);
-      if(blackjackBet>Math.max(10,casinoChips)&&!bjActive)blackjackBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
+      syncCasinoBalances();syncVipBetButtons();
+      const minimum=casinoMinBet(),ceiling=casinoBetCeiling();
+      if(!bjActive&&ceiling>=minimum)blackjackBet=Math.max(minimum,Math.min(blackjackBet,ceiling));
+      betAmountEl.textContent=casinoMoney(blackjackBet);casinoBetIndicator.textContent=`BET ${casinoMoney(blackjackBet)}`;
+      document.querySelectorAll('[data-bet]').forEach(b=>{b.classList.toggle('selected',Number(b.dataset.bet)===blackjackBetStep);b.disabled=bjActive||(casinoVipMode&&Number(b.dataset.bet)>casinoChips)});
+      betMinus.disabled=bjActive||casinoChips<minimum;betPlus.disabled=bjActive||casinoChips<minimum;
+      dealButton.disabled=bjActive||casinoChips<minimum||casinoChips<blackjackBet;
+      casinoRefill.classList.toggle('hidden',casinoVipMode||casinoChips>=10||bjActive);
     }
     function makeBjDeck(){const deck=[];for(let d=0;d<4;d++)for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
     function makeSingleDeck(){const deck=[];for(const suit of bjSuits)for(const rank of bjRanks)deck.push({suit,rank});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}return deck}
@@ -3854,28 +3957,31 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function dealerTurn(){dealerHidden=false;renderBlackjack();while(bjValue(dealerHand)<17)dealerHand.push(bjDeck.pop());const p=bjValue(playerHand),d=bjValue(dealerHand);if(d>21||p>d)finishRound('win');else if(p===d)finishRound('push');else finishRound('lose')}
     function startBlackjack(){
-      if(bjActive||casinoChips<10)return;blackjackBet=Math.min(blackjackBet,Math.floor(casinoChips/10)*10);if(blackjackBet<10)return;
+      if(bjActive||casinoChips<casinoMinBet()||casinoChips<blackjackBet)return;
       casinoChips-=blackjackBet;casinoSave();bjDeck=makeBjDeck();playerHand=[bjDeck.pop(),bjDeck.pop()];dealerHand=[bjDeck.pop(),bjDeck.pop()];bjActive=true;dealerHidden=true;
       betPanel.classList.add('hidden');actionPanel.classList.remove('hidden');setCasinoStatus('HIT または STAND を選んでください。');renderBlackjack();
       const p=bjValue(playerHand),d=bjValue(dealerHand);if(p===21){dealerHidden=false;renderBlackjack();if(d===21)finishRound('push');else finishRound('blackjack')}
     }
-    function adjustBet(direction){if(bjActive)return;const max=Math.max(100,Math.floor(casinoChips/100)*100);blackjackBet=Math.max(100,Math.min(max,blackjackBet+(direction*blackjackBetStep)));updateCasinoHud()}
-    function setBetStep(value){if(bjActive)return;blackjackBetStep=value;const max=Math.max(100,Math.floor(casinoChips/100)*100);blackjackBet=Math.max(100,Math.min(max,value));updateCasinoHud()}
+    function adjustBet(direction){if(bjActive)return;const max=casinoBetCeiling(),min=casinoMinBet();if(max<min)return;blackjackBet=Math.max(min,Math.min(max,blackjackBet+(direction*blackjackBetStep)));updateCasinoHud()}
+    function setBetStep(value){if(bjActive||casinoChips<value)return;blackjackBetStep=value;blackjackBet=value;updateCasinoHud()}
 
     function updateHiloHud(){
-      syncCasinoBalances();hiloBetAmountEl.textContent=casinoMoney(hiloBet);hiloBetIndicator.textContent=`BET ${casinoMoney(hiloBet)}`;
-      document.querySelectorAll('[data-hilo-bet]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.hiloBet)===hiloBetStep));
-      const disabled=hiloActive;hiloBetMinus.disabled=disabled;hiloBetPlus.disabled=disabled;document.querySelectorAll('[data-hilo-bet]').forEach(b=>b.disabled=disabled);hiloStart.disabled=disabled||casinoChips<10;
-      hiloRefill.classList.toggle('hidden',casinoChips>=10||hiloActive);
-      if(hiloBet>Math.max(10,casinoChips)&&!hiloActive)hiloBet=Math.max(10,Math.floor(casinoChips/10)*10||10);
+      syncCasinoBalances();syncVipBetButtons();
+      const minimum=casinoMinBet(),ceiling=casinoBetCeiling();
+      if(!hiloActive&&ceiling>=minimum)hiloBet=Math.max(minimum,Math.min(hiloBet,ceiling));
+      hiloBetAmountEl.textContent=casinoMoney(hiloBet);hiloBetIndicator.textContent=`BET ${casinoMoney(hiloBet)}`;
+      document.querySelectorAll('[data-hilo-bet]').forEach(b=>{b.classList.toggle('selected',Number(b.dataset.hiloBet)===hiloBetStep);b.disabled=hiloActive||(casinoVipMode&&Number(b.dataset.hiloBet)>casinoChips)});
+      hiloBetMinus.disabled=hiloActive||casinoChips<minimum;hiloBetPlus.disabled=hiloActive||casinoChips<minimum;
+      hiloStart.disabled=hiloActive||casinoChips<minimum||casinoChips<hiloBet;
+      hiloRefill.classList.toggle('hidden',casinoVipMode||casinoChips>=10||hiloActive);
     }
     function renderHilo(){
       hiloCurrentCard.innerHTML=hiloFirst?cardHtml(hiloFirst):'';hiloNextCard.innerHTML=hiloSecond?cardHtml(hiloSecond):'';updateHiloHud();
     }
-    function adjustHiloBet(direction){if(hiloActive)return;const max=Math.max(100,Math.floor(casinoChips/100)*100);hiloBet=Math.max(100,Math.min(max,hiloBet+(direction*hiloBetStep)));updateHiloHud()}
-    function setHiloBetStep(value){if(hiloActive)return;hiloBetStep=value;const max=Math.max(100,Math.floor(casinoChips/100)*100);hiloBet=Math.max(100,Math.min(max,value));updateHiloHud()}
+    function adjustHiloBet(direction){if(hiloActive)return;const max=casinoBetCeiling(),min=casinoMinBet();if(max<min)return;hiloBet=Math.max(min,Math.min(max,hiloBet+(direction*hiloBetStep)));updateHiloHud()}
+    function setHiloBetStep(value){if(hiloActive||casinoChips<value)return;hiloBetStep=value;hiloBet=value;updateHiloHud()}
     function startHilo(){
-      if(hiloActive||casinoChips<10)return;hiloBet=Math.min(hiloBet,Math.floor(casinoChips/10)*10);if(hiloBet<10)return;
+      if(hiloActive||casinoChips<casinoMinBet()||casinoChips<hiloBet)return;
       casinoChips-=hiloBet;casinoSave();hiloDeck=makeSingleDeck();hiloFirst=hiloDeck.pop();hiloSecond=null;hiloActive=true;
       hiloBetPanel.classList.add('hidden');hiloActionPanel.classList.remove('hidden');hiloStatus.textContent='次のカードは HIGH？ LOW？';renderHilo();
     }
@@ -3912,6 +4018,16 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const CASINO_ELEVATOR_MOVIE='casino.elevator.mp4';
     const CASINO_ELEVATOR_GLITCH_SOUND='casino.glitch.mp3';
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
+    // 6枚目は人目につかない奥の通路。既存画像を秘密のVIP入口として活用する。
+    const CASINO_VIP_CORRIDOR_INDEX=5;
+    function updateCasinoVipDoorAccess(){
+      if(!casinoVipDoor)return;
+      const atCorridor=casinoLevel==='gallery'&&casinoGalleryIndex===CASINO_VIP_CORRIDOR_INDEX;
+      casinoVipDoor.classList.toggle('hidden',!atCorridor);
+      casinoVipDoor.setAttribute('aria-hidden',String(!atCorridor));
+      casinoVipDoor.textContent=casinoChips>=1000000?'奥の扉を開ける　›':'奥の扉を調べる';
+      if(!atCorridor)casinoVipDoorNotice?.classList.add('hidden');
+    }
     let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false,casinoGalleryLoadedPeriod='';
     let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
 
@@ -4049,8 +4165,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         casinoGalleryImage.removeAttribute('src');
         casinoGalleryImage.classList.remove('ready');
         updateCasinoElevatorAccess();
+        updateCasinoVipDoorAccess();
         return;
       }
+      updateCasinoVipDoorAccess();
       const src=casinoGalleryFiles[casinoGalleryIndex];
       // 現在の写真を残したまま次の写真を先読みし、読み込み完了後に差し替える。
       const preload=new Image();
@@ -4059,6 +4177,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         casinoGalleryImage.alt=`カジノ館内 ${casinoGalleryIndex+1}`;
         casinoGalleryImage.classList.add('ready');
         updateCasinoElevatorAccess();
+        updateCasinoVipDoorAccess();
       };
       preload.src=src;
       casinoGalleryFiles.forEach((_,index)=>{
@@ -4150,6 +4269,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
 
     document.querySelectorAll('[data-casino-game]').forEach(button=>button.addEventListener('click',()=>{
+      if(casinoVipMode)setVipMode(false);
+      const screen=button.dataset.casinoGame==='hilo'?hiloScreen:blackjackScreen;
+      screen.querySelector('.casino-return').textContent='ゲームを選び直す';
+      screen.querySelector('.casino-return').dataset.casinoReturn='games';
       // 通常卓へ入る時は、過去のSPECIAL TABLE選択状態を通常ゲームへ持ち込まない
       specialSelectedGame=null;
       seriousEmilyMode=false;
@@ -6465,6 +6588,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         localStorage.setItem(coasterInventoryKey,JSON.stringify(cards));
         updateCollectionButton();renderRoomCollection();
         title='ランダムコースター';description=sprCoasterLabel(file);art='✦';
+      }else if(reward==='jokerCard'||reward==='mysteryJoker'||reward==='mysteryJokerCard'){
+        title='記念品【JOKER】カード';description='JOKERカードを1枚手に入れました。ROOMの所持品をご確認ください。';art='♛';
       }else if(reward==='villaStayTicket'){
         title='ヴィラ宿泊チケット';description='全プレイヤー共通・限定7枚の特別なチケットを手に入れました。所持品に保存しました。';art='♜';
       }else if(reward.startsWith('mysteryPostcard')){
@@ -6475,7 +6600,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }else if(reward==='mysteryKnife'){
         title='ナイフ';description='ナイフを1本手に入れました。ROOMでは同室者の♥️を1つ減らせます（奪った♥️は自分には増えません）。エルナンドやエミリーにも使用できます。いずれも使用ごとに1本消費します。';art='†';
       }else{title='景品を受け取りました';description='所持品をご確認ください。'}
-      if(reward!=='coaster'&&Number.isFinite(Number(data.inventory_quantity)))setLocalInventoryQuantity(reward,Number(data.inventory_quantity),{sync:false});
+      const inventoryReward=(reward==='mysteryJoker'||reward==='mysteryJokerCard')?'jokerCard':reward;
+      if(reward!=='coaster'&&Number.isFinite(Number(data.inventory_quantity)))setLocalInventoryQuantity(inventoryReward,Number(data.inventory_quantity),{sync:false});
       mysteryDrawInfo={...mysteryDrawInfo,remaining:data.remaining,drawn:data.drawn,villa_remaining:data.villa_remaining,tickets:data.tickets};
       mysteryDrawVerified=true;
       if(Number.isFinite(Number(data.chips))){casinoChips=Number(data.chips);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances()}
@@ -6483,6 +6609,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       renderMysteryCounter();renderRoomBelongings();
       mysteryShow(title,description,[{label:'受け取る',run:mysteryClose}],art);
       if(reward.startsWith('mysteryPostcard'))mysteryAttachPostcardImage(Math.max(1,Math.min(7,Number(reward.slice(-2))||1)));
+      if(reward==='jokerCard'||reward==='mysteryJoker'||reward==='mysteryJokerCard'){
+        const cardImage=document.createElement('img');cardImage.src='casino.joker.PNG';cardImage.alt='記念品【JOKER】カード';
+        cardImage.onerror=()=>{mysteryBoxArt.textContent='♛'};
+        mysteryBoxArt.replaceChildren(cardImage);
+      }
     }
     async function mysteryOpenBox(useTicket=false){
       if(mysteryBusy)return;
