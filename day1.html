@@ -825,8 +825,8 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 
 <style id="casinoVipRoomStyles">
-/* Existing hidden corridor photograph is the only doorway visual; no additional entrance art. */
-.casino-vip-door{width:100%;min-height:43px;border:1px solid rgba(210,184,119,.55);background:linear-gradient(120deg,rgba(12,30,45,.93),rgba(34,32,28,.94));color:#efdbab;font:12px 'Yu Mincho',serif;letter-spacing:.13em}
+/* VIP入口は通常テーブルと同じカジノホールに表示する。 */
+.casino-vip-door{border-color:rgba(210,184,119,.72);background:linear-gradient(145deg,rgba(63,50,31,.92),rgba(7,25,38,.96))}
 .casino-vip-door-notice{margin:0;text-align:center;color:#f3dbab;font-size:11px;line-height:1.7}
 .casino-vip-room{background:radial-gradient(ellipse at 50% 35%,rgba(94,74,43,.20),transparent 65%)}
 .casino-vip-eyebrow{text-align:center;margin:0;color:#cab37a;letter-spacing:.31em;font:10px Georgia,serif}
@@ -1602,7 +1602,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
       <div class="bar-order-content">
         <div id="barPeriodCard" class="bar-period-card"></div>
-        <div id="barExtraTicketBox" class="bar-order-confirm-wrap hidden"><div id="barExtraTicketStatus" class="bar-selection"></div><button id="useExtraDrinkTicket" class="bar-order-confirm" type="button">追加ドリンクチケットを使用する</button></div>
+        <div id="barExtraTicketBox" class="bar-order-confirm-wrap hidden"><div id="barExtraTicketStatus" class="bar-selection"></div><button id="useExtraDrinkTicket" class="bar-order-confirm" type="button">BARドリンクチケットを使用する</button></div>
         <div class="bar-menu-title">ORIGINAL DRINK MENU</div>
         <div class="bar-menu-pages" aria-label="シーサイドバーのメニュー表">
           <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></button></figure>
@@ -1660,10 +1660,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <p class="casino-screen-sub">ご希望の場所をお選びください。</p>
         <div class="casino-hub-grid">
           <button id="casinoTableMenu" class="casino-menu-card" type="button"><strong>テーブルに着く</strong><span>ゲームテーブルへ進みます。</span><small>GAME TABLES　›</small></button>
+          <button id="casinoVipDoor" class="casino-menu-card casino-vip-door" type="button"><strong>VIPルームへ</strong><span>入室には1,000,000 CHIP以上が必要です。BETは100,000 CHIPから。</span><small>PRIVATE GAMING SALON　›</small></button>
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
           <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
         </div>
+        <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
         <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
       </div>
 
@@ -1681,8 +1683,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
           <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
           <span id="casinoEmilyTalkSpacer" class="casino-emily-talk-spacer hidden" aria-hidden="true"></span>
-          <button id="casinoVipDoor" class="casino-vip-door hidden" type="button">通路の奥の扉を開ける　›</button>
-          <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
         </div>
       </div>
       <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
@@ -1696,13 +1696,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       <div id="casinoVipRoom" class="casino-screen casino-vip-room hidden">
         <p class="casino-vip-eyebrow">PRIVATE GAMING SALON</p>
         <h2 class="casino-screen-title">PRIVATE ROOM</h2>
-        <p class="casino-screen-sub">静かな地下階段の先にある、限られたお客様だけの特別なテーブル。<br>ご入室には1,000,000 CHIP以上の所持が必要です。</p>
+        <p class="casino-screen-sub">限られたお客様だけの特別なテーブル。<br>1,000,000 CHIP以上をお持ちのお客様がご入室いただけます。</p>
         <div class="casino-vip-stake-note">BET　100,000 / 1,000,000 / 5,000,000 CHIP<br><small>実際に賭けられる金額は現在の所持チップまでとなります。</small></div>
         <div class="casino-game-grid">
           <button class="casino-menu-card casino-vip-game-card" type="button" data-vip-casino-game="blackjack"><strong>BLACKJACK</strong><span>ハイステークス・ブラックジャック</span><small>TO THE TABLE　›</small></button>
           <button class="casino-menu-card casino-vip-game-card" type="button" data-vip-casino-game="hilo"><strong>HIGH &amp; LOW</strong><span>ハイステークス・ハイ＆ロー</span><small>TO THE TABLE　›</small></button>
         </div>
-        <button class="casino-return" type="button" data-casino-return="gallery">地下通路へ戻る</button>
+        <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
       </div>
 
       <div id="casinoGameSelect" class="casino-screen hidden">
@@ -1729,6 +1729,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
               <div><strong>アフタヌーンティーチケット（4名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>所持数制限なし</small></div>
               <div class="prize-item-side"><b>15,000 CHIP</b><span id="afternoonTea4Owned">所持 0</span><button id="buyAfternoonTea4Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
+            <div class="prize-item">
+              <div><strong>BARドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>現在のドリンクと効能をリセットし、同じ時間帯に再注文できます。所持数制限なし</small></div>
+              <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
+            </div>
+            <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item mystery-counter-item">
               <div>
                 <strong>ミステリーボックス</strong>
@@ -1751,12 +1756,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
                 <button id="useMysteryFreeTicket" class="prize-exchange" type="button">チケットで引く</button>
               </div>
             </div>
-            <div class="prize-item">
-              <div><strong>追加ドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>現在のドリンクと効能をリセットし、同じ時間帯に再注文できます。所持数制限なし</small></div>
-              <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
-            </div>
           </div>
-          <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
 <p id="prizeMessage" class="prize-message" aria-live="polite">チップを景品と交換できます。</p>
         </div>
         <button class="casino-return" type="button" data-casino-return="hub">カジノホールへ戻る</button>
@@ -1846,7 +1846,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
-      extraDrinkTicket:{label:'追加ドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
+      extraDrinkTicket:{label:'BARドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
       jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
@@ -2853,7 +2853,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const periodText=`${info.label}　${info.hours}`;
       const extraTicketCount=belongingCount('extraDrinkTicket');
       barExtraTicketBox.classList.toggle('hidden',!ordered);
-      if(ordered){barExtraTicketStatus.textContent=`追加ドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'追加ドリンクチケットを所持していません':'追加ドリンクチケットを使用する';}
+      if(ordered){barExtraTicketStatus.textContent=`BARドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'BARドリンクチケットを所持していません':'BARドリンクチケットを使用する';}
       if(ordered){
         barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${info.label}の時間帯が終了するまで保持されます。</p>`;
         barOrderStatusMini.textContent=`${info.label}：${ordered.name} をご注文済みです。`;
@@ -2975,7 +2975,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         await deleteBarOrderRemote(info.serviceDate,info.id);
         belongings.extraDrinkTicket=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
       }catch(e){console.warn('extra drink ticket sync',e);barOrderResult.textContent='チケットの使用を同期できませんでした。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
-      barOrderResult.textContent='追加ドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      barOrderResult.textContent='BARドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     });
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
@@ -3088,7 +3088,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function syncEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
       const spacer=document.getElementById('casinoEmilyTalkSpacer');
-      const hidden=!hasMetEmily();
+      const hidden=casinoLevel!=='gallery'||!hasMetEmily();
       btn?.classList.toggle('hidden',hidden);
       spacer?.classList.toggle('hidden',hidden);
       if(!hidden)requestAnimationFrame(positionEmilyTalkButton);
@@ -3853,8 +3853,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       syncVipBetButtons();
     }
     function goToCasinoVip(){
-      if(casinoLevel!=='gallery'||casinoGalleryIndex!==5)return;
-      if(casinoChips<1000000){if(casinoVipDoorNotice){casinoVipDoorNotice.textContent='鍵は開かない。1,000,000 CHIP以上をお持ちのお客様だけが通れるようだ。';casinoVipDoorNotice.classList.remove('hidden');}return}
+      if(casinoLevel!=='hub')return;
+      if(casinoChips<1000000){if(casinoVipDoorNotice){casinoVipDoorNotice.textContent='VIPルームのご利用には1,000,000 CHIP以上が必要です。';casinoVipDoorNotice.classList.remove('hidden');}return}
+      casinoVipDoorNotice?.classList.add('hidden');
       setVipMode(true);showCasinoLevel('vip');
     }
     casinoVipDoor?.addEventListener('click',async()=>{
@@ -4056,7 +4057,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function casinoBack(){
       if(casinoLevel==='hub'){exitCasinoExperience();return}
       if(casinoLevel==='games'||casinoLevel==='prize'||casinoLevel==='gallery'){showCasinoLevel('hub');return}
-      if(casinoLevel==='vip'){showCasinoLevel('gallery');return}
+      if(casinoLevel==='vip'){showCasinoLevel('hub');return}
       if(casinoLevel==='blackjack'||casinoLevel==='hilo'){cancelActiveCasinoRound();showCasinoLevel(casinoVipMode?'vip':'games')}
     }
 
@@ -4154,15 +4155,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const CASINO_ELEVATOR_MOVIE='casino.elevator.mp4';
     const CASINO_ELEVATOR_GLITCH_SOUND='casino.glitch.mp3';
     let casinoGalleryFiles=[],casinoGalleryIndex=0,casinoGalleryTouchStart=0;
-    // 6枚目は人目につかない奥の通路。既存画像を秘密のVIP入口として活用する。
-    const CASINO_VIP_CORRIDOR_INDEX=5;
     function updateCasinoVipDoorAccess(){
       if(!casinoVipDoor)return;
-      const atCorridor=casinoLevel==='gallery'&&casinoGalleryIndex===CASINO_VIP_CORRIDOR_INDEX;
-      casinoVipDoor.classList.toggle('hidden',!atCorridor);
-      casinoVipDoor.setAttribute('aria-hidden',String(!atCorridor));
-      casinoVipDoor.textContent=casinoChips>=1000000?'奥の扉を開ける　›':'奥の扉を調べる';
-      if(!atCorridor)casinoVipDoorNotice?.classList.add('hidden');
+      const atHub=casinoLevel==='hub';
+      casinoVipDoor.classList.toggle('hidden',!atHub);
+      casinoVipDoor.setAttribute('aria-hidden',String(!atHub));
+      if(!atHub)casinoVipDoorNotice?.classList.add('hidden');
     }
     let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false,casinoGalleryLoadedPeriod='';
     let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
@@ -4357,7 +4355,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     casinoPrizeMenu.addEventListener('click',()=>showCasinoLevel('prize'));
     buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティーチケット（2名様用）',20000));
     buyAfternoonTea4Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket4','アフタヌーンティーチケット（4名様用）',15000));
-    buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','追加ドリンクチケット',5000));
+    buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','BARドリンクチケット',5000));
     buyCafeDrinkTicket.addEventListener('click',()=>buyTicket('cafeDrinkTicket','CAFEドリンクチケット',100000));
     // CAFE iframe と DAY1 の所持品を同期する。srcdoc 側のlocalStorageに依存しない。
     window.addEventListener('message',async e=>{
