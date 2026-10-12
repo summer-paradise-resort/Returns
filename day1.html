@@ -2136,6 +2136,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey==='emily-met'){const k=`spr-emily-met:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
+      else if(flagKey==='emily-casual-progress'){
+        const k=`spr-emily-casual-progress:${playerStorageId}`;
+        if(!value){localStorage.removeItem(k);return}
+        const local=normalizeEmilyCasualProgress(localStorage.getItem(k));
+        const remote=normalizeEmilyCasualProgress(value);
+        localStorage.setItem(k,JSON.stringify(mergeEmilyCasualProgress(local,remote)));
+      }
       else if(flagKey==='sunset-mystery-intro-seen'){const k=`spr-sunset-mystery-intro-seen:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('sunset-mystery-awarded:')){const k=`spr-sunset-mystery-awarded:${playerStorageId}:${flagKey.slice('sunset-mystery-awarded:'.length)}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
@@ -2151,6 +2158,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const out={};
       if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
+      const emilyCasualProgress=normalizeEmilyCasualProgress(localStorage.getItem(`spr-emily-casual-progress:${playerStorageId}`));
+      if(emilyCasualProgress.heard.length||emilyCasualProgress.special_seen)out['emily-casual-progress']=emilyCasualProgress;
       const dayScope=resortDayToken();
       const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}:${dayScope}`);if(encore)out[`sunset-encore-date:${dayScope}`]=encore;
       if(localStorage.getItem(`spr-closet-food-key:${dayScope}`)==='1')out[`closet-food-key:${dayScope}`]=true;
@@ -2226,7 +2235,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -3070,6 +3079,77 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       await sleep(Math.max(1900,delay));
     }
     const emilyMetFlagKey=`spr-emily-met:${playerStorageId}`;
+    const EMILY_TALK_GALLERY_INDEX=5;
+    const EMILY_CASUAL_PROGRESS_FLAG='emily-casual-progress';
+    const emilyCasualDialoguePools={
+      day:[
+        '昼の賭けは、嘘をつくのが下手なの。自信も迷いも、お日様に透かされてしまうから。',
+        '幸運が欲しい？　それなら、失っても笑えるものだけを賭けなさい。笑えないものを差し出した瞬間、遊びは呪いになるわ。',
+        '確率は未来を教えるものではないの。負けた人を慰めるための、美しい言い訳よ。',
+        '今日のあなたは、勝つ人の顔ではないわね。賭けずにはいられない人の顔。……私は、そちらのほうが好きよ。'
+      ],
+      sunset:[
+        '夕暮れは、このカジノがいちばん美しく嘘をつく時間よ。負けたチップまで、金色に輝いて見えるでしょう？',
+        '人魚の歌が閉じ込められた貝を手に入れたら、大切にしておきなさい。運に見放された時、あなたの代わりに砕けてくれるかもしれないから。',
+        '夕陽が沈むまでに勝負を決めたい人は多いけれど、運は時計を見ないわ。焦っている人から順に、からかうだけ。',
+        '賭けから降りるのは臆病ではないの。次に何を賭けるか選び直せる人だけが、本当の勝負師よ。'
+      ],
+      night:[
+        '夜になると、チップの音が少しだけ甘く聞こえるでしょう？　危険なものほど、耳に心地よい音を覚えているの。',
+        '夜の海から馬の嘶きが聞こえたら、すぐに逃げなさい。好奇心は、ときに命まで賭け金へ変えてしまうものよ。決して、その姿を確かめようと振り返らないこと。',
+        '幸運は借りられる。でも、返す日を教えてはくれない。今夜よく勝てたなら、明日のあなたは少し慎重になさい。',
+        '夜の運は、名前を呼ばれるのを待っているわ。呼び返すなら覚悟なさい。幸運も不運も、一度聞いた声をよく覚えているから。'
+      ]
+    };
+    const emilyCasualSpecialDialogue=[
+      'こうして幾度も、同じ運命を辿って私の前へ戻ってくるのね。',
+      'これ以上お顔を見せられたら、偶然という言葉まで、あなたが私を選んだのだと囁き始めてしまうわ。',
+      '……それほど私に賭けてみたいのなら、今夜だけ、私のお部屋で二人きりの勝負をしてみる？',
+      '賭けるものは、チップでなくても構わないわ。',
+      'ふふ、冗談よ。\nどこまでが、とは言わないけれど。'
+    ];
+    function emilyCasualAllDialogueIds(){return Object.entries(emilyCasualDialoguePools).flatMap(([period,lines])=>lines.map((_,index)=>`${period}:${index}`))}
+    function normalizeEmilyCasualProgress(value){
+      let raw=value;
+      if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch{raw={}}}
+      if(!raw||typeof raw!=='object')raw={};
+      const valid=new Set(emilyCasualAllDialogueIds());
+      const heard=[...new Set(Array.isArray(raw.heard)?raw.heard.map(String).filter(id=>valid.has(id)):[])];
+      const lastRaw=raw.last_by_period&&typeof raw.last_by_period==='object'?raw.last_by_period:{};
+      const last_by_period={};
+      Object.keys(emilyCasualDialoguePools).forEach(period=>{const id=String(lastRaw[period]||'');if(valid.has(id)&&id.startsWith(`${period}:`))last_by_period[period]=id});
+      return{version:1,heard,special_seen:Boolean(raw.special_seen),last_by_period};
+    }
+    function mergeEmilyCasualProgress(a,b){
+      const left=normalizeEmilyCasualProgress(a),right=normalizeEmilyCasualProgress(b);
+      return normalizeEmilyCasualProgress({heard:[...left.heard,...right.heard],special_seen:left.special_seen||right.special_seen,last_by_period:{...left.last_by_period,...right.last_by_period}});
+    }
+    function emilyCasualProgressStorageKey(){return `spr-emily-casual-progress:${playerStorageId}`}
+    function loadEmilyCasualProgress(){
+      const local=normalizeEmilyCasualProgress(localStorage.getItem(emilyCasualProgressStorageKey()));
+      const remote=normalizeEmilyCasualProgress(windowSprFlagCache[EMILY_CASUAL_PROGRESS_FLAG]);
+      return mergeEmilyCasualProgress(local,remote);
+    }
+    function saveEmilyCasualProgress(progress){
+      const value=normalizeEmilyCasualProgress(progress);
+      localStorage.setItem(emilyCasualProgressStorageKey(),JSON.stringify(value));
+      windowSprFlagCache[EMILY_CASUAL_PROGRESS_FLAG]=value;
+      setRemoteFlag(EMILY_CASUAL_PROGRESS_FLAG,value).catch(error=>console.warn('Emily casual progress sync',error));
+      return value;
+    }
+    function isEmilyTalkGallerySlide(){return casinoLevel==='gallery'&&casinoGalleryIndex===EMILY_TALK_GALLERY_INDEX}
+    function nextEmilyCasualDialogue(){
+      const period=casinoGalleryTimePeriod(),pool=emilyCasualDialoguePools[period]||emilyCasualDialoguePools.night;
+      const progress=loadEmilyCasualProgress(),allIds=emilyCasualAllDialogueIds();
+      if(allIds.every(id=>progress.heard.includes(id))&&!progress.special_seen){progress.special_seen=true;saveEmilyCasualProgress(progress);return{special:true,lines:emilyCasualSpecialDialogue}}
+      const periodIds=pool.map((_,index)=>`${period}:${index}`);
+      let candidates=periodIds.filter(id=>!progress.heard.includes(id));
+      if(!candidates.length){const last=progress.last_by_period[period];candidates=periodIds.filter(id=>id!==last);if(!candidates.length)candidates=periodIds}
+      const id=candidates[Math.floor(Math.random()*candidates.length)],index=Number(id.split(':')[1]);
+      if(!progress.heard.includes(id))progress.heard.push(id);
+      progress.last_by_period[period]=id;saveEmilyCasualProgress(progress);
+      return{special:false,lines:[pool[index]]};
+    }
     function hasMetEmily(){return localStorage.getItem(emilyMetFlagKey)==='1'||windowSprFlagCache['emily-met']===true||localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1'||localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1'||windowSprFlagCache['emily-special-announced']===true||windowSprFlagCache['emily-serious-announced']===true}
     function positionEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
@@ -3088,9 +3168,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function syncEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
       const spacer=document.getElementById('casinoEmilyTalkSpacer');
-      const hidden=casinoLevel!=='gallery'||!hasMetEmily();
+      const hidden=!isEmilyTalkGallerySlide()||!hasMetEmily();
       btn?.classList.toggle('hidden',hidden);
       spacer?.classList.toggle('hidden',hidden);
+      const dialogue=document.getElementById('casinoEmilyConversation');
+      if(hidden&&dialogue&&!dialogue.classList.contains('hidden')&&typeof closeEmilyCasualDialogue==='function')closeEmilyCasualDialogue();
       if(!hidden)requestAnimationFrame(positionEmilyTalkButton);
     }
     window.addEventListener('resize',()=>requestAnimationFrame(positionEmilyTalkButton));
@@ -3167,6 +3249,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       tick();
     }
+    function emilyCasualRunLines(lines,done,index=0){
+      if(index>=lines.length){done?.();return}
+      emilyCasualSay(lines[index],()=>emilyCasualRunLines(lines,done,index+1));
+    }
     function emilyCasualNextClick(){
       if(emilyCasualTyping){
         stopEmilyCasualTyping();emilyCasualSpans.forEach(span=>span.classList.add('in'));
@@ -3205,11 +3291,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
     }
     function talkToEmilyAgain(){
-      if(!hasMetEmily()||!emilyCasualOverlay||casinoLevel!=='gallery')return;
+      if(!hasMetEmily()||!emilyCasualOverlay||!isEmilyTalkGallerySlide())return;
+      const dialogue=nextEmilyCasualDialogue();
       emilyCasualOverlay.classList.remove('hidden');
       emilyCasualOverlay.setAttribute('aria-hidden','false');
-      emilyCasualSay('───あら。またお会いしたわね。',()=>
-        emilyCasualSay('今度は、何を賭けてくださるの？',emilyCasualAfterGreeting));
+      emilyCasualRunLines(dialogue.lines,emilyCasualAfterGreeting);
       // NO casinoBgm.pause(), specialBgm.play(), fullscreen specialOverlay.
     }
     document.getElementById('casinoEmilyTalk')?.addEventListener('click',()=>void talkToEmilyAgain());
@@ -4292,6 +4378,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function renderCasinoGallery(){
       const total=casinoGalleryFiles.length;
       const has=total>0;
+      syncEmilyTalkButton();
       casinoGalleryEmpty.classList.add('hidden');
       casinoGalleryEmpty.setAttribute('aria-hidden','true');
       casinoGalleryDots.replaceChildren();
@@ -7258,7 +7345,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   });
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];}}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];}}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
