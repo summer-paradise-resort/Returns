@@ -6298,6 +6298,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       ['苺のタルト','room_service_strawberry_tart.jpg']
     ]);
     const ROOM_SERVICE_DRINK_NAMES=new Set(['コーヒー','ミルクティー','カフェモカ','トロピカルフルーツジュース','ローズレモネード','ミネラルウォーター','スパークリングワイン']);
+    const VILLA_DESSERT_COMBO_ITEMS=['苺のタルト','ショコラケーキ','コーヒー','ミルクティー'];
+    const VILLA_DESSERT_COMBO_GALLERY=[
+      {name:'ヴィラ・デザートセット',qty:1,image:'room_service_villa_dessert_tray.jpg',drinks:'コーヒー × 1 ／ ミルクティー × 1'},
+      {name:'メッセージカード',qty:1,image:'room_service_villa_ruedo_message.jpg',drinks:''}
+    ];
+    const VILLA_DESSERT_COMBO_IMAGES=new Set(VILLA_DESSERT_COMBO_GALLERY.map(item=>item.image));
     const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
     const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
     const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
@@ -6335,6 +6341,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!roomServiceFoodGalleryRoom)return;
       try{if(roomServiceFoodGalleryQueue.length)localStorage.setItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom),JSON.stringify({queue:roomServiceFoodGalleryQueue,index:roomServiceFoodGalleryIndex}));else localStorage.removeItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom))}catch{}
     }
+    function isRoomServiceFoodGalleryItem(item){
+      return Boolean(item&&((ROOM_SERVICE_FOOD_IMAGES.has(item.name)&&item.image===ROOM_SERVICE_FOOD_IMAGES.get(item.name))||VILLA_DESSERT_COMBO_IMAGES.has(item.image)));
+    }
+    function isVillaDessertComboOrder(order){
+      if(String(order?.room||order?.room_no||'')!=='501')return false;
+      const quantities=new Map();
+      (Array.isArray(order?.items)?order.items:[]).forEach(item=>{const name=String(item?.name||'').trim(),qty=Math.max(0,Math.floor(Number(item?.qty)||0));if(name&&qty)quantities.set(name,(quantities.get(name)||0)+qty)});
+      return VILLA_DESSERT_COMBO_ITEMS.every(name=>(quantities.get(name)||0)>=1);
+    }
     function displayRoomServiceFoodGallery(){
       if(!roomServiceFoodGallery||!roomServiceFoodGalleryQueue.length||!activeRoom||roomServiceFoodGalleryRoom!==String(activeRoom))return;
       const item=roomServiceFoodGalleryQueue[roomServiceFoodGalleryIndex];if(!item)return;
@@ -6352,22 +6367,23 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       try{
         const stored=JSON.parse(localStorage.getItem(roomServiceGalleryStorageKey(room))||'null');
         if(!stored||!Array.isArray(stored.queue)||!stored.queue.length)return false;
-        roomServiceFoodGalleryRoom=String(room);roomServiceFoodGalleryQueue=stored.queue.filter(item=>item&&ROOM_SERVICE_FOOD_IMAGES.has(item.name));
+        roomServiceFoodGalleryRoom=String(room);roomServiceFoodGalleryQueue=stored.queue.filter(isRoomServiceFoodGalleryItem);
         roomServiceFoodGalleryIndex=Math.max(0,Math.min(roomServiceFoodGalleryQueue.length-1,Math.floor(Number(stored.index)||0)));
         if(roomServiceFoodGalleryQueue.length){displayRoomServiceFoodGallery();return true}
       }catch(error){console.warn('room service gallery restore',error)}
       return false;
     }
     function showRoomServiceFoodGallery(orders){
+      const villaDessertCombo=String(activeRoom||'')==='501'&&orders.some(isVillaDessertComboOrder);
       const merged=new Map(),drinks=new Map();
       orders.forEach(order=>(order.items||[]).forEach(item=>{
         const name=String(item?.name||'').trim(),qty=Math.max(1,Math.floor(Number(item?.qty)||1));
         if(ROOM_SERVICE_FOOD_IMAGES.has(name))merged.set(name,(merged.get(name)||0)+qty);
         else if(ROOM_SERVICE_DRINK_NAMES.has(name))drinks.set(name,(drinks.get(name)||0)+qty);
       }));
-      if(!merged.size){showRoomServiceDeliveryNotice(orders);return}
+      if(!merged.size&&!villaDessertCombo){showRoomServiceDeliveryNotice(orders);return}
       const beverageText=[...drinks].map(([name,qty])=>`${name} × ${qty}`).join(' ／ ');
-      const next=[...merged].map(([name,qty])=>({name,qty,image:ROOM_SERVICE_FOOD_IMAGES.get(name),drinks:beverageText}));
+      const next=villaDessertCombo?VILLA_DESSERT_COMBO_GALLERY.map(item=>({...item})):[...merged].map(([name,qty])=>({name,qty,image:ROOM_SERVICE_FOOD_IMAGES.get(name),drinks:beverageText}));
       const current=String(activeRoom||'');
       // Unseen images survive a reload. New deliveries append to the current slideshow.
       if(roomServiceFoodGalleryRoom!==current){roomServiceFoodGalleryQueue=[];roomServiceFoodGalleryIndex=0;roomServiceFoodGalleryRoom=current}
