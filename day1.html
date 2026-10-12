@@ -268,11 +268,17 @@
     .room-photo-area{position:absolute;inset:0;overflow:hidden}
     .room-scene img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--scene-x,50%) var(--scene-y,50%);transition:opacity .35s ease}
     .room-photo-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,14,25,.54) 0%,transparent 27%,transparent 60%,rgba(3,14,25,.92) 100%);pointer-events:none}
-    .room-overlay-top{position:absolute;top:0;left:0;right:0;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:max(12px,env(safe-area-inset-top)) 18px 12px;color:#fff}
+    .room-overlay-top{position:absolute;z-index:9;top:0;left:0;right:0;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:max(12px,env(safe-area-inset-top)) 18px 12px;color:#fff}
     .room-leave{width:44px;height:44px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:rgba(7,21,35,.4);color:#fff;font-size:20px}
-    .room-identity{text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.7)}
+    .room-identity{position:relative;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.7)}
     .room-identity strong{display:block;font-size:15px;font-weight:500;letter-spacing:.14em}
     .room-identity small{display:block;margin-top:5px;font:10px Georgia,serif;letter-spacing:.2em;color:#ead4aa}
+    .room-occupancy{display:flex;align-items:center;justify-content:center;gap:6px;max-width:100%;min-height:25px;margin:7px auto 0;padding:4px 10px;border:1px solid rgba(235,212,165,.48);border-radius:999px;background:rgba(4,18,31,.58);color:#fff;font-size:9px;line-height:1.35;letter-spacing:.08em;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);text-shadow:0 1px 5px rgba(0,0,0,.75)}
+    .room-occupancy-dot,.room-occupancy-person-dot{display:block;flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:#82d69c;box-shadow:0 0 8px rgba(130,214,156,.75)}
+    .room-occupancy-names{position:absolute;z-index:2;left:50%;top:calc(100% + 8px);transform:translateX(-50%);width:min(250px,calc(100vw - 112px));padding:8px 11px;border:1px solid rgba(235,212,165,.52);background:rgba(4,18,31,.92);box-shadow:0 12px 28px rgba(0,0,0,.32);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:left;text-shadow:none}
+    .room-occupancy-person{display:flex;align-items:center;gap:8px;min-height:28px;color:#fff;font-size:10px;line-height:1.5;letter-spacing:.04em;overflow-wrap:anywhere}
+    .room-occupancy-person+.room-occupancy-person{border-top:1px solid rgba(255,255,255,.12)}
+    .room-occupancy-person.self{color:#ead4aa}
     .room-clock{text-align:right;font:12px Georgia,serif;letter-spacing:.1em;text-shadow:0 2px 8px rgba(0,0,0,.7)}
     .room-overlay-bottom{position:absolute;left:0;right:0;bottom:0;padding:0 20px max(16px,env(safe-area-inset-bottom));color:#fff}
     .room-kicker{font:10px Georgia,serif;letter-spacing:.28em;color:#e3c68f;margin-bottom:7px}
@@ -1244,7 +1250,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
             <div class="room-photo-shade"></div>
             <div class="room-overlay-top">
               <button id="leaveRoom" class="room-leave" type="button" aria-label="客室から出る">←</button>
-              <div class="room-identity"><strong id="roomNumberLabel"></strong><small id="roomTypeLabel">DELUXE OCEAN</small></div>
+              <div class="room-identity">
+                <strong id="roomNumberLabel"></strong><small id="roomTypeLabel">DELUXE OCEAN</small>
+                <button id="roomOccupancyButton" class="room-occupancy" type="button" aria-expanded="false" aria-controls="roomOccupancyNames">
+                  <span class="room-occupancy-dot" aria-hidden="true"></span><span id="roomOccupancyText" aria-live="polite">1名が滞在中</span>
+                </button>
+                <div id="roomOccupancyNames" class="room-occupancy-names hidden" role="list" aria-label="現在の入室者" aria-hidden="true"></div>
+              </div>
               <time id="roomClock" class="room-clock"></time>
             </div>
             <div class="room-overlay-bottom">
@@ -4555,6 +4567,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const roomSceneTitle=document.getElementById('roomSceneTitle'), roomSceneDots=[...document.querySelectorAll('#roomSceneDots span')];
     const roomSceneButtons=[...document.querySelectorAll('[data-room-scene]')], chatSheet=document.getElementById('chatSheet');
     const chatUnread=document.getElementById('chatUnread'), roomChatToast=document.getElementById('roomChatToast'), roomEntryNotice=document.getElementById('roomEntryNotice');
+    const roomOccupancyButton=document.getElementById('roomOccupancyButton'), roomOccupancyText=document.getElementById('roomOccupancyText'), roomOccupancyNames=document.getElementById('roomOccupancyNames');
     const roomFallback=document.getElementById('roomFallback');
     const roomServiceSheet=document.getElementById('roomServiceSheet'), roomServiceMeta=document.getElementById('roomServiceMeta');
     const roomBelongingsSheet=document.getElementById('roomBelongingsSheet'), roomBelongingsList=document.getElementById('roomBelongingsList');
@@ -5153,6 +5166,42 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         return Object.values(state).flat().filter(member=>String(member?.room_no||'')===String(activeRoom||''));
       }catch{return []}
     }
+    function roomOccupancyPeople(){
+      if(!activeRoom)return [];
+      const people=new Map(),selfId=String(storedPlayerId||'').trim(),selfName=String(activeGuest||storedGuestName||'ゲスト').trim()||'ゲスト';
+      roomPhonePresenceMembers().forEach(member=>{
+        const id=String(member?.player_id||'').trim(),name=String(member?.display_name||'ゲスト').trim()||'ゲスト';
+        const key=id?`id:${id}`:`name:${name}`;
+        if(!people.has(key))people.set(key,{id,name,self:Boolean((id&&selfId&&id===selfId)||(!id&&name===selfName))});
+      });
+      const selfKey=selfId?`id:${selfId}`:`name:${selfName}`;
+      if(!people.has(selfKey))people.set(selfKey,{id:selfId,name:selfName,self:true});
+      return [...people.values()].sort((a,b)=>Number(b.self)-Number(a.self)||a.name.localeCompare(b.name,'ja'));
+    }
+    function setRoomOccupancyExpanded(expanded){
+      if(!roomOccupancyButton||!roomOccupancyNames)return;
+      const open=Boolean(expanded&&activeRoom);
+      roomOccupancyButton.setAttribute('aria-expanded',String(open));
+      roomOccupancyNames.classList.toggle('hidden',!open);
+      roomOccupancyNames.setAttribute('aria-hidden',String(!open));
+    }
+    function updateRoomOccupancyUi(){
+      if(!roomOccupancyButton||!roomOccupancyText||!roomOccupancyNames)return;
+      if(!activeRoom){setRoomOccupancyExpanded(false);roomOccupancyText.textContent='1名が滞在中';roomOccupancyNames.replaceChildren();return}
+      const people=roomOccupancyPeople();
+      roomOccupancyText.textContent=`${people.length}名が滞在中`;
+      roomOccupancyButton.setAttribute('aria-label',`${people.length}名が滞在中。タップして入室者を表示`);
+      const fragment=document.createDocumentFragment();
+      people.forEach(person=>{
+        const row=document.createElement('div');row.className='room-occupancy-person'+(person.self?' self':'');row.setAttribute('role','listitem');
+        const dot=document.createElement('span');dot.className='room-occupancy-person-dot';dot.setAttribute('aria-hidden','true');
+        const name=document.createElement('span');name.textContent=person.self?`${person.name}（あなた）`:person.name;
+        row.append(dot,name);fragment.append(row);
+      });
+      roomOccupancyNames.replaceChildren(fragment);
+    }
+    roomOccupancyButton?.addEventListener('click',event=>{event.stopPropagation();setRoomOccupancyExpanded(roomOccupancyButton.getAttribute('aria-expanded')!=='true')});
+    document.addEventListener('click',event=>{if(roomOccupancyNames&&!roomOccupancyNames.classList.contains('hidden')&&!event.target.closest('.room-identity'))setRoomOccupancyExpanded(false)});
     const villaPoolSharedEventIds=new Set();
     let villaPoolPendingBroadcasts=[];
     function rememberVillaPoolSharedEvent(eventId){
@@ -5280,6 +5329,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const roomAtStart=String(room);
       const syncSharedRoomState=()=>{
         if(activeRoom!==roomAtStart)return;
+        updateRoomOccupancyUi();
         evaluateRoomPhoneDeclineState();
         if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
         if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
@@ -6907,8 +6957,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         grid.append(card)});
     }
     // CASINO MYSTERY BOX (draw and rewards are committed atomically in Supabase).
-    // 50% coaster / 28% limited villa (7 global) / 16% random anomaly postcard /
-    // 5% pre-collected participant food list / 1% consumable knife.
+    // The current probability table is shown in the prize counter above.
     const mysteryBoxModal=document.getElementById('mysteryBoxModal');
     const mysteryBoxTitle=document.getElementById('mysteryBoxTitle');
     const mysteryBoxText=document.getElementById('mysteryBoxText');
@@ -6987,7 +7036,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       ],'✧');
     }
     function mysteryShowReward(data){
-      const reward=String(data.reward||'');let title='',description='',art='✦';
+      const reward=String(data.reward||'');let title='',description='',art='✦',coasterFile='',coasterLabel='';
       if(reward==='coaster'){
         const n=Math.max(0,Math.min(88,Number(data.coaster_no)||0));
         const id=String(data.coaster_id||'');
@@ -6996,7 +7045,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(!cards.some(x=>x.client_id===id))cards.push({client_id:id||sprSafeUuid(),venue:'MYSTERY BOX',file,meal:'ミステリーボックス',drink:'',at:new Date().toISOString()});
         localStorage.setItem(coasterInventoryKey,JSON.stringify(cards));
         updateCollectionButton();renderRoomCollection();
-        title='ランダムコースター';description=sprCoasterLabel(file);art='✦';
+        coasterFile=file;coasterLabel=sprCoasterLabel(file);
+        title='ランダムコースター';description=coasterLabel;art='✦';
       }else if(reward==='jokerCard'||reward==='mysteryJoker'||reward==='mysteryJokerCard'){
         title='記念品【JOKER】カード';description='JOKERカードを1枚手に入れました。ROOMの所持品をご確認ください。';art='♛';
       }else if(reward==='villaStayTicket'){
@@ -7017,6 +7067,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(Number.isFinite(Number(data.tickets)))setLocalInventoryQuantity('mysteryBoxTicket',Number(data.tickets),{sync:false});
       renderMysteryCounter();renderRoomBelongings();
       mysteryShow(title,description,[{label:'受け取る',run:mysteryClose}],art);
+      if(reward==='coaster'&&coasterFile){
+        const coasterImage=document.createElement('img');coasterImage.src=coasterFile;coasterImage.alt=coasterLabel||'ランダムコースター';coasterImage.className='mystery-coaster-image';
+        coasterImage.onerror=()=>{mysteryBoxArt.textContent='✦';mysteryBoxStatus.textContent=`${coasterFile} を読み込めませんでした。画像ファイル名をご確認ください。`};
+        mysteryBoxArt.replaceChildren(coasterImage);
+      }
       if(reward.startsWith('mysteryPostcard'))mysteryAttachPostcardImage(Math.max(1,Math.min(7,Number(reward.slice(-2))||1)));
       if(reward==='jokerCard'||reward==='mysteryJoker'||reward==='mysteryJokerCard'){
         const cardImage=document.createElement('img');cardImage.src='casino.joker.PNG';cardImage.alt='記念品【JOKER】カード';
@@ -7235,6 +7290,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       document.getElementById('chatSheetTitle').textContent=`${room}号室の会話`;
       document.getElementById('fallbackRoomName').textContent=`${room}号室　／　${roomTypes[room]}`;
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
+      updateRoomOccupancyUi();setRoomOccupancyExpanded(false);
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
@@ -7247,7 +7303,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){void syncMysteryRoomPresence('');if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
+    function leaveActiveRoom(){void syncMysteryRoomPresence('');if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
