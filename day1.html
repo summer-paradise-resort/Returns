@@ -2158,8 +2158,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       else if(flagKey==='sunset-mystery-intro-seen'){const k=`spr-sunset-mystery-intro-seen:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('sunset-mystery-awarded:')){const k=`spr-sunset-mystery-awarded:${playerStorageId}:${flagKey.slice('sunset-mystery-awarded:'.length)}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
-      else if(flagKey==='hernando-intro-seen'){if(bool(value))localStorage.setItem(`spr-hernando-intro-seen:${playerStorageId}`,'1');else localStorage.removeItem(`spr-hernando-intro-seen:${playerStorageId}`)}
-      else if(flagKey==='hernando-visit-count'){const n=Math.max(0,Number(value)||0);if(n)localStorage.setItem(`spr-hernando-visit-count:${playerStorageId}`,String(n));else localStorage.removeItem(`spr-hernando-visit-count:${playerStorageId}`)}
       else if(flagKey==='hernando-poison-until'){const until=Math.max(0,Number(value)||0);if(until)localStorage.setItem(`spr-hernando-poison-until:${playerStorageId}`,String(until));else localStorage.removeItem(`spr-hernando-poison-until:${playerStorageId}`)}
       else if(flagKey.startsWith('cafe-order:')){const rest=flagKey.slice('cafe-order:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const rest=flagKey.slice('cafe-drink-ticket-used:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-drink-ticket-used:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
@@ -2182,8 +2180,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(localStorage.getItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`)==='1')out['sunset-mystery-intro-seen']=true;
       const mysteryAwardPrefix=`spr-sunset-mystery-awarded:${playerStorageId}:`;
       Object.keys(localStorage).filter(k=>k.startsWith(mysteryAwardPrefix)&&localStorage.getItem(k)==='1').forEach(k=>{out[`sunset-mystery-awarded:${k.slice(mysteryAwardPrefix.length)}`]=true});
-      if(localStorage.getItem(`spr-hernando-intro-seen:${playerStorageId}`)==='1')out['hernando-intro-seen']=true;
-      const hernandoVisits=Math.max(0,Number(localStorage.getItem(`spr-hernando-visit-count:${playerStorageId}`))||0);if(hernandoVisits)out['hernando-visit-count']=hernandoVisits;
       const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-order:${dayScope}:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${dayScope}:${cafeDate}`]=true;
@@ -4843,9 +4839,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${resortDayToken()}`))||0))}
     function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(state));setRemoteFlag(`bathroom-bloom-state:${resortDayToken()}`,state).catch(e=>console.warn('bathroom bloom sync',e));return state}
 
-    // DAY1 ROOM PHONE (Supabase shared event)
-    // 22:00〜翌3:00の間、客室に連続2分滞在すると「部屋単位」で電話が鳴る。
-    // DAY1では飲んだドリンクの種類に関係なく対象。
+    // DAY2+ ROOM PHONE (Supabase shared event)
+    // DAY2以降の22:00〜翌3:00、客室に連続2分滞在すると「部屋単位」で電話が鳴る。
     // 同室の誰か1人が電話に出ると全員の着信が止まり、全員が同じ通話イベントへ進む。
     // 「出ない」は個人の選択。他の同室者の電話は鳴り続け、誰かが出ればその人にも通話イベントが届く。
     // 誰も出ない場合は、Supabase上の着信開始から1分で missed になる。
@@ -4858,7 +4853,14 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
     // 選んだ時だけ3秒後に静かに止める。
     let roomPhonePresenceChannel=null,roomPhonePresenceReady=false,roomPresenceAnnounceReady=false,roomEntryNoticeTimer=null;
-    const roomPhonePresenceSessionKey=`${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    let roomPhonePresenceSessionKey='',roomPresenceKnownSessions=new Set();
+    let roomPresenceLeaveTimers=new Map(),roomPresenceRecentDepartures=new Map(),roomDepartureEventIds=new Set();
+    function createRoomPresenceSessionKey(){return `${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`}
+    function roomPresenceMemberSessionKey(member){
+      const session=String(member?.presence_session_key||member?.presence_ref||'').trim();if(session)return `session:${session}`;
+      const player=String(member?.player_id||'').trim();if(player)return `player:${player}`;
+      return `name:${String(member?.display_name||'ゲスト').trim()||'ゲスト'}`;
+    }
     function hideRoomEntryNotice(){
       if(roomEntryNoticeTimer){clearTimeout(roomEntryNoticeTimer);roomEntryNoticeTimer=null}
       roomEntryNotice?.classList.remove('show');
@@ -4875,24 +4877,84 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const display=String(name||'ゲスト').trim()||'ゲスト';
       showRoomActivityNotice(`${display}が部屋に入室した。`);
     }
+    function roomPresencePersonKey(member){
+      const player=String(member?.player_id||'').trim();if(player)return `player:${player}`;
+      return `name:${String(member?.display_name||'ゲスト').trim()||'ゲスト'}`;
+    }
+    function showRoomDepartureNotice(name,personKey=''){
+      const display=String(name||'ゲスト').trim()||'ゲスト',key=personKey||`name:${display}`;
+      const last=Number(roomPresenceRecentDepartures.get(key)||0);if(Date.now()-last<2500)return false;
+      roomPresenceRecentDepartures.set(key,Date.now());showRoomActivityNotice(`${display}が部屋を出ました。`);return true;
+    }
     function announceRoomPresenceJoin(payload,roomAtStart){
       if(!roomPresenceAnnounceReady||activeRoom!==roomAtStart)return;
       const joined=Array.isArray(payload?.newPresences)?payload.newPresences:[];
       const announced=new Set();
       joined.forEach(member=>{
         if(String(member?.room_no||'')!==String(roomAtStart))return;
+        const sessionKey=roomPresenceMemberSessionKey(member);
         const memberId=String(member?.player_id||'');
         const memberName=String(member?.display_name||'ゲスト').trim()||'ゲスト';
+        const personKey=roomPresencePersonKey(member),pendingLeave=roomPresenceLeaveTimers.get(personKey);
+        if(pendingLeave){
+          clearTimeout(pendingLeave.timer);roomPresenceLeaveTimers.delete(personKey);roomPresenceKnownSessions.delete(pendingLeave.sessionKey);
+          // Presence情報の更新や一瞬の再接続は、退出→再入室として表示しない。
+          if(Date.now()-Number(roomPresenceRecentDepartures.get(personKey)||0)>=2500){roomPresenceKnownSessions.add(sessionKey);return}
+        }
+        if(roomPresenceKnownSessions.has(sessionKey))return;
+        roomPresenceKnownSessions.add(sessionKey);
         if(memberId&&storedPlayerId&&memberId===String(storedPlayerId))return;
         if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
-        const key=memberId||memberName;if(announced.has(key))return;announced.add(key);
+        if(announced.has(personKey))return;announced.add(personKey);
         playRoomDoorOpenSound();
         showRoomEntryNotice(memberName);
       });
     }
+    function announceRoomPresenceLeave(payload,roomAtStart){
+      if(!roomPresenceAnnounceReady||activeRoom!==roomAtStart)return;
+      const left=Array.isArray(payload?.leftPresences)?payload.leftPresences:[];
+      left.forEach(member=>{
+        if(String(member?.room_no||'')!==String(roomAtStart))return;
+        const memberId=String(member?.player_id||''),memberName=String(member?.display_name||'ゲスト').trim()||'ゲスト';
+        if(memberId&&storedPlayerId&&memberId===String(storedPlayerId))return;
+        if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
+        const personKey=roomPresencePersonKey(member),sessionKey=roomPresenceMemberSessionKey(member),previous=roomPresenceLeaveTimers.get(personKey);
+        if(previous)clearTimeout(previous.timer);
+        const timer=setTimeout(()=>{
+          roomPresenceLeaveTimers.delete(personKey);
+          const members=roomPhonePresenceMembers();
+          const sessionStillPresent=members.some(current=>roomPresenceMemberSessionKey(current)===sessionKey);
+          const personStillPresent=members.some(current=>roomPresencePersonKey(current)===personKey);
+          if(sessionStillPresent||personStillPresent)return;
+          roomPresenceKnownSessions.delete(sessionKey);
+          showRoomDepartureNotice(memberName,personKey);
+        },900);
+        roomPresenceLeaveTimers.set(personKey,{timer,sessionKey});
+      });
+    }
+    function rememberRoomDepartureEvent(eventId){
+      if(!eventId)return;roomDepartureEventIds.add(String(eventId));
+      if(roomDepartureEventIds.size>80)roomDepartureEventIds.delete(roomDepartureEventIds.values().next().value);
+    }
+    function applyRoomMemberLeft(payload){
+      const eventId=String(payload?.event_id||''),roomNo=String(payload?.room_no||'');
+      if(!eventId||!activeRoom||roomNo!==String(activeRoom)||roomDepartureEventIds.has(eventId))return false;
+      rememberRoomDepartureEvent(eventId);
+      if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return true;
+      const display=String(payload?.display_name||'ゲスト').trim()||'ゲスト';
+      showRoomDepartureNotice(display,roomPresencePersonKey(payload));return true;
+    }
+    async function broadcastRoomMemberLeft(room=activeRoom){
+      const roomNo=String(room||'');if(!roomNo||!roomPhonePresenceChannel||!roomPhonePresenceReady)return false;
+      const payload={event_id:sprSafeUuid(),room_no:roomNo,player_id:String(storedPlayerId||''),display_name:String(activeGuest||storedGuestName||'ゲスト'),origin_session_key:roomPhonePresenceSessionKey,occurred_at:new Date().toISOString()};
+      rememberRoomDepartureEvent(payload.event_id);
+      try{await roomPhonePresenceChannel.send({type:'broadcast',event:'room-member-left',payload});return true}
+      catch(error){console.warn('room departure sync',error);return false}
+    }
     let roomPhoneDeclineStopTimer=null,roomPhoneDeclineStopEventId='',roomPhoneDeclineSilencedEventId='';
 
     function roomPhoneEligibleNow(){
+      if(roomPhoneResortDay()<2)return false;
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=22||hour<3;
     }
@@ -5147,6 +5209,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         room_no:String(activeRoom||''),
         player_id:String(storedPlayerId||''),
         display_name:String(activeGuest||storedGuestName||'ゲスト'),
+        presence_session_key:String(roomPhonePresenceSessionKey||''),
         phone_event_id:roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'',
         phone_choice:String(choice||'idle'),
         updated_at:new Date().toISOString()
@@ -5321,12 +5384,17 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         try{window.supabaseClientSpecial.removeChannel(roomPhonePresenceChannel)}catch{}
       }
       roomPhonePresenceChannel=null;
+      roomPhonePresenceSessionKey='';
+      roomPresenceKnownSessions=new Set();
+      roomPresenceLeaveTimers.forEach(item=>clearTimeout(item.timer));roomPresenceLeaveTimers=new Map();
+      roomPresenceRecentDepartures=new Map();roomDepartureEventIds=new Set();
       villaPoolPendingBroadcasts=[];
     }
     async function startRoomPhonePresence(room){
       stopRoomPhonePresence();
       if(!window.supabaseClientSpecial||!room)return;
       const roomAtStart=String(room);
+      roomPhonePresenceSessionKey=createRoomPresenceSessionKey();
       const syncSharedRoomState=()=>{
         if(activeRoom!==roomAtStart)return;
         updateRoomOccupancyUi();
@@ -5334,20 +5402,25 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
         if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
         // 最初のPresence同期は既に部屋にいた人の読み込みなので、入室通知は出さない。
-        // 初期同期が終わった後に新しくjoinした人だけセンター表示する。
-        roomPresenceAnnounceReady=true;
+        // 同じセッションの電話・NG状態更新がjoinとして再通知されても、演出を繰り返さない。
+        if(!roomPresenceAnnounceReady){
+          roomPhonePresenceMembers().forEach(member=>roomPresenceKnownSessions.add(roomPresenceMemberSessionKey(member)));
+          roomPresenceAnnounceReady=true;
+        }
       };
       const channel=window.supabaseClientSpecial.channel(`spr-room-phone-presence-${roomAtStart}`,{config:{presence:{key:roomPhonePresenceSessionKey},broadcast:{self:true,ack:true}}})
         .on('presence',{event:'sync'},syncSharedRoomState)
         .on('presence',{event:'join'},payload=>{announceRoomPresenceJoin(payload,roomAtStart);syncSharedRoomState()})
-        .on('presence',{event:'leave'},syncSharedRoomState)
+        .on('presence',{event:'leave'},payload=>{announceRoomPresenceLeave(payload,roomAtStart);syncSharedRoomState()})
+        .on('broadcast',{event:'room-member-left'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomMemberLeft(payload)})
         .on('broadcast',{event:'mystery-knife-strike'},({payload})=>{
           if(String(payload?.target_id||'')!==String(storedPlayerId||'')||String(payload?.room_no||'')!==String(activeRoom||''))return;
           remoteInventoryAdjust('lifeHearts',0).then(n=>{if(n!==null)setLocalInventoryQuantity('lifeHearts',n,{sync:false})}).catch(e=>console.warn('knife heart refresh',e));
         })
         .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
         .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)})
-        .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)});
+        .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
+        .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
         if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
@@ -5499,6 +5572,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(e){console.warn('room phone expire sync',e)}
     }
     function applyRoomPhoneEvent(row,{announce=false}={}){
+      if(roomPhoneResortDay()<2)return;
       if(!row||!activeRoom||String(row.room_no)!==String(activeRoom))return;
       if(String(row.service_date||'')!==String(cafeServiceDate())||Number(row.resort_day)!==roomPhoneResortDay())return;
       const previousStatus=roomPhoneCallState;
@@ -5531,6 +5605,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       trackRoomPhonePresence('idle');
     }
     async function loadRoomPhoneEvent(room=activeRoom){
+      if(roomPhoneResortDay()<2)return null;
       if(!window.supabaseClientSpecial||!room)return null;
       try{
         const {data,error}=await window.supabaseClientSpecial
@@ -5547,7 +5622,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(e){console.warn('room phone load',e);return null}
     }
     async function beginRoomPhoneCall(){
-      if(!activeRoom||roomPhoneActiveEvent||roomPhoneCreating||roomPhoneCallState==='ringing')return;
+      if(!roomPhoneEligibleNow()||!activeRoom||roomPhoneActiveEvent||roomPhoneCreating||roomPhoneCallState==='ringing')return;
       if(!window.supabaseClientSpecial)return;
       roomPhoneCreating=true;
       const roomAtStart=String(activeRoom);
@@ -5658,34 +5733,69 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!document.hidden&&roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
     });
     const HERNANDO_AVAILABLE_FROM_DAY=2;
+    const HERNANDO_ROOM_ENTRANCE_TYPE='hernando-room-entrance';
     function hernandoEventEnabled(){return Number(document.documentElement.dataset.resortDay||1)>=HERNANDO_AVAILABLE_FROM_DAY}
-    let hernandoBarGlobalOpen=hernandoEventEnabled()&&localStorage.getItem('spr-hernando-bar-global-open')==='1';
-    async function refreshHernandoBarGlobalOpen(){
-      if(!hernandoEventEnabled()){hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');return false}
-      if(hernandoBarGlobalOpen)return true;
-      if(!window.supabaseClientSpecial)return false;
-      try{
-        const {data,error}=await window.supabaseClientSpecial.from('resort_announcements').select('id').eq('announcement_type','hernando-bar-discovered').limit(1);
-        if(error)throw error;
-        if(data&&data.length){hernandoBarGlobalOpen=true;localStorage.setItem('spr-hernando-bar-global-open','1');updateRoomContextAction();return true}
-      }catch(e){console.warn('hernando bar global check',e)}
-      return false;
+    function hernandoRoomEntranceKey(room=activeRoom){return `spr-hernando-room-entrance:${String(room||'')}`}
+    function hasHernandoRoomEntrance(room=activeRoom){return Boolean(hernandoEventEnabled()&&room&&localStorage.getItem(hernandoRoomEntranceKey(room))==='1')}
+    function applyHernandoRoomEntrance(room,{discoveredBy='',announce=false}={}){
+      const roomNo=String(room||'');if(!roomNo)return false;
+      const wasOpen=hasHernandoRoomEntrance(roomNo);
+      localStorage.setItem(hernandoRoomEntranceKey(roomNo),'1');
+      if(String(activeRoom||'')===roomNo){
+        updateRoomContextAction();
+        const name=String(discoveredBy||'').trim();
+        if(announce&&!wasOpen&&name&&name!==String(activeGuest||storedGuestName||'').trim())showRoomActivityNotice(`${name}がクローゼットの奥に隠し部屋を発見した！`);
+      }
+      return !wasOpen;
     }
-    async function publishHernandoBarDiscovery(){
-      if(!hernandoEventEnabled())return false;
-      hernandoBarGlobalOpen=true;localStorage.setItem('spr-hernando-bar-global-open','1');
-      if(!window.supabaseClientSpecial)return;
+    function clearHernandoRoomEntrance(room=activeRoom){
+      const roomNo=String(room||'');if(!roomNo)return;
+      localStorage.removeItem(hernandoRoomEntranceKey(roomNo));
+      if(String(activeRoom||'')===roomNo)updateRoomContextAction();
+    }
+    async function fetchHernandoRoomEntranceState(room){
+      const roomNo=String(room||'');if(!roomNo||!window.supabaseClientSpecial)return null;
+      const [entranceResult,resetResult]=await Promise.all([
+        window.supabaseClientSpecial.from('resort_announcements').select('id,created_at,metadata').eq('announcement_type',HERNANDO_ROOM_ENTRANCE_TYPE).contains('metadata',{room_no:roomNo}).order('created_at',{ascending:false}).limit(1).maybeSingle(),
+        window.supabaseClientSpecial.from('resort_announcements').select('id,created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1).maybeSingle()
+      ]);
+      if(entranceResult.error)throw entranceResult.error;if(resetResult.error)throw resetResult.error;
+      const entrance=entranceResult.data,reset=resetResult.data;
+      return{open:Boolean(entrance&&(!reset||new Date(entrance.created_at)>new Date(reset.created_at))),entrance,reset};
+    }
+    async function refreshHernandoRoomEntrance(room=activeRoom){
+      const roomNo=String(room||'');
+      if(!roomNo)return false;
+      if(!hernandoEventEnabled()){clearHernandoRoomEntrance(roomNo);return false}
+      if(!window.supabaseClientSpecial)return hasHernandoRoomEntrance(roomNo);
       try{
-        const {data}=await window.supabaseClientSpecial.from('resort_announcements').select('id').eq('announcement_type','hernando-bar-discovered').limit(1);
-        if(data&&data.length)return;
+        const state=await fetchHernandoRoomEntranceState(roomNo);
+        if(String(activeRoom||'')!==roomNo)return Boolean(state?.open);
+        if(state?.open)applyHernandoRoomEntrance(roomNo);else clearHernandoRoomEntrance(roomNo);
+        return Boolean(state?.open);
+      }catch(e){console.warn('hernando room entrance check',e);return hasHernandoRoomEntrance(roomNo)}
+    }
+    async function publishHernandoRoomEntrance(room=activeRoom){
+      const roomNo=String(room||'');if(!hernandoEventEnabled()||!roomNo)return false;
+      applyHernandoRoomEntrance(roomNo);
+      if(roomPhonePresenceChannel&&roomPhonePresenceReady){
+        void roomPhonePresenceChannel.send({type:'broadcast',event:'hernando-room-entrance',payload:{room_no:roomNo,discovered_by:String(activeGuest||storedGuestName||'ゲスト')}}).catch(e=>console.warn('hernando room entrance broadcast',e));
+      }
+      if(!window.supabaseClientSpecial)return true;
+      try{
+        const current=await fetchHernandoRoomEntranceState(roomNo);if(current?.open)return true;
         const creatorId=await resolveSpecialPlayerId();if(!creatorId)return;
-        const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'hernando-bar-discovered',message:'エルナンドの闘牛場への入口が発見されました。',created_by:creatorId,expires_at:'2099-12-31T23:59:59Z',metadata:{discovered_by:storedGuestName}});
+        const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:HERNANDO_ROOM_ENTRANCE_TYPE,message:`${roomNo}号室からエルナンドの闘牛場への入口が発見されました。`,created_by:creatorId,expires_at:'2099-12-31T23:59:59Z',metadata:{room_no:roomNo,discovered_by:String(activeGuest||storedGuestName||'ゲスト'),resort_day:roomPhoneResortDay()}});
         if(error)throw error;
-      }catch(e){console.warn('hernando bar discovery sync',e)}
+        return true;
+      }catch(e){console.warn('hernando room entrance sync',e);return false}
     }
     if(hernandoEventEnabled()&&window.supabaseClientSpecial){
-      refreshHernandoBarGlobalOpen();
-      window.supabaseClientSpecial.channel('hernando-bar-discovery').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{if(payload.new?.announcement_type==='hernando-bar-discovered'){hernandoBarGlobalOpen=true;localStorage.setItem('spr-hernando-bar-global-open','1');updateRoomContextAction()}}).subscribe();
+      window.supabaseClientSpecial.channel('hernando-room-entrance').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},payload=>{
+        const row=payload.new;if(row?.announcement_type!==HERNANDO_ROOM_ENTRANCE_TYPE)return;
+        const roomNo=String(row.metadata?.room_no||'');if(!roomNo)return;
+        applyHernandoRoomEntrance(roomNo,{discoveredBy:row.metadata?.discovered_by,announce:true});
+      }).subscribe();
     }
     function closetSearchCount(){return Math.max(0,Number(localStorage.getItem(closetSearchKey())||0))}
     function setExploreMessage(text){roomExploreResult.textContent=text;roomExploreResult.classList.remove('hidden')}
@@ -5743,20 +5853,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
-    function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'||windowSprFlagCache['hernando-intro-seen']===true||windowSprFlagCache['hernando-intro-seen']===1||windowSprFlagCache['hernando-intro-seen']==='1'}
-    function hernandoVisitCount(){return Math.max(0,Number(localStorage.getItem(hernandoVisitCountKey())||windowSprFlagCache['hernando-visit-count']||0))}
+    // 導入動画と訪問回数は端末内だけで管理する。
+    // 同室者が先に闘牛場へ入っていても、この端末の初回は動画＋初回会話から始まる。
+    function hasSeenHernandoIntro(){return localStorage.getItem(hernandoIntroSeenKey())==='1'}
+    function hernandoVisitCount(){return Math.max(0,Number(localStorage.getItem(hernandoVisitCountKey())||0))}
     function markHernandoIntroSeen(){
       localStorage.setItem(hernandoIntroSeenKey(),'1');
-      windowSprFlagCache['hernando-intro-seen']=true;
-      setRemoteFlag('hernando-intro-seen',true).catch(e=>console.warn('hernando intro seen sync',e));
     }
     function registerHernandoVisit(){
       let current=hernandoVisitCount();
       // Older test data may already have the intro-seen flag but no visit count. In that case this entrance is treated as visit #2.
       if(current===0&&hernandoEntryWasIntroSeen)current=1;
       const next=current+1;
-      localStorage.setItem(hernandoVisitCountKey(),String(next));windowSprFlagCache['hernando-visit-count']=next;
-      setRemoteFlag('hernando-visit-count',next).catch(e=>console.warn('hernando visit count sync',e));
+      localStorage.setItem(hernandoVisitCountKey(),String(next));
       return next;
     }
     const HERNANDO_DIALOGUE={
@@ -6156,10 +6265,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           return;
         }
         const opened=localStorage.getItem(closetDoorKey())==='1';
-        const canEnter=opened||hernandoBarGlobalOpen;
+        const canEnter=opened||hasHernandoRoomEntrance(activeRoom);
         roomContextAction.textContent=canEnter?'クローゼットの奥に入る':'クローゼットを調べる';roomContextAction.classList.remove('hidden');
         roomContextAction.onclick=()=>{
-          if(localStorage.getItem(closetDoorKey())==='1'||hernandoBarGlobalOpen){
+          if(localStorage.getItem(closetDoorKey())==='1'||hasHernandoRoomEntrance(activeRoom)){
             setExploreMessage('クローゼットの奥に、隠し扉がある！');
             showHernandoDoorChoice();
             return;
@@ -6172,7 +6281,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
             if(hasClosetFoodKey()){
               localStorage.setItem(closetDoorKey(),'1');setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
               text='クローゼットの奥に、隠し扉がある！';
-              setExploreMessage(text);updateRoomContextAction();publishHernandoBarDiscovery().catch(e=>console.warn('hernando discovery publish',e));showHernandoDoorChoice();return;
+              setExploreMessage(text);updateRoomContextAction();publishHernandoRoomEntrance(activeRoom).catch(e=>console.warn('hernando discovery publish',e));showHernandoDoorChoice();return;
             } else text='何度確かめても、奥の壁には妙な違和感が残る。けれど、今はそれ以上のことは分からない。';
           }
           setExploreMessage(text);
@@ -6325,7 +6434,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(roomRealtimeChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null}
       startRoomPhonePresence(room);
       roomMessageCache=[];roomServiceCache=[];renderChat();renderRoomServiceHistory();
-      await Promise.all([loadRoomSharedData(room),loadRoomPhoneEvent(room)]);
+      await Promise.all([loadRoomSharedData(room),loadRoomPhoneEvent(room),refreshHernandoRoomEntrance(room)]);
       if(!window.supabaseClientSpecial||activeRoom!==room)return;
       roomRealtimeChannel=window.supabaseClientSpecial.channel(`spr-room-${room}-${Math.random().toString(36).slice(2)}`)
         .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_messages',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;const receipt=parseRoomServiceReceiptMessage(payload.new);if(receipt){applyRoomServiceReceipt(receipt,{announce:true});return}const msg=roomSharedMessage(payload.new);roomMessageCache.push(msg);roomMessageCache=roomMessageCache.slice(-100);renderChat();if(!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(msg)}})
@@ -7303,7 +7412,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
     });
-    function leaveActiveRoom(){void syncMysteryRoomPresence('');if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView)}
+    let roomLeaveInProgress=false;
+    async function leaveActiveRoom(){
+      if(roomLeaveInProgress||!activeRoom)return;roomLeaveInProgress=true;
+      try{
+        // 明示的な退出はPresence切断より先に共有し、同室者へすぐ表示する。
+        await Promise.race([broadcastRoomMemberLeft(activeRoom),new Promise(resolve=>setTimeout(resolve,400))]);
+        void syncMysteryRoomPresence('');
+        if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();
+        closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();
+        roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
+        roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView);
+      }finally{roomLeaveInProgress=false}
+    }
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
     document.getElementById('fallbackLeaveRoom').addEventListener('click',leaveActiveRoom);
     window.addEventListener('storage',event=>{if(event.key===belongingsKey){renderRoomBelongings();renderPrizeCounter()}if(event.key===coasterInventoryKey){updateCollectionButton();renderRoomCollection();renderTeaExchange()}if(event.key===roomServiceDeliveredStorageKey()){evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck()}});
@@ -7512,7 +7633,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       await publishMarker(AUTO_DAY_TYPE,'AUTO:OFF|DAY:1');
       autoDayEnabled=false;autoDayAnchor=null;renderAutoDayButton();scheduleAutoDayCheck();
       clearLocalGimmicks();
-      localStorage.setItem('spr-hernando-bar-global-open','0');
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
       try{const c=client();if(c)await c.from('players').update({last_seen_at:new Date().toISOString()}).eq('id',adminId)}catch(e){console.warn('admin last_seen restore',e)}
@@ -7521,13 +7641,14 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
   });
-  // A discovery only counts if it happened after the latest world reset.
-  window.refreshHernandoBarGlobalOpen=async function(){try{if(Number(document.documentElement.dataset.resortDay||1)<2){hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return false}const c=client();if(!c)return false;const [d,r]=await Promise.all([latestMarker('hernando-bar-discovered'),latestMarker(RESET_TYPE)]);const open=!!d&&(!r||new Date(d.created_at)>new Date(r.created_at));hernandoBarGlobalOpen=open;localStorage.setItem('spr-hernando-bar-global-open',open?'1':'0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();return open}catch(e){console.warn('hernando bar global check',e);return false}};
+  // 入口は全館共通ではなく、発見された客室だけに紐づく。
+  // 旧呼び出し名は互換用に残すが、判定は現在の客室だけを対象にする。
+  window.refreshHernandoBarGlobalOpen=()=>refreshHernandoRoomEntrance(activeRoom);
   function onShared(payload){
     const row=payload&&payload.new;if(!row)return;
     if(row.announcement_type===DAY_TYPE||row.announcement_type===AUTO_DAY_TYPE){setTimeout(()=>{void syncCurrentDay(true)},120)}
     if(row.announcement_type===RESET_TYPE){
-      clearLocalGimmicks();hernandoBarGlobalOpen=false;localStorage.setItem('spr-hernando-bar-global-open','0');if(typeof updateRoomContextAction==='function')updateRoomContextAction();
+      clearLocalGimmicks();if(typeof updateRoomContextAction==='function')updateRoomContextAction();
       const keepId=resetKeepPlayerId(row.message),me=String(localStorage.getItem('spr-player-id')||'').trim();
       if(me&&(!keepId||me!==keepId)){clearLoginAndReturnToSecurity();return}
       localStorage.setItem('spr-last-seen',String(Date.now()));
@@ -7537,7 +7658,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(await enforceLatestResetSession())return;
     await syncCurrentDay(true);
     const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();
-    window.refreshHernandoBarGlobalOpen();
+    if(activeRoom)refreshHernandoRoomEntrance(activeRoom);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncCurrentDay(true)});
     window.addEventListener('focus',()=>{void syncCurrentDay(true)});
   }
