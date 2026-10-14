@@ -4438,11 +4438,33 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
       if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
     },{passive:true});
-    casinoGalleryMenu.addEventListener('click',async()=>{
-      // 読み込み中の画面を見せず、写真の準備ができてからギャラリーへ移動する。
-      await discoverCasinoGallery();
+    casinoGalleryMenu.addEventListener('click',()=>{
+      // まず画面を開き、画像の探索はバックグラウンドで続ける。
       showCasinoLevel('gallery');
-      renderCasinoGallery();
+      if(casinoGalleryFiles.length){
+        renderCasinoGallery();
+      }else{
+        casinoGalleryEmpty.textContent='館内写真を読み込んでいます…';
+        casinoGalleryEmpty.classList.remove('hidden');
+        casinoGalleryEmpty.setAttribute('aria-hidden','false');
+      }
+      discoverCasinoGallery().then(files=>{
+        if(casinoLevel!=='gallery')return;
+        if(!files.length){
+          casinoGalleryEmpty.textContent='館内写真を読み込めませんでした。';
+          casinoGalleryEmpty.classList.remove('hidden');
+          casinoGalleryEmpty.setAttribute('aria-hidden','false');
+          return;
+        }
+        renderCasinoGallery();
+      }).catch(error=>{
+        console.warn('casino gallery load',error);
+        if(casinoLevel==='gallery'){
+          casinoGalleryEmpty.textContent='館内写真を読み込めませんでした。';
+          casinoGalleryEmpty.classList.remove('hidden');
+          casinoGalleryEmpty.setAttribute('aria-hidden','false');
+        }
+      });
     });
     // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
     discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
