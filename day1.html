@@ -3137,7 +3137,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function mergeEmilyCasualProgress(a,b){
       const left=normalizeEmilyCasualProgress(a),right=normalizeEmilyCasualProgress(b);
-      return normalizeEmilyCasualProgress({heard:[...left.heard,...right.heard],special_seen:left.special_seen||right.special_seen,last_by_period:{...left.last_by_period,...right.last_by_period}});
+      // Keep version 2 while merging. Omitting it made normalize() treat the
+      // merged record as legacy v1 and erase sunset:2 (this exact sunset line)
+      // from the heard list on every load, so it was selected repeatedly.
+      return normalizeEmilyCasualProgress({version:2,heard:[...left.heard,...right.heard],special_seen:left.special_seen||right.special_seen,last_by_period:{...left.last_by_period,...right.last_by_period}});
     }
     function emilyCasualProgressStorageKey(){return `spr-emily-casual-progress:${playerStorageId}`}
     function loadEmilyCasualProgress(){
