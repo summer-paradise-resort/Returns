@@ -661,6 +661,7 @@
     .villa-darkroom-console.hidden{display:none!important}
     .villa-darkroom-caption{font:11px Georgia,serif;letter-spacing:.26em;color:#bca67e}
     .villa-darkroom-status{min-height:2em;font-size:11px;line-height:1.7;color:#c3c3c3}
+    .villa-darkroom-peer-status{color:#d2b787;font-size:10px;line-height:1.55;min-height:14px;text-align:center;letter-spacing:.03em}
     .villa-darkroom-command-grid{width:min(420px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
     .villa-darkroom-command-grid.hidden{display:none!important}
     .villa-darkroom-command-grid button{min-height:38px;padding:7px 3px;border:1px solid rgba(210,187,141,.43);border-radius:4px;background:rgba(24,24,24,.9);color:#f4e6cb;font-size:12px;letter-spacing:.04em}
@@ -1307,6 +1308,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
                 <div id="roomExploreResult" class="room-explore-result hidden" aria-live="polite"></div>
+                <button type="button" id="villaDarkroomRoomEnableSound" class="room-context-action hidden" style="grid-column:1/-1">🔊 共有音声を有効にする</button>
                 <button id="roomBelongingsOpen" class="room-belongings-open" type="button"><span>所持品</span></button><button id="roomCollectionOpen" class="room-collection-open hidden" type="button"><span>Collection</span></button>
               </div>
             </div>
@@ -1314,6 +1316,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <section id="villaDarkroomConsole" class="villa-darkroom-console hidden" aria-label="ヴィラの暗室" aria-live="off">
             <div class="villa-darkroom-caption">ROYAL VILLA — DARK ROOM</div>
             <div id="villaDarkroomStatus" class="villa-darkroom-status" aria-live="polite">音声の準備ができています。</div>
+            <div id="villaDarkroomPeerStatus" class="villa-darkroom-peer-status" aria-live="polite"></div>
             <div id="villaDarkroomCommands" class="villa-darkroom-command-grid hidden" aria-label="暗室の音声操作">
               <button type="button" data-darkroom-command="kiss1">キス1</button>
               <button type="button" data-darkroom-command="kiss2">キス2</button>
@@ -4659,6 +4662,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const villaPoolInAudio=document.getElementById('villaPoolInAudio'), villaPoolNowAudio=document.getElementById('villaPoolNowAudio'), villaPoolOutAudio=document.getElementById('villaPoolOutAudio');
     const villaDarkroomConsole=document.getElementById('villaDarkroomConsole'),villaDarkroomCommands=document.getElementById('villaDarkroomCommands'),villaDarkroomStatus=document.getElementById('villaDarkroomStatus'),villaDarkroomUnlock=document.getElementById('villaDarkroomEnableSound');
     const villaDarkroomBgm=document.getElementById('villaDarkroomBgm'),villaDarkroomEffect=document.getElementById('villaDarkroomEffect');
+    const villaDarkroomPeerStatus=document.getElementById('villaDarkroomPeerStatus');
+    const villaDarkroomRoomUnlock=document.getElementById('villaDarkroomRoomEnableSound');
     let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
@@ -4803,37 +4808,85 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',slow:'低速',medium:'中速',fast:'高速',fast2:'高速2',fast3:'高速3',fast4:'高速4',mayo:'マヨ'});
     let villaDarkroomAction='bgm',villaDarkroomActionId='',villaDarkroomActionAt=0;
     let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
-    let villaDarkroomEffectKey='',villaDarkroomStopped=false;
-    let villaDarkroomEffectRequest=0;
+    let villaDarkroomEffectKey='',villaDarkroomEffectRequest=0;
+    let villaDarkroomPendingAckOrigin=null;
+    // Shared command effects use Web Audio instead of starting a new HTML <audio>
+    // from a Supabase callback (which Mobile Safari commonly rejects).
+    let villaDarkroomAudioContext=null,villaDarkroomEffectSource=null,villaDarkroomEffectGain=null;
+    const villaDarkroomAudioBuffers=new Map();
     function villaDarkroomIsController(){return String(activeGuest||'').trim()===VILLA_DARKROOM_CONTROLLER}
-    function villaDarkroomIsHere(){return activeRoom==='501'&&selectedRoomScene==='darkroom'&&roomView.classList.contains('room-active')}
+    function villaDarkroomInVilla(){return activeRoom==='501'&&roomView.classList.contains('room-active')}
+    function villaDarkroomIsHere(){return villaDarkroomInVilla()&&selectedRoomScene==='darkroom'}
     function villaDarkroomAudioAllowed(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function villaDarkroomStopOne(audio){if(!audio)return;sprCancelGuardedAudioStart(audio);try{audio.pause();audio.muted=false;if(audio.readyState>0)audio.currentTime=0}catch{}}
+    function villaDarkroomStopWebEffect(){
+      if(villaDarkroomEffectSource){try{villaDarkroomEffectSource.stop()}catch{}try{villaDarkroomEffectSource.disconnect()}catch{}villaDarkroomEffectSource=null}
+      if(villaDarkroomEffectGain){try{villaDarkroomEffectGain.disconnect()}catch{}villaDarkroomEffectGain=null}
+    }
     function villaDarkroomStopEffect(){
       ++villaDarkroomEffectRequest;
-      villaDarkroomStopOne(villaDarkroomEffect);
-      villaDarkroomEffectKey='';
+      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
+      villaDarkroomEffectKey='';villaDarkroomPendingAckOrigin=null;
     }
     function villaDarkroomStopLocal(){
-      // Leaving the darkroom or global ♪ OFF stops both tracks. The 「止める」 command does NOT call this.
       villaDarkroomStopEffect();villaDarkroomStopOne(villaDarkroomBgm);
       villaDarkroomUnlock?.classList.add('hidden');
     }
-    function villaDarkroomSetStatus(text){if(villaDarkroomStatus)villaDarkroomStatus.textContent=text}
+    // Called *synchronously inside a user's tap* (501 entry, room navigation,
+    // or the explicit enable-audio button). This unlocks the iOS AudioContext.
+    function primeVillaDarkroomSharedAudio(){
+      const AudioContextCtor=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextCtor)return false;
+      try{
+        if(!villaDarkroomAudioContext){villaDarkroomAudioContext=new AudioContextCtor();}
+        const ctx=villaDarkroomAudioContext;
+        if(ctx.state!=='running'){
+          const resumed=ctx.resume();
+          if(resumed&&resumed.then)resumed.then(()=>{villaDarkroomUpdateUnlockButtons()}).catch(e=>console.warn('darkroom audio unlock',e));
+        }
+        const blank=ctx.createBuffer(1,1,ctx.sampleRate),source=ctx.createBufferSource();
+        source.buffer=blank;source.connect(ctx.destination);source.start();source.stop(ctx.currentTime+.001);
+        return true;
+      }catch(e){console.warn('darkroom audio prime',e);return false}
+    }
+    function villaDarkroomAudioUnblocked(){return Boolean(villaDarkroomAudioContext&&villaDarkroomAudioContext.state==='running')}
+    function villaDarkroomUpdateUnlockButtons(){
+      const need=villaDarkroomInVilla()&&!villaDarkroomIsController()&&!villaDarkroomAudioUnblocked();
+      villaDarkroomRoomUnlock?.classList.toggle('hidden',!need||villaDarkroomIsHere());
+      if(villaDarkroomIsHere()&&need)villaDarkroomUnlock?.classList.remove('hidden');
+    }
+    async function villaDarkroomBuffer(key){
+      if(villaDarkroomAudioBuffers.has(key))return villaDarkroomAudioBuffers.get(key);
+      const file=VILLA_DARKROOM_FILES[key];
+      const task=(async()=>{
+        const response=await fetch(file,{cache:'default'});
+        if(!response.ok)throw new Error(`HTTP ${response.status}: ${file}`);
+        const content=await response.arrayBuffer();
+        if(!content.byteLength)throw new Error(`Empty audio file: ${file}`);
+        if(!villaDarkroomAudioContext)throw new Error('AudioContext unavailable');
+        return await villaDarkroomAudioContext.decodeAudioData(content);
+      })();
+      villaDarkroomAudioBuffers.set(key,task);
+      try{return await task}catch(e){villaDarkroomAudioBuffers.delete(key);throw e}
+    }
+    function villaDarkroomSetStatus(msg){if(villaDarkroomIsHere()&&villaDarkroomStatus)villaDarkroomStatus.textContent=msg}
+    function villaDarkroomSetPeerStatus(msg){if(villaDarkroomPeerStatus)villaDarkroomPeerStatus.textContent=msg}
     function villaDarkroomMarkSelected(key=''){
       villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.darkroomCommand===key)));
     }
-    function villaDarkroomFileError(key){
-      if(!villaDarkroomIsHere()||key!==villaDarkroomEffectKey)return;
+    function villaDarkroomFileError(key,error){
+      if(!villaDarkroomInVilla()||key!==villaDarkroomEffectKey)return;
       const file=VILLA_DARKROOM_FILES[key];
-      villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を再生できません。${file} のアップロード名・場所・MP3形式を確認してください。`);
-      villaDarkroomUnlock?.classList.add('hidden');
+      const reason=error?.message?`（${String(error.message).slice(0,90)}）`:'';
+      villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を再生できません。${file} の名前・配置・形式を確認してください。${reason}`);
+      if(!villaDarkroomIsHere())console.warn('villa darkroom audio missing',file,reason);
     }
     villaDarkroomBgm?.addEventListener('error',()=>{
-      if(villaDarkroomIsHere())villaDarkroomSetStatus('暗室BGMを読み込めません。villa_darkroom_bgm.mp3 のファイル名・場所・形式を確認してください。');
+      if(villaDarkroomIsHere())villaDarkroomSetStatus('暗室BGMを読み込めません。villa_darkroom_bgm.mp3 の名前・配置・形式を確認してください。');
     });
     villaDarkroomEffect?.addEventListener('error',()=>villaDarkroomFileError(villaDarkroomEffectKey));
     async function villaDarkroomStartBgm(){
+      // The ambient track must stay exclusively inside the dark room.
       if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed()||!villaDarkroomBgm)return;
       if(!villaDarkroomBgm.paused){try{villaDarkroomBgm.muted=false}catch{}return}
       const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.40,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
@@ -4843,58 +4896,105 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         else villaDarkroomUnlock?.classList.remove('hidden');
       }
     }
+    // Return diagnostic status for acknowledgment to the sending roommate.
     async function villaDarkroomStartEffect(key){
-      if(!VILLA_DARKROOM_FILES[key]||!villaDarkroomIsHere())return;
-      if(villaDarkroomEffectKey===key&&!villaDarkroomEffect?.paused)return;
+      if(!VILLA_DARKROOM_FILES[key]||!villaDarkroomInVilla())return 'outside';
+      if(!villaDarkroomAudioAllowed())return 'muted';
+      if(villaDarkroomEffectKey===key&&villaDarkroomEffectSource&&villaDarkroomAudioUnblocked())return 'started';
       ++villaDarkroomEffectRequest;
       const request=villaDarkroomEffectRequest;
-      villaDarkroomStopOne(villaDarkroomEffect);
+      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
       villaDarkroomEffectKey=key;
-      if(!villaDarkroomAudioAllowed()||!villaDarkroomEffect)return;
       const file=VILLA_DARKROOM_FILES[key];
-      villaDarkroomEffect.src=file;
-      villaDarkroomEffect.loop=true;
-      villaDarkroomEffect.load();
-      const started=await sprStartAudioClean(villaDarkroomEffect,{volume:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-      if(request!==villaDarkroomEffectRequest||!villaDarkroomIsHere()||key!==villaDarkroomEffectKey)return;
-      if(started){
-        villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);
-        if(!villaDarkroomBgm?.paused)villaDarkroomUnlock?.classList.add('hidden');
-      }else if(villaDarkroomEffect.error||villaDarkroomEffect.networkState===3){
-        villaDarkroomFileError(key);
-      }else if(villaDarkroomAudioAllowed()){
-        villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」の再生がブロックされています。「音声を有効にする」を押してください。`);
-        villaDarkroomUnlock?.classList.remove('hidden');
+      const ctx=villaDarkroomAudioContext;
+      if(ctx){
+        // Preload/decode even if blocked, so tapping Enable can immediately replay.
+        let decoded;
+        try{decoded=await villaDarkroomBuffer(key)}catch(e){
+          if(request===villaDarkroomEffectRequest&&key===villaDarkroomEffectKey)villaDarkroomFileError(key,e);
+          return 'missing';
+        }
+        if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla()||key!==villaDarkroomEffectKey)return 'superseded';
+        if(!villaDarkroomAudioAllowed())return 'muted';
+        if(ctx.state!=='running'){
+          villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を受信しました。「音声を有効にする」を押してください。`);
+          villaDarkroomUnlock?.classList.remove('hidden');villaDarkroomUpdateUnlockButtons();
+          return 'blocked';
+        }
+        try{
+          const source=ctx.createBufferSource(),gain=ctx.createGain();
+          source.buffer=decoded;source.loop=true;gain.gain.value=.8;
+          source.connect(gain);gain.connect(ctx.destination);
+          villaDarkroomEffectSource=source;villaDarkroomEffectGain=gain;
+          source.start(0);
+          villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);
+          if(villaDarkroomAudioUnblocked())villaDarkroomUnlock?.classList.add('hidden');villaDarkroomUpdateUnlockButtons();
+          return 'started';
+        }catch(e){
+          console.warn('villa darkroom web audio start',e);
+          villaDarkroomSetStatus(`音声が開始できません。「音声を有効にする」を押してください。`);
+          villaDarkroomUnlock?.classList.remove('hidden');
+          return 'blocked';
+        }
       }
+      // Old browsers without Web Audio can use the existing HTML audio element.
+      if(!villaDarkroomEffect)return 'unsupported';
+      villaDarkroomEffect.src=file;villaDarkroomEffect.loop=true;villaDarkroomEffect.load();
+      const started=await sprStartAudioClean(villaDarkroomEffect,{volume:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+      if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla())return 'superseded';
+      if(started){villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);return 'started'}
+      if(villaDarkroomEffect.error||villaDarkroomEffect.networkState===3){villaDarkroomFileError(key);return 'missing'}
+      villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」の再生がブロックされました。「音声を有効にする」を押してください。`);
+      villaDarkroomUnlock?.classList.remove('hidden');return 'blocked';
     }
-    function villaDarkroomApplyAction(key){
-      if(!villaDarkroomIsHere())return;
+    async function villaDarkroomSendAck(origin,status){
+      if(!origin?.event_id||!roomPhonePresenceReady||!roomPhonePresenceChannel||villaDarkroomIsController()||!villaDarkroomInVilla())return;
+      try{
+        await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-audio-ack',payload:{room_no:'501',event_id:String(origin.event_id),status,
+          origin_session_key:roomPhonePresenceSessionKey,display_name:String(activeGuest||storedGuestName||'同室者')}});
+      }catch(e){console.warn('villa darkroom ack',e)}
+    }
+    function villaDarkroomReceiveAck(payload){
+      if(!villaDarkroomIsController()||!villaDarkroomIsHere()||String(payload?.room_no)!=='501')return;
+      if(!villaDarkroomActionId||String(payload?.event_id)!==villaDarkroomActionId)return;
+      if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
+      const status=String(payload?.status||'');
+      const result={started:'再生処理を開始しました',stopped:'効果音を停止しました',blocked:'再生許可が必要です',missing:'音源を読み込めません',muted:'♪がOFFです',unsupported:'再生できない端末です',outside:'客室にいません'}[status]||'応答を受信しました';
+      villaDarkroomSetPeerStatus(`同室者端末：${result}`);
+    }
+    async function villaDarkroomApplyAction(key,origin=null){
+      if(!villaDarkroomInVilla())return;
       if(key==='stop'){
-        // Stop command affects only the command sound. Ambient BGM continues on BOTH devices.
-        villaDarkroomStopEffect();
-        villaDarkroomMarkSelected('stop');
+        villaDarkroomStopEffect();villaDarkroomMarkSelected('stop');
         villaDarkroomSetStatus('効果音を停止しました。BGMは再生中です。');
-        void villaDarkroomStartBgm();
+        if(villaDarkroomIsHere())void villaDarkroomStartBgm();
+        if(origin)void villaDarkroomSendAck(origin,'stopped');
         return;
       }
-      void villaDarkroomStartBgm();
+      if(villaDarkroomIsHere())void villaDarkroomStartBgm();
       if(Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,key)){
         villaDarkroomMarkSelected(key);
         villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を読み込み中…`);
-        void villaDarkroomStartEffect(key);
+        const state=await villaDarkroomStartEffect(key);
+        if(origin&&state!=='superseded'){
+          villaDarkroomPendingAckOrigin=state==='blocked'?origin:null;
+          void villaDarkroomSendAck(origin,state);
+        }
       }else{
-        villaDarkroomStopEffect();
-        villaDarkroomMarkSelected();villaDarkroomSetStatus('暗室のBGMを再生中');
+        villaDarkroomStopEffect();villaDarkroomMarkSelected();villaDarkroomSetStatus('暗室のBGMを再生中');
+        if(origin)void villaDarkroomSendAck(origin,'stopped');
       }
     }
     function villaDarkroomRender(){
       const here=villaDarkroomIsHere(),controller=villaDarkroomIsController();
       villaDarkroomConsole?.classList.toggle('hidden',!here);
       villaDarkroomCommands?.classList.toggle('hidden',!here||!controller);
-      if(here&&!controller&&!villaDarkroomEffectKey)villaDarkroomSetStatus('この部屋のBGMと共有音声を再生します。');
+      if(here&&!controller&&!villaDarkroomEffectKey)villaDarkroomSetStatus('暗室のBGMと、同室者からの共有音声を受信します。');
+      if(here&&!controller&&!villaDarkroomAudioUnblocked())villaDarkroomUnlock?.classList.remove('hidden');
+      villaDarkroomUpdateUnlockButtons();
     }
     function villaDarkroomApplyShared(payload){
-      if(String(payload?.room_no||'')!=='501'||activeRoom!=='501')return;
+      if(String(payload?.room_no||'')!=='501'||!villaDarkroomInVilla())return;
       if(String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;
       if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
       const action=String(payload?.action||'');
@@ -4903,15 +5003,16 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!Number.isFinite(at)||at<=0||at<villaDarkroomLatestRemoteAt)return;
       if(at===villaDarkroomLatestRemoteAt&&id===villaDarkroomLatestRemoteAction)return;
       villaDarkroomLatestRemoteAt=at;villaDarkroomLatestRemoteAction=id;
-      if(villaDarkroomIsHere())villaDarkroomApplyAction(action);
-      // The dedicated audio is not played for someone visiting another place in the villa.
+      // Effects are audible for all occupants of villa 501, even when their
+      // ROOM view is showing a different scene; BGM remains darkroom-only.
+      void villaDarkroomApplyAction(action,payload);
     }
     function villaDarkroomSyncPresence(){
       if(activeRoom!=='501'||villaDarkroomIsController())return;
       const members=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER&&m?.darkroom_scene==='darkroom');
       const owner=members.sort((a,b)=>Number(b?.darkroom_action_at||0)-Number(a?.darkroom_action_at||0))[0];
       if(!owner){
-        if(villaDarkroomEffectKey){villaDarkroomStopEffect();villaDarkroomMarkSelected('');if(villaDarkroomIsHere())villaDarkroomSetStatus('暗室のBGMを再生中')}
+        if(villaDarkroomEffectKey){villaDarkroomStopEffect();villaDarkroomMarkSelected('');villaDarkroomSetStatus('暗室のBGMを再生中')}
         return;
       }
       villaDarkroomApplyShared({room_no:'501',display_name:VILLA_DARKROOM_CONTROLLER,origin_session_key:owner.presence_session_key,
@@ -4920,46 +5021,76 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     async function villaDarkroomPublish(action){
       if(!villaDarkroomIsController()||activeRoom!=='501')return;
       villaDarkroomAction=action;
-      villaDarkroomActionAt=Date.now();
-      villaDarkroomActionId=sprSafeUuid();
+      villaDarkroomActionAt=Date.now();villaDarkroomActionId=sprSafeUuid();
       if(roomPhonePresenceReady)void trackRoomPhonePresence();
+      villaDarkroomSetPeerStatus(action==='bgm'?'': '同室者端末からの応答を待っています…');
       const payload={room_no:'501',action,event_id:villaDarkroomActionId,occurred_at:villaDarkroomActionAt,
         origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER};
       if(roomPhonePresenceChannel&&roomPhonePresenceReady){
         try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-audio',payload})}
-        catch(e){console.warn('villa darkroom sync',e)}
+        catch(e){console.warn('villa darkroom sync',e);villaDarkroomSetPeerStatus('同期通信に失敗しました。再試行してください。')}
+      }else{
+        villaDarkroomSetPeerStatus('共有通信に接続中です。接続後に同室者へ反映します。');
       }
     }
     function villaDarkroomOnSceneChanged(previousScene,newScene){
       if(activeRoom!=='501')return;
       if(previousScene==='darkroom'&&newScene!=='darkroom'){
-        villaDarkroomStopLocal();
-        if(villaDarkroomIsController())void villaDarkroomPublish('stop');
+        villaDarkroomStopOne(villaDarkroomBgm);
+        if(villaDarkroomIsController()){villaDarkroomStopEffect();void villaDarkroomPublish('stop')}
       }
       if(newScene==='darkroom'&&previousScene!=='darkroom'){
-        villaDarkroomEffectKey='';villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
-        villaDarkroomApplyAction('bgm');
+        villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
+        // Do not silence already shared effects when a roommate enters later.
+        void villaDarkroomStartBgm();
         if(villaDarkroomIsController())void villaDarkroomPublish('bgm');
         else villaDarkroomSyncPresence();
       }
       villaDarkroomRender();
     }
-    function stopVillaDarkroomAudioForMaster(){villaDarkroomStopOne(villaDarkroomBgm);villaDarkroomStopOne(villaDarkroomEffect)}
-    function resumeVillaDarkroomAudioAfterMasterOn(){
-      if(!villaDarkroomIsHere())return;
-      void villaDarkroomStartBgm();
-      if(villaDarkroomEffectKey){const key=villaDarkroomEffectKey;villaDarkroomEffectKey='';void villaDarkroomStartEffect(key)}
+    function stopVillaDarkroomAudioForMaster(){
+      ++villaDarkroomEffectRequest;villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomBgm);villaDarkroomStopOne(villaDarkroomEffect);
+    }
+    async function resumeVillaDarkroomAudioAfterMasterOn(){
+      if(!villaDarkroomInVilla())return;
+      if(villaDarkroomIsHere())void villaDarkroomStartBgm();
+      if(villaDarkroomEffectKey){
+        const key=villaDarkroomEffectKey;villaDarkroomEffectKey='';
+        const status=await villaDarkroomStartEffect(key);
+        if(villaDarkroomPendingAckOrigin&&status!=='superseded'){
+          const origin=villaDarkroomPendingAckOrigin;villaDarkroomPendingAckOrigin=null;
+          void villaDarkroomSendAck(origin,status);
+        }
+      }
+      villaDarkroomUpdateUnlockButtons();
     }
     villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(btn=>btn.addEventListener('click',()=>{
       if(!villaDarkroomIsController()||!villaDarkroomIsHere())return;
+      primeVillaDarkroomSharedAudio();
       const key=btn.dataset.darkroomCommand;
-      villaDarkroomApplyAction(key);
+      void villaDarkroomApplyAction(key);
       void villaDarkroomPublish(key);
     }));
-    villaDarkroomUnlock?.addEventListener('click',()=>{
-      villaDarkroomUnlock.classList.add('hidden');
-      resumeVillaDarkroomAudioAfterMasterOn();
-    });
+    function villaDarkroomManualUnlock(){
+      primeVillaDarkroomSharedAudio();
+      if(!villaDarkroomAudioAllowed()){
+        villaDarkroomSetStatus('サイトの♪をONにしてから音声を有効にしてください。');return;
+      }
+      const resume=()=>{
+        villaDarkroomUnlock?.classList.add('hidden');
+        villaDarkroomUpdateUnlockButtons();
+        void resumeVillaDarkroomAudioAfterMasterOn();
+      };
+      if(villaDarkroomAudioContext){
+        villaDarkroomAudioContext.resume().then(resume).catch(e=>{
+          console.warn('villa darkroom unlock',e);
+          villaDarkroomSetStatus('再生許可を取得できませんでした。もう一度押してください。');
+        });
+      }else resume();
+    }
+    villaDarkroomUnlock?.addEventListener('click',villaDarkroomManualUnlock);
+    villaDarkroomRoomUnlock?.addEventListener('click',villaDarkroomManualUnlock);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)villaDarkroomUpdateUnlockButtons()});
     let villaPoolAudioToken=0;
     function villaPoolAudioMasterOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function stopVillaPoolAudioElement(audio,reset=true){
@@ -5675,6 +5806,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         .on('broadcast',{event:'room-service-delivery-arrived'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomServiceArrival(payload)})
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
         .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
+        .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
@@ -6620,7 +6752,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       villaDarkroomRender();
       updateRoomContextAction();
     }
-    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);villaDarkroomOnSceneChanged(previousScene,scene);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
+    function chooseRoomScene(scene){if(activeRoom==='501')primeVillaDarkroomSharedAudio();const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);villaDarkroomOnSceneChanged(previousScene,scene);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
@@ -7698,7 +7830,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
       // 有効な客室へ入るタップの中で着信音とルームサービスのドアベルを先に解除しておく。
       primeRoomPhoneAudio();primeRoomServiceDoorbellAudio();
-      if(room==='501')primeVillaPoolSharedAudio();
+      if(room==='501'){primeVillaPoolSharedAudio();primeVillaDarkroomSharedAudio();}
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
@@ -7710,7 +7842,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       updateRoomOccupancyUi();setRoomOccupancyExpanded(false);
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      villaDarkroomStopLocal();villaDarkroomStopped=false;villaDarkroomAction='bgm';villaDarkroomActionAt=0;villaDarkroomActionId='';
+      villaDarkroomStopLocal();villaDarkroomAction='bgm';villaDarkroomActionAt=0;villaDarkroomActionId='';
       villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
       selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
       restoreRoomServiceFoodGallery(room);
