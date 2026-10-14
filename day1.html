@@ -800,21 +800,22 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 }
 .casino-emily-talk-spacer{display:block;height:42px;width:100%;pointer-events:none}
 .casino-emily-talk-spacer.hidden{display:none!important}
-/* Lower-screen dialogue styled like the Hernando / resort-staff conversations.
-   It is a separate overlay, not the full-screen ALL-IN invitation. */
-.casino-emily-conversation{position:fixed;inset:0;z-index:141;display:flex;align-items:flex-end;justify-content:center;padding:0 12px max(16px,env(safe-area-inset-bottom));background:transparent;color:#f6efe3;pointer-events:auto}
+/* 軽い再会話用。背景をぼかし、白いカードと控えめな金色の操作表示にする。 */
+.casino-emily-conversation{position:fixed;inset:0;z-index:141;display:flex;align-items:center;justify-content:center;padding:18px 16px max(18px,env(safe-area-inset-bottom));background:rgba(218,225,232,.62);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);color:#26313d;pointer-events:auto}
 .casino-emily-conversation.hidden{display:none!important}
-.casino-emily-dialogue{width:min(720px,100%);padding:18px 18px 16px;border:1px solid rgba(227,194,125,.60);background:rgba(7,12,18,.94);box-shadow:0 14px 45px rgba(0,0,0,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.casino-emily-dialogue-name{font:11px Georgia,'Yu Mincho',serif;letter-spacing:.22em;color:#e3c27d;margin-bottom:11px}
-.casino-emily-dialogue-text{min-height:64px;font:15px/2 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.055em;color:#fff;white-space:pre-wrap}
+.casino-emily-dialogue{position:relative;width:min(640px,100%);padding:40px 44px 25px;border:0;background:rgba(255,255,255,.96);box-shadow:0 10px 32px rgba(34,43,53,.16)}
+.casino-emily-dialogue::before{content:"";position:absolute;top:0;left:0;width:84px;height:3px;background:#a8874b}
+.casino-emily-dialogue-name{font:12px Georgia,'Yu Mincho',serif;letter-spacing:.24em;color:#a8874b;margin-bottom:14px}
+.casino-emily-dialogue-text{min-height:64px;font:17px/1.95 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.045em;color:#293542;white-space:pre-wrap}
 .casino-emily-char{display:inline;opacity:0;filter:blur(1.2px);transition:opacity .17s ease,filter .2s ease}
 .casino-emily-char.in{opacity:1;filter:blur(0)}
-.casino-emily-dialogue-next{display:block;width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.55);background:rgba(12,42,63,.88);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
-.casino-emily-dialogue-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
-.casino-emily-dialogue-choices button{min-height:46px;padding:10px 7px;border:1px solid rgba(227,194,125,.48);background:rgba(17,39,52,.92);color:#fff;font:12px 'Yu Mincho',serif;line-height:1.6}
-.casino-emily-dialogue-choices button:first-child{background:rgba(115,33,39,.88)}
+.casino-emily-dialogue-next{display:block;width:auto;min-height:38px;margin:16px 0 0 auto;padding:0 4px;border:0;background:transparent;color:#a8874b;font:12px Georgia,serif;letter-spacing:.16em}
+.casino-emily-dialogue-choices{display:flex;justify-content:flex-end;align-items:center;gap:18px;margin-top:18px}
+.casino-emily-dialogue-choices button{min-height:38px;padding:0 4px;border:0;background:transparent;color:#a8874b;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.13em;line-height:1.6}
+.casino-emily-dialogue-choices button.emily-close-action{min-width:92px;text-align:right}
+.casino-emily-dialogue-choices button:not(.emily-close-action){padding:8px 12px;border:1px solid rgba(168,135,75,.45);color:#55616c;background:rgba(255,255,255,.4)}
 .casino-emily-dialogue-choices button:disabled{opacity:.45}
-@media(max-width:520px){.casino-emily-dialogue{padding:16px 15px 14px}.casino-emily-dialogue-text{font-size:14px;min-height:56px}.casino-emily-dialogue-choices{grid-template-columns:1fr}}
+@media(max-width:520px){.casino-emily-dialogue{padding:34px 24px 20px}.casino-emily-dialogue-text{font-size:15px;min-height:56px}.casino-emily-dialogue-choices{gap:12px}.casino-emily-dialogue-choices button{font-size:11px}}
 /* The guest information prize is a single administrator-supplied JPG, not a database table. */
 .mystery-dialog .mystery-result-art img.mystery-guest-image{display:block;width:auto;max-width:100%;max-height:65dvh;object-fit:contain;margin:0 auto}
     
@@ -3071,7 +3072,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     ];
     const seriousEmilyFinalLine='チップも、余裕も。貴方の今までの時間、全部。';
     const emilyNightOpener='───ふふ。ここまで勝ち続けるなんて……素敵な夜ね。';
-    const emilyTaunts=['一瞬で終わらせたりしないで頂戴ね？','せめて、退屈させない程度には粘って頂戴ね？','ここまで勝ち上がった方ですもの。期待しても構わないでしょう？','まさか、見せ場もなく終わるなんてことはないわよね？','その幸運、最後まで続くところを見せて頂戴？','少しくらい、意地を見せてくださるでしょう？','ここまで積み上げたものを失う瞬間なんて……そう何度も見られるものではないでしょう？','そんなに緊張なさらないで。まだ、すべて失うと決まったわけではないもの。','ふふ。今になって、惜しくなったなんて仰らないでね？','さあ――みんなが見ているわ。とびきり素敵な勝負にしましょう？'];
+    const emilyTaunts=['一瞬で終わらせたりしないで頂戴ね？','せめて、退屈させない程度には粘って頂戴ね？','ここまで勝ち上がった方ですもの。期待しても構わないでしょう？','まさか、見せ場もなく終わるなんてことはないわよね？','その幸運、最後まで続くところを見せて頂戴？','少しくらい、意地を見せてくださるでしょう？','ここまで積み上げたものを失う瞬間なんて……そう何度も見られるものではないでしょう？','そんなに緊張なさらないで。まだ、すべて失うと決まったわけではないもの。','ふふ。今になって、惜しくなったなんて仰らないでね？'];
     const sleep=ms=>new Promise(r=>setTimeout(r,ms));
     function tokyoHour(){return Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hour12:false}).format(new Date()))%24}
     function randomOpener(){const a=[...emilyOpeners];const h=tokyoHour();if(h>=20||h<7)a.push(emilyNightOpener);return a[Math.floor(Math.random()*a.length)]}
@@ -3100,14 +3101,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       sunset:[
         '夕暮れは、このカジノがいちばん美しく嘘をつく時間よ。負けたチップまで、金色に輝いて見えるでしょう？',
         '人魚の歌が閉じ込められた貝を手に入れたら、大切にしておきなさい。運に見放された夜、あなたの代わりに砕けてくれるかもしれないから。',
-        'アーサーは、その女性の目の前で夕暮れの灯台から海へ飛び込んだの。あのお方へ身を差し出したつもりだったのでしょうけれど……海は彼を返したわ。贄として望まれなかった男に残ったのは、冷たい塩の味だけ。',
         '賭けから降りるのは臆病ではないの。次に何を賭けるか選び直せる人だけが、本当の勝負師よ。'
       ],
       night:[
         '夜になると、チップの音が少しだけ甘く聞こえるでしょう？　危険なものほど、耳に心地よい音を覚えているの。',
         '夜の海から馬のいななきが聞こえたら、すぐに逃げなさい。好奇心は、ときに命まで賭け金へ変えてしまうものよ。決して、その姿を確かめようと振り返らないこと。',
         '海が眠っているように見える？　いいえ。あのお方は、深いところで夢を見ていらっしゃるだけ。いつか瞼を開かれる、その瞬間を思うと……ふふ、胸が震えるわ。',
-        '灯台から戻ったアーサーの影は、一つ多かった――そう話す人もいるわ。でも、あのお方の贄にさえ選ばれなかった男の影がいくつあろうと、私にはどうでもいいこと。'
       ]
     };
     const emilyCasualSpecialDialogue=[
@@ -3122,12 +3121,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       let raw=value;
       if(typeof raw==='string'){try{raw=JSON.parse(raw)}catch{raw={}}}
       if(!raw||typeof raw!=='object')raw={};
+      const oldVersion=Number(raw.version||1)<2;
+      const migrateId=id=>{
+        if(!oldVersion)return id;
+        if(id==='sunset:2'||id==='night:3')return null; // 削除した台詞の既読記録を破棄
+        if(id==='sunset:3')return 'sunset:2'; // 夕の後続台詞の番号を繰り上げ
+        return id;
+      };
       const valid=new Set(emilyCasualAllDialogueIds());
-      const heard=[...new Set(Array.isArray(raw.heard)?raw.heard.map(String).filter(id=>valid.has(id)):[])];
+      const heard=[...new Set(Array.isArray(raw.heard)?raw.heard.map(String).map(migrateId).filter(id=>id&&valid.has(id)):[])];
       const lastRaw=raw.last_by_period&&typeof raw.last_by_period==='object'?raw.last_by_period:{};
       const last_by_period={};
-      Object.keys(emilyCasualDialoguePools).forEach(period=>{const id=String(lastRaw[period]||'');if(valid.has(id)&&id.startsWith(`${period}:`))last_by_period[period]=id});
-      return{version:1,heard,special_seen:Boolean(raw.special_seen),last_by_period};
+      Object.keys(emilyCasualDialoguePools).forEach(period=>{const id=migrateId(String(lastRaw[period]||''));if(id&&valid.has(id)&&id.startsWith(`${period}:`))last_by_period[period]=id});
+      return{version:2,heard,special_seen:Boolean(raw.special_seen),last_by_period};
     }
     function mergeEmilyCasualProgress(a,b){
       const left=normalizeEmilyCasualProgress(a),right=normalizeEmilyCasualProgress(b);
@@ -3232,7 +3238,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       emilyCasualNext.classList.add('hidden');
       emilyCasualChoices.replaceChildren();
       options.forEach(({label,click})=>{
-        const button=document.createElement('button');button.type='button';button.textContent=label;
+        const button=document.createElement('button');button.type='button';button.textContent=label==='CLOSE'?'CLOSE　×':label;if(label==='CLOSE')button.classList.add('emily-close-action');
         button.addEventListener('click',click);emilyCasualChoices.append(button);
       });
       emilyCasualChoices.classList.remove('hidden');
@@ -3299,16 +3305,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
-        emilyCasualRunLines([
-          '───……まあ。そう来るのね。',
-          'ふふ……本当に、退屈させない方。',
-          'でも、これで勝ったと思わないことね。'
-        ],()=>emilyCasualChoiceButtons([{label:'CLOSE',click:closeEmilyCasualDialogue}]));
-      }catch(e){
-        emilyCasualRunLines(['───あら。今は使えないようね。'],()=>emilyCasualChoiceButtons([
-          {label:'CLOSE',click:closeEmilyCasualDialogue}
-        ]));console.warn('Emily knife',e);
-      }
+      }catch(e){console.warn('Emily knife',e)}
+      // ナイフ使用に関する台詞は一旦表示せず、会話を閉じる。
+      closeEmilyCasualDialogue();
     }
     function talkToEmilyAgain(){
       if(!hasSeenFirstEmilyInvitation()||!emilyCasualOverlay||!isEmilyTalkGallerySlide())return;
@@ -3455,7 +3454,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     const emilyLossHints=[
       '夜の一杯が、部屋に何かを招くこともある。グラスを空にしたなら、すぐに眠らず……少しだけ、部屋で待ってみるといいわ。',
-      '太陽と情熱の国、その味を楽しんだ夜には。部屋へ戻ったら、“閉ざされた扉の向こう”を覗いてみるといい。',
       '真実は、いつだって目立つ場所にあるとは限らない。一冊の赤い本が、何かを知っているわ。',
       '禁じられたものに触れても、海は二度までは見逃してくれる。けれど――三度目はない。その時、海は貴方を逃してはくれない。'
     ];
