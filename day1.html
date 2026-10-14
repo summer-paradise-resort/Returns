@@ -155,6 +155,7 @@
     .casino-screen-sub{text-align:center;margin:0;color:rgba(255,255,255,.72);font-size:12px;line-height:1.9;letter-spacing:.05em}
     .casino-hub-grid,.casino-game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .casino-menu-card{min-height:170px;padding:22px 16px;border:1px solid rgba(221,191,119,.42);background:linear-gradient(145deg,rgba(21,54,77,.88),rgba(5,24,39,.92));color:#fff;text-align:center;box-shadow:0 14px 30px rgba(0,0,0,.24)}
+    .casino-menu-card:disabled{opacity:.72;cursor:wait}
     .casino-menu-card strong{display:block;font:18px Georgia,serif;letter-spacing:.14em;color:#f1d99d;font-weight:400;margin-bottom:10px}
     .casino-menu-card span{display:block;font-size:12px;line-height:1.8;color:rgba(255,255,255,.74)}
     .casino-menu-card small{display:block;margin-top:14px;font:10px Georgia,serif;letter-spacing:.16em;color:#d7bc79}
@@ -4438,33 +4439,46 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const diff=e.changedTouches[0].clientX-casinoGalleryTouchStart;
       if(Math.abs(diff)>45)stepCasinoGallery(diff<0?1:-1);
     },{passive:true});
-    casinoGalleryMenu.addEventListener('click',()=>{
-      // まず画面を開き、画像の探索はバックグラウンドで続ける。
-      showCasinoLevel('gallery');
-      if(casinoGalleryFiles.length){
+    let casinoGalleryOpening=false;
+    casinoGalleryMenu.addEventListener('click',async()=>{
+      if(casinoGalleryOpening)return;
+      casinoGalleryOpening=true;
+      const title=casinoGalleryMenu.querySelector('strong');
+      const description=casinoGalleryMenu.querySelector('span');
+      const guide=casinoGalleryMenu.querySelector('small');
+      const original={title:title?.textContent||'',description:description?.textContent||'',guide:guide?.textContent||''};
+      casinoGalleryMenu.disabled=true;
+      casinoGalleryMenu.setAttribute('aria-busy','true');
+      if(title)title.textContent='館内写真を準備しています';
+      if(description)description.textContent='写真の読み込みが終わるまで、そのままお待ちください。';
+      if(guide)guide.textContent='LOADING…';
+      casinoVipDoorNotice?.classList.add('hidden');
+      try{
+        // 館内写真をすべて確認し、最初に表示する写真も読み込み済みにしてから画面を開く。
+        const files=await discoverCasinoGallery();
+        if(!files.length)throw new Error('館内写真を読み込めませんでした。');
+        const firstIndex=Math.min(casinoGalleryIndex,files.length-1);
+        const firstSrc=files[firstIndex];
+        if(!await probeCasinoGalleryFile(firstSrc))throw new Error('最初の館内写真を読み込めませんでした。');
+        casinoGalleryImage.src=firstSrc;
+        casinoGalleryImage.alt=`カジノ館内 ${firstIndex+1}`;
+        casinoGalleryImage.classList.add('ready');
+        showCasinoLevel('gallery');
         renderCasinoGallery();
-      }else{
-        casinoGalleryEmpty.textContent='館内写真を読み込んでいます…';
-        casinoGalleryEmpty.classList.remove('hidden');
-        casinoGalleryEmpty.setAttribute('aria-hidden','false');
-      }
-      discoverCasinoGallery().then(files=>{
-        if(casinoLevel!=='gallery')return;
-        if(!files.length){
-          casinoGalleryEmpty.textContent='館内写真を読み込めませんでした。';
-          casinoGalleryEmpty.classList.remove('hidden');
-          casinoGalleryEmpty.setAttribute('aria-hidden','false');
-          return;
-        }
-        renderCasinoGallery();
-      }).catch(error=>{
+      }catch(error){
         console.warn('casino gallery load',error);
-        if(casinoLevel==='gallery'){
-          casinoGalleryEmpty.textContent='館内写真を読み込めませんでした。';
-          casinoGalleryEmpty.classList.remove('hidden');
-          casinoGalleryEmpty.setAttribute('aria-hidden','false');
+        if(casinoVipDoorNotice){
+          casinoVipDoorNotice.textContent=String(error?.message||'館内写真を読み込めませんでした。もう一度お試しください。');
+          casinoVipDoorNotice.classList.remove('hidden');
         }
-      });
+      }finally{
+        casinoGalleryOpening=false;
+        casinoGalleryMenu.disabled=false;
+        casinoGalleryMenu.removeAttribute('aria-busy');
+        if(title)title.textContent=original.title;
+        if(description)description.textContent=original.description;
+        if(guide)guide.textContent=original.guide;
+      }
     });
     // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
     discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
