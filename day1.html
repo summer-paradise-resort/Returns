@@ -1287,7 +1287,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
                 <button id="roomSceneMenuToggle" class="room-scene-menu-toggle" type="button" aria-expanded="false">場所一覧　1 / 7</button>
                 <button id="roomSceneNext" class="room-scene-arrow" type="button" aria-label="次の場所">›</button>
               </div>
-              <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div id="roomSceneDots" class="room-scene-dots" aria-label="客室写真の位置"><span class="active"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
               <div class="room-actions">
                 <div id="roomPhoneCallPanel" class="room-phone-call-panel hidden" aria-live="polite">
                   <div id="roomPhoneCallStatus" class="room-phone-call-status">電話が鳴っている。</div>
@@ -1322,8 +1322,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
               <button type="button" data-darkroom-command="medium">中速</button>
               <button type="button" data-darkroom-command="fast">高速</button>
               <button type="button" data-darkroom-command="fast2">高速2</button>
-              <button type="button" data-darkroom-command="fast3">高速3</button>
-              <button type="button" data-darkroom-command="fast4">高速4</button>
               <button type="button" data-darkroom-command="mayo">マヨ</button>
               <button type="button" data-darkroom-command="stop">止める</button>
             </div>
@@ -4798,9 +4796,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const VILLA_DARKROOM_FILES=Object.freeze({
       kiss1:'villa_darkroom_kiss_1.mp3',kiss2:'villa_darkroom_kiss_2.mp3',kiss3:'villa_darkroom_kiss_3.mp3',
       slow:'villa_darkroom_slow.mp3',medium:'villa_darkroom_medium.mp3',
-      fast:'villa_darkroom_fast.mp3',fast2:'villa_darkroom_fast_2.mp3',fast3:'villa_darkroom_fast_3.mp3',fast4:'villa_darkroom_fast_4.mp3',mayo:'villa_darkroom_mayo.mp3'
+      fast:'villa_darkroom_fast.mp3',fast2:'villa_darkroom_fast_2.mp3',mayo:'villa_darkroom_mayo.mp3'
     });
-    const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',slow:'低速',medium:'中速',fast:'高速',fast2:'高速2',fast3:'高速3',fast4:'高速4',mayo:'マヨ'});
+    const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',slow:'低速',medium:'中速',fast:'高速',fast2:'高速2',mayo:'マヨ'});
     let villaDarkroomAction='bgm',villaDarkroomActionId='',villaDarkroomActionAt=0;
     let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
     let villaDarkroomEffectKey='',villaDarkroomStopped=false;
