@@ -652,6 +652,22 @@
     /* TOUCH / SCROLL FIX 2026-10-03:
        Tappable images must not block vertical page scrolling.
        Swipe galleries keep horizontal swipe handling while the browser owns vertical pan. */
+    /* 501専用暗室。写真は一切表示せず、時間帯にかかわらず完全な黒背景にする。 */
+    .room-scene[data-scene="darkroom"],.room-scene[data-scene="darkroom"] figure{background:#000!important}
+    .room-scene[data-scene="darkroom"] .room-photo-area,.room-scene[data-scene="darkroom"] .room-photo-shade{display:none!important}
+    .room-scene[data-scene="darkroom"] .room-overlay-top{background:linear-gradient(180deg,rgba(0,0,0,.82),transparent)}
+    .room-scene[data-scene="darkroom"] .room-overlay-bottom{background:linear-gradient(0deg,#000 10%,rgba(0,0,0,.85) 72%,transparent)}
+    .villa-darkroom-console{position:absolute;z-index:9;top:20%;left:14px;right:14px;bottom:33%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;overflow-y:auto;overscroll-behavior:contain;padding:10px 5px 20px;color:#ddd;text-align:center}
+    .villa-darkroom-console.hidden{display:none!important}
+    .villa-darkroom-caption{font:11px Georgia,serif;letter-spacing:.26em;color:#bca67e}
+    .villa-darkroom-status{min-height:2em;font-size:11px;line-height:1.7;color:#c3c3c3}
+    .villa-darkroom-command-grid{width:min(420px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .villa-darkroom-command-grid.hidden{display:none!important}
+    .villa-darkroom-command-grid button{min-height:38px;padding:7px 3px;border:1px solid rgba(210,187,141,.43);border-radius:4px;background:rgba(24,24,24,.9);color:#f4e6cb;font-size:12px;letter-spacing:.04em}
+    .villa-darkroom-command-grid button[aria-pressed="true"]{background:#725932;border-color:#edcf91;color:#fff}
+    .villa-darkroom-command-grid button[data-darkroom-command="stop"]{grid-column:1/-1;color:#fff;border-color:#9b6969;background:#3a2222}
+    .villa-darkroom-unlock{min-height:35px;padding:7px 17px;border:1px solid rgba(219,198,147,.65);background:#41331d;color:#fff;font-size:11px}
+    @media(max-height:690px){.villa-darkroom-console{top:15%;bottom:39%;gap:5px}.villa-darkroom-command-grid{gap:4px}.villa-darkroom-command-grid button{min-height:34px}}
     .room-scene{touch-action:pan-y}
     .room-photo-area{touch-action:pan-x pinch-zoom}
     .collection-card:not(.missing),.bar-menu-zoom-trigger{touch-action:manipulation}
@@ -1204,6 +1220,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="auto" playsinline></audio>
+        <audio id="villaDarkroomBgm" src="villa_darkroom_bgm.mp3" preload="auto" loop playsinline></audio>
+        <audio id="villaDarkroomEffect" preload="auto" loop playsinline></audio>
         <div id="roomServiceFoodGallery" class="room-service-food-gallery hidden" role="dialog" aria-modal="true" aria-label="届いたお食事" aria-hidden="true">
           <div class="room-service-food-stage">
             <div class="room-service-food-kicker">ROOM SERVICE — DELIVERED</div>
@@ -1293,6 +1311,24 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
               </div>
             </div>
           </figure>
+          <section id="villaDarkroomConsole" class="villa-darkroom-console hidden" aria-label="ヴィラの暗室" aria-live="off">
+            <div class="villa-darkroom-caption">ROYAL VILLA — DARK ROOM</div>
+            <div id="villaDarkroomStatus" class="villa-darkroom-status" aria-live="polite">音声の準備ができています。</div>
+            <div id="villaDarkroomCommands" class="villa-darkroom-command-grid hidden" aria-label="暗室の音声操作">
+              <button type="button" data-darkroom-command="kiss1">キス1</button>
+              <button type="button" data-darkroom-command="kiss2">キス2</button>
+              <button type="button" data-darkroom-command="kiss3">キス3</button>
+              <button type="button" data-darkroom-command="slow">低速</button>
+              <button type="button" data-darkroom-command="medium">中速</button>
+              <button type="button" data-darkroom-command="fast">高速</button>
+              <button type="button" data-darkroom-command="fast2">高速2</button>
+              <button type="button" data-darkroom-command="fast3">高速3</button>
+              <button type="button" data-darkroom-command="fast4">高速4</button>
+              <button type="button" data-darkroom-command="mayo">マヨ</button>
+              <button type="button" data-darkroom-command="stop">止める</button>
+            </div>
+            <button type="button" id="villaDarkroomEnableSound" class="villa-darkroom-unlock hidden">音声を有効にする</button>
+          </section>
           <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday1.htmlと同じ場所にアップロードしてください。</p>
           <nav id="roomSceneNav" class="room-scene-nav" aria-label="客室内を眺める" aria-hidden="true">
             <button type="button" data-room-scene="room" aria-pressed="true">部屋全体</button>
@@ -1303,6 +1339,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
             <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
             <button type="button" data-room-scene="closet" aria-pressed="false">クローゼット</button>
             <button type="button" data-room-scene="bathroom" aria-pressed="false">バスルーム</button>
+            <button type="button" data-room-scene="darkroom" aria-pressed="false">暗室</button>
           </nav>
         </div>
         <div id="roomFallback" class="room-fallback hidden">
@@ -4019,10 +4056,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         armRoomPhoneAudioMaster();
         startResortMusic();
         if(typeof resumeVillaPoolAudioAfterMasterOn==='function')resumeVillaPoolAudioAfterMasterOn();
+        if(typeof resumeVillaDarkroomAudioAfterMasterOn==='function')resumeVillaDarkroomAudioAfterMasterOn();
         if(roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
       }else{
         pauseResortMusic();
         if(typeof stopVillaPoolAudioForMaster==='function')stopVillaPoolAudioForMaster();
+        if(typeof stopVillaDarkroomAudioForMaster==='function')stopVillaDarkroomAudioForMaster();
         stopRoomPhoneRing();
         disarmRoomPhoneAudioMaster();
       }
@@ -4618,6 +4657,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const roomServiceNgScreen=document.getElementById('roomServiceNgScreen'), roomServiceNgVideo=document.getElementById('roomServiceNgVideo'), roomServiceNgClose=document.getElementById('roomServiceNgClose'), roomServiceNgFallback=document.getElementById('roomServiceNgFallback');
     const villaPoolExperience=document.getElementById('villaPoolExperience'), villaPoolBubbles=document.getElementById('villaPoolBubbles'), villaPoolChat=document.getElementById('villaPoolChat'), villaPoolChatUnread=document.getElementById('villaPoolChatUnread'), villaPoolExit=document.getElementById('villaPoolExit');
     const villaPoolInAudio=document.getElementById('villaPoolInAudio'), villaPoolNowAudio=document.getElementById('villaPoolNowAudio'), villaPoolOutAudio=document.getElementById('villaPoolOutAudio');
+    const villaDarkroomConsole=document.getElementById('villaDarkroomConsole'),villaDarkroomCommands=document.getElementById('villaDarkroomCommands'),villaDarkroomStatus=document.getElementById('villaDarkroomStatus'),villaDarkroomUnlock=document.getElementById('villaDarkroomEnableSound');
+    const villaDarkroomBgm=document.getElementById('villaDarkroomBgm'),villaDarkroomEffect=document.getElementById('villaDarkroomEffect');
     let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
@@ -4665,7 +4706,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       desk:['Royal_Villa_Desk.jpg','Royal_Villa_Desk_evening.jpg','Royal_Villa_Desk_Night.jpg'],
       phone:['Royal_Villa_Phone.jpg','Royal_Villa_Phone_evening.jpg','Royal_Villa_Phone_Night.jpg'],
       closet:['Royal_Villa_Closet.jpg','Royal_Villa_Closet_evening.jpg','Royal_Villa_Closet_Night.jpg'],
-      bathroom:['Royal_Villa_Bathroom.jpg','Royal_Villa_Bathroom_evening.jpg','Royal_Villa_Bathroom_Night.jpg']
+      bathroom:['Royal_Villa_Bathroom.jpg','Royal_Villa_Bathroom_evening.jpg','Royal_Villa_Bathroom_Night.jpg'],
+      // 暗室は写真を使わない。全時間帯とも黒背景をCSSで表示する。
+      darkroom:[null,null,null]
     };
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
@@ -4715,7 +4758,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         desk:[[50,50],[50,50],[50,50]],
         phone:[[50,50],[50,50],[50,50]],
         closet:[[50,50],[50,50],[50,50]],
-        bathroom:[[50,50],[50,50],[50,50]]
+        bathroom:[[50,50],[50,50],[50,50]],
+        darkroom:[[50,50],[50,50],[50,50]]
       }
     };
     function roomVisualConfig(room){
@@ -4726,8 +4770,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(room==='501')return{key:'villa',label:'ROYAL VILLA',name:'ロイヤルヴィラ',scenes:villaScenes};
       return null;
     }
-    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
-    const roomSceneOrder=['room','door','window','pool','desk','phone','closet','bathroom'];
+    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム',darkroom:'暗室'};
+    const roomSceneOrder=['room','door','window','pool','desk','phone','closet','bathroom','darkroom'];
     function activeRoomSceneOrder(config=roomVisualConfig(activeRoom)){return config?roomSceneOrder.filter(scene=>Array.isArray(config.scenes?.[scene])):roomSceneOrder}
     const timeNames=['昼','夕暮れ','夜'];
     let selectedRoomScene='room', shownTime=-1;
@@ -4749,6 +4793,134 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       villaPoolImagesPreloaded=true;
       villaPoolUnderwaterImages.forEach(src=>{const image=new Image();image.src=src});
     }
+    // VILLA DARK ROOM: 501 only. Only the exact SECURITY CHECK name may send commands.
+    const VILLA_DARKROOM_CONTROLLER='エルナンド・ロメロ';
+    const VILLA_DARKROOM_FILES=Object.freeze({
+      kiss1:'villa_darkroom_kiss_1.mp3',kiss2:'villa_darkroom_kiss_2.mp3',kiss3:'villa_darkroom_kiss_3.mp3',
+      slow:'villa_darkroom_slow.mp3',medium:'villa_darkroom_medium.mp3',
+      fast:'villa_darkroom_fast.mp3',fast2:'villa_darkroom_fast_2.mp3',fast3:'villa_darkroom_fast_3.mp3',fast4:'villa_darkroom_fast_4.mp3',mayo:'villa_darkroom_mayo.mp3'
+    });
+    const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',slow:'低速',medium:'中速',fast:'高速',fast2:'高速2',fast3:'高速3',fast4:'高速4',mayo:'マヨ'});
+    let villaDarkroomAction='bgm',villaDarkroomActionId='',villaDarkroomActionAt=0;
+    let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
+    let villaDarkroomEffectKey='',villaDarkroomStopped=false;
+    function villaDarkroomIsController(){return String(activeGuest||'').trim()===VILLA_DARKROOM_CONTROLLER}
+    function villaDarkroomIsHere(){return activeRoom==='501'&&selectedRoomScene==='darkroom'&&roomView.classList.contains('room-active')}
+    function villaDarkroomAudioAllowed(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
+    function villaDarkroomStopOne(audio){if(!audio)return;sprCancelGuardedAudioStart(audio);try{audio.pause();audio.muted=false;if(audio.readyState>0)audio.currentTime=0}catch{}}
+    function villaDarkroomStopLocal(){villaDarkroomStopOne(villaDarkroomBgm);villaDarkroomStopOne(villaDarkroomEffect);villaDarkroomEffectKey='';villaDarkroomUnlock?.classList.add('hidden')}
+    function villaDarkroomSetStatus(text){if(villaDarkroomStatus)villaDarkroomStatus.textContent=text}
+    function villaDarkroomMarkSelected(key=''){
+      villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.darkroomCommand===key)));
+    }
+    async function villaDarkroomStartBgm(){
+      if(!villaDarkroomIsHere()||villaDarkroomStopped||!villaDarkroomAudioAllowed()||!villaDarkroomBgm)return;
+      if(!villaDarkroomBgm.paused){try{villaDarkroomBgm.muted=false}catch{}return}
+      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.40,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
+      if(!started&&villaDarkroomIsHere()&&!villaDarkroomStopped&&villaDarkroomAudioAllowed())villaDarkroomUnlock?.classList.remove('hidden');
+    }
+    async function villaDarkroomStartEffect(key){
+      if(!VILLA_DARKROOM_FILES[key]||!villaDarkroomIsHere())return;
+      if(villaDarkroomEffectKey===key&&!villaDarkroomEffect?.paused)return;
+      villaDarkroomStopOne(villaDarkroomEffect);
+      villaDarkroomEffectKey=key;
+      if(!villaDarkroomAudioAllowed()||!villaDarkroomEffect)return;
+      villaDarkroomEffect.src=VILLA_DARKROOM_FILES[key];
+      villaDarkroomEffect.load();
+      const started=await sprStartAudioClean(villaDarkroomEffect,{volume:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+      if(!started&&villaDarkroomIsHere()&&!villaDarkroomStopped&&villaDarkroomAudioAllowed())villaDarkroomUnlock?.classList.remove('hidden');
+    }
+    function villaDarkroomApplyAction(key){
+      if(!villaDarkroomIsHere())return;
+      if(key==='stop'){
+        villaDarkroomStopped=true;
+        villaDarkroomStopLocal();villaDarkroomMarkSelected('stop');villaDarkroomSetStatus('再生を停止しました。');return;
+      }
+      villaDarkroomStopped=false;
+      void villaDarkroomStartBgm();
+      if(Object.hasOwn(VILLA_DARKROOM_FILES,key)){
+        villaDarkroomMarkSelected(key);
+        villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);
+        void villaDarkroomStartEffect(key);
+      }else{
+        villaDarkroomStopOne(villaDarkroomEffect);villaDarkroomEffectKey='';
+        villaDarkroomMarkSelected();villaDarkroomSetStatus('暗室のBGMを再生中');
+      }
+    }
+    function villaDarkroomRender(){
+      const here=villaDarkroomIsHere(),controller=villaDarkroomIsController();
+      villaDarkroomConsole?.classList.toggle('hidden',!here);
+      villaDarkroomCommands?.classList.toggle('hidden',!here||!controller);
+      if(here&&!controller&&!villaDarkroomEffectKey&&!villaDarkroomStopped)villaDarkroomSetStatus('この部屋のBGMと共有音声を再生します。');
+    }
+    function villaDarkroomApplyShared(payload){
+      if(String(payload?.room_no||'')!=='501'||activeRoom!=='501')return;
+      if(String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;
+      if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
+      const action=String(payload?.action||'');
+      if(action!=='stop'&&action!=='bgm'&&!Object.hasOwn(VILLA_DARKROOM_FILES,action))return;
+      const at=Number(payload?.occurred_at||0),id=String(payload?.event_id||'');
+      if(!Number.isFinite(at)||at<=0||at<villaDarkroomLatestRemoteAt)return;
+      if(at===villaDarkroomLatestRemoteAt&&id===villaDarkroomLatestRemoteAction)return;
+      villaDarkroomLatestRemoteAt=at;villaDarkroomLatestRemoteAction=id;
+      if(villaDarkroomIsHere())villaDarkroomApplyAction(action);
+      // When elsewhere in the villa, do not play: the dedicated music is heard only inside the darkroom.
+    }
+    function villaDarkroomSyncPresence(){
+      if(activeRoom!=='501'||villaDarkroomIsController())return;
+      const members=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER&&m?.darkroom_scene==='darkroom');
+      const owner=members.sort((a,b)=>Number(b?.darkroom_action_at||0)-Number(a?.darkroom_action_at||0))[0];
+      if(!owner){
+        // The controller left the darkroom: stop their command sound (but keep ambience for listeners who remain).
+        if(villaDarkroomEffectKey){villaDarkroomStopOne(villaDarkroomEffect);villaDarkroomEffectKey='';villaDarkroomMarkSelected('');if(villaDarkroomIsHere())villaDarkroomSetStatus('暗室のBGMを再生中')}
+        return;
+      }
+      villaDarkroomApplyShared({room_no:'501',display_name:VILLA_DARKROOM_CONTROLLER,origin_session_key:owner.presence_session_key,
+        event_id:owner.darkroom_action_id,occurred_at:owner.darkroom_action_at,action:owner.darkroom_action});
+    }
+    async function villaDarkroomPublish(action){
+      if(!villaDarkroomIsController()||activeRoom!=='501')return;
+      villaDarkroomAction=action;
+      villaDarkroomActionAt=Date.now();
+      villaDarkroomActionId=sprSafeUuid();
+      if(roomPhonePresenceReady)void trackRoomPhonePresence();
+      const payload={room_no:'501',action,event_id:villaDarkroomActionId,occurred_at:villaDarkroomActionAt,
+        origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER};
+      if(roomPhonePresenceChannel&&roomPhonePresenceReady){
+        try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-audio',payload})}
+        catch(e){console.warn('villa darkroom sync',e)}
+      }
+    }
+    function villaDarkroomOnSceneChanged(previousScene,newScene){
+      if(activeRoom!=='501')return;
+      if(previousScene==='darkroom'&&newScene!=='darkroom'){
+        villaDarkroomStopLocal();villaDarkroomStopped=false;
+        if(villaDarkroomIsController())void villaDarkroomPublish('stop');
+      }
+      if(newScene==='darkroom'&&previousScene!=='darkroom'){
+        villaDarkroomStopped=false;villaDarkroomEffectKey='';villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
+        villaDarkroomApplyAction('bgm');
+        if(villaDarkroomIsController())void villaDarkroomPublish('bgm');
+        else villaDarkroomSyncPresence();
+      }
+      villaDarkroomRender();
+    }
+    function stopVillaDarkroomAudioForMaster(){villaDarkroomStopOne(villaDarkroomBgm);villaDarkroomStopOne(villaDarkroomEffect)}
+    function resumeVillaDarkroomAudioAfterMasterOn(){
+      if(!villaDarkroomIsHere()||villaDarkroomStopped)return;
+      void villaDarkroomStartBgm();
+      if(villaDarkroomEffectKey){const key=villaDarkroomEffectKey;villaDarkroomEffectKey='';void villaDarkroomStartEffect(key)}
+    }
+    villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!villaDarkroomIsController()||!villaDarkroomIsHere())return;
+      const key=btn.dataset.darkroomCommand;
+      villaDarkroomApplyAction(key);
+      void villaDarkroomPublish(key);
+    }));
+    villaDarkroomUnlock?.addEventListener('click',()=>{
+      villaDarkroomUnlock.classList.add('hidden');
+      resumeVillaDarkroomAudioAfterMasterOn();
+    });
     let villaPoolAudioToken=0;
     function villaPoolAudioMasterOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function stopVillaPoolAudioElement(audio,reset=true){
@@ -5248,6 +5420,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         presence_session_key:String(roomPhonePresenceSessionKey||''),
         phone_event_id:roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'',
         phone_choice:String(choice||'idle'),
+        darkroom_scene:activeRoom==='501'?selectedRoomScene:'',
+        darkroom_action:villaDarkroomIsController()?villaDarkroomAction:'',
+        darkroom_action_id:villaDarkroomIsController()?villaDarkroomActionId:'',
+        darkroom_action_at:villaDarkroomIsController()?villaDarkroomActionAt:0,
         updated_at:new Date().toISOString()
       };
       if(typeof roomServiceHorrorPresenceFields==='function')Object.assign(payload,roomServiceHorrorPresenceFields());
@@ -5436,6 +5612,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         updateRoomOccupancyUi();
         evaluateRoomPhoneDeclineState();
         if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
+        villaDarkroomSyncPresence();
         if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
         // 最初のPresence同期は既に部屋にいた人の読み込みなので、入室通知は出さない。
         // 同じセッションの電話・NG状態更新がjoinとして再通知されても、演出を繰り返さない。
@@ -5458,6 +5635,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         .on('broadcast',{event:'room-service-order-created'},({payload})=>{if(activeRoom!==roomAtStart)return;applySharedRoomServiceOrder(payload)})
         .on('broadcast',{event:'room-service-delivery-arrived'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomServiceArrival(payload)})
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
+        .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
@@ -6369,10 +6547,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const availableScenes=activeRoomSceneOrder(config);
       if(!availableScenes.includes(selectedRoomScene))selectedRoomScene=availableScenes[0]||'door';
       const roomAssetFile=config.scenes[selectedRoomScene][time];
-      roomPhoto.dataset.assetFile=roomAssetFile;
-      roomPhoto.dataset.assetFallback='0';
-      roomPhoto.src=roomAssetSrc(config,roomAssetFile);
       roomScene.dataset.scene=selectedRoomScene;
+      roomPhoto.dataset.assetFile=roomAssetFile||'';
+      roomPhoto.dataset.assetFallback='0';
+      if(selectedRoomScene==='darkroom'){
+        roomPhoto.removeAttribute('src');
+        roomPhoto.style.opacity='0';
+      }else{
+        roomPhoto.src=roomAssetSrc(config,roomAssetFile);
+      }
       const focal=roomScenePositions[config.key][selectedRoomScene][time];
       roomScene.style.setProperty('--scene-x',focal[0]+'%');
       roomScene.style.setProperty('--scene-y',focal[1]+'%');
@@ -6395,9 +6578,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${availableScenes.length}`;
       roomSceneDots.forEach((dot,index)=>{dot.classList.toggle('hidden',index>=availableScenes.length);dot.classList.toggle('active',index===sceneIndex)});
       roomSceneButtons.forEach(button=>{const available=availableScenes.includes(button.dataset.roomScene);button.classList.toggle('hidden',!available);button.setAttribute('aria-pressed',String(available&&button.dataset.roomScene===selectedRoomScene))});
+      villaDarkroomRender();
       updateRoomContextAction();
     }
-    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
+    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);villaDarkroomOnSceneChanged(previousScene,scene);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
@@ -6416,6 +6600,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(Math.abs(diffX)>45&&Math.abs(diffX)>Math.abs(diffY)*1.2)stepRoomScene(diffX<0?1:-1);
     },{passive:true});
     roomPhoto.addEventListener('error',()=>{
+      if(selectedRoomScene==='darkroom')return;
       const config=roomVisualConfig(activeRoom);
       const file=roomPhoto.dataset.assetFile||'';
       if((config?.key==='oceanLagoon'||config?.key==='suite'||config?.key==='villa')&&file&&roomPhoto.dataset.assetFallback!=='1'){
@@ -7486,6 +7671,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       updateRoomOccupancyUi();setRoomOccupancyExpanded(false);
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
+      villaDarkroomStopLocal();villaDarkroomStopped=false;villaDarkroomAction='bgm';villaDarkroomActionAt=0;villaDarkroomActionId='';
+      villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
       selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
       restoreRoomServiceFoodGallery(room);
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
@@ -7504,6 +7691,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         await Promise.race([broadcastRoomMemberLeft(activeRoom),new Promise(resolve=>setTimeout(resolve,400))]);
         void syncMysteryRoomPresence('');
         if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();
+        if(activeRoom==='501'&&selectedRoomScene==='darkroom'&&villaDarkroomIsController())void villaDarkroomPublish('stop');
+        villaDarkroomStopLocal();
         closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();
         roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
         roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView);
