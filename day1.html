@@ -800,22 +800,21 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 }
 .casino-emily-talk-spacer{display:block;height:42px;width:100%;pointer-events:none}
 .casino-emily-talk-spacer.hidden{display:none!important}
-/* 軽い再会話用。背景をぼかし、白いカードと控えめな金色の操作表示にする。 */
-.casino-emily-conversation{position:fixed;inset:0;z-index:141;display:flex;align-items:center;justify-content:center;padding:18px 16px max(18px,env(safe-area-inset-bottom));background:rgba(218,225,232,.62);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);color:#26313d;pointer-events:auto}
+/* Lower-screen dialogue styled like the Hernando / resort-staff conversations.
+   It is a separate overlay, not the full-screen ALL-IN invitation. */
+.casino-emily-conversation{position:fixed;inset:0;z-index:141;display:flex;align-items:flex-end;justify-content:center;padding:0 12px max(16px,env(safe-area-inset-bottom));background:transparent;color:#f6efe3;pointer-events:auto}
 .casino-emily-conversation.hidden{display:none!important}
-.casino-emily-dialogue{position:relative;width:min(640px,100%);padding:40px 44px 25px;border:0;background:rgba(255,255,255,.96);box-shadow:0 10px 32px rgba(34,43,53,.16)}
-.casino-emily-dialogue::before{content:"";position:absolute;top:0;left:0;width:84px;height:3px;background:#a8874b}
-.casino-emily-dialogue-name{font:12px Georgia,'Yu Mincho',serif;letter-spacing:.24em;color:#a8874b;margin-bottom:14px}
-.casino-emily-dialogue-text{min-height:64px;font:17px/1.95 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.045em;color:#293542;white-space:pre-wrap}
+.casino-emily-dialogue{width:min(720px,100%);padding:18px 18px 16px;border:1px solid rgba(227,194,125,.60);background:rgba(7,12,18,.94);box-shadow:0 14px 45px rgba(0,0,0,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.casino-emily-dialogue-name{font:11px Georgia,'Yu Mincho',serif;letter-spacing:.22em;color:#e3c27d;margin-bottom:11px}
+.casino-emily-dialogue-text{min-height:64px;font:15px/2 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.055em;color:#fff;white-space:pre-wrap}
 .casino-emily-char{display:inline;opacity:0;filter:blur(1.2px);transition:opacity .17s ease,filter .2s ease}
 .casino-emily-char.in{opacity:1;filter:blur(0)}
-.casino-emily-dialogue-next{display:block;width:auto;min-height:38px;margin:16px 0 0 auto;padding:0 4px;border:0;background:transparent;color:#a8874b;font:12px Georgia,serif;letter-spacing:.16em}
-.casino-emily-dialogue-choices{display:flex;justify-content:flex-end;align-items:center;gap:18px;margin-top:18px}
-.casino-emily-dialogue-choices button{min-height:38px;padding:0 4px;border:0;background:transparent;color:#a8874b;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.13em;line-height:1.6}
-.casino-emily-dialogue-choices button.emily-close-action{min-width:92px;text-align:right}
-.casino-emily-dialogue-choices button:not(.emily-close-action){padding:8px 12px;border:1px solid rgba(168,135,75,.45);color:#55616c;background:rgba(255,255,255,.4)}
+.casino-emily-dialogue-next{display:block;width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.55);background:rgba(12,42,63,.88);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
+.casino-emily-dialogue-choices{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px}
+.casino-emily-dialogue-choices button{min-height:42px;padding:9px 12px;border:1px solid rgba(227,194,125,.48);background:rgba(17,39,52,.92);color:#fff;font:12px 'Yu Mincho',serif;line-height:1.6}
+.casino-emily-dialogue-choices button.emily-close-action{min-height:38px;min-width:92px;padding:0 4px;border:0;background:transparent;color:#e3c27d;font:11px Georgia,serif;letter-spacing:.15em;text-align:right}
 .casino-emily-dialogue-choices button:disabled{opacity:.45}
-@media(max-width:520px){.casino-emily-dialogue{padding:34px 24px 20px}.casino-emily-dialogue-text{font-size:15px;min-height:56px}.casino-emily-dialogue-choices{gap:12px}.casino-emily-dialogue-choices button{font-size:11px}}
+@media(max-width:520px){.casino-emily-dialogue{padding:16px 15px 14px}.casino-emily-dialogue-text{font-size:14px;min-height:56px}.casino-emily-dialogue-choices{gap:8px}.casino-emily-dialogue-choices button{font-size:11px}}
 /* The guest information prize is a single administrator-supplied JPG, not a database table. */
 .mystery-dialog .mystery-result-art img.mystery-guest-image{display:block;width:auto;max-width:100%;max-height:65dvh;object-fit:contain;margin:0 auto}
     
@@ -6473,12 +6472,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       ['苺のタルト','room_service_strawberry_tart.jpg']
     ]);
     const ROOM_SERVICE_DRINK_NAMES=new Set(['コーヒー','ミルクティー','カフェモカ','トロピカルフルーツジュース','ローズレモネード','ミネラルウォーター','スパークリングワイン']);
-    const VILLA_DESSERT_COMBO_ITEMS=['苺のタルト','ショコラケーキ','コーヒー','ミルクティー'];
-    const VILLA_DESSERT_COMBO_GALLERY=[
-      {name:'ヴィラ・デザートセット',qty:1,image:'room_service_villa_dessert_tray.jpg',drinks:'コーヒー × 1 ／ ミルクティー × 1'},
-      {name:'メッセージカード',qty:1,image:'room_service_villa_ruedo_message.jpg',drinks:''}
-    ];
-    const VILLA_DESSERT_COMBO_IMAGES=new Set(VILLA_DESSERT_COMBO_GALLERY.map(item=>item.image));
     const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
     const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
     const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
@@ -6542,13 +6535,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       try{if(roomServiceFoodGalleryQueue.length)localStorage.setItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom),JSON.stringify({queue:roomServiceFoodGalleryQueue,index:roomServiceFoodGalleryIndex}));else localStorage.removeItem(roomServiceGalleryStorageKey(roomServiceFoodGalleryRoom))}catch{}
     }
     function isRoomServiceFoodGalleryItem(item){
-      return Boolean(item&&((ROOM_SERVICE_FOOD_IMAGES.has(item.name)&&item.image===ROOM_SERVICE_FOOD_IMAGES.get(item.name))||VILLA_DESSERT_COMBO_IMAGES.has(item.image)));
-    }
-    function isVillaDessertComboOrder(order){
-      if(String(order?.room||order?.room_no||'')!=='501')return false;
-      const quantities=new Map();
-      (Array.isArray(order?.items)?order.items:[]).forEach(item=>{const name=String(item?.name||'').trim(),qty=Math.max(0,Math.floor(Number(item?.qty)||0));if(name&&qty)quantities.set(name,(quantities.get(name)||0)+qty)});
-      return VILLA_DESSERT_COMBO_ITEMS.every(name=>(quantities.get(name)||0)>=1);
+      return Boolean(item&&ROOM_SERVICE_FOOD_IMAGES.has(item.name)&&item.image===ROOM_SERVICE_FOOD_IMAGES.get(item.name));
     }
     function displayRoomServiceFoodGallery(){
       if(!roomServiceFoodGallery||!roomServiceFoodGalleryQueue.length||!activeRoom||roomServiceFoodGalleryRoom!==String(activeRoom))return;
@@ -6574,16 +6561,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       return false;
     }
     function showRoomServiceFoodGallery(orders){
-      const villaDessertCombo=String(activeRoom||'')==='501'&&orders.some(isVillaDessertComboOrder);
       const merged=new Map(),drinks=new Map();
       orders.forEach(order=>(order.items||[]).forEach(item=>{
         const name=String(item?.name||'').trim(),qty=Math.max(1,Math.floor(Number(item?.qty)||1));
         if(ROOM_SERVICE_FOOD_IMAGES.has(name))merged.set(name,(merged.get(name)||0)+qty);
         else if(ROOM_SERVICE_DRINK_NAMES.has(name))drinks.set(name,(drinks.get(name)||0)+qty);
       }));
-      if(!merged.size&&!villaDessertCombo){showRoomServiceDeliveryNotice(orders);return}
+      if(!merged.size){showRoomServiceDeliveryNotice(orders);return}
       const beverageText=[...drinks].map(([name,qty])=>`${name} × ${qty}`).join(' ／ ');
-      const next=villaDessertCombo?VILLA_DESSERT_COMBO_GALLERY.map(item=>({...item})):[...merged].map(([name,qty])=>({name,qty,image:ROOM_SERVICE_FOOD_IMAGES.get(name),drinks:beverageText}));
+      const next=[...merged].map(([name,qty])=>({name,qty,image:ROOM_SERVICE_FOOD_IMAGES.get(name),drinks:beverageText}));
       const current=String(activeRoom||'');
       // Unseen images survive a reload. New deliveries append to the current slideshow.
       if(roomServiceFoodGalleryRoom!==current){roomServiceFoodGalleryQueue=[];roomServiceFoodGalleryIndex=0;roomServiceFoodGalleryRoom=current}
