@@ -3,9 +3,13 @@
 <head>
 <script>
 (()=>{
-  const raw=new URLSearchParams(window.location.search).get('day');
-  const requested=Number(raw||1);
-  document.documentElement.dataset.resortDay=String(Number.isFinite(requested)&&requested>=1&&requested<=7?Math.floor(requested):1);
+  const params=new URLSearchParams(window.location.search);
+  const requested=Number(params.get('day'));
+  const remembered=Number(localStorage.getItem('spr-current-resort-day'));
+  const validDay=value=>Number.isFinite(value)&&value>=1&&value<=7;
+  const current=validDay(requested)?Math.floor(requested):(validDay(remembered)?Math.floor(remembered):1);
+  document.documentElement.dataset.resortDay=String(current);
+  localStorage.setItem('spr-current-resort-day',String(current));
 })();
 </script>
   <meta charset="UTF-8">
@@ -8184,7 +8188,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   async function creator(){try{return await resolveSpecialPlayerId()}catch(e){return null}}
   async function latestMarker(type){const c=client();if(!c)return null;const {data,error}=await c.from('resort_announcements').select('id,message,created_at').eq('announcement_type',type).order('created_at',{ascending:false}).limit(1);if(error)throw error;return data&&data[0]?data[0]:null}
   async function publishMarker(type,message){const c=client();if(!c)throw new Error('Supabaseに接続できません。');const created_by=await creator();if(!created_by)throw new Error('プレイヤー情報を確認できません。SECURITY CHECKから入ってください。');const {error}=await c.from('resort_announcements').insert({announcement_type:type,message,created_by,expires_at:'2099-12-31T23:59:59+00:00'});if(error)throw error}
-  function goDay(day){const safe=Math.max(1,Math.min(7,Math.floor(Number(day)||1)));const current=new URL(location.href);const target=new URL('day1.html',location.href);current.searchParams.forEach((value,key)=>target.searchParams.set(key,value));target.searchParams.set('day',String(safe));const here=(current.pathname.split('/').pop()||'').toLowerCase();const currentDay=Math.max(1,Math.min(7,Math.floor(Number(current.searchParams.get('day')||1)||1)));if(here!=='day1.html'||currentDay!==safe)location.replace(target.href)}
+  function goDay(day){const safe=Math.max(1,Math.min(7,Math.floor(Number(day)||1)));localStorage.setItem('spr-current-resort-day',String(safe));const current=new URL(location.href);const target=new URL('day1.html',location.href);current.searchParams.forEach((value,key)=>target.searchParams.set(key,value));target.searchParams.set('day',String(safe));const here=(current.pathname.split('/').pop()||'').toLowerCase();const urlDay=Number(current.searchParams.get('day'));if(here!=='day1.html'||urlDay!==safe)location.replace(target.href)}
   function markerDay(marker,fallback=1){const m=String(marker?.message||'').match(/DAY:(\d+)/i);const n=m?Number(m[1]):Number(fallback);return n>=1&&n<=7?n:1}
   function parseAutoDayMarker(marker){
     const message=String(marker?.message||'');
@@ -8218,7 +8222,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   }
   async function publishDerivedDayIfNeeded(manualMarker,derivedDay){
     if(autoDayPublishInFlight)return;
-    const manualDay=markerDay(manualMarker,1);
+    const manualDay=markerDay(manualMarker,THIS_DAY);
     if(derivedDay<=manualDay)return;
     autoDayPublishInFlight=true;
     try{
@@ -8236,13 +8240,14 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     try{
       const [manualMarker,autoMarker]=await Promise.all([latestMarker(DAY_TYPE),latestMarker(AUTO_DAY_TYPE)]);
-      const manualDay=markerDay(manualMarker,1);
+      const manualDay=markerDay(manualMarker,THIS_DAY);
       const autoState=parseAutoDayMarker(autoMarker);
       autoDayEnabled=autoState.enabled;
       autoDayAnchor=autoState.enabled?autoState:null;
       let safe=manualDay;
       if(autoDayEnabled){const derived=deriveAutoDay(autoState);if(derived) safe=derived}
       safe=Math.max(1,Math.min(7,safe));
+      localStorage.setItem('spr-current-resort-day',String(safe));
       setDayUI(safe);renderAutoDayButton();scheduleAutoDayCheck();
       if(autoDayEnabled&&(publishAdvance||safe>manualDay))void publishDerivedDayIfNeeded(manualMarker,safe);
       if(redirect&&safe!==THIS_DAY)goDay(safe);
