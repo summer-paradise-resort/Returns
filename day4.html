@@ -1624,7 +1624,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   <section id="hernandoSecretSequence" class="hernando-secret-sequence" aria-hidden="true" aria-label="クローゼットの隠し扉">
     <div class="hernando-secret-card">
       <div class="hernando-secret-kicker">SECRET DOOR</div>
-      <div class="hernando-secret-text">クローゼットの奥に、隠し扉がある！</div>
+      <div class="hernando-secret-text">クローゼットの奥に隠し扉がある！</div>
       <div class="hernando-secret-actions">
         <button id="hernandoSecretEnter" type="button">奥に進む</button>
         <button id="hernandoSecretCancel" type="button">やめる</button>
@@ -1803,19 +1803,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <div class="casino-prize-box">
           <div class="prize-chips">YOUR CHIPS<b id="prizeChips">1,000</b></div>
           <div class="prize-list">
-            <div class="prize-item"><div><strong>次元バック</strong><small>漂流ラッコが興味を示す、不思議な次元バック</small></div><div class="prize-item-side"><b>200 CHIP</b><span id="dimensionalBagOwned">所持 0</span><button id="buyDimensionalBag" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>次元バック</strong><small>協力狩りでお馴染みの次元バック。ただ、ここではあまり役に立たなさそう……</small></div><div class="prize-item-side"><b>200 CHIP</b><span id="dimensionalBagOwned">所持 0</span><button id="buyDimensionalBag" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item"><div><strong>新鮮なドングリ</strong><small>島で採れた、つやのある新鮮なドングリ</small></div><div class="prize-item-side"><b>500 CHIP</b><span id="freshAcornOwned">所持 0</span><button id="buyFreshAcorn" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item">
-              <div><strong>BARドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>現在のドリンクと効能をリセットし、同じ時間帯に再注文できます。所持数制限なし</small></div>
+              <div><strong>BARドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。</small></div>
               <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
             </div>
-            <div class="prize-item"><div><strong>解毒剤</strong><small>毒の効能を打ち消す。</small></div><div class="prize-item-side"><b>5,000 CHIP</b><span id="antidoteOwned">所持 0</span><button id="buyAntidote" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>酔い覚まし</strong><small>毒のように強すぎるお酒には、これが一番効きます。</small></div><div class="prize-item-side"><b>5,000 CHIP</b><span id="antidoteOwned">所持 0</span><button id="buyAntidote" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item">
-              <div><strong>アフタヌーンティーチケット（4名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>所持数制限なし</small></div>
+              <div><strong>アフタヌーンティーチケット（4名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE</small></div>
               <div class="prize-item-side"><b>15,000 CHIP</b><span id="afternoonTea4Owned">所持 0</span><button id="buyAfternoonTea4Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item">
-              <div><strong>アフタヌーンティーチケット（2名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>所持数制限なし</small></div>
+              <div><strong>アフタヌーンティーチケット（2名様用）</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE</small></div>
               <div class="prize-item-side"><b>20,000 CHIP</b><span id="afternoonTea2Owned">所持 0</span><button id="buyAfternoonTea2Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
@@ -1933,11 +1933,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
-      extraDrinkTicket:{label:'BARドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
+      extraDrinkTicket:{label:'BARドリンクチケット',detail:'バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
       jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
-      dimensionalBag:{label:'次元バック',detail:'漂流ラッコが興味を示す、不思議な次元バック。',max:Infinity},
-      freshAcorn:{label:'新鮮なドングリ',detail:'リゾートで見つけた小さな動物にあげられる、新鮮なドングリ。',max:Infinity},
-      antidote:{label:'解毒剤',detail:'毒の効能を打ち消す。',max:Infinity},
+      dimensionalBag:{label:'次元バック',detail:'協力狩りでお馴染みの次元バック。ただ、ここではあまり役に立たなさそう……',max:Infinity},
+      freshAcorn:{label:'新鮮なドングリ',detail:'島で採れた、つやのある新鮮なドングリ。',max:Infinity},
+      antidote:{label:'酔い覚まし',detail:'毒のように強すぎるお酒には、これが一番効きます。',max:Infinity},
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
       lucaBalsaUsedTicket:{label:'切り取られた乗船チケット',detail:'赤い半券が切り取られた、水濡れの古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa_used.png',max:1},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
@@ -3045,7 +3045,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(ordered){barExtraTicketStatus.textContent=`BARドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'BARドリンクチケットを所持していません':'BARドリンクチケットを使用する';}
       if(ordered){
         const effectLimit=ordered.effectKey==='room-service:ng'?'このDAYが切り替わる翌朝7:00まで':`${info.label}の時間帯が終了するまで`;
-        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${effectLimit}保持されます。</p>`;
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。この一杯の余韻は${effectLimit}続きます。</p>`;
         barOrderStatusMini.textContent=`${info.label}：${ordered.name} をご注文済みです。`;
         barSelection.textContent=`ご注文済み：${ordered.name}`;barOrderConfirm.disabled=true;selectedBarDrink='';
       }else if(!info.orderOpen){
@@ -3053,7 +3053,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         barOrderStatusMini.textContent=`現在は営業時間外です。${info.label}のメニューをご覧いただけます。`;
         barSelection.textContent='現在は営業時間外です。';barOrderConfirm.disabled=true;
       }else{
-        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${storedGuestName}様は、この時間帯に1杯ご注文いただけます。通常の効能は${info.label}の終了時刻まで、NGドリンクの効能はDAYが切り替わる翌朝7:00まで保持されます。</p>`;
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${storedGuestName}様は、この時間帯に1杯ご注文いただけます。一杯の余韻は時間帯の終わりまで。ただし、ひどく強い酒の酔いは翌朝7:00まで残ることがあります。</p>`;
         barOrderStatusMini.textContent=`${info.label}：まだご注文いただけます。`;
         barSelection.textContent=selectedBarDrink?`選択中：${selectedBarDrink}`:'ドリンクをお選びください。';barOrderConfirm.disabled=!selectedBarDrink;
       }
@@ -3174,7 +3174,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(e){console.warn('extra drink ticket sync',e);barOrderResult.textContent='チケットの使用を同期できませんでした。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
       if(persistentNgBeforeChange)void setRemoteFlag(barNgEffectFlagKey(),persistentNgBeforeChange).catch(e=>console.warn('NG drink effect sync',e));
       const ngStillActive=!!activeNgDrinkEffect();
-      barOrderResult.textContent=ngStillActive?'BARドリンクチケットを1枚使用し、現在のドリンクを解除しました。ただし、NGドリンクの効能はDAYが切り替わるまで消えません。新しいドリンクをお選びください。':'BARドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      barOrderResult.textContent=ngStillActive?'チケットを渡した。バーテンダーはグラスを下げ、もう一杯の注文を待っている。けれど、あの強い酔いだけは身体に残っている。':'チケットを渡すと、バーテンダーは新しいグラスを用意した。もう一杯、注文できそうだ。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     });
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
@@ -4181,7 +4181,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(ultraMysteryButton){ultraMysteryButton.disabled=casinoChips<10000000000;ultraMysteryButton.textContent=casinoChips<10000000000?'チップ不足':'交換する'}
       afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
       [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
-      prizeMessage.textContent=message||'チケット系景品の所持数に制限はありません。';
+      prizeMessage.textContent=message||'お望みの景品をお選びください。';
       if(mysteryCounterReady)renderMysteryCounter();
     }
     async function buyTicket(key,label,price){
@@ -4209,7 +4209,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     document.getElementById('buyDimensionalBag')?.addEventListener('click',()=>buyStoryItem('dimensionalBag','次元バック',200));
     document.getElementById('buyFreshAcorn')?.addEventListener('click',()=>buyStoryItem('freshAcorn','新鮮なドングリ',500));
-    document.getElementById('buyAntidote')?.addEventListener('click',()=>buyStoryItem('antidote','解毒剤',5000));
+    document.getElementById('buyAntidote')?.addEventListener('click',()=>buyStoryItem('antidote','酔い覚まし',5000));
     document.getElementById('buyUltraMystery')?.addEventListener('click',()=>buyStoryItem('mysteryKnife','？？？',10000000000));
 
     const topBgmToggle=document.getElementById('topBgmToggle');
@@ -6409,7 +6409,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     window.__sprHasBothDrinkKinds=()=>!!activeNgDrinkEffect()&&!!activeOminousDrinkEffect();
     window.__sprHasAnyHorrorDrink=()=>!!activeNgDrinkEffect()||!!activeOminousDrinkEffect();
     window.__sprGetActiveHorrorDrink=activeRoomServiceHorrorDrink;
-    window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'毒の効能は残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'解毒剤を使用した。毒の効能が消えた。'}};
+    window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'酔いは、もう残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'酔い覚ましを飲んだ。強すぎる酒の酔いが、少しずつ引いていく。'}};
 
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
@@ -6503,6 +6503,28 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!hernandoEventEnabled())return;
       clearHernandoDescentTimers();
       hernandoSecretSequence.classList.add('open');hernandoSecretSequence.setAttribute('aria-hidden','false');
+    }
+    const closetHiddenDoorRevealAudio=new Audio('closet_hidden_door_reveal.mp3');
+    closetHiddenDoorRevealAudio.preload='auto';closetHiddenDoorRevealAudio.playsInline=true;
+    let closetHiddenDoorRevealPlaying=false;
+    function revealClosetDoorAfterSound(callback){
+      if(closetHiddenDoorRevealPlaying)return;
+      closetHiddenDoorRevealPlaying=true;
+      let finished=false;
+      const finish=()=>{
+        if(finished)return;
+        finished=true;closetHiddenDoorRevealPlaying=false;
+        closetHiddenDoorRevealAudio.removeEventListener('ended',finish);
+        closetHiddenDoorRevealAudio.removeEventListener('error',finish);
+        callback();
+      };
+      closetHiddenDoorRevealAudio.addEventListener('ended',finish,{once:true});
+      closetHiddenDoorRevealAudio.addEventListener('error',finish,{once:true});
+      try{
+        closetHiddenDoorRevealAudio.pause();closetHiddenDoorRevealAudio.currentTime=0;closetHiddenDoorRevealAudio.volume=1;
+        const playPromise=closetHiddenDoorRevealAudio.play();
+        if(playPromise?.catch)playPromise.catch(finish);
+      }catch{finish()}
     }
     function hideHernandoDoorChoice(){hernandoSecretSequence.classList.remove('open');hernandoSecretSequence.setAttribute('aria-hidden','true')}
     function playHernandoArenaBgm(restart=false){
@@ -6833,7 +6855,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         roomContextAction.textContent=canEnter?'クローゼットの奥に入る':'クローゼットを調べる';roomContextAction.classList.remove('hidden');
         roomContextAction.onclick=()=>{
           if(localStorage.getItem(closetDoorKey())==='1'||hasHernandoRoomEntrance(activeRoom)){
-            setExploreMessage('クローゼットの奥に、隠し扉がある！');
+            setExploreMessage('クローゼットの奥に隠し扉がある！');
             showHernandoDoorChoice();
             return;
           }
@@ -6844,8 +6866,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           else if(count>=10){
             if(hasClosetFoodKey()){
               localStorage.setItem(closetDoorKey(),'1');setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
-              text='クローゼットの奥に、隠し扉がある！';
-              setExploreMessage(text);updateRoomContextAction();publishHernandoRoomEntrance(activeRoom).catch(e=>console.warn('hernando discovery publish',e));showHernandoDoorChoice();return;
+              text='クローゼットの奥に隠し扉がある！';
+              updateRoomContextAction();publishHernandoRoomEntrance(activeRoom).catch(e=>console.warn('hernando discovery publish',e));
+              revealClosetDoorAfterSound(()=>{setExploreMessage(text);showHernandoDoorChoice()});return;
             } else text='何度確かめても、奥の壁には妙な違和感が残る。けれど、今はそれ以上のことは分からない。';
           }
           setExploreMessage(text);
@@ -7927,7 +7950,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
           action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('解毒剤',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -8863,15 +8886,19 @@ window.addEventListener('message',e=>{
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
   const exploreWaterEntryAudio=new Audio('pool_in.mp3');
   const exploreCameraAudio=new Audio('explore_camera_shutter.mp3');
+  const exploreFishingAudio=new Audio('explore_fishing_cast.mp3');
   exploreWaterEntryAudio.preload='auto';exploreWaterEntryAudio.playsInline=true;
   exploreCameraAudio.preload='auto';exploreCameraAudio.playsInline=true;
+  exploreFishingAudio.preload='auto';exploreFishingAudio.playsInline=true;
   function playExploreOneShot(audio,volume=1){
     try{audio.pause();audio.currentTime=0;audio.volume=volume;const playPromise=audio.play();if(playPromise?.catch)playPromise.catch(()=>{})}catch{}
   }
-  // カメラ音は異変動物イベントが通常アクションを止める場合でも、タップした瞬間に鳴らす。
+  // カメラ音と釣り音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
   document.addEventListener('click',event=>{
     const cameraButton=event.target.closest?.('[data-explore-action="camera"]');
     if(cameraButton&&exploreView.contains(cameraButton))playExploreOneShot(exploreCameraAudio,.9);
+    const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
+    if(fishingButton&&exploreView.contains(fishingButton))playExploreOneShot(exploreFishingAudio,1);
   },true);
   // 探索3エリアの画像は昼・夕・夜で統一して切り替える。
   // ファイル名はリポジトリにアップロードした画像と完全一致（大文字・小文字も区別）。
