@@ -9516,26 +9516,65 @@ window.addEventListener('message',e=>{
    opts.push({label:'あげない',run:()=>{close();open('硝子角の小鹿','小鹿はしばらくこちらを見つめ、硝子の角を揺らして森の奥へ消えていった。',[],'anomaly_glass_antler_fawn.jpg')}});
    open('硝子角の小鹿','森の奥に、硝子の角を持つ小鹿がいる。\nドングリをあげる？',opts,'anomaly_glass_antler_fawn.jpg');
  }
- let horseEntryNeighPending=false;
- function horseEntryNeigh(){
-   if(!anomalyEligible()||explorePeriod()!=='night'||animalSeen('black-horse')||horseEntryNeighPending)return;
-   const entryKey=anomalyPrefix+'black-horse-entry-played-v2';
-   if(localStorage.getItem(entryKey)==='1')return;
+ let horseEntryNeighPending=false,horseEntryContinueNextClick=false;
+ function horseEntryNeighEligible(){
+   return anomalyEligible()&&explorePeriod()==='night'&&!animalSeen('black-horse')&&
+     localStorage.getItem(anomalyPrefix+'black-horse-entry-played-v3')!=='1';
+ }
+ function startHorseEntryNeigh(coveButton){
+   if(horseEntryNeighPending||!horseEntryNeighEligible())return false;
    horseEntryNeighPending=true;
+   const entryKey=anomalyPrefix+'black-horse-entry-played-v3';
+   let playback;
    try{
      blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;
-     blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
-     const playback=blackHorseNeighAudio.play();
-     if(playback&&typeof playback.then==='function'){
-       playback.then(()=>{localStorage.setItem(entryKey,'1');horseEntryNeighPending=false})
-         .catch(error=>{horseEntryNeighPending=false;console.warn('black horse neigh playback',error)});
+     blackHorseNeighAudio.muted=true;blackHorseNeighAudio.volume=.9;
+     playback=Promise.resolve(blackHorseNeighAudio.play()).then(()=>true).catch(error=>{
+       console.warn('black horse neigh playback',error);return false;
+     });
+   }catch(error){
+     console.warn('black horse neigh playback',error);
+     playback=Promise.resolve(false);
+   }
+   void (async()=>{
+     anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
+     anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';
+     anomalyScene.style.opacity='0';anomalyScene.setAttribute('aria-hidden','false');
+     requestAnimationFrame(()=>{anomalyScene.style.opacity='1'});
+     await wait(760);
+     anomalySceneText.textContent='馬のいななき声が聞こえる。';
+     anomalySceneText.style.opacity='1';
+     const started=await Promise.race([playback,wait(2400).then(()=>false)]);
+     if(started){
+       try{blackHorseNeighAudio.currentTime=0}catch{}
+       blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
+       await new Promise(resolve=>{
+         let done=false;
+         const finish=()=>{if(done)return;done=true;clearTimeout(timer);resolve()};
+         const timer=setTimeout(finish,8000);
+         blackHorseNeighAudio.addEventListener('ended',finish,{once:true});
+         blackHorseNeighAudio.addEventListener('error',finish,{once:true});
+       });
+       localStorage.setItem(entryKey,'1');
      }else{
-       const markPlayed=()=>{localStorage.setItem(entryKey,'1');horseEntryNeighPending=false};
-       const playbackFailed=()=>{horseEntryNeighPending=false};
-       blackHorseNeighAudio.addEventListener('playing',markPlayed,{once:true});
-       blackHorseNeighAudio.addEventListener('error',playbackFailed,{once:true});
+       await wait(1000);
      }
-   }catch(error){horseEntryNeighPending=false;console.warn('black horse neigh playback',error)}
+     blackHorseNeighAudio.pause();blackHorseNeighAudio.muted=false;
+     anomalySceneText.style.opacity='0';await wait(350);
+     anomalyScene.style.opacity='0';await wait(780);
+     anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';
+     anomalyScene.setAttribute('aria-hidden','true');
+     horseEntryNeighPending=false;
+     if(coveButton?.isConnected){horseEntryContinueNextClick=true;coveButton.click()}
+   })().catch(error=>{
+     console.warn('black horse neigh scene',error);
+     blackHorseNeighAudio.pause();blackHorseNeighAudio.muted=false;
+     anomalyScene.style.opacity='0';anomalyScene.style.visibility='hidden';
+     anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');
+     horseEntryNeighPending=false;
+     if(coveButton?.isConnected){horseEntryContinueNextClick=true;coveButton.click()}
+   });
+   return true;
  }
  async function encounterBlackHorse(){
    const stage=animalStage('black-horse');
@@ -9599,7 +9638,14 @@ window.addEventListener('message',e=>{
  window.supabaseClientSpecial?.channel('spr-day7-escape-success').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{if(p.new?.announcement_type==='resort-escape-success')open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。')}).subscribe();
  document.addEventListener('click',e=>{
    const coveButton=e.target.closest?.('[data-explore-spot="mermaids_cove"]');
-   if(coveButton)horseEntryNeigh();
+   if(coveButton){
+     if(horseEntryContinueNextClick){horseEntryContinueNextClick=false}
+     else if(horseEntryNeighPending){e.preventDefault();e.stopImmediatePropagation();return}
+     else if(horseEntryNeighEligible()){
+       e.preventDefault();e.stopImmediatePropagation();
+       startHorseEntryNeigh(coveButton);return;
+     }
+   }
    const actionButton=e.target.closest?.('[data-explore-action]');
    if(actionButton){
      const spot=exploreSpot(),action=String(actionButton.dataset.exploreAction||'');
