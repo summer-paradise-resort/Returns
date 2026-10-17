@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="ja" data-resort-day="1">
 <head>
+<script>
+(()=>{
+  const raw=new URLSearchParams(window.location.search).get('day');
+  const requested=Number(raw||1);
+  document.documentElement.dataset.resortDay=String(Number.isFinite(requested)&&requested>=1&&requested<=7?Math.floor(requested):1);
+})();
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d2743">
@@ -8177,7 +8184,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   async function creator(){try{return await resolveSpecialPlayerId()}catch(e){return null}}
   async function latestMarker(type){const c=client();if(!c)return null;const {data,error}=await c.from('resort_announcements').select('id,message,created_at').eq('announcement_type',type).order('created_at',{ascending:false}).limit(1);if(error)throw error;return data&&data[0]?data[0]:null}
   async function publishMarker(type,message){const c=client();if(!c)throw new Error('Supabaseに接続できません。');const created_by=await creator();if(!created_by)throw new Error('プレイヤー情報を確認できません。SECURITY CHECKから入ってください。');const {error}=await c.from('resort_announcements').insert({announcement_type:type,message,created_by,expires_at:'2099-12-31T23:59:59+00:00'});if(error)throw error}
-  function goDay(day){const base='day'+day+'.html';const target=base+(typeof identityQuery==='string'?identityQuery:'');const here=(location.pathname.split('/').pop()||'').toLowerCase();if(here!==base)location.replace(target)}
+  function goDay(day){const safe=Math.max(1,Math.min(7,Math.floor(Number(day)||1)));const current=new URL(location.href);const target=new URL('day1.html',location.href);current.searchParams.forEach((value,key)=>target.searchParams.set(key,value));target.searchParams.set('day',String(safe));const here=(current.pathname.split('/').pop()||'').toLowerCase();const currentDay=Math.max(1,Math.min(7,Math.floor(Number(current.searchParams.get('day')||1)||1)));if(here!=='day1.html'||currentDay!==safe)location.replace(target.href)}
   function markerDay(marker,fallback=1){const m=String(marker?.message||'').match(/DAY:(\d+)/i);const n=m?Number(m[1]):Number(fallback);return n>=1&&n<=7?n:1}
   function parseAutoDayMarker(marker){
     const message=String(marker?.message||'');
@@ -9436,7 +9443,7 @@ window.addEventListener('message',e=>{
   },true);
 })();
 </script>
-<!-- STORY_DAY_FILES: Generated from this DAY 1 base; day progression is selected by data-resort-day. -->
+<!-- STORY_DAY_FILES: One shared file for DAY 1–7; day progression is selected by the day query parameter. -->
 <script>
 (()=>{
  const day=Number(document.documentElement.dataset.resortDay||1),who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
@@ -9509,12 +9516,26 @@ window.addEventListener('message',e=>{
    opts.push({label:'あげない',run:()=>{close();open('硝子角の小鹿','小鹿はしばらくこちらを見つめ、硝子の角を揺らして森の奥へ消えていった。',[],'anomaly_glass_antler_fawn.jpg')}});
    open('硝子角の小鹿','森の奥に、硝子の角を持つ小鹿がいる。\nドングリをあげる？',opts,'anomaly_glass_antler_fawn.jpg');
  }
+ let horseEntryNeighPending=false;
  function horseEntryNeigh(){
-   if(!anomalyEligible()||explorePeriod()!=='night'||animalSeen('black-horse'))return;
-   const entryKey=anomalyPrefix+'black-horse-entry';
+   if(!anomalyEligible()||explorePeriod()!=='night'||animalSeen('black-horse')||horseEntryNeighPending)return;
+   const entryKey=anomalyPrefix+'black-horse-entry-played-v2';
    if(localStorage.getItem(entryKey)==='1')return;
-   localStorage.setItem(entryKey,'1');
-   playAnimalSound(blackHorseNeighAudio,.9);
+   horseEntryNeighPending=true;
+   try{
+     blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;
+     blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
+     const playback=blackHorseNeighAudio.play();
+     if(playback&&typeof playback.then==='function'){
+       playback.then(()=>{localStorage.setItem(entryKey,'1');horseEntryNeighPending=false})
+         .catch(error=>{horseEntryNeighPending=false;console.warn('black horse neigh playback',error)});
+     }else{
+       const markPlayed=()=>{localStorage.setItem(entryKey,'1');horseEntryNeighPending=false};
+       const playbackFailed=()=>{horseEntryNeighPending=false};
+       blackHorseNeighAudio.addEventListener('playing',markPlayed,{once:true});
+       blackHorseNeighAudio.addEventListener('error',playbackFailed,{once:true});
+     }
+   }catch(error){horseEntryNeighPending=false;console.warn('black horse neigh playback',error)}
  }
  async function encounterBlackHorse(){
    const stage=animalStage('black-horse');
