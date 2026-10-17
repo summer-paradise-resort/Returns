@@ -6004,6 +6004,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function attemptRoomPhoneRing({restart=false}={}){
       if(!roomPhoneRing||roomPhoneCallState!=='ringing'||roomPhoneEventExpired())return;
+      // エルナンドの階段・導入動画・闘牛場では、ROOMの着信を演出へ重ねない。
+      if(roomPhonePausedForHernando()){stopRoomPhoneRing();return}
       // この端末で「出ない」を選んだ後は、同室者の選択状況に関係なくこの端末の着信音を再開しない。
       if(roomPhoneDeclinedLocally()){stopRoomPhoneRing();return}
       if(!roomPhoneMasterAudioOn()){stopRoomPhoneRing();return}
@@ -6081,7 +6083,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function updateRoomPhoneUi(){
       if(!roomPhoneCallPanel)return;
       const declined=roomPhoneCallState==='ringing'&&roomPhoneDeclinedLocally();
-      const active=(roomPhoneCallState==='ringing'&&!declined)||(roomPhoneCallState==='answered'&&Boolean(roomPhoneLastMessage));
+      const active=!roomPhonePausedForHernando()&&((roomPhoneCallState==='ringing'&&!declined)||(roomPhoneCallState==='answered'&&Boolean(roomPhoneLastMessage)));
       const hasVisual=Boolean(roomVisualConfig(activeRoom));
       const showMain=hasVisual&&selectedRoomScene==='phone'&&active;
       const showFallback=!hasVisual&&Boolean(activeRoom)&&active;
@@ -6098,6 +6100,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
     }
     function startRoomPhoneConversation(row){
+      if(roomPhonePausedForHernando())return;
       if(!row?.id||roomPhoneConversationEventId===String(row.id))return;
       roomPhoneConversationEventId=String(row.id);
       // 同室の全端末で同じ answered UPDATE を受け取るため、全員同時に
@@ -6176,7 +6179,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(e){console.warn('room phone load',e);return null}
     }
     async function beginRoomPhoneCall(){
-      if(!roomPhoneEligibleNow()||!activeRoom||roomPhoneActiveEvent||roomPhoneCreating||roomPhoneCallState==='ringing')return;
+      if(roomPhonePausedForHernando()||!roomPhoneEligibleNow()||!activeRoom||roomPhoneActiveEvent||roomPhoneCreating||roomPhoneCallState==='ringing')return;
       if(!window.supabaseClientSpecial)return;
       roomPhoneCreating=true;
       const roomAtStart=String(activeRoom);
@@ -6233,6 +6236,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function checkRoomPhoneStay(){
       if(!activeRoom||!roomView.classList.contains('room-active'))return;
+      if(roomPhonePausedForHernando()){
+        roomPhoneStayStartedAt=0;
+        if(roomPhoneCallState==='ringing')stopRoomPhoneRing();
+        updateRoomPhoneUi();
+        return;
+      }
       if(roomPhoneCallState==='ringing'){
         if(roomPhoneEventExpired())expireRoomPhoneEvent();
         return;
@@ -6247,7 +6256,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       roomPhoneActiveEvent=null;roomPhoneCallState='idle';roomPhoneLastMessage='';roomPhoneConversationEventId='';
       if(roomPhoneUiClearTimer){clearTimeout(roomPhoneUiClearTimer);roomPhoneUiClearTimer=null}
       cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';trackRoomPhonePresence('idle');
-      roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
+      roomPhoneStayStartedAt=roomPhoneEligibleNow()&&!roomPhonePausedForHernando()?Date.now():0;
       updateRoomPhoneUi();
       roomPhoneTimer=setInterval(checkRoomPhoneStay,1000);
       checkRoomPhoneStay();
@@ -6376,6 +6385,25 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(hernandoBullringVideo){hernandoBullringVideo.src=HERNANDO_BULLRING_VIDEO_URL;hernandoBullringVideo.load()}
     const hernandoVideoFallback=document.getElementById('hernandoVideoFallback'),hernandoVideoFallbackText=document.getElementById('hernandoVideoFallbackText');
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
+    function roomPhonePausedForHernando(){
+      return Boolean(
+        hernandoDescent?.classList.contains('open')||
+        hernandoVideoScreen?.classList.contains('open')||
+        hernandoEncounter?.classList.contains('open')
+      );
+    }
+    function pauseRoomPhoneForHernando(){
+      roomPhoneStayStartedAt=0;
+      stopRoomPhoneRing();
+      updateRoomPhoneUi();
+    }
+    function resumeRoomPhoneAfterHernando(){
+      if(roomPhonePausedForHernando())return;
+      roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
+      updateRoomPhoneUi();
+      // 同室者が闘牛場滞在中に始めた共有着信だけは、ROOMへ戻ってから表示する。
+      if(roomPhoneCallState==='ringing'&&!roomPhoneEventExpired())evaluateRoomPhoneDeclineState({restart:true});
+    }
     let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false,hernandoEntryWasIntroSeen=false;
     let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
@@ -6680,6 +6708,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
       hernandoDialogue.classList.add('hidden');hernandoDialogueChoices.classList.add('hidden');hernandoDrinkGame?.classList.add('hidden');
       hernandoEncounter.classList.remove('open');hernandoEncounter.setAttribute('aria-hidden','true');
+      resumeRoomPhoneAfterHernando();
       if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         fadeHernandoArenaBgm(0,900,()=>{
@@ -6733,6 +6762,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       hernandoVideoStarted=false;
       hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
+      pauseRoomPhoneForHernando();
 
       // 階段演出中は無音。闘牛場BGMはここでは一切再生しない。
       // 初回は導入動画終了後、2回目以降は闘牛場表示後に初めてBGMを開始する。
