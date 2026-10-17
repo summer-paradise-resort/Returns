@@ -9473,7 +9473,7 @@ window.addEventListener('message',e=>{
    if(typeof onBeforeExit==='function')await onBeforeExit();anomalySceneText.style.opacity='0';await wait(300);anomalyScene.style.opacity='0';await wait(760);anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
  }
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
- const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3');blackHorseNeighAudio.preload='auto';
+ const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  const anomalyPrefix=`spr-anomaly-animal:${who}:`;
  const animalSeen=id=>localStorage.getItem(anomalyPrefix+id)==='1';
  const markAnimal=id=>localStorage.setItem(anomalyPrefix+id,'1');
@@ -9524,16 +9524,20 @@ window.addEventListener('message',e=>{
  let horseEntryNeighPending=false,horseEntryContinueNextClick=false;
  function horseEntryNeighEligible(){
    return anomalyEligible()&&explorePeriod()==='night'&&!animalSeen('black-horse')&&
-     localStorage.getItem(anomalyPrefix+'black-horse-entry-played-v3')!=='1';
+    localStorage.getItem(anomalyPrefix+'black-horse-entry-played-v4')!=='1';
  }
  function startHorseEntryNeigh(coveButton){
    if(horseEntryNeighPending||!horseEntryNeighEligible())return false;
    horseEntryNeighPending=true;
-   const entryKey=anomalyPrefix+'black-horse-entry-played-v3';
+  const entryKey=anomalyPrefix+'black-horse-entry-played-v4';
+  anomalySceneText.textContent='馬のいななき声が聞こえる。';anomalySceneText.style.opacity='0';
+  anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';
+  anomalyScene.style.opacity='0';anomalyScene.setAttribute('aria-hidden','false');
+  requestAnimationFrame(()=>{anomalyScene.style.opacity='1';anomalySceneText.style.opacity='1'});
    let playback;
    try{
      blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;
-     blackHorseNeighAudio.muted=true;blackHorseNeighAudio.volume=.9;
+    blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
      playback=Promise.resolve(blackHorseNeighAudio.play()).then(()=>true).catch(error=>{
        console.warn('black horse neigh playback',error);return false;
      });
@@ -9542,17 +9546,8 @@ window.addEventListener('message',e=>{
      playback=Promise.resolve(false);
    }
    void (async()=>{
-     anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
-     anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';
-     anomalyScene.style.opacity='0';anomalyScene.setAttribute('aria-hidden','false');
-     requestAnimationFrame(()=>{anomalyScene.style.opacity='1'});
-     await wait(760);
-     anomalySceneText.textContent='馬のいななき声が聞こえる。';
-     anomalySceneText.style.opacity='1';
-     const started=await Promise.race([playback,wait(2400).then(()=>false)]);
+    const started=await Promise.race([playback,wait(1800).then(()=>false)]);
      if(started){
-       try{blackHorseNeighAudio.currentTime=0}catch{}
-       blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
        await new Promise(resolve=>{
          let done=false;
          const finish=()=>{if(done)return;done=true;clearTimeout(timer);resolve()};
