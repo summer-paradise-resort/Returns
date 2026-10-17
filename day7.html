@@ -1938,7 +1938,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       dimensionalBag:{label:'次元バック',detail:'漂流ラッコが興味を示す、不思議な次元バック。',max:Infinity},
       freshAcorn:{label:'新鮮なドングリ',detail:'リゾートで見つけた小さな動物にあげられる、新鮮なドングリ。',max:Infinity},
       antidote:{label:'解毒剤',detail:'毒の効能を打ち消す。',max:Infinity},
-      lucaBalsaDepartureTicket:{label:'出航チケット（Luca Balsa）',detail:'“Luca Balsa”と英語で署名された出航チケット。',max:Infinity},
+      lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
+      lucaBalsaUsedTicket:{label:'切り取られた乗船チケット',detail:'赤い半券が切り取られた、水濡れの古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa_used.png',max:1},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
@@ -2244,6 +2245,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const rest=flagKey.slice('cafe-drink-ticket-used:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-drink-ticket-used:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
       else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
+      else if(flagKey===barNgEffectFlagKey()){if(value&&typeof value==='object')localStorage.setItem(barNgEffectStorageKey,JSON.stringify(value));else localStorage.removeItem(barNgEffectStorageKey)}
       else if(flagKey.startsWith('room-service-horror:')){const token=flagKey.slice('room-service-horror:'.length),key=`spr-room-service-horror:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
     }
     function collectLocalFlags(){
@@ -2262,6 +2264,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const mysteryAwardPrefix=`spr-sunset-mystery-awarded:${playerStorageId}:`;
       Object.keys(localStorage).filter(k=>k.startsWith(mysteryAwardPrefix)&&localStorage.getItem(k)==='1').forEach(k=>{out[`sunset-mystery-awarded:${k.slice(mysteryAwardPrefix.length)}`]=true});
       const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
+      const activeNgEffect=activeNgDrinkEffect();if(activeNgEffect)out[barNgEffectFlagKey()]=activeNgEffect;
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-order:${dayScope}:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${dayScope}:${cafeDate}`]=true;
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`;
@@ -2325,7 +2328,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('bar-ng-effect:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -2979,6 +2982,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター',effectKey:'room-service:ng'}
     ];
     const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
+    const barNgEffectStorageKey=`spr-bar-ng-effect:${playerStorageId}`;
+    function barNgEffectFlagKey(){return `bar-ng-effect:${resortDayToken()}`}
     const barOrderSheet=document.getElementById('barOrderSheet'), barDrinkList=document.getElementById('barDrinkList');
     const barPeriodCard=document.getElementById('barPeriodCard'), barSelection=document.getElementById('barSelection');
     const barOrderConfirm=document.getElementById('barOrderConfirm'), barOrderResult=document.getElementById('barOrderResult');
@@ -2999,10 +3004,32 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       else{ id='night';label='夜';hours='20:00〜6:59';if(now.hour<7)serviceDate=addDaysToDateKey(serviceDate,-1);endDate=addDaysToDateKey(serviceDate,1);endTime='07:00:00'}
       if(id!=='night')endDate=serviceDate;
       const orderOpen=now.hour>=11||now.hour<5;
-      return{id,label,hours,serviceDate,token:`${resortDayToken()}:${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),orderOpen};
+      const dayExpiresAt=new Date(`${addDaysToDateKey(serviceDate,1)}T07:00:00+09:00`).getTime();
+      return{id,label,hours,serviceDate,token:`${resortDayToken()}:${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),dayExpiresAt,orderOpen};
     }
     function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
     function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
+    function normalizeNgDrinkEffect(value,info=barPeriodInfo()){
+      let record=value;
+      if(typeof record==='string'){try{record=JSON.parse(record)}catch{return null}}
+      if(!record||typeof record!=='object'||record.effectKey!=='room-service:ng')return null;
+      if(String(record.serviceDate||'')!==String(info.serviceDate)||Number(record.resortDay||resortDayNumber())!==resortDayNumber())return null;
+      const dayExpiresAt=Math.max(0,Number(record.dayExpiresAt)||new Date(`${addDaysToDateKey(record.serviceDate,1)}T07:00:00+09:00`).getTime());
+      if(Date.now()>=dayExpiresAt)return null;
+      return {...record,dayExpiresAt,expiresAt:dayExpiresAt,effectKey:'room-service:ng'};
+    }
+    function activeNgDrinkEffect(){
+      const info=barPeriodInfo();let local=null;
+      try{local=JSON.parse(localStorage.getItem(barNgEffectStorageKey)||'null')}catch{}
+      const candidates=[local,windowSprFlagCache[barNgEffectFlagKey()],...Object.values(loadBarDrinkState())].map(value=>normalizeNgDrinkEffect(value,info)).filter(Boolean).sort((a,b)=>Number(b.orderedAt||0)-Number(a.orderedAt||0));
+      const active=candidates[0]||null;
+      if(active)localStorage.setItem(barNgEffectStorageKey,JSON.stringify(active));else localStorage.removeItem(barNgEffectStorageKey);
+      return active;
+    }
+    function activeOminousDrinkEffect(){
+      const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];
+      return record&&record.effectKey==='room-service:ominous'&&Date.now()<Number(record.expiresAt||0)?record:null;
+    }
     function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
     window.getCurrentBarDrinkEffect=currentBarDrink;
 
@@ -3017,7 +3044,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       barExtraTicketBox.classList.toggle('hidden',!ordered);
       if(ordered){barExtraTicketStatus.textContent=`BARドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'BARドリンクチケットを所持していません':'BARドリンクチケットを使用する';}
       if(ordered){
-        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${info.label}の時間帯が終了するまで保持されます。</p>`;
+        const effectLimit=ordered.effectKey==='room-service:ng'?'このDAYが切り替わる翌朝7:00まで':`${info.label}の時間帯が終了するまで`;
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。このドリンクの効能は${effectLimit}保持されます。</p>`;
         barOrderStatusMini.textContent=`${info.label}：${ordered.name} をご注文済みです。`;
         barSelection.textContent=`ご注文済み：${ordered.name}`;barOrderConfirm.disabled=true;selectedBarDrink='';
       }else if(!info.orderOpen){
@@ -3025,7 +3053,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         barOrderStatusMini.textContent=`現在は営業時間外です。${info.label}のメニューをご覧いただけます。`;
         barSelection.textContent='現在は営業時間外です。';barOrderConfirm.disabled=true;
       }else{
-        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${storedGuestName}様は、この時間帯に1杯ご注文いただけます。注文したドリンクの効能は${info.label}の終了時刻まで保持されます。</p>`;
+        barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${storedGuestName}様は、この時間帯に1杯ご注文いただけます。通常の効能は${info.label}の終了時刻まで、NGドリンクの効能はDAYが切り替わる翌朝7:00まで保持されます。</p>`;
         barOrderStatusMini.textContent=`${info.label}：まだご注文いただけます。`;
         barSelection.textContent=selectedBarDrink?`選択中：${selectedBarDrink}`:'ドリンクをお選びください。';barOrderConfirm.disabled=!selectedBarDrink;
       }
@@ -3125,19 +3153,28 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const drink=barDrinks.find(v=>v.name===selectedBarDrink);if(!drink)return;
       barOrderConfirm.disabled=true;
       void playSeasideKanpai();
-      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,resortDay:resortDayNumber(),orderedAt:Date.now(),expiresAt:info.expiresAt,effectKey:drink.effectKey||null};
+      const record={player:storedGuestName,name:drink.name,no:drink.no,ingredients:drink.ingredients,period:info.id,periodLabel:info.label,serviceDate:info.serviceDate,resortDay:resortDayNumber(),orderedAt:Date.now(),expiresAt:info.expiresAt,dayExpiresAt:info.dayExpiresAt,effectKey:drink.effectKey||null};
       try{await persistBarOrderRemote(record)}catch(e){console.warn('bar order sync',e);barOrderResult.textContent='通信に失敗しました。もう一度お試しください。';barOrderResult.classList.remove('hidden');renderBarOrderState();return}
-      state[info.token]=record;saveBarDrinkState(state);barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
+      state[info.token]=record;saveBarDrinkState(state);
+      if(record.effectKey==='room-service:ng'){
+        const ngEffect={...record,expiresAt:info.dayExpiresAt,dayExpiresAt:info.dayExpiresAt};localStorage.setItem(barNgEffectStorageKey,JSON.stringify(ngEffect));
+        void setRemoteFlag(barNgEffectFlagKey(),ngEffect).catch(e=>console.warn('NG drink effect sync',e));
+      }
+      barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
     useExtraDrinkTicket.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
       if(!ordered||count<1){renderBarOrderState();return}
+      // 旧版で注文済みのNGドリンクでも、レコードを削除する前にDAY終了フラグへ移して効能を残す。
+      const persistentNgBeforeChange=activeNgDrinkEffect();
       try{
         const qty=await remoteInventoryAdjust('extraDrinkTicket',-1);if(qty===null)throw new Error('player id missing');
         await deleteBarOrderRemote(info.serviceDate,info.id);
         belongings.extraDrinkTicket=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
       }catch(e){console.warn('extra drink ticket sync',e);barOrderResult.textContent='チケットの使用を同期できませんでした。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
-      barOrderResult.textContent='BARドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      if(persistentNgBeforeChange)void setRemoteFlag(barNgEffectFlagKey(),persistentNgBeforeChange).catch(e=>console.warn('NG drink effect sync',e));
+      const ngStillActive=!!activeNgDrinkEffect();
+      barOrderResult.textContent=ngStillActive?'BARドリンクチケットを1枚使用し、現在のドリンクを解除しました。ただし、NGドリンクの効能はDAYが切り替わるまで消えません。新しいドリンクをお選びください。':'BARドリンクチケットを1枚使用しました。現在のドリンクと効能を解除しました。新しいドリンクをお選びください。';barOrderResult.classList.remove('hidden');renderBarOrderState();if(typeof renderRoomBelongings==='function')renderRoomBelongings();
     });
     buildBarDrinkList();renderBarOrderState();setInterval(()=>{if(barOrderSheet.classList.contains('open'))renderBarOrderState()},30000);
     window.addEventListener('storage',event=>{if(event.key==='spr-resort-announcement')restoreResortAnnouncement()});
@@ -6369,7 +6406,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(activeRoom)updateRoomPhoto(true);
       return until;
     }
-    window.__sprHasBothDrinkKinds=()=>{const rows=Object.values(loadBarDrinkState());return rows.some(x=>ROOM_SERVICE_NG_DRINKS.has(x?.name))&&rows.some(x=>ROOM_SERVICE_OMINOUS_DRINKS.has(x?.name))};
+    window.__sprHasBothDrinkKinds=()=>!!activeNgDrinkEffect()&&!!activeOminousDrinkEffect();
+    window.__sprHasAnyHorrorDrink=()=>!!activeNgDrinkEffect()||!!activeOminousDrinkEffect();
     window.__sprGetActiveHorrorDrink=activeRoomServiceHorrorDrink;
     window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'毒の効能は残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'解毒剤を使用した。毒の効能が消えた。'}};
 
@@ -7198,9 +7236,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       return '';
     }
     function activeRoomServiceHorrorDrink(){
-      const now=Date.now();
-      const record=Object.values(loadBarDrinkState()).filter(record=>record&&roomServiceHorrorCategory(record.name)&&now<Number(record.expiresAt||0)).sort((a,b)=>Number(b.orderedAt||0)-Number(a.orderedAt||0))[0]||null;
-      return record?{...record,horrorCategory:roomServiceHorrorCategory(record.name)}:null;
+      if(!roomServiceHorrorEnabled())return null;
+      const ng=activeNgDrinkEffect();if(ng)return {...ng,horrorCategory:'ng'};
+      const ominous=activeOminousDrinkEffect();return ominous?{...ominous,horrorCategory:'ominous'}:null;
     }
     function roomServiceHorrorToken(){return `day${roomPhoneResortDay()}:night`}
     function roomServiceHorrorDoneKey(token=roomServiceHorrorToken()){return `spr-room-service-horror:${playerStorageId}:${token}`}
@@ -7886,10 +7924,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='antidote'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('解毒剤',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('解毒剤',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -9346,7 +9384,7 @@ window.addEventListener('message',e=>{
  const day=Number(document.documentElement.dataset.resortDay||1),who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
  const K=`spr-story:${who}:day${day}:`;
  const seen=x=>localStorage.getItem(K+x)==='1',mark=x=>localStorage.setItem(K+x,'1');
- const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),both=()=>!!window.__sprHasBothDrinkKinds?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
+ const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),both=()=>!!window.__sprHasBothDrinkKinds?.(),anyHorrorDrink=()=>!!window.__sprHasAnyHorrorDrink?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
  const time=()=>{const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());return{h:+p.find(x=>x.type==='hour').value,m:+p.find(x=>x.type==='minute').value}};
  const modal=document.createElement('div');modal.id='storyEventModal';modal.style.cssText='position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,20,.82);color:#fff';modal.innerHTML='<section style="width:min(560px,100%);max-height:82dvh;overflow:auto;padding:26px 20px;border:1px solid #c9aa68;background:linear-gradient(150deg,#142f42,#07131f);text-align:center"><small style="letter-spacing:.2em;color:#e6cc8e">SUMMER PARADISE / STORY</small><h2 style="font:22px Georgia,serif;color:#f2d895;margin:14px 0" id="storyTitle"></h2><img id="storyImage" alt="" hidden style="display:block;width:100%;max-height:42dvh;object-fit:contain;margin:0 auto 16px;border:1px solid rgba(201,170,104,.48);background:#020a12"><div id="storyBody" style="white-space:pre-line;font:15px/1.9 Yu Mincho,serif;margin:18px 0"></div><div id="storyChoices" style="display:grid;gap:9px"></div><button id="storyClose" style="margin-top:16px;padding:10px 20px;border:1px solid #a98d55;background:transparent;color:#fff">閉じる</button></section>';
  document.body.append(modal);const title=modal.querySelector('#storyTitle'),body=modal.querySelector('#storyBody'),choices=modal.querySelector('#storyChoices'),storyImage=modal.querySelector('#storyImage');
@@ -9379,12 +9417,21 @@ window.addEventListener('message',e=>{
  async function encounterSeabird(){markAnimal('seabird');primeAnimalSound(seabirdWingAudio);await runAnomalyScene([{text:`「${guestName()}サン」`,hold:1500},{text:'',sound:seabirdWingAudio,volume:.9,hold:1100},'声のした方を振り返る。\n足元の夕暮れの砂浜に、海鳥の羽が一枚落ちていることに気がついた。'],{background:'linear-gradient(rgba(0,0,0,.56),rgba(0,0,0,.76)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat'});}
  function encounterOtter(){
    markAnimal('drifting-otter');const opts=[];
-   if(count('dimensionalBag')>0)opts.push({label:'次元バックを渡す',run:async()=>{close();const used=await window.__sprConsumeStoryItem?.('dimensionalBag');if(!used){open('漂流ラッコ','渡せるものがない。',[],'anomaly_drifting_otter.jpg');return}const granted=await window.__sprGrantStoryItem?.('lucaBalsaDepartureTicket');if(!granted){await window.__sprGrantStoryItem?.('dimensionalBag');open('漂流ラッコ','交換を完了できなかった。次元バックは所持品へ戻された。',[],'anomaly_drifting_otter.jpg');return}open('交換成立','漂流ラッコは次元バックを受け取り、代わりに一枚の出航チケットを差し出した。\nチケットには “Luca Balsa” と英語でサインが書かれている。',[],'anomaly_drifting_otter.jpg')}});
+   if(count('dimensionalBag')>0)opts.push({label:'次元バックを渡す',run:async()=>{close();const used=await window.__sprConsumeStoryItem?.('dimensionalBag');if(!used){open('漂流ラッコ','渡せるものがない。',[],'anomaly_drifting_otter.jpg');return}const granted=await window.__sprGrantStoryItem?.('lucaBalsaDepartureTicket');if(!granted){await window.__sprGrantStoryItem?.('dimensionalBag');open('漂流ラッコ','交換を完了できなかった。次元バックは所持品へ戻された。',[],'anomaly_drifting_otter.jpg');return}open('交換成立','漂流ラッコは次元バックを受け取り、代わりにボロボロの乗船チケットを差し出した。\n券面には “LUCA BALSA” と “BOARDING TIME 22:00–23:59” が記されている。',[],'anomaly_drifting_otter.jpg')}});
    opts.push({label:'渡せるものがない。',run:close});
    open('漂流ラッコ','ラッコが、持っているチケットと貴方の何かと交換したそうにしている。',opts,'anomaly_drifting_otter.jpg');
  }
  async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が、突然ものすごい勢いで引かれた。\n身体ごと海へ引き込まれそうになる。','どうにか糸を離す。\n遠くで、巨大な岩陰が動くような何かが見えた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
  async function encounterSmokeLizard(){markAnimal('smoke-lizard');await runAnomalyScene(['糸を垂らした岩場に、濃い煙が立ちこめる。\n煙は威嚇するドラゴンの輪郭へ変わった。','こちらが逃げないとわかると、煙のドラゴンは形をほどき、そのまま夜へ溶けて消えていった。'],{background:'linear-gradient(rgba(0,0,0,.70),rgba(0,0,0,.88)),url("lighthouse_night.jpg") center/cover no-repeat'});}
+ const usedTicketFoundKey=`spr-story:${who}:luca-balsa-used-ticket-found`;
+ const usedTicketFound=()=>localStorage.getItem(usedTicketFoundKey)==='1'||count('lucaBalsaUsedTicket')>0;
+ const usedTicketEligible=(spot,action)=>day>=4&&day<=7&&spot==='lighthouse'&&action==='fishing'&&anyHorrorDrink()&&!usedTicketFound();
+ async function encounterUsedTicket(){
+   const granted=await window.__sprGrantStoryItem?.('lucaBalsaUsedTicket');
+   if(!granted){open('釣り糸に掛かったもの','濡れた紙片を引き上げたが、所持品へ保存できなかった。もう一度お試しください。');return}
+   localStorage.setItem(usedTicketFoundKey,'1');
+   open('切り取られた乗船チケット','釣り糸に、濡れた紙片が絡みついている。\n引き上げると、それは赤い半券が切り取られた古い乗船チケットだった。\n\n券面には “LUCA BALSA” と “BOARDING TIME 20:00–21:59” が記されている。',[],'worn_boarding_ticket_luca_balsa_used.png');
+ }
  async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['写真を撮ろうと砂浜へ近づく。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\n拾おうとした瞬間、光は星明かりの中へ消えた。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
  function fawnEligible(){
    if(day!==5||animalSeen('glass-fawn')||!anomalyEligible())return false;
@@ -9476,7 +9523,14 @@ window.addEventListener('message',e=>{
    if(coveButton)horseEntryNeigh();
    const actionButton=e.target.closest?.('[data-explore-action]');
    if(actionButton){
-     const kind=anomalyActionKind(exploreSpot(),String(actionButton.dataset.exploreAction||''),explorePeriod());
+     const spot=exploreSpot(),action=String(actionButton.dataset.exploreAction||'');
+     if(usedTicketEligible(spot,action)){
+       e.preventDefault();e.stopImmediatePropagation();
+       document.getElementById('exploreActionMessage')?.classList.add('hidden');
+       void encounterUsedTicket();
+       return;
+     }
+     const kind=anomalyActionKind(spot,action,explorePeriod());
      if(kind){
        e.preventDefault();e.stopImmediatePropagation();
        document.getElementById('exploreActionMessage')?.classList.add('hidden');
