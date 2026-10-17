@@ -4661,9 +4661,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const original={title:title?.textContent||'',description:description?.textContent||'',guide:guide?.textContent||''};
       casinoGalleryMenu.disabled=true;
       casinoGalleryMenu.setAttribute('aria-busy','true');
-      if(title)title.textContent='館内写真を準備しています';
-      if(description)description.textContent='写真の読み込みが終わるまで、そのままお待ちください。';
-      if(guide)guide.textContent='LOADING…';
+      if(title)title.textContent='館内をご案内いたします';
+      if(description)description.textContent='順番にご案内いたします。どうぞそのままお待ちください。';
+      if(guide)guide.textContent='PLEASE WAIT…';
       casinoVipDoorNotice?.classList.add('hidden');
       try{
         // 館内写真をすべて確認し、最初に表示する写真も読み込み済みにしてから画面を開く。
@@ -4680,7 +4680,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(error){
         console.warn('casino gallery load',error);
         if(casinoVipDoorNotice){
-          casinoVipDoorNotice.textContent=String(error?.message||'館内写真を読み込めませんでした。もう一度お試しください。');
+          casinoVipDoorNotice.textContent='ただいま館内をご案内できません。少し時間をおいて、もう一度お越しください。';
           casinoVipDoorNotice.classList.remove('hidden');
         }
       }finally{
@@ -8923,12 +8923,14 @@ window.addEventListener('message',e=>{
   function playExploreOneShot(audio,volume=1){
     try{audio.pause();audio.currentTime=0;audio.volume=volume;const playPromise=audio.play();if(playPromise?.catch)playPromise.catch(()=>{})}catch{}
   }
-  // カメラ音と釣り音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
+  // カメラ音・釣り音・ダイビング音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
   document.addEventListener('click',event=>{
     const cameraButton=event.target.closest?.('[data-explore-action="camera"]');
     if(cameraButton&&exploreView.contains(cameraButton))playExploreOneShot(exploreCameraAudio,.9);
     const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
     if(fishingButton&&exploreView.contains(fishingButton))playExploreOneShot(exploreFishingAudio,1);
+    const divingButton=event.target.closest?.('[data-explore-action="snorkel"]');
+    if(divingButton&&exploreView.contains(divingButton))playExploreOneShot(exploreWaterEntryAudio,1);
   },true);
   // 探索3エリアの画像は昼・夕・夜で統一して切り替える。
   // ファイル名はリポジトリにアップロードした画像と完全一致（大文字・小文字も区別）。
@@ -9379,7 +9381,6 @@ window.addEventListener('message',e=>{
   }
   choiceButtons.forEach(btn=>btn.addEventListener('click',()=>{
     const spotKey=btn.dataset.exploreSpot;
-    if(spotKey==='beach'||spotKey==='mermaids_cove')playExploreOneShot(exploreWaterEntryAudio,1);
     openLocation(spotKey);
   }));
   locationBack?.addEventListener('click',closeLocation);
