@@ -253,6 +253,13 @@
     .global-special-notice .ticker-track{animation-duration:25s}
     @media(max-width:520px){.resort-ticker{margin-top:-3px}.ticker-label{padding:0 8px;font-size:8px;letter-spacing:.1em}.ticker-copy{font-size:10px;padding-right:48px}.global-special-notice{top:64px}}
     @media(prefers-reduced-motion:reduce){.ticker-track{animation:none}.ticker-window{overflow-x:auto}.ticker-copy{padding-right:28px}}
+    .resort-live-locations{max-width:980px;margin:-15px auto 25px;border:1px solid rgba(168,123,47,.25);border-top:0;background:rgba(255,255,255,.94)}
+    .resort-live-row{min-height:34px;display:flex;align-items:center;padding:7px 12px;border-top:1px solid rgba(168,123,47,.16);color:#4c5661;font-size:11px;line-height:1.7;letter-spacing:.055em;overflow-wrap:anywhere}
+    .resort-live-row:first-child{border-top:0}
+    body.night-theme .resort-live-locations{background:#0d2743;border-color:rgba(199,164,93,.3)}
+    body.night-theme .resort-live-row{border-color:rgba(199,164,93,.18)}
+    body.night-theme .resort-live-row{color:#e7dfcf}
+    @media(max-width:520px){.resort-live-row{padding-left:10px;font-size:10px}}
     .room-entry{max-width:480px;margin:22px auto 0;padding:22px;background:var(--cream);border:1px solid var(--line)}
     .room-entry label{display:block;font-size:12px;letter-spacing:.08em;margin:0 0 7px}
     .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
@@ -688,7 +695,13 @@
   
     .tea-salon-active::after{content:"AFTERNOON TEA SALON";position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(8,20,34,.76);color:#fff;letter-spacing:.28em;font-family:Georgia,serif;font-size:clamp(18px,4vw,34px);animation:teaSalonReveal 1.8s ease both;pointer-events:none}.tea-salon-venue{cursor:pointer}@keyframes teaSalonReveal{0%{opacity:0}25%{opacity:1}72%{opacity:1}100%{opacity:0}}
 
-    .admin-event-tools{display:flex;justify-content:flex-end;margin:10px 0 0}.admin-reset-btn{border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.72);color:#6b7480;padding:7px 10px;font-size:9px;letter-spacing:.12em;border-radius:2px}.admin-reset-btn:active{transform:translateY(1px)}
+    .admin-event-tools{display:none;gap:7px;margin:10px 0 0}.spr-admin-mode .admin-event-tools{display:grid}.admin-reset-row{display:flex;justify-content:flex-end;gap:0}.admin-reset-btn{border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.72);color:#6b7480;padding:7px 10px;font-size:9px;letter-spacing:.12em;border-radius:2px}.admin-reset-btn:active{transform:translateY(1px)}
+    .admin-day-preview{display:grid;grid-template-columns:auto repeat(7,minmax(0,1fr)) auto;gap:4px;align-items:center;padding:7px;border:1px solid rgba(13,39,67,.16);background:rgba(255,255,255,.72)}
+    .admin-day-preview-label{padding:0 5px;color:#6b7480;font:8px Georgia,serif;letter-spacing:.12em;white-space:nowrap}
+    .admin-day-preview button{min-height:32px;padding:4px 2px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:8px Georgia,serif;letter-spacing:.04em}
+    .admin-day-preview button.active{border-color:var(--navy);background:var(--navy);color:#fff}
+    .admin-day-preview-exit{padding-inline:7px!important;color:#6b7480!important;white-space:nowrap}
+    @media(max-width:620px){.admin-day-preview{grid-template-columns:repeat(4,1fr)}.admin-day-preview-label{grid-column:1/-1;padding:0 2px 3px}.admin-day-preview-exit{grid-column:4}}
 
     .special-line .slide-char{display:inline-block;opacity:0;filter:blur(2px);transition:opacity .34s ease,filter .42s ease;will-change:opacity,filter}
     .special-line .slide-char.in{opacity:1;filter:blur(0)}
@@ -778,7 +791,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 @media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}.hernando-arena-blur{inset:-8%;width:116%;height:116%;filter:blur(16px) brightness(.46)}.hernando-arena-loop{top:10px;bottom:calc(246px + env(safe-area-inset-bottom));height:calc(100% - 256px - env(safe-area-inset-bottom));padding:0 2px}}
 
-    .admin-master-panel{margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
+    .admin-master-panel{display:none;margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.spr-admin-mode .admin-master-panel{display:block}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 
     /* DAY1 / 探索イベント動画（灯台の望遠鏡・夜のダイビング） */
     .explore-special-video{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden}
@@ -981,11 +994,14 @@ body.night-theme .tea-party-box,
 body.night-theme .tea-party-person,
 body.night-theme .tea-party-log,
 body.night-theme .admin-master-panel,
-body.night-theme .admin-day-grid button{
+body.night-theme .admin-day-grid button,
+body.night-theme .admin-day-preview,
+body.night-theme .admin-day-preview button{
   background:#0d2743;
   color:#f6f2e8;
   border-color:rgba(199,164,93,.28);
 }
+body.night-theme .admin-day-preview button.active{background:#e2c98c;color:#071a2b;border-color:#e2c98c}
 body.night-theme .card-desc,
 body.night-theme .info p,
 body.night-theme .room-mapping,
@@ -1172,7 +1188,19 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         <div class="ticker-label">RESORT INFO</div>
         <div class="ticker-window"><div id="resortTickerTrack" class="ticker-track"></div></div>
       </div>
-      <div class="admin-event-tools"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 139,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 49,999,900 + SPECIAL</button></div>
+      <div id="resortLiveLocations" class="resort-live-locations" aria-label="現在の滞在場所" aria-live="polite">
+        <div class="resort-live-row" data-resort-live-line>—</div>
+        <div class="resort-live-row" data-resort-live-line>—</div>
+        <div class="resort-live-row" data-resort-live-line>—</div>
+      </div>
+      <div class="admin-event-tools">
+        <div class="admin-reset-row"><button id="adminEventReset" class="admin-reset-btn" type="button">ADMIN / 139,900 RESET</button><button id="adminSeriousReset" class="admin-reset-btn" type="button">ADMIN / 49,999,900 + SPECIAL</button></div>
+        <div class="admin-day-preview" aria-label="管理人用DAY確認">
+          <span class="admin-day-preview-label">ADMIN / DAY PREVIEW</span>
+          <button type="button" data-admin-preview-day="1">DAY 1</button><button type="button" data-admin-preview-day="2">DAY 2</button><button type="button" data-admin-preview-day="3">DAY 3</button><button type="button" data-admin-preview-day="4">DAY 4</button><button type="button" data-admin-preview-day="5">DAY 5</button><button type="button" data-admin-preview-day="6">DAY 6</button><button type="button" data-admin-preview-day="7">DAY 7</button>
+          <button id="adminPreviewExit" class="admin-day-preview-exit" type="button">本番DAY</button>
+        </div>
+      </div>
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
@@ -1788,6 +1816,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
               <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>新鮮なドングリ</strong><small>異変動物にあげることができる、新鮮なドングリ</small></div><div class="prize-item-side"><b>500 CHIP</b><span id="freshAcornOwned">所持 0</span><button id="buyFreshAcorn" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>解毒剤</strong><small>毒の効能を打ち消す。</small></div><div class="prize-item-side"><b>5,000 CHIP</b><span id="antidoteOwned">所持 0</span><button id="buyAntidote" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item mystery-counter-item">
               <div>
                 <strong>ミステリーボックス</strong>
@@ -1887,6 +1917,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(urlPlayerId&&urlGuestName)localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const storedGuestName=handoffGuestName;
+    window.__sprIsAdminMode=String(storedGuestName||'').trim()==='エルナンド・ロメロ';
+    document.body.classList.toggle('spr-admin-mode',window.__sprIsAdminMode);
     const identityQuery=(handoffPlayerId&&handoffGuestName)
       ? `?pid=${encodeURIComponent(handoffPlayerId)}&guest=${encodeURIComponent(handoffGuestName)}`
       : '';
@@ -1901,6 +1933,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'BARドリンクチケット',detail:'BARで使用すると現在のドリンクと効能を消去し、同じ時間帯にもう一度ドリンクを注文できます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
       jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
+      freshAcorn:{label:'新鮮なドングリ',detail:'リゾートで見つけた小さな動物にあげられる、新鮮なドングリ。',max:Infinity},
+      antidote:{label:'解毒剤',detail:'毒の効能を打ち消す。',max:Infinity},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
@@ -2028,6 +2062,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       localStorage.setItem(belongingsKey,JSON.stringify(items));
       if(!window.__sprRemoteHydrating)persistInventorySnapshot(items).catch(e=>console.warn('inventory sync',e));
     }
+    window.__sprGetBelongingCount=belongingCount;window.__sprGetCoasterCounts=coasterCounts;window.__sprGetPlayerId=()=>sprPlayerId();window.__sprGetGuestName=()=>storedGuestName;window.__sprRemainingLives=remainingLives;window.__sprConsumeStoryItem=async key=>{try{const next=await remoteInventoryAdjust(key,-1);if(next===null)return false;const items=loadBelongings();items[key]=next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item consume',e);return false}};
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     function remainingLives(){
       const belongings=loadBelongings();
@@ -2458,11 +2493,74 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }));
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
+    const resortLiveLocationNodes=[...document.querySelectorAll('[data-resort-live-line]')];
+    const resortLiveZoneLabels={room:'ROOM',restaurant:'レストラン&カフェ',bar:'BAR',explore:'探索',casino:'カジノ'};
+    const resortLiveValidZones=new Set(Object.keys(resortLiveZoneLabels));
+    let resortLivePresenceChannel=null,resortLivePresenceReady=false,resortLiveDesiredZone='';
+    function currentResortLiveZone(){
+      if(document.getElementById('integratedCafeShell')?.classList.contains('open'))return 'restaurant';
+      if(['sunsetTerraceView','teaSalonView','restaurantView'].some(id=>document.getElementById(id)?.classList.contains('open')))return 'restaurant';
+      if(document.getElementById('barView')?.classList.contains('open'))return 'bar';
+      if(document.getElementById('exploreView')?.classList.contains('open'))return 'explore';
+      if(document.getElementById('casinoView')?.classList.contains('open'))return 'casino';
+      if(document.getElementById('roomView')?.classList.contains('open'))return 'room';
+      return '';
+    }
+    function renderResortLiveLocations(){
+      const latestByPlayer=new Map();
+      const state=resortLivePresenceChannel?.presenceState?.()||{};
+      Object.entries(state).forEach(([presenceKey,metas])=>{
+        (Array.isArray(metas)?metas:[metas]).forEach(meta=>{
+          const zone=String(meta?.zone||''),name=String(meta?.display_name||'').trim();
+          if(!resortLiveValidZones.has(zone)||!name)return;
+          const playerId=String(meta?.player_id||presenceKey||name),updatedAt=Number(meta?.updated_at)||0;
+          const previous=latestByPlayer.get(playerId);
+          if(!previous||updatedAt>=previous.updatedAt)latestByPlayer.set(playerId,{name,zone,updatedAt});
+        });
+      });
+      const grouped=new Map();
+      latestByPlayer.forEach(person=>{
+        if(!grouped.has(person.zone))grouped.set(person.zone,[]);
+        grouped.get(person.zone).push(person);
+      });
+      const lines=[...grouped.entries()].map(([zone,people])=>{
+        people.sort((a,b)=>b.updatedAt-a.updatedAt||a.name.localeCompare(b.name,'ja'));
+        return {zone,people,updatedAt:Math.max(...people.map(person=>person.updatedAt))};
+      }).sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,3);
+      resortLiveLocationNodes.forEach((node,index)=>{
+        const line=lines[index];
+        node.textContent=line?`${resortLiveZoneLabels[line.zone]}　${line.people.map(person=>person.name).join('　')}`:'—';
+      });
+    }
+    async function setResortLiveLocation(zone){
+      resortLiveDesiredZone=resortLiveValidZones.has(zone)?zone:'';
+      if(!resortLivePresenceReady||!resortLivePresenceChannel)return;
+      try{
+        await resortLivePresenceChannel.track({player_id:handoffPlayerId,display_name:storedGuestName,zone:resortLiveDesiredZone,updated_at:Date.now(),resort_day:resortDayNumber()});
+      }catch(error){console.warn('resort live location update',error)}
+    }
+    function syncResortLiveLocationFromUi(){void setResortLiveLocation(currentResortLiveZone())}
+    window.__sprSetLiveLocation=zone=>setResortLiveLocation(zone);
+    window.__sprSyncLiveLocation=syncResortLiveLocationFromUi;
+    function initResortLiveLocations(){
+      renderResortLiveLocations();
+      if(!window.supabaseClientSpecial||!handoffPlayerId||!storedGuestName)return;
+      resortLivePresenceChannel=window.supabaseClientSpecial.channel('spr-resort-live-locations-v1',{config:{presence:{key:handoffPlayerId}}});
+      resortLivePresenceChannel
+        .on('presence',{event:'sync'},renderResortLiveLocations)
+        .on('presence',{event:'join'},renderResortLiveLocations)
+        .on('presence',{event:'leave'},renderResortLiveLocations)
+        .subscribe(status=>{
+          resortLivePresenceReady=status==='SUBSCRIBED';
+          if(resortLivePresenceReady)void setResortLiveLocation(currentResortLiveZone());
+        });
+    }
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();if(id==='sunsetTerraceView'){pauseResortMusic();syncSunsetTerraceMusic();}if(id==='teaSalonView'){pauseResortMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}}
-    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';if(view.id==='sunsetTerraceView')syncSunsetTerraceMusic();if(view.id==='teaSalonView'&&typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();if(id==='sunsetTerraceView'){pauseResortMusic();syncSunsetTerraceMusic();}if(id==='teaSalonView'){pauseResortMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}syncResortLiveLocationFromUi()}
+    function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';if(view.id==='sunsetTerraceView')syncSunsetTerraceMusic();if(view.id==='teaSalonView'&&typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();syncResortLiveLocationFromUi()}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
+    initResortLiveLocations();
     scheduleHeroBackgroundRefresh();
 
     // RESORT INFORMATION
@@ -3660,11 +3758,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;
           hiloStatus.textContent=`ROUND ${round}　あなたのカードは ${a.rank}。HIGH？ LOW？`;
           pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});
-          const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.70:.30);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;hiloStatus.textContent=win?'YOU WIN':'SPECIAL DEALER WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'SPECIAL DEALERがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};
+          const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.65:.35);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;hiloStatus.textContent=win?'YOU WIN':'SPECIAL DEALER WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'SPECIAL DEALERがこのラウンドを取りました。'});if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4),1100);else setTimeout(play,1100)};
           hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low');return;
         }
         // 140,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
-        const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=2||ew>=2)setTimeout(()=>finishSpecial(pw>=2),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')
+        const deck=makeSingleDeck(),a=deck.pop(),b=deck.pop();hiloFirst=a;hiloSecond=null;hiloCurrentCard.innerHTML='<div class="playing-card back"></div>';hiloNextCard.innerHTML=cardHtml(a);hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=`ROUND ${round}　次のカードは HIGH？ LOW？`;pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});const choose=c=>{if(locked)return;locked=true;hiloSecond=b;hiloCurrentCard.innerHTML=cardHtml(b);const av=rankValue(a.rank),bv=rankValue(b.rank);if(bv===av){round--;hiloStatus.textContent='DRAW　もう一度。';setTimeout(play,900);return}const correct=c==='high'?bv>av:bv<av;if(correct)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} 運のみぞ知る`;hiloStatus.textContent=correct?'YOU WIN':'運のみぞ知る WIN';pushSpecialState({game:'hilo',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:correct?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4),1100);else setTimeout(play,1100)};hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low')
       };play()
     }
     document.querySelectorAll('[data-special-game]').forEach(b=>b.addEventListener('click',()=>markSpecialChoice(b.dataset.specialGame)));
@@ -3871,7 +3969,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function tryTriggerSeriousEmily(){
       // 5,000万CHIP + 赤ワイン「アンコール」注文済み + 夜間のみ。
-      if(casinoChips<50000000||!hasEncoreTonight()||localStorage.getItem(seriousEmilyKey))return false;
+      if(Number(document.documentElement.dataset.resortDay||1)<3||casinoChips<50000000||!hasEncoreTonight()||localStorage.getItem(seriousEmilyKey))return false;
       if(specialOverlay?.classList.contains('open')||document.body.classList.contains('special-table-playing'))return false;
       localStorage.setItem(seriousEmilyKey,'1');
       setRemoteFlag('emily-serious-announced',true).catch(e=>console.warn('Serious Emily flag sync',e));
@@ -3970,8 +4068,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(!remoteSaved){alert('CHIPは画面上で変更されましたが、Supabaseへの保存を確認できませんでした。通信またはSupabaseの権限設定を確認してください。');return}
       alert(serious?'上位SPECIAL TABLE確認用：49,999,900 CHIP＋本日の赤ワイン「アンコール」注文フラグを設定しました。Supabase保存済みです。':'SPECIAL TABLE確認用：139,900 CHIPに設定しました。Supabase保存済みです。');
     }
-    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(confirm('SPECIAL TABLE確認用に139,900 CHIPへリセットしますか？'))await resetEmilyTest(139900,false)});
-    if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(confirm('上位SPECIAL TABLE確認用に49,999,900 CHIPへリセットし、本日の赤ワイン「アンコール」注文フラグも付与しますか？'))await resetEmilyTest(49999900,true)});
+    if(adminEventReset)adminEventReset.addEventListener('click',async()=>{if(!window.__sprIsAdminMode)return;if(confirm('SPECIAL TABLE確認用に139,900 CHIPへリセットしますか？'))await resetEmilyTest(139900,false)});
+    if(adminSeriousReset)adminSeriousReset.addEventListener('click',async()=>{if(!window.__sprIsAdminMode)return;if(confirm('上位SPECIAL TABLE確認用に49,999,900 CHIPへリセットし、本日の赤ワイン「アンコール」注文フラグも付与しますか？'))await resetEmilyTest(49999900,true)});
 
     function casinoMoney(value){return Math.round(value).toLocaleString('ja-JP')}
     function syncCasinoBalances(){
@@ -4030,6 +4128,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     let mysteryCounterReady=false;
     function renderPrizeCounter(message=''){
       const tea2=belongingCount('afternoonTeaTicket2'), tea4=belongingCount('afternoonTeaTicket4'), extra=belongingCount('extraDrinkTicket'), cafe=belongingCount('cafeDrinkTicket');
+      const acorn=belongingCount('freshAcorn'),antidote=belongingCount('antidote');
+      const acornOwned=document.getElementById('freshAcornOwned'),antidoteOwned=document.getElementById('antidoteOwned');
+      if(acornOwned)acornOwned.textContent=`所持 ${acorn}`;if(antidoteOwned)antidoteOwned.textContent=`所持 ${antidote}`;
+      const acornButton=document.getElementById('buyFreshAcorn'),antidoteButton=document.getElementById('buyAntidote');
+      if(acornButton){acornButton.disabled=casinoChips<500;acornButton.textContent=casinoChips<500?'チップ不足':'交換する'}
+      if(antidoteButton){antidoteButton.disabled=casinoChips<5000;antidoteButton.textContent=casinoChips<5000?'チップ不足':'交換する'}
       afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
       [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
       prizeMessage.textContent=message||'チケット系景品の所持数に制限はありません。';
@@ -4044,6 +4148,23 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${qty}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(key==='cafeDrinkTicket'&&typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
       }catch(e){console.warn('prize exchange sync',e);renderPrizeCounter('景品交換を同期できませんでした。もう一度お試しください。')}
     }
+    async function buyStoryItem(key,label,price){
+      await refreshCasinoChipsFromSupabase();
+      if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
+      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
+      const before=casinoChips;
+      try{
+        const {data,error}=await window.supabaseClientSpecial.from('players').update({chips:before-price,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before).select('chips').maybeSingle();
+        if(error)throw error;if(!data){renderPrizeCounter('チップ残高が更新されています。もう一度交換してください。');await refreshCasinoChipsFromSupabase();return}
+        casinoChips=Math.max(0,Number(data.chips)||0);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();
+        try{const qty=await remoteInventoryAdjust(key,1);if(qty===null)throw new Error('inventory unavailable');const items=loadBelongings();items[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(items));}
+        catch(error){await window.supabaseClientSpecial.from('players').update({chips:before,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before-price);casinoChips=before;previousCasinoChips=before;localStorage.setItem(casinoChipKey,String(before));syncCasinoBalances();throw error}
+        renderPrizeCounter(`${label}を1個交換しました。所持 ${belongingCount(key)}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+      }catch(error){console.warn('story item purchase failed',error);renderPrizeCounter('景品交換を完了できませんでした。残高と所持品をご確認ください。');await hydratePersistentState()}
+    }
+    document.getElementById('buyFreshAcorn')?.addEventListener('click',()=>buyStoryItem('freshAcorn','新鮮なドングリ',500));
+    document.getElementById('buyAntidote')?.addEventListener('click',()=>buyStoryItem('antidote','解毒剤',5000));
+
     const topBgmToggle=document.getElementById('topBgmToggle');
     const exploreBgm=document.getElementById('exploreBgm');
     const storyMenu=document.getElementById('storyMenu');
@@ -4342,7 +4463,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function updateCasinoElevatorAccess(){
       if(!casinoElevatorButton)return;
-      const active=casinoLevel==='gallery'&&isCasinoElevatorSlide()&&hasJokerForElevator();
+      const active=Number(document.documentElement.dataset.resortDay||1)>=2&&casinoLevel==='gallery'&&isCasinoElevatorSlide()&&hasJokerForElevator();
       casinoElevatorButton.classList.toggle('hidden',!active);
       if(casinoGalleryHint)casinoGalleryHint.classList.toggle('hidden',active);
       if(active){
@@ -6121,6 +6242,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const HERNANDO_AVAILABLE_FROM_DAY=2;
     const HERNANDO_ROOM_ENTRANCE_TYPE='hernando-room-entrance';
     function hernandoEventEnabled(){return Number(document.documentElement.dataset.resortDay||1)>=HERNANDO_AVAILABLE_FROM_DAY}
+    function hernandoDailyChallengeKey(){return `spr-hernando-challenges:${playerStorageId}:day${resortDayNumber()}`}
+    function hernandoDailyChallengeCount(){return Math.max(0,Number(localStorage.getItem(hernandoDailyChallengeKey())||0))}
+    function hernandoArenaTimeAllowed(){const h=japanClockParts().hour;return h>=16||h<7}
     function hernandoRoomEntranceKey(room=activeRoom){return `spr-hernando-room-entrance:${String(room||'')}`}
     function hasHernandoRoomEntrance(room=activeRoom){return Boolean(hernandoEventEnabled()&&room&&localStorage.getItem(hernandoRoomEntranceKey(room))==='1')}
     function applyHernandoRoomEntrance(room,{discoveredBy='',announce=false}={}){
@@ -6235,7 +6359,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(activeRoom)updateRoomPhoto(true);
       return until;
     }
-    window.__sprIsHernandoPoisoned=isHernandoPoisoned;
+    window.__sprHasBothDrinkKinds=()=>{const rows=Object.values(loadBarDrinkState());return rows.some(x=>ROOM_SERVICE_NG_DRINKS.has(x?.name))&&rows.some(x=>ROOM_SERVICE_OMINOUS_DRINKS.has(x?.name))};
+    window.__sprGetActiveHorrorDrink=activeRoomServiceHorrorDrink;
+    window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'毒の効能は残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'解毒剤を使用した。毒の効能が消えた。'}};
 
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
@@ -6529,6 +6655,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       });
     }
     function startHernandoDescent(){
+      if(!hernandoArenaTimeAllowed()){setExploreMessage('闘牛場へ続く扉は、夕暮れから夜明け前までしか開かないようだ。');return}
+      if(hernandoDailyChallengeCount()>=2){setExploreMessage('今夜の挑戦は、すでに二度までだ。');return}
       hideHernandoDoorChoice();
       clearHernandoDescentTimers();
       const introSeen=hasSeenHernandoIntro();hernandoEntryWasIntroSeen=introSeen;
@@ -6595,6 +6723,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(hernandoDialogueAfter==='exit'){closeHernandoArena(true);return}
     });
     if(hernandoBullAccept)hernandoBullAccept.addEventListener('click',()=>{
+      const used=hernandoDailyChallengeCount();if(used>=2){beginHernandoDialogue(['今夜の勝負は、二度までだ。続きはまた別の夜にしよう。'],'exit');return}
+      localStorage.setItem(hernandoDailyChallengeKey(),String(used+1));
       cancelHernandoArenaBgmFade(true);
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       hernandoDrinkRoundNo=1;hernandoPoisonChoice='';
@@ -6672,6 +6802,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           }
           setExploreMessage(text);
         };
+      } else if(selectedRoomScene==='bathroom'&&Number(document.documentElement.dataset.resortDay||1)===1){
+        roomContextAction.textContent='バスルームを調べる';
+        roomContextAction.classList.remove('hidden');
+        roomContextAction.onclick=()=>setExploreMessage('バスルームを調べた。特に変わったところはない。');
       } else if(selectedRoomScene==='bathroom'&&roomTimeIndex()===2&&hasBathroomFoodKey()){
         const state=bathroomBloomState();
         if(state<2){
@@ -6854,7 +6988,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function stopRoomSync(){if(roomRealtimeChannel&&window.supabaseClientSpecial)window.supabaseClientSpecial.removeChannel(roomRealtimeChannel);roomRealtimeChannel=null;stopRoomPhonePresence();roomMessageCache=[];roomServiceCache=[];roomServiceDeliveryOrders=roomServiceDeliveryOrders.filter(order=>String(order.playerId||'')===String(roomServiceDeliveryPlayerId||''));scheduleRoomServiceDeliveryCheck()}
 
-    // ROOM SERVICE DELIVERY / 注文から5分後に到着
+    // ROOM SERVICE DELIVERY / 注文から3分後に到着
     // Food photo names: upload these seven JPG files alongside day1.html.
     const ROOM_SERVICE_FOOD_IMAGES=new Map([
       ['クラブサンド','room_service_club_sandwich.jpg'],
@@ -6866,7 +7000,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       ['苺のタルト','room_service_strawberry_tart.jpg']
     ]);
     const ROOM_SERVICE_DRINK_NAMES=new Set(['コーヒー','ミルクティー','カフェモカ','トロピカルフルーツジュース','ローズレモネード','ミネラルウォーター','スパークリングワイン']);
-    const ROOM_SERVICE_DELIVERY_DELAY_MS=5*60*1000;
+    const ROOM_SERVICE_DELIVERY_DELAY_MS=3*60*1000;
     const ROOM_SERVICE_OMINOUS_DRINKS=new Set(['ラストサンセット','タイドケイブ','ホワイトピーチ','ムーンタイドグロット','マーメイドララバイ']);
     const ROOM_SERVICE_NG_DRINKS=new Set(['ワンウェイトリップ','ラストゲスト','トワイライトタイド']);
     const ROOM_SERVICE_HORROR_WAIT_MS=10*1000;
@@ -7742,10 +7876,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('解毒剤',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -7819,7 +7953,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
       try{primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
         roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);await shareRoomServiceOrder(data);
-        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。5分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
+        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。3分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
       }catch(e){console.warn('room service sync',e);roomServiceResult.textContent='注文を送信できませんでした。もう一度お試しください。';roomServiceResult.classList.remove('hidden')}
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
@@ -7830,6 +7964,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       // 有効な客室へ入るタップの中で着信音とルームサービスのドアベルを先に解除しておく。
       primeRoomPhoneAudio();primeRoomServiceDoorbellAudio();
       if(room==='501'){primeVillaPoolSharedAudio();primeVillaDarkroomSharedAudio();}
+      window.__sprActiveRoom=activeRoom;window.__sprRoomEntryTime=Date.now();
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       document.getElementById('roomWelcome').textContent=`${activeGuest}さん、いらっしゃいませ。`;
       document.getElementById('roomNumberLabel').textContent=`${room}号室`;
@@ -7848,6 +7983,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
       void refreshRoomServiceDeliveryOrders(); // 同室者が別端末で注文したルームサービスも読み込む
     });
+    window.__sprSendArthurChat=async(room,body)=>{const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(room),player_id:playerId,display_name:'Arthur Grey',body:String(body)});if(error){console.warn('Arthur chat event',error);return false}return true};
     document.getElementById('chatForm').addEventListener('submit',async event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
@@ -7864,7 +8000,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(activeRoom==='501'&&selectedRoomScene==='darkroom'&&villaDarkroomIsController())void villaDarkroomPublish('stop');
         villaDarkroomStopLocal();
         closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();
-        roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
+        roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';window.__sprActiveRoom='';window.__sprRoomEntryTime=0;updateRoomOccupancyUi();roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
         roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView);
       }finally{roomLeaveInProgress=false}
     }
@@ -7901,12 +8037,18 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 <script>
 (function(){
   const THIS_DAY=Number(document.documentElement.dataset.resortDay||1);
+  document.title=document.title.replace(/DAY\s*\d+/i,`DAY ${THIS_DAY}`);
+  document.querySelectorAll('.eyebrow').forEach(el=>{el.textContent=el.textContent.replace(/DAY\s*\d+/i,`DAY ${THIS_DAY}`)});
   const DAY_TYPE='admin-day-switch';
   const AUTO_DAY_TYPE='admin-day-auto';
   const RESET_TYPE='admin-world-reset';
+  const IS_ADMIN=window.__sprIsAdminMode===true;
+  const ADMIN_PREVIEW_KEY='spr-admin-preview-day';
   const statusEl=document.getElementById('adminMasterStatus');
   const currentEl=document.getElementById('adminCurrentDay');
   const dayButtons=[...document.querySelectorAll('[data-admin-day]')];
+  const previewDayButtons=[...document.querySelectorAll('[data-admin-preview-day]')];
+  const previewExitBtn=document.getElementById('adminPreviewExit');
   const autoDayBtn=document.getElementById('adminAutoDayToggle');
   const resetBtn=document.getElementById('adminWorldReset');
   const DAY_MS=86400000;
@@ -7915,7 +8057,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   let autoDayTimer=0;
   let autoDayAnchor=null;
   let autoDayPublishInFlight=false;
-  function setDayUI(day){if(currentEl)currentEl.textContent=String(day);dayButtons.forEach(b=>b.classList.toggle('active',Number(b.dataset.adminDay)===day));}
+  const storedPreviewDay=Number(sessionStorage.getItem(ADMIN_PREVIEW_KEY)||0);
+  if(!IS_ADMIN)sessionStorage.removeItem(ADMIN_PREVIEW_KEY);
+  let adminPreviewDay=IS_ADMIN&&storedPreviewDay>=1&&storedPreviewDay<=7?storedPreviewDay:0;
+  function setDayUI(day){if(currentEl)currentEl.textContent=String(day);dayButtons.forEach(b=>b.classList.toggle('active',Number(b.dataset.adminDay)===day));previewDayButtons.forEach(b=>b.classList.toggle('active',adminPreviewDay===day&&Number(b.dataset.adminPreviewDay)===day));if(previewExitBtn)previewExitBtn.classList.toggle('active',!adminPreviewDay);}
   setDayUI(THIS_DAY);
   function client(){return window.supabaseClientSpecial||null}
   async function creator(){try{return await resolveSpecialPlayerId()}catch(e){return null}}
@@ -7965,6 +8110,12 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     finally{autoDayPublishInFlight=false}
   }
   async function syncCurrentDay(redirect=true,publishAdvance=false){
+    if(adminPreviewDay){
+      setDayUI(adminPreviewDay);renderAutoDayButton();
+      if(statusEl)statusEl.textContent='管理人プレビュー中：DAY '+adminPreviewDay+'（本番の日付と参加者には影響しません）';
+      if(redirect&&adminPreviewDay!==THIS_DAY)goDay(adminPreviewDay);
+      return adminPreviewDay;
+    }
     try{
       const [manualMarker,autoMarker]=await Promise.all([latestMarker(DAY_TYPE),latestMarker(AUTO_DAY_TYPE)]);
       const manualDay=markerDay(manualMarker,1);
@@ -7980,7 +8131,21 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       return safe;
     }catch(e){console.warn('day sync',e);renderAutoDayButton();return Number(currentEl?.textContent)||THIS_DAY}
   }
+  previewDayButtons.forEach(btn=>btn.addEventListener('click',()=>{
+    if(!IS_ADMIN)return;
+    const day=Number(btn.dataset.adminPreviewDay);if(day<1||day>7)return;
+    adminPreviewDay=day;sessionStorage.setItem(ADMIN_PREVIEW_KEY,String(day));setDayUI(day);
+    if(statusEl)statusEl.textContent='管理人プレビューとして DAY '+day+' を表示します。';
+    goDay(day);
+  }));
+  if(previewExitBtn)previewExitBtn.addEventListener('click',()=>{
+    if(!IS_ADMIN)return;
+    sessionStorage.removeItem(ADMIN_PREVIEW_KEY);adminPreviewDay=0;setDayUI(THIS_DAY);
+    if(statusEl)statusEl.textContent='本番DAYへ戻ります。';
+    void syncCurrentDay(true);
+  });
   dayButtons.forEach(btn=>btn.addEventListener('click',async()=>{
+    if(!IS_ADMIN)return;
     const day=Number(btn.dataset.adminDay);if(!confirm('全参加者の表示を DAY '+day+' に切り替えますか？'))return;
     try{
       btn.disabled=true;if(statusEl)statusEl.textContent='DAY '+day+' へ切替中…';
@@ -7991,6 +8156,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     finally{btn.disabled=false}
   }));
   if(autoDayBtn)autoDayBtn.addEventListener('click',async()=>{
+    if(!IS_ADMIN)return;
     const current=Math.max(1,Math.min(7,Number(currentEl?.textContent)||THIS_DAY));
     if(autoDayEnabled){
       if(!confirm('毎朝7:00の自動DAY進行を停止しますか？\n現在のDAY '+current+' で固定されます。'))return;
@@ -8046,6 +8212,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }catch(e){console.warn('world reset session check',e);return false}
   }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
+    if(!IS_ADMIN)return;
     if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者のCHIPは0になります\n\nこの操作を実行しますか？'))return;
     if(!confirm('最終確認です。\n管理人以外の参加者ログインもリセットします。よろしいですか？'))return;
     try{
@@ -8074,6 +8241,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }catch(e){console.warn('special/runtime/login reset',e);throw e}
       await publishMarker(DAY_TYPE,'DAY:1');
       await publishMarker(AUTO_DAY_TYPE,'AUTO:OFF|DAY:1');
+      sessionStorage.removeItem(ADMIN_PREVIEW_KEY);adminPreviewDay=0;
       autoDayEnabled=false;autoDayAnchor=null;renderAutoDayButton();scheduleAutoDayCheck();
       clearLocalGimmicks();
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
@@ -8535,6 +8703,7 @@ async function openIntegratedCafe(){
   if(typeof applyGlobalNightTheme==='function')applyGlobalNightTheme(currentTokyoPeriod());
   document.body.style.overflow='hidden';
   syncIntegratedCafeMasterBgm();
+  if(typeof window.__sprSyncLiveLocation==='function')window.__sprSyncLiveLocation();
 }
 function closeIntegratedCafe(){
   integratedCafeShell.classList.remove('open');
@@ -8542,6 +8711,7 @@ function closeIntegratedCafe(){
   showIntegratedCafePage('home');
   try{integratedCafeBgm.pause();integratedCafeBgm.currentTime=0}catch{}
   document.body.style.overflow='';
+  if(typeof window.__sprSyncLiveLocation==='function')window.__sprSyncLiveLocation();
 }
 window.addEventListener('message',e=>{
   const d=e.data||{};
@@ -9132,6 +9302,44 @@ window.addEventListener('message',e=>{
   exploreView.addEventListener('ended',e=>{
     if(e.target instanceof HTMLVideoElement)window.__sprResumeExploreBgmAfterGimmick?.();
   },true);
+})();
+</script>
+<!-- STORY_DAY_FILES: Generated from this DAY 1 base; day progression is selected by data-resort-day. -->
+<script>
+(()=>{
+ const day=Number(document.documentElement.dataset.resortDay||1),who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+ const K=`spr-story:${who}:day${day}:`;
+ const seen=x=>localStorage.getItem(K+x)==='1',mark=x=>localStorage.setItem(K+x,'1');
+ const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),both=()=>!!window.__sprHasBothDrinkKinds?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
+ const time=()=>{const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());return{h:+p.find(x=>x.type==='hour').value,m:+p.find(x=>x.type==='minute').value}};
+ const modal=document.createElement('div');modal.id='storyEventModal';modal.style.cssText='position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,20,.82);color:#fff';modal.innerHTML='<section style="width:min(560px,100%);max-height:82dvh;overflow:auto;padding:26px 20px;border:1px solid #c9aa68;background:linear-gradient(150deg,#142f42,#07131f);text-align:center"><small style="letter-spacing:.2em;color:#e6cc8e">SUMMER PARADISE / STORY</small><h2 style="font:22px Georgia,serif;color:#f2d895;margin:14px 0" id="storyTitle"></h2><div id="storyBody" style="white-space:pre-line;font:15px/1.9 Yu Mincho,serif;margin:18px 0"></div><div id="storyChoices" style="display:grid;gap:9px"></div><button id="storyClose" style="margin-top:16px;padding:10px 20px;border:1px solid #a98d55;background:transparent;color:#fff">閉じる</button></section>';
+ document.body.append(modal);const title=modal.querySelector('#storyTitle'),body=modal.querySelector('#storyBody'),choices=modal.querySelector('#storyChoices');
+ function open(t,b,opts=[]){title.textContent=t;body.textContent=b;choices.replaceChildren();for(const o of opts){const x=document.createElement('button');x.textContent=o.label;x.style.cssText='padding:13px;border:1px solid #c9aa68;background:#fff;color:#10243a;font:14px "Yu Mincho",serif';x.onclick=o.run;choices.append(x)}modal.style.display='flex'}
+ const close=()=>modal.style.display='none';modal.querySelector('#storyClose').onclick=close;
+ // Day 2: both drink categories open a single island-animal encounter; poison exploration text is already day-gated in the base.
+ function animal(){if(day!==2||seen('animal')||!both())return;mark('animal');open('波打ち際の気配','不穏な酒と、帰れない酒。その両方を飲んだあなたの前に、異変動物が姿を現した。\n波間から、こちらを見ている。');}
+ // Day 4: room apparition after four minutes with an ominous or NG bar drink active.
+ let arthurArrived=false;
+ function checkArthur(){if(day!==4||arthurArrived||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;if(Date.now()-window.__sprRoomEntryTime<240000||!window.__sprGetActiveHorrorDrink?.())return;arthurArrived=true;window.__sprArthurRoom=window.__sprActiveRoom;const label=document.getElementById('roomOccupancyText');if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}const list=document.getElementById('roomOccupancyNames');if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。')}
+ setInterval(checkArthur,1500);
+ const lines=["I paid for paradise. Not for this.","You shouldn't be here.","This was supposed to be paradise.","Don't trust the coordinates.","The sea won't let us leave.","I can still hear it breathing.","We were never meant to leave.","She knew. She knew everything.","It's still sleeping beneath us.","Please... don't let it wake."];
+ let sequenceStarted=false;
+ document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';if(day!==4||sequenceStarted||!window.__sprArthurRoom||!/(アーサー|グレイ)/i.test(msg))return;sequenceStarted=true;const room=window.__sprArthurRoom;lines.forEach((line,i)=>setTimeout(()=>window.__sprSendArthurChat?.(room,line),1300+i*2300));setTimeout(async()=>{const id=await window.__sprGetPlayerId?.();if(!id||!window.supabaseClientSpecial)return;window.__sprSendArthurChat?.(room,'Room service, please. One demi-glace omelette rice.');const {error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:String(room),player_id:id,display_name:'Arthur Grey',items:[{name:'特製デミグラスオムライス',qty:1}]});if(error)console.warn('Arthur room-service order',error)},25000)},{capture:true});
+ document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{if(day!==4||!sequenceStarted)return;const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/オムライス/.test(food))return;const r=window.__sprArthurRoom||window.__sprActiveRoom;setTimeout(()=>window.__sprSendArthurChat?.(r,'46 38 125 57'),1200);setTimeout(()=>window.__sprSendArthurChat?.(r,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);setTimeout(()=>open('Arthur Grey','The room fell silent. Arthur Grey was gone.'),5600)},450));
+ // Day 5: exact drink and coaster conditions; a gifted acorn reveals the mirror image.
+ function fawn(){if(day!==5||seen('fawn')||!poison()||!both())return;const c=window.__sprGetCoasterCounts?.()||[];if(![11,55,65,67,68].every(n=>Number(c[n])>0))return;mark('fawn');const opts=[];if(count('freshAcorn'))opts.push({label:'ドングリをあげる',run:async()=>{const ok=await window.__sprConsumeStoryItem?.('freshAcorn');close();if(ok){localStorage.setItem('spr-story:fawn-reflection','1');open('硝子角の子鹿','子鹿がドングリを受け取った。硝子の角の鏡面には、正しい乗り場――人魚の入り江が映っている。')}}});opts.push({label:'あげない',run:()=>{close();open('硝子角の子鹿','子鹿は森の奥へ消えていった。')}});open('硝子角の子鹿','森の奥に、硝子の角を持つ子鹿がいる。ドングリをあげる？',opts)}
+ // Day 6 staff dialogue changes from hospitality to entrapment.
+ const staff=['今夜も、こちらにいらしてください。外のことはお忘れになって。','お帰りの船は、まだ決まっていないようです。もう一晩お過ごしください。','この島を出る必要などありません。皆さま、ここで満たされています。','どうか海へ近づかないで。あなたの居場所は、もうこちらにあります。','灯台の光を追わないでください。迷わず、リゾートにお留まりください。'];
+ function staffEvent(){if(day===6)open('スタッフの声',staff[Math.floor(Math.random()*staff.length)])}
+ // Day 7 escape sequence: only 22:00–23:59 and only while at least one heart remains.
+ const timeOK=()=>{const t=time();return t.h===22||t.h===23};
+ function eligible(){return Number(window.__sprRemainingLives?.()??3)>0}
+ function gate(t,b,opts){if(!timeOK()){open(t,'この手順は最終日の22:00〜23:59にしか選べない。');return}if(!eligible()){open(t,'♥️をすべて失った宿泊者には、選択肢が表示されない。');return}open(t,b,opts)}
+ function addLighthouseButton(){if(day!==7||document.getElementById('day7RiseLighthouse'))return;const actions=document.querySelector('.explore-location-actions');if(!actions)return;const button=document.createElement('button');button.id='day7RiseLighthouse';button.className='explore-location-action';button.innerHTML='灯台に昇る<small>CLIMB THE LIGHTHOUSE</small>';button.onclick=()=>gate('灯台の灯り','灯台の灯りをどこへ向けて指し示す？',[['南緯47度09分、西経126度43分',false],['南緯49度51分、西経128度34分',false],['南緯46度38分、西経125度57分',true],['南緯44度27分、西経127度51分',false]].map(([label,ok])=>({label,run:()=>{close();if(ok){localStorage.setItem('spr-story:escape-coordinates','1');open('灯りは届いた','正しい座標へ光を向けた。もう一度探索に出ると、乗り場が示される。')}else open('違う座標','光は海のどこにも届かない。')}})));actions.append(button)}
+ async function success(){localStorage.setItem('spr-story:escape-success','1');open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。');try{const c=window.supabaseClientSpecial,id=await window.__sprGetPlayerId?.();if(c&&id)await c.from('resort_announcements').insert({announcement_type:'resort-escape-success',message:'DAY7_ESCAPE_SUCCESS',created_by:id,expires_at:'2099-12-31T23:59:59Z'})}catch(e){console.warn('escape success sync',e)}}
+ function chooseStation(){gate('正しい乗り場はどこ？','',['ビーチに行く','灯台に行く','人魚の入江に行く'].map(x=>({label:x,run:()=>{close();if(x==='人魚の入江'){localStorage.setItem('spr-story:escape-station','1');open('乗り場を見つけた','人魚の入り江に、四隻の船が待っている。どの船で生還する？',['TRUE SHORE','BEYOND','HOMEWARD','DAYBREAK','CROSSING'].map(name=>({label:name,run:()=>{close();if(name==='TRUE SHORE')void success();else open('船は動かない','その船は島から離れようとしない。')}})))}else open('違う場所','そこは正しい乗り場ではない。')}})))}
+ window.supabaseClientSpecial?.channel('spr-day7-escape-success').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{if(p.new?.announcement_type==='resort-escape-success')open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。')}).subscribe();
+ document.addEventListener('click',e=>{if(e.target.closest?.('[data-explore-action]'))setTimeout(()=>{animal();fawn();if(day===6)staffEvent()},160);if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(addLighthouseButton,260);if(day===7&&e.target.closest?.('[data-explore-spot="mermaids_cove"]')&&localStorage.getItem('spr-story:escape-coordinates')==='1')setTimeout(chooseStation,260)},true);
 })();
 </script>
 </body>
