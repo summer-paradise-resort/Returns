@@ -6396,25 +6396,37 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(hernandoBullringVideo){hernandoBullringVideo.src=HERNANDO_BULLRING_VIDEO_URL;hernandoBullringVideo.load()}
     const hernandoVideoFallback=document.getElementById('hernandoVideoFallback'),hernandoVideoFallbackText=document.getElementById('hernandoVideoFallbackText');
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
-    function roomPhonePausedForHernando(){
+    function roomGimmicksPausedForHernando(){
       return Boolean(
         hernandoDescent?.classList.contains('open')||
         hernandoVideoScreen?.classList.contains('open')||
         hernandoEncounter?.classList.contains('open')
       );
     }
-    function pauseRoomPhoneForHernando(){
+    // 既存イベントと今後追加するROOM滞在ギミックが共通して参照する停止判定。
+    window.__sprRoomGimmicksPaused=roomGimmicksPausedForHernando;
+    function roomPhonePausedForHernando(){return roomGimmicksPausedForHernando()}
+    function pauseRoomGimmicksForHernando(){
       roomPhoneStayStartedAt=0;
       stopRoomPhoneRing();
-      updateRoomPhoneUi();
+      if(roomServiceHorrorTimer){clearTimeout(roomServiceHorrorTimer);roomServiceHorrorTimer=null}
+      if(roomServiceDeliveryTimer){clearTimeout(roomServiceDeliveryTimer);roomServiceDeliveryTimer=null}
+      updateRoomPhoneUi();updateRoomServiceDeliveryBadge();
     }
-    function resumeRoomPhoneAfterHernando(){
-      if(roomPhonePausedForHernando())return;
-      roomPhoneStayStartedAt=roomPhoneEligibleNow()?Date.now():0;
+    function resumeRoomGimmicksAfterHernando(){
+      if(roomGimmicksPausedForHernando())return;
+      const now=Date.now();
+      roomPhoneStayStartedAt=roomPhoneEligibleNow()?now:0;
+      window.__sprRoomEntryTime=now;
       updateRoomPhoneUi();
-      // 同室者が闘牛場滞在中に始めた共有着信だけは、ROOMへ戻ってから表示する。
+      if(activeRoom&&roomView.classList.contains('room-active')){
+        startRoomServiceHorrorStay();
+        evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
+      }
       if(roomPhoneCallState==='ringing'&&!roomPhoneEventExpired())evaluateRoomPhoneDeclineState({restart:true});
     }
+    const pauseRoomPhoneForHernando=pauseRoomGimmicksForHernando;
+    const resumeRoomPhoneAfterHernando=resumeRoomGimmicksAfterHernando;
     let hernandoDescentTimerA=0,hernandoDescentTimerB=0,hernandoVideoStarted=false,hernandoEntryWasIntroSeen=false;
     let hernandoDialogueLines=[],hernandoDialogueIndex=0,hernandoDialogueMode='intro',hernandoDialogueAfter='choice';
     let hernandoDialogueTypeToken=0,hernandoDialogueTyping=false,hernandoDialogueCurrentText='';
@@ -7550,17 +7562,18 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       roomServiceHorrorPending=null;roomServiceHorrorLocalChoice='idle';roomServiceHorrorLastResolution=null;roomServiceHorrorResolving=false;updateRoomDoorServicePanel();void trackRoomPhonePresence();
     }
     function scheduleRoomServiceHorrorAttempt(delay=ROOM_SERVICE_HORROR_WAIT_MS){
-      if(!roomServiceHorrorEnabled())return;
+      if(roomGimmicksPausedForHernando()||!roomServiceHorrorEnabled())return;
       if(roomServiceHorrorTimer)clearTimeout(roomServiceHorrorTimer);
       roomServiceHorrorTimer=setTimeout(()=>{
         roomServiceHorrorTimer=null;
         const record=activeRoomServiceHorrorDrink();
-        if(!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone()||roomServiceHorrorPending)return;
+        if(roomGimmicksPausedForHernando()||!activeRoom||!roomView.classList.contains('room-active')||!roomServiceHorrorTimeEligible()||!record||roomServiceHorrorAlreadyDone()||roomServiceHorrorPending)return;
         const event=createRoomServiceHorrorEvent(record);
         if(applyRoomServiceHorrorStart(event))void sendRoomServiceHorrorBroadcast('room-service-horror-start',event);
       },Math.max(100,Number(delay)||ROOM_SERVICE_HORROR_WAIT_MS));
     }
     function startRoomServiceHorrorStay(){
+      if(roomGimmicksPausedForHernando())return;
       if(roomServiceHorrorPending&&String(roomServiceHorrorPending.room)===String(activeRoom)){updateRoomDoorServicePanel();return}
       if(roomServiceHorrorTimer)return;
       const record=activeRoomServiceHorrorDrink();if(roomServiceHorrorTimeEligible()&&record&&!roomServiceHorrorAlreadyDone())scheduleRoomServiceHorrorAttempt();
@@ -7679,6 +7692,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     }
     function scheduleRoomServiceDeliveryCheck(){
       if(roomServiceDeliveryTimer){clearTimeout(roomServiceDeliveryTimer);roomServiceDeliveryTimer=null}
+      if(roomGimmicksPausedForHernando()){updateRoomServiceDeliveryBadge();return}
       const now=Date.now(),pending=roomServicePendingOrders();if(!pending.length){updateRoomServiceDeliveryBadge();return}
       const future=pending.map(roomServiceOrderDueAt).filter(dueAt=>dueAt>now);
       if(future.length){
@@ -7688,6 +7702,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       updateRoomServiceDeliveryBadge();
     }
     function evaluateRoomServiceDeliveries(){
+      if(roomGimmicksPausedForHernando()){updateRoomServiceDeliveryBadge();return}
       const due=roomServiceDueOrders();
       if(!due.length){updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();return}
       if(activeRoom&&roomView.classList.contains('room-active')){
@@ -8091,7 +8106,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
       villaDarkroomStopLocal();villaDarkroomAction='bgm';villaDarkroomActionAt=0;villaDarkroomActionId='';
       villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
-      selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
+      selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;window.__sprRoomEntryTime=Date.now();updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
       restoreRoomServiceFoodGallery(room);
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
       void refreshRoomServiceDeliveryOrders(); // 同室者が別端末で注文したルームサービスも読み込む
@@ -8192,10 +8207,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   function markerDay(marker,fallback=1){const m=String(marker?.message||'').match(/DAY:(\d+)/i);const n=m?Number(m[1]):Number(fallback);return n>=1&&n<=7?n:1}
   function parseAutoDayMarker(marker){
     const message=String(marker?.message||'');
-    const enabled=/AUTO:ON/i.test(message);
-    const day=markerDay(marker,THIS_DAY);
-    const createdAt=marker?.created_at?new Date(marker.created_at).getTime():0;
-    return{enabled,day,createdAt:Number.isFinite(createdAt)?createdAt:0,marker};
+    // 仮本番の基準: 2026-10-18 07:00 JSTからDAY1を毎朝7時に進める。
+    // 管理者がDAYを切り替えると、新しい進行マーカーの時刻が基準になる。
+    const enabled=marker?/AUTO:ON/i.test(message):true;
+    const day=marker?markerDay(marker,THIS_DAY):1;
+    const defaultStart=Date.parse('2026-10-17T22:00:00.000Z');
+    const createdAt=marker?.created_at?new Date(marker.created_at).getTime():defaultStart;
+    return{enabled,day,createdAt:Number.isFinite(createdAt)?createdAt:defaultStart,marker};
   }
   function resortBoundaryIndex(ms){return Math.floor((Number(ms)+TOKYO_7_SHIFT_MS)/DAY_MS)}
   function deriveAutoDay(state,now=Date.now()){
