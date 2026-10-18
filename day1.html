@@ -9541,8 +9541,7 @@ window.addEventListener('message',e=>{
  makeFawnLayer('08_antler_reflection_aligned.png','antler-reflection',fawnCharacterIdle);
  makeFawnLayer('03_foreground_leaves_aligned.png','foreground');
  const fawnMotion=document.createElement('style');fawnMotion.textContent=`
- #glassFawnAnimation .fawn-character-entry{transform:translateX(12px);transition:transform 1.8s cubic-bezier(.18,.7,.22,1)}
- #glassFawnAnimation .fawn-character-entry.revealed{transform:translateX(0)}
+ #glassFawnAnimation .fawn-character-entry{transform:none}
  #glassFawnAnimation .fawn-character-idle{transform-origin:83% 69%;animation:fawnQuietBreath 4.6s ease-in-out infinite}
  #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
@@ -9592,7 +9591,8 @@ window.addEventListener('message',e=>{
  }
  async function showFawnCloseupScene(){
    resetAnimalSceneControls();smokeLizardStage.style.display='none';fawnStage.style.display='none';
-   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
+   // 画像を上端基準で固定し、台詞やボタンの高さが変わっても上下へ再配置しない。
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
    fawnCloseupStage.style.display='block';fawnCloseupStage.setAttribute('aria-hidden','false');fawnCloseupStage.style.opacity='0';fawnCloseupStage.style.transform='scale(.985)';
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
@@ -9639,7 +9639,8 @@ window.addEventListener('message',e=>{
  async function encounterSmokeLizard(){
    markAnimal('smoke-lizard');
    resetAnimalSceneControls();fawnStage.style.display='none';
-   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
+   // ループ中の画像は固定したまま、台詞だけを下で更新する。
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
    smokeLizardStage.style.display='block';smokeLizardStage.setAttribute('aria-hidden','false');smokeLizardStage.style.opacity='0';smokeLizardStage.style.transform='scale(.975)';smokeLizardStage.style.transition='opacity .9s ease,transform 1.1s ease';
    smokeLizardStage.querySelectorAll('[data-smoke-part]').forEach(layer=>{layer.style.animation='none';void layer.offsetWidth;layer.style.animation=''});
@@ -9671,9 +9672,9 @@ window.addEventListener('message',e=>{
  async function encounterFawn(){
    markAnimal('glass-fawn');
    resetAnimalSceneControls();smokeLizardStage.style.display='none';
-   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
+   // 台詞更新による再センタリングを止め、画像とアニメーションを同じ位置で継続する。
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';fawnStage.style.display='none';
-   fawnCharacterEntry.classList.remove('revealed');
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
    await wait(60);anomalyScene.style.opacity='1';await wait(720);
    await showManualAnimalLine('背後から物音がする？！');
@@ -9681,7 +9682,8 @@ window.addEventListener('message',e=>{
    const layerLoads=[...fawnStage.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}));
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
    fawnStage.style.display='block';fawnStage.setAttribute('aria-hidden','false');fawnStage.style.opacity='0';fawnStage.style.transform='scale(.985)';void fawnStage.offsetWidth;
-   fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';requestAnimationFrame(()=>fawnCharacterEntry.classList.add('revealed'));
+   // 小鹿は横から現れず、暗転が明けた時点ですでにその場にいる。
+   fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';
    await wait(1050);
    await showManualAnimalLine('なんでこんなところに鹿が？！');
    anomalySceneText.style.opacity='0';await wait(260);
