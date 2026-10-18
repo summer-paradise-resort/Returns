@@ -9472,7 +9472,7 @@ window.addEventListener('message',e=>{
  const day=Number(document.documentElement.dataset.resortDay||1),who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
  const K=`spr-story:${who}:day${day}:`;
  const seen=x=>localStorage.getItem(K+x)==='1',mark=x=>localStorage.setItem(K+x,'1');
- const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),both=()=>!!window.__sprHasBothDrinkKinds?.(),anyHorrorDrink=()=>!!window.__sprHasAnyHorrorDrink?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
+ const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),anyHorrorDrink=()=>!!window.__sprHasAnyHorrorDrink?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
  const time=()=>{const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());return{h:+p.find(x=>x.type==='hour').value,m:+p.find(x=>x.type==='minute').value}};
  const modal=document.createElement('div');modal.id='storyEventModal';modal.style.cssText='position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,20,.82);color:#fff';modal.innerHTML='<section style="width:min(560px,100%);max-height:82dvh;overflow:auto;padding:26px 20px;border:1px solid #c9aa68;background:linear-gradient(150deg,#142f42,#07131f);text-align:center"><small style="letter-spacing:.2em;color:#e6cc8e">SUMMER PARADISE / STORY</small><h2 style="font:22px Georgia,serif;color:#f2d895;margin:14px 0" id="storyTitle"></h2><img id="storyImage" alt="" hidden style="display:block;width:100%;max-height:42dvh;object-fit:contain;margin:0 auto 16px;border:1px solid rgba(201,170,104,.48);background:#020a12"><div id="storyBody" style="white-space:pre-line;font:15px/1.9 Yu Mincho,serif;margin:18px 0"></div><div id="storyChoices" style="display:grid;gap:9px"></div><button id="storyClose" style="margin-top:16px;padding:10px 20px;border:1px solid #a98d55;background:transparent;color:#fff">閉じる</button></section>';
  document.body.append(modal);const title=modal.querySelector('#storyTitle'),body=modal.querySelector('#storyBody'),choices=modal.querySelector('#storyChoices'),storyImage=modal.querySelector('#storyImage');
@@ -9522,7 +9522,8 @@ window.addEventListener('message',e=>{
  const markAnimal=id=>localStorage.setItem(anomalyPrefix+id,'1');
  const animalStage=id=>Math.max(0,Number(localStorage.getItem(anomalyPrefix+id+'-stage'))||0);
  const setAnimalStage=(id,value)=>localStorage.setItem(anomalyPrefix+id+'-stage',String(value));
- const anomalyEligible=()=>day>=2&&day<=6&&poison()&&both();
+ // 全ての異変動物は、エルナンドの酔い＋NGまたは不穏ドリンクで遭遇可能。
+ const anomalyEligible=()=>day>=2&&day<=6&&poison()&&anyHorrorDrink();
  const smokeLizardEligible=()=>day>=3&&day<=6&&poison()&&anyHorrorDrink();
  const explorePeriod=()=>{const h=time().h;return h>=7&&h<16?'day':h>=16&&h<20?'sunset':'night'};
  const exploreSpot=()=>String(document.getElementById('exploreLocationBg')?.dataset.spot||'');
@@ -9650,11 +9651,13 @@ window.addEventListener('message',e=>{
    ],{background:'#000',onBeforeExit:()=>window.__sprReturnToLastRoom?.()});
  }
  function anomalyActionKind(spot,action,period){
+   // ケムリトカゲは「エルナンドの酔い＋不穏またはNGドリンク」で発生するため、
+   // 他の動物用の「不穏＋NGドリンク両方」判定より先に個別条件を確認する。
+   if(period==='night'&&spot==='lighthouse'&&action==='fishing'&&smokeLizardEligible()&&!animalSeen('smoke-lizard'))return 'smoke-lizard';
    if(!anomalyEligible())return '';
    if(period==='sunset'&&spot==='beach'&&action==='camera'&&!animalSeen('seabird'))return 'seabird';
    if(period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter'))return 'drifting-otter';
    if(period==='night'&&spot==='beach'&&action==='fishing'&&!animalSeen('giant-shadow'))return 'giant-shadow';
-   if(period==='night'&&spot==='lighthouse'&&action==='fishing'&&smokeLizardEligible()&&!animalSeen('smoke-lizard'))return 'smoke-lizard';
    if(period==='night'&&spot==='mermaids_cove'&&action==='camera'&&!animalSeen('star-hedgehog'))return 'star-hedgehog';
    if(period==='night'&&spot==='mermaids_cove'&&action==='telescope'&&!animalSeen('black-horse'))return 'black-horse';
    if(fawnEligible())return 'glass-fawn';
