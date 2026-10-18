@@ -8960,7 +8960,7 @@ window.addEventListener('message',e=>{
     const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
     if(fishingButton&&exploreView.contains(fishingButton))playExploreOneShot(exploreFishingAudio,1);
     const divingButton=event.target.closest?.('[data-explore-action="snorkel"]');
-    if(divingButton&&exploreView.contains(divingButton))playExploreOneShot(exploreWaterEntryAudio,1);
+    if(divingButton&&exploreView.contains(divingButton)&&selectedSpot!=='lighthouse')playExploreOneShot(exploreWaterEntryAudio,1);
   },true);
   // 探索3エリアの画像は昼・夕・夜で統一して切り替える。
   // ファイル名はリポジトリにアップロードした画像と完全一致（大文字・小文字も区別）。
