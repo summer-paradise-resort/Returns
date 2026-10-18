@@ -892,7 +892,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 <style id="sunsetTerraceDedicatedStyles">
 /* SUNSET TERRACE — independent in-page view, with time-matched zoomed photo backdrop */
 #sunsetTerraceView{isolation:isolate;background:#071a2b;color:#fff;--terrace-photo:url("sunset_terrace_day.jpg")}
-#sunsetTerraceView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(4,17,32,.46),rgba(3,15,29,.78) 58%,rgba(3,14,27,.89)),var(--terrace-photo);background-position:center center;background-size:cover;transform:scale(1.035)}
+#sunsetTerraceView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(4,17,32,.28),rgba(3,15,29,.46) 58%,rgba(3,14,27,.62)),var(--terrace-photo);background-position:center center;background-size:cover;transform:scale(1.035)}
 #sunsetTerraceView .subhead{position:sticky;z-index:3;background:rgba(5,24,42,.95);border-bottom:1px solid rgba(216,182,112,.45)}
 #sunsetTerraceView .subhead .back{color:#f9f0db}
 #sunsetTerraceView .subhead-title{color:#e8c886}
@@ -2422,7 +2422,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     async function loadTeaParties(){
       if(!window.supabaseClientSpecial)return;
       const {data,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at,created_at').gt('ends_at',new Date().toISOString()).order('created_at',{ascending:false});
-      if(error){teaPartyPublicStatus.textContent='お茶会を読み込めません。';console.error(error);return}
+      if(error){teaPartyPublicStatus.textContent='お茶会は行われていません。';console.error(error);return}
       const parties=data||[];
       let allMembers=[];
       if(parties.length){
@@ -2430,7 +2430,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(memberError){teaPartyPublicStatus.textContent='参加者情報を読み込めません。';console.error(memberError);return}
         allMembers=memberRows||[];
       }
-      teaPartyPublicStatus.textContent=parties.length?'会話の内容は参加者以外には表示されません。参加中のお客様のみご案内しています。':'現在開催中のお茶会はありません。';
+      teaPartyPublicStatus.textContent=parties.length?'会話の内容は参加者以外には表示されません。参加中のお客様のみご案内しています。':'お茶会は行われていません。';
       teaPartyList.innerHTML=parties.map(p=>{
         const members=allMembers.filter(m=>m.party_id===p.id);
         const capacity=Math.max(1,Math.floor(Number(p.ticket_type)||members.length||1));
@@ -2455,7 +2455,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at').eq('id',id).single(),
         window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host').eq('party_id',id)
       ]);
-      if(partyError||membersError||!party){teaSalonMessage.textContent='お茶会を読み込めません。';return}
+      if(partyError||membersError||!party){teaSalonMessage.textContent='お茶会は行われていません。';return}
       const member=(members||[]).some(m=>m.player_id===storedPlayerId);
       const capacity=Math.max(1,Math.floor(Number(party.ticket_type)||(members||[]).length||1));
       if(!member){
