@@ -9481,7 +9481,26 @@ window.addEventListener('message',e=>{
 
  // 異変動物のうち、全身画像を出さない場面に使う暗転演出。
  const anomalyScene=document.createElement('div');anomalyScene.id='anomalyAnimalScene';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
- const anomalySceneText=document.createElement('div');anomalySceneText.style.cssText='width:min(900px,94vw);flex:0 0 auto;white-space:pre-line;text-align:center;font:clamp(15px,3.8vw,23px)/1.85 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .55s ease;margin-top:clamp(8px,2vh,20px)';anomalyScene.append(anomalySceneText);const smokeLizardReturnButton=document.createElement('button');smokeLizardReturnButton.type='button';smokeLizardReturnButton.textContent='探索に戻る';smokeLizardReturnButton.style.cssText='display:none;margin-top:clamp(8px,2vh,18px);padding:14px 28px;border:1px solid #c9aa68;background:rgba(5,14,27,.9);color:#e8d5a3;font:600 15px "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;cursor:pointer;opacity:0;transition:opacity .5s ease';anomalyScene.append(smokeLizardReturnButton);document.body.append(anomalyScene);
+ const anomalySceneText=document.createElement('div');
+ anomalySceneText.style.cssText='width:min(900px,94vw);flex:0 0 auto;white-space:pre-line;text-align:center;font:clamp(15px,3.8vw,23px)/1.85 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .55s ease;margin-top:clamp(8px,2vh,20px)';
+ anomalyScene.append(anomalySceneText);
+ // ケムリトカゲと硝子角の小鹿の文章は、自動送りにせず必ずタップで進める。
+ const smokeLizardReturnButton=document.createElement('button');
+ smokeLizardReturnButton.type='button';
+ smokeLizardReturnButton.textContent='NEXT　›';
+ smokeLizardReturnButton.style.cssText='display:none;margin-top:clamp(8px,2vh,18px);padding:14px 28px;border:1px solid #c9aa68;background:rgba(5,14,27,.9);color:#e8d5a3;font:600 15px "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;cursor:pointer;opacity:0;transition:opacity .3s ease';
+ anomalyScene.append(smokeLizardReturnButton);
+ const fawnChoiceBox=document.createElement('div');
+ fawnChoiceBox.className='fawn-choice-box';
+ fawnChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
+ const fawnGiveDrinkButton=document.createElement('button');
+ fawnGiveDrinkButton.type='button';fawnGiveDrinkButton.textContent='ドングリをあげる';
+ const fawnDeclineDrinkButton=document.createElement('button');
+ fawnDeclineDrinkButton.type='button';fawnDeclineDrinkButton.textContent='あげない';
+ [fawnGiveDrinkButton,fawnDeclineDrinkButton].forEach(button=>button.style.cssText='min-height:50px;padding:12px 10px;border:1px solid #c9aa68;background:rgba(5,14,27,.92);color:#f5e6bf;font:600 13px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;cursor:pointer');
+ fawnGiveDrinkButton.style.background='rgba(80,58,24,.94)';
+ fawnChoiceBox.append(fawnGiveDrinkButton,fawnDeclineDrinkButton);anomalyScene.append(fawnChoiceBox);
+ document.body.append(anomalyScene);
  const smokeLizardStage=document.createElement('div');smokeLizardStage.id='smokeLizardAnimation';smokeLizardStage.setAttribute('aria-hidden','true');smokeLizardStage.style.cssText='position:relative;flex:0 0 auto;width:min(94vw,calc(64dvh * 1.777));aspect-ratio:1672/941;overflow:hidden;border:1px solid rgba(181,202,255,.22);box-shadow:0 0 42px rgba(91,121,200,.2);background:#07101d';
  // すべて同じ1672×941キャンバス。重ねる位置・大きさを変えずに元絵を再構成する。
  const smokeLizardLayers=[
@@ -9506,11 +9525,91 @@ window.addEventListener('message',e=>{
  @keyframes smokeHeadThreat{0%,100%{transform:rotate(-1deg);filter:brightness(.95)}50%{transform:rotate(1.6deg);filter:brightness(1.18)}}
  @media(prefers-reduced-motion:reduce){#smokeLizardAnimation [data-smoke-part]{animation:none!important}}
  `;document.head.append(smokeLizardMotion);anomalyScene.prepend(smokeLizardStage);
+
+ // 硝子角の小鹿：すべて1536×864の位置合わせ済み素材。座標と大きさは変更しない。
+ const fawnStage=document.createElement('div');
+ fawnStage.id='glassFawnAnimation';fawnStage.setAttribute('aria-hidden','true');
+ fawnStage.style.cssText='position:relative;display:none;flex:0 0 auto;width:min(94vw,calc(64dvh * 1.7777778));aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(181,202,255,.24);box-shadow:0 0 42px rgba(91,121,200,.2);background:#061123;opacity:0;transform:scale(.985);transition:opacity .9s ease,transform 1.1s ease';
+ const makeFawnLayer=(src,part,parent=fawnStage)=>{const img=document.createElement('img');img.src=src;img.alt='';img.draggable=false;img.dataset.fawnPart=part;img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';parent.append(img);return img};
+ makeFawnLayer('01_beach_forest_background_aligned.png','background');
+ makeFawnLayer('02_ocean_moonlight_aligned.png','ocean');
+ makeFawnLayer('09_forest_lights_aligned.png','lights');
+ const fawnCharacterEntry=document.createElement('div');fawnCharacterEntry.className='fawn-character-entry';fawnCharacterEntry.style.cssText='position:absolute;inset:0';fawnStage.append(fawnCharacterEntry);
+ const fawnCharacterIdle=document.createElement('div');fawnCharacterIdle.className='fawn-character-idle';fawnCharacterIdle.style.cssText='position:absolute;inset:0';fawnCharacterEntry.append(fawnCharacterIdle);
+ makeFawnLayer('04_fawn_core_aligned.png','core',fawnCharacterIdle);
+ makeFawnLayer('07_blink_aligned.png','blink',fawnCharacterIdle);
+ makeFawnLayer('08_antler_reflection_aligned.png','antler-reflection',fawnCharacterIdle);
+ makeFawnLayer('03_foreground_leaves_aligned.png','foreground');
+ const fawnMotion=document.createElement('style');fawnMotion.textContent=`
+ #glassFawnAnimation .fawn-character-entry{transform:translateX(12px);transition:transform 1.8s cubic-bezier(.18,.7,.22,1)}
+ #glassFawnAnimation .fawn-character-entry.revealed{transform:translateX(0)}
+ #glassFawnAnimation .fawn-character-idle{transform-origin:83% 69%;animation:fawnQuietBreath 4.6s ease-in-out infinite}
+ #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
+ #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
+ #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 6.2s steps(1,end) infinite}
+ #glassFawnAnimation [data-fawn-part="antler-reflection"]{animation:fawnAntlerShimmer 6.4s ease-in-out infinite alternate}
+ #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:83% 100%;animation:fawnLeavesSway 7.2s ease-in-out infinite alternate}
+ @keyframes fawnQuietBreath{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1px) rotate(-.22deg)}}
+ @keyframes fawnMoonWater{0%{opacity:.88;filter:brightness(.96)}100%{opacity:1;filter:brightness(1.05)}}
+ @keyframes fawnForestLights{0%,100%{opacity:.62}35%{opacity:.88}70%{opacity:.72}}
+ @keyframes fawnBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
+ @keyframes fawnAntlerShimmer{0%{opacity:.62;filter:brightness(.95)}100%{opacity:1;filter:brightness(1.12)}}
+ @keyframes fawnLeavesSway{0%{transform:translateX(-1px) rotate(-.28deg)}100%{transform:translateX(1px) rotate(.28deg)}}
+ @media(max-width:520px){#anomalyAnimalScene .fawn-choice-box{grid-template-columns:1fr!important}}
+ @media(prefers-reduced-motion:reduce){#glassFawnAnimation *{animation:none!important;transition:none!important}}
+ `;document.head.append(fawnMotion);anomalyScene.prepend(fawnStage);
+ // ドングリをあげた後に見せる、硝子角の鏡面を主役にした近接画面。
+ const fawnCloseupStage=document.createElement('div');
+ fawnCloseupStage.id='glassFawnCloseup';fawnCloseupStage.setAttribute('aria-hidden','true');
+ fawnCloseupStage.style.cssText='position:relative;display:none;flex:0 0 auto;width:min(94vw,calc(64dvh * 1.7779));aspect-ratio:1672/941;overflow:hidden;border:1px solid rgba(181,202,255,.24);box-shadow:0 0 48px rgba(91,121,200,.24);background:#02070c;opacity:0;transform:scale(.985);transition:opacity .9s ease,transform 1.1s ease';
+ const fawnCloseupImage=document.createElement('img');
+ fawnCloseupImage.src='anomaly_glass_antler_fawn_closeup.jpg';fawnCloseupImage.alt='人魚の入江を映す硝子角の小鹿';fawnCloseupImage.draggable=false;
+ fawnCloseupImage.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none;animation:fawnCloseupGlow 6.2s ease-in-out infinite alternate';
+ fawnCloseupStage.append(fawnCloseupImage);anomalyScene.prepend(fawnCloseupStage);
+ const fawnCloseupMotion=document.createElement('style');fawnCloseupMotion.textContent=`
+ #glassFawnCloseup::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 28%,rgba(161,208,255,.08),transparent 48%);mix-blend-mode:screen}
+ @keyframes fawnCloseupGlow{0%{filter:brightness(.96) saturate(.98);transform:scale(1)}100%{filter:brightness(1.055) saturate(1.04);transform:scale(1.008)}}
+ @media(prefers-reduced-motion:reduce){#glassFawnCloseup img{animation:none!important}}
+ `;document.head.append(fawnCloseupMotion);
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ const waitForTap=button=>new Promise(resolve=>button.addEventListener('click',resolve,{once:true}));
+ function resetAnimalSceneControls(){
+   smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';smokeLizardReturnButton.textContent='NEXT　›';
+   fawnChoiceBox.style.display='none';fawnGiveDrinkButton.onclick=null;fawnDeclineDrinkButton.onclick=null;
+ }
+ async function showManualAnimalLine(line,buttonLabel='NEXT　›'){
+   smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
+   anomalySceneText.style.opacity='0';await wait(260);anomalySceneText.textContent=String(line||'');anomalySceneText.style.opacity='1';
+   smokeLizardReturnButton.textContent=buttonLabel;smokeLizardReturnButton.style.display='inline-flex';
+   await wait(40);smokeLizardReturnButton.style.opacity='1';await waitForTap(smokeLizardReturnButton);
+   smokeLizardReturnButton.style.opacity='0';await wait(180);smokeLizardReturnButton.style.display='none';
+ }
+ async function closeAnimatedAnimalScene(stage){
+   resetAnimalSceneControls();anomalySceneText.style.opacity='0';stage.style.opacity='0';stage.style.transform='scale(.985)';
+   await wait(700);anomalyScene.style.opacity='0';await wait(760);
+   anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');
+   anomalySceneText.textContent='';stage.style.display='none';stage.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
+ }
+ async function showFawnCloseupScene(){
+   resetAnimalSceneControls();smokeLizardStage.style.display='none';fawnStage.style.display='none';
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
+   anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
+   fawnCloseupStage.style.display='block';fawnCloseupStage.setAttribute('aria-hidden','false');fawnCloseupStage.style.opacity='0';fawnCloseupStage.style.transform='scale(.985)';
+   anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
+   const closeupLoaded=fawnCloseupImage.complete?Promise.resolve():new Promise(resolve=>{fawnCloseupImage.addEventListener('load',resolve,{once:true});fawnCloseupImage.addEventListener('error',resolve,{once:true})});
+   await wait(80);anomalyScene.style.opacity='1';await wait(900);
+   await Promise.race([closeupLoaded,wait(4500)]);
+   fawnCloseupStage.style.opacity='1';fawnCloseupStage.style.transform='scale(1)';await wait(1000);
+   await showManualAnimalLine('ドングリを差し出すと、小鹿はおそるおそる近づき、静かに食べ始めた。');
+   await showManualAnimalLine('大人しくて可愛い。');
+   await showManualAnimalLine('鏡のような角には、人魚の入江の夜景が映り込んでいる……。');
+   await showManualAnimalLine('しばらく、そっと見守ることにした。','探索に戻る');
+   await closeAnimatedAnimalScene(fawnCloseupStage);
+ }
  function playAnimalSound(audio,volume=.8){try{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=volume;const p=audio.play();if(p?.catch)p.catch(()=>{})}catch{}}
  function primeAnimalSound(audio){try{audio.preload='auto';audio.muted=true;audio.volume=0;const p=audio.play();if(p?.then)p.then(()=>{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=1}).catch(()=>{audio.muted=false;audio.volume=1})}catch{}}
  async function runAnomalyScene(pages,{background='#02070c',hold=2100,onBeforeExit=null}={}){
-   smokeLizardStage.style.display='none';
+   smokeLizardStage.style.display='none';fawnStage.style.display='none';resetAnimalSceneControls();
    anomalyScene.style.background=background;anomalySceneText.textContent='';anomalySceneText.style.opacity='0';anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.style.opacity='1';anomalyScene.setAttribute('aria-hidden','false');await wait(650);
    for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);anomalySceneText.textContent=String(page.text||'');anomalySceneText.style.opacity='1';if(page.sound)playAnimalSound(page.sound,page.volume??.8);if(typeof page.run==='function')await page.run();await wait(Number(page.hold)||hold)}
    if(typeof onBeforeExit==='function')await onBeforeExit();anomalySceneText.style.opacity='0';await wait(300);anomalyScene.style.opacity='0';await wait(760);anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
@@ -9539,9 +9638,10 @@ window.addEventListener('message',e=>{
  async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が、突然ものすごい勢いで引かれた。\n身体ごと海へ引き込まれそうになる。','どうにか糸を離す。\n遠くで、巨大な岩陰が動くような何かが見えた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
  async function encounterSmokeLizard(){
    markAnimal('smoke-lizard');
+   resetAnimalSceneControls();fawnStage.style.display='none';
    anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
-   smokeLizardStage.style.display='block';smokeLizardStage.style.opacity='0';smokeLizardStage.style.transform='scale(.975)';smokeLizardStage.style.transition='opacity .9s ease,transform 1.1s ease';
+   smokeLizardStage.style.display='block';smokeLizardStage.setAttribute('aria-hidden','false');smokeLizardStage.style.opacity='0';smokeLizardStage.style.transform='scale(.975)';smokeLizardStage.style.transition='opacity .9s ease,transform 1.1s ease';
    smokeLizardStage.querySelectorAll('[data-smoke-part]').forEach(layer=>{layer.style.animation='none';void layer.offsetWidth;layer.style.animation=''});
    anomalySceneStageReady();
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
@@ -9549,16 +9649,10 @@ window.addEventListener('message',e=>{
    await wait(80);anomalyScene.style.opacity='1';await wait(950);
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
    smokeLizardStage.style.opacity='1';smokeLizardStage.style.transform='scale(1)';await wait(1000);
-   const showLine=async(line,hold)=>{anomalySceneText.style.opacity='0';await wait(320);anomalySceneText.textContent=line;anomalySceneText.style.opacity='1';await wait(hold)};
-   await showLine('煙を纏うドラゴン？！なんでこんなところに？',2800);
-   await showLine('体は小さいが、どうやら威嚇しているようだ。',2800);
-   await showLine('怖がらせないように離れよう。',0);
-   smokeLizardReturnButton.style.display='inline-flex';await wait(40);smokeLizardReturnButton.style.opacity='1';
-   await new Promise(resolve=>smokeLizardReturnButton.addEventListener('click',resolve,{once:true}));
-   smokeLizardReturnButton.style.opacity='0';anomalySceneText.style.opacity='0';smokeLizardStage.style.opacity='0';smokeLizardStage.style.transform='scale(.985)';
-   await wait(900);
-   anomalyScene.style.opacity='0';await wait(950);
-   anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalySceneText.textContent='';smokeLizardReturnButton.style.display='none';anomalyScene.style.background='#02070c';
+   await showManualAnimalLine('煙を纏うドラゴン？！なんでこんなところに？');
+   await showManualAnimalLine('体は小さいが、どうやら威嚇しているようだ。');
+   await showManualAnimalLine('怖がらせないように離れよう。','探索に戻る');
+   await closeAnimatedAnimalScene(smokeLizardStage);
  }
  function anomalySceneStageReady(){smokeLizardStage.style.display='block';smokeLizardStage.querySelectorAll('img').forEach(img=>{img.onerror=()=>console.warn('Smoke lizard layer could not be loaded:',img.getAttribute('src'))})}
  const usedTicketFoundKey=`spr-story:${who}:luca-balsa-used-ticket-found`;
@@ -9572,22 +9666,38 @@ window.addEventListener('message',e=>{
  }
  async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['写真を撮ろうと砂浜へ近づく。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\n拾おうとした瞬間、光は星明かりの中へ消えた。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
  function fawnEligible(){
-   if(day!==5||animalSeen('glass-fawn')||!anomalyEligible())return false;
-   const coasters=window.__sprGetCoasterCounts?.()||[];
-   return [11,55,65,67,68].every(number=>Number(coasters[number])>0);
+   return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
  }
- function encounterFawn(){
+ async function encounterFawn(){
    markAnimal('glass-fawn');
-   const opts=[];
-   if(count('freshAcorn')>0)opts.push({label:'ドングリをあげる',run:async()=>{
-     close();
-     const used=await window.__sprConsumeStoryItem?.('freshAcorn');
-     if(!used){open('硝子角の小鹿','ドングリを取り出せなかった。小鹿は静かにこちらを見つめている。',[],'anomaly_glass_antler_fawn.jpg');return}
-     localStorage.setItem('spr-story:fawn-reflection','1');
-     open('硝子角の小鹿','小鹿はドングリを受け取った。\n近くで見た硝子の角の鏡面には、正しい乗り場――人魚の入り江が映っている。',[],'anomaly_glass_antler_fawn.jpg');
-   }});
-   opts.push({label:'あげない',run:()=>{close();open('硝子角の小鹿','小鹿はしばらくこちらを見つめ、硝子の角を揺らして森の奥へ消えていった。',[],'anomaly_glass_antler_fawn.jpg')}});
-   open('硝子角の小鹿','森の奥に、硝子の角を持つ小鹿がいる。\nドングリをあげる？',opts,'anomaly_glass_antler_fawn.jpg');
+   resetAnimalSceneControls();smokeLizardStage.style.display='none';
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
+   anomalySceneText.textContent='';anomalySceneText.style.opacity='0';fawnStage.style.display='none';
+   fawnCharacterEntry.classList.remove('revealed');
+   anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
+   await wait(60);anomalyScene.style.opacity='1';await wait(720);
+   await showManualAnimalLine('背後から物音がする？！');
+
+   const layerLoads=[...fawnStage.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}));
+   await Promise.race([Promise.all(layerLoads),wait(4500)]);
+   fawnStage.style.display='block';fawnStage.setAttribute('aria-hidden','false');fawnStage.style.opacity='0';fawnStage.style.transform='scale(.985)';void fawnStage.offsetWidth;
+   fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';requestAnimationFrame(()=>fawnCharacterEntry.classList.add('revealed'));
+   await wait(1050);
+   await showManualAnimalLine('なんでこんなところに鹿が？！');
+   anomalySceneText.style.opacity='0';await wait(260);
+   anomalySceneText.textContent='…怖がっているみたい、でも、お腹が空いているのかな？';anomalySceneText.style.opacity='1';
+   fawnChoiceBox.style.display='grid';
+   const choice=await new Promise(resolve=>{
+     fawnGiveDrinkButton.onclick=()=>resolve('give');
+     fawnDeclineDrinkButton.onclick=()=>resolve('decline');
+   });
+   await closeAnimatedAnimalScene(fawnStage);
+   if(choice==='give'){
+     localStorage.setItem(`spr-story:${who}:fawn-acorn-given`,'1');
+     await showFawnCloseupScene();
+   }else{
+     open('硝子角の小鹿','小鹿はしばらくこちらを見つめたあと、音もなく林の奥へ戻っていった。');
+   }
  }
  let horseEntryNeighPending=false,horseEntryContinueNextClick=false;
  function horseEntryNeighEligible(){
@@ -9668,13 +9778,14 @@ window.addEventListener('message',e=>{
    // ケムリトカゲは「エルナンドの酔い＋不穏またはNGドリンク」で発生するため、
    // 他の動物用の「不穏＋NGドリンク両方」判定より先に個別条件を確認する。
    if(period==='night'&&spot==='lighthouse'&&action==='fishing'&&smokeLizardEligible()&&!animalSeen('smoke-lizard'))return 'smoke-lizard';
+   // Day5夜のビーチで、カメラを使った場合だけ硝子角の小鹿に出会う。
+   if(period==='night'&&spot==='beach'&&action==='camera'&&fawnEligible())return 'glass-fawn';
    if(!anomalyEligible())return '';
    if(period==='sunset'&&spot==='beach'&&action==='camera'&&!animalSeen('seabird'))return 'seabird';
    if(period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter'))return 'drifting-otter';
    if(period==='night'&&spot==='beach'&&action==='fishing'&&!animalSeen('giant-shadow'))return 'giant-shadow';
    if(period==='night'&&spot==='mermaids_cove'&&action==='camera'&&!animalSeen('star-hedgehog'))return 'star-hedgehog';
    if(period==='night'&&spot==='mermaids_cove'&&action==='telescope'&&!animalSeen('black-horse'))return 'black-horse';
-   if(fawnEligible())return 'glass-fawn';
    return '';
  }
  async function runAnomalyAction(kind){
@@ -9694,7 +9805,7 @@ window.addEventListener('message',e=>{
  let sequenceStarted=false;
  document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';if(day!==4||sequenceStarted||!window.__sprArthurRoom||!/(アーサー|グレイ)/i.test(msg))return;sequenceStarted=true;const room=window.__sprArthurRoom;lines.forEach((line,i)=>setTimeout(()=>window.__sprSendArthurChat?.(room,line),1300+i*2300));setTimeout(async()=>{const id=await window.__sprGetPlayerId?.();if(!id||!window.supabaseClientSpecial)return;window.__sprSendArthurChat?.(room,'Room service, please. One demi-glace omelette rice.');const {error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:String(room),player_id:id,display_name:'Arthur Grey',items:[{name:'特製デミグラスオムライス',qty:1}]});if(error)console.warn('Arthur room-service order',error)},25000)},{capture:true});
  document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{if(day!==4||!sequenceStarted)return;const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/オムライス/.test(food))return;const r=window.__sprArthurRoom||window.__sprActiveRoom;setTimeout(()=>window.__sprSendArthurChat?.(r,'46 38 125 57'),1200);setTimeout(()=>window.__sprSendArthurChat?.(r,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);setTimeout(()=>open('Arthur Grey','The room fell silent. Arthur Grey was gone.'),5600)},450));
- // Day 5: exact drink and coaster conditions; a gifted acorn reveals the mirror image.
+ // Day 5–6: at night on the beach, camera + Hernando poisoning + an ominous/NG drink reveals the glass-antler fawn.
  // Day 6 staff dialogue changes from hospitality to entrapment.
  const staff=['今夜も、こちらにいらしてください。外のことはお忘れになって。','お帰りの船は、まだ決まっていないようです。もう一晩お過ごしください。','この島を出る必要などありません。皆さま、ここで満たされています。','どうか海へ近づかないで。あなたの居場所は、もうこちらにあります。','灯台の光を追わないでください。迷わず、リゾートにお留まりください。'];
  function staffEvent(){if(day===6)open('スタッフの声',staff[Math.floor(Math.random()*staff.length)])}
