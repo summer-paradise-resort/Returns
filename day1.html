@@ -9596,6 +9596,8 @@ window.addEventListener('message',e=>{
  const fawnCharacterEntry=document.createElement('div');fawnCharacterEntry.className='fawn-character-entry';fawnCharacterEntry.style.cssText='position:absolute;inset:0';fawnStage.append(fawnCharacterEntry);
  const fawnCharacterIdle=document.createElement('div');fawnCharacterIdle.className='fawn-character-idle';fawnCharacterIdle.style.cssText='position:absolute;inset:0';fawnCharacterEntry.append(fawnCharacterIdle);
  makeFawnLayer('04_fawn_core_aligned.png','core',fawnCharacterIdle);
+ makeFawnLayer('05_left_ear_aligned.png','ear-left',fawnCharacterIdle);
+ makeFawnLayer('06_right_ear_aligned.png','ear-right',fawnCharacterIdle);
  makeFawnLayer('07_blink_aligned.png','blink',fawnCharacterIdle);
  makeFawnLayer('08_antler_reflection_aligned.png','antler-reflection',fawnCharacterIdle);
  makeFawnLayer('03_foreground_leaves_aligned.png','foreground');
@@ -9604,15 +9606,19 @@ window.addEventListener('message',e=>{
  #glassFawnAnimation .fawn-character-idle{transform-origin:83% 69%;animation:fawnQuietBreath 4.6s ease-in-out infinite}
  #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
- #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 6.2s steps(1,end) infinite}
+ #glassFawnAnimation [data-fawn-part="ear-left"]{transform-origin:80% 50%;animation:fawnLeftEarTwitch 9.4s ease-in-out infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="ear-right"]{transform-origin:85% 50%;animation:fawnRightEarTwitch 11.2s ease-in-out 1.7s infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 10.8s ease-in-out infinite;will-change:opacity}
  #glassFawnAnimation [data-fawn-part="antler-reflection"]{animation:fawnAntlerShimmer 6.4s ease-in-out infinite alternate}
- #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:83% 100%;animation:fawnLeavesSway 7.2s ease-in-out infinite alternate}
+ #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:68% 100%;animation:fawnLeavesSway 6.6s cubic-bezier(.42,0,.58,1) infinite;will-change:transform}
  @keyframes fawnQuietBreath{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1px) rotate(-.22deg)}}
  @keyframes fawnMoonWater{0%{opacity:.88;filter:brightness(.96)}100%{opacity:1;filter:brightness(1.05)}}
  @keyframes fawnForestLights{0%,100%{opacity:.62}35%{opacity:.88}70%{opacity:.72}}
- @keyframes fawnBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
+ @keyframes fawnLeftEarTwitch{0%,70%,73%,76%,100%{transform:rotate(0)}71%{transform:rotate(-1deg) translateY(-1px)}72%{transform:rotate(.45deg)}74%{transform:rotate(-.7deg)}75%{transform:rotate(.25deg)}}
+ @keyframes fawnRightEarTwitch{0%,35%,38%,41%,100%{transform:rotate(0)}36%{transform:rotate(1deg) translateY(-1px)}37%{transform:rotate(-.45deg)}39%{transform:rotate(.7deg)}40%{transform:rotate(-.25deg)}}
+ @keyframes fawnBlink{0%,60%,67%,100%{opacity:0}62%{opacity:.25}63.2%,64.8%{opacity:1}66%{opacity:.25}}
  @keyframes fawnAntlerShimmer{0%{opacity:.62;filter:brightness(.95)}100%{opacity:1;filter:brightness(1.12)}}
- @keyframes fawnLeavesSway{0%{transform:translateX(-1px) rotate(-.28deg)}100%{transform:translateX(1px) rotate(.28deg)}}
+ @keyframes fawnLeavesSway{0%,100%{transform:translate3d(-3px,1px,0) rotate(-.55deg) skewX(-.25deg)}28%{transform:translate3d(2px,-1px,0) rotate(.25deg) skewX(.12deg)}55%{transform:translate3d(5px,0,0) rotate(.75deg) skewX(.3deg)}78%{transform:translate3d(1px,-1px,0) rotate(.1deg) skewX(-.08deg)}}
  @media(max-width:520px){#anomalyAnimalScene .fawn-choice-box{grid-template-columns:1fr!important}}
  @media(prefers-reduced-motion:reduce){#glassFawnAnimation *{animation:none!important;transition:none!important}}
  `;document.head.append(fawnMotion);anomalyScene.prepend(fawnStage);
