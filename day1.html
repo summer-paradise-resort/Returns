@@ -802,7 +802,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 @media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}.hernando-arena-blur{inset:-8%;width:116%;height:116%;filter:blur(16px) brightness(.46)}.hernando-arena-loop{top:10px;bottom:calc(246px + env(safe-area-inset-bottom));height:calc(100% - 256px - env(safe-area-inset-bottom));padding:0 2px}}
 
-    .admin-master-panel{display:none;margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.spr-admin-mode .admin-master-panel{display:block}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
+    .admin-master-panel{display:none;margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.spr-admin-mode .admin-master-panel{display:block}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}.admin-test-tools{margin:12px 0 4px;padding:11px;border:1px solid rgba(13,39,67,.14);background:rgba(250,248,242,.8)}.admin-test-title{margin:0 0 7px;font:9px Georgia,serif;letter-spacing:.12em;color:#6b7480}.admin-test-note{margin:5px 0 9px;font-size:10px;line-height:1.6;color:#697583}.admin-test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.admin-test-grid.two{grid-template-columns:repeat(2,1fr)}.admin-test-grid button{min-height:36px;padding:5px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font-size:10px}.admin-test-grid button.active{background:var(--navy);border-color:var(--navy);color:#fff}.admin-test-state{font-size:10px;color:#31536f;margin:7px 0 0;line-height:1.6}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 
     /* DAY1 / 探索イベント動画（灯台の望遠鏡・夜のダイビング） */
     .explore-special-video{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden}
@@ -1212,7 +1212,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <button id="adminPreviewExit" class="admin-day-preview-exit" type="button">本番DAY</button>
         </div>
       </div>
-      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
+      <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><div class="admin-test-tools"><p class="admin-test-title">ANOMALY EVENT TEST / THIS ADMIN SESSION ONLY</p><p class="admin-test-note">酔い状態と時間帯を、この管理端末だけで一時的に切り替えます。時間帯は選択中の画面へ反映されます。動物ごとのDAY・場所・行動・対象ドリンク条件は別途必要です。</p><p class="admin-test-title">エルナンドの酔い</p><div class="admin-test-grid two"><button type="button" data-admin-poison="on">酔い状態を付与</button><button type="button" data-admin-poison="off">酔い状態を解除</button></div><button id="adminPoisonNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">本来の状態判定に戻す</button><p id="adminPoisonState" class="admin-test-state" aria-live="polite"></p><p class="admin-test-title" style="margin-top:12px">時間帯（管理中のみ）</p><div class="admin-test-grid"><button type="button" data-admin-period="day">昼</button><button type="button" data-admin-period="sunset">夕</button><button type="button" data-admin-period="night">夜</button></div><button id="adminPeriodNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">現在時刻に戻す</button><p id="adminPeriodState" class="admin-test-state" aria-live="polite"></p></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
           <img id="roomHomeCardImage" src="Deluxe_Ocean_Window.jpg" alt="オーシャンビューの客室">
@@ -1973,6 +1973,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     };
     let heroBackgroundToken='';
     function currentTokyoPeriod(){
+      const adminPeriod=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+      if(adminPeriod==='day'||adminPeriod==='sunset'||adminPeriod==='night')return adminPeriod;
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
     }
@@ -6442,6 +6444,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       return expiry;
     }
     function isHernandoPoisoned(){
+      if(window.__sprIsAdminMode===true&&window.__sprAdminPoisonOverride===true)return true;
+      if(window.__sprIsAdminMode===true&&window.__sprAdminPoisonOverride===false)return false;
       if(!hernandoEventEnabled())return false;
       const until=hernandoPoisonUntil();
       if(until>Date.now())return true;
@@ -8181,6 +8185,28 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   const RESET_TYPE='admin-world-reset';
   const IS_ADMIN=window.__sprIsAdminMode===true;
   const ADMIN_PREVIEW_KEY='spr-admin-preview-day';
+  const ADMIN_PERIOD_KEY='spr-admin-test-period';
+  const ADMIN_POISON_KEY='spr-admin-test-poison';
+  const adminPeriodButtons=[...document.querySelectorAll('[data-admin-period]')];
+  const adminPoisonButtons=[...document.querySelectorAll('[data-admin-poison]')];
+  const adminPeriodState=document.getElementById('adminPeriodState');
+  const adminPoisonState=document.getElementById('adminPoisonState');
+  function refreshAdminTestControls(){
+    if(!IS_ADMIN)return;
+    const period=sessionStorage.getItem(ADMIN_PERIOD_KEY)||'';
+    window.__sprAdminPeriodOverride=['day','sunset','night'].includes(period)?period:'';
+    const poison=sessionStorage.getItem(ADMIN_POISON_KEY);
+    window.__sprAdminPoisonOverride=poison==='on'?true:poison==='off'?false:null;
+    adminPeriodButtons.forEach(b=>b.classList.toggle('active',b.dataset.adminPeriod===window.__sprAdminPeriodOverride));
+    if(adminPeriodState)adminPeriodState.textContent=window.__sprAdminPeriodOverride?`時間帯を「${{day:'昼',sunset:'夕',night:'夜'}[window.__sprAdminPeriodOverride]}」に固定中（この管理セッションのみ）`:'現在の日本時間で判定中';
+    adminPoisonButtons.forEach(b=>b.classList.toggle('active',b.dataset.adminPoison===(window.__sprAdminPoisonOverride===true?'on':window.__sprAdminPoisonOverride===false?'off':'')));
+    if(adminPoisonState)adminPoisonState.textContent=window.__sprAdminPoisonOverride===true?'管理テスト：酔い状態として判定（この管理セッションのみ）':window.__sprAdminPoisonOverride===false?'管理テスト：酔いなしとして判定（この管理セッションのみ）':'本来の酔い状態を判定中';
+  }
+  refreshAdminTestControls();
+  adminPeriodButtons.forEach(btn=>btn.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.setItem(ADMIN_PERIOD_KEY,btn.dataset.adminPeriod);refreshAdminTestControls();window.dispatchEvent(new CustomEvent('spr-admin-period-change'))}));
+  document.getElementById('adminPeriodNormal')?.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.removeItem(ADMIN_PERIOD_KEY);refreshAdminTestControls();window.dispatchEvent(new CustomEvent('spr-admin-period-change'))});
+  adminPoisonButtons.forEach(btn=>btn.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.setItem(ADMIN_POISON_KEY,btn.dataset.adminPoison);refreshAdminTestControls()}));
+  document.getElementById('adminPoisonNormal')?.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.removeItem(ADMIN_POISON_KEY);refreshAdminTestControls()});
   const statusEl=document.getElementById('adminMasterStatus');
   const currentEl=document.getElementById('adminCurrentDay');
   const dayButtons=[...document.querySelectorAll('[data-admin-day]')];
@@ -9201,6 +9227,8 @@ window.addEventListener('message',e=>{
   };
   let selectedSpot='';
   function explorePeriod(){
+    const adminPeriod=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+    if(adminPeriod==='day'||adminPeriod==='sunset'||adminPeriod==='night')return adminPeriod;
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
     return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
   }
@@ -9345,6 +9373,9 @@ window.addEventListener('message',e=>{
   syncExploreImages(true);
   syncResortTimeImages(true);
   syncRestaurantCafeImages();
+  window.__sprRefreshAdminPeriod=()=>{const period=explorePeriod();applyGlobalNightTheme?.(period);window.__sprRefreshHeroBackground?.();syncExploreImages(true);syncResortTimeImages(true);syncRestaurantCafeImages(true)};
+  window.addEventListener('spr-admin-period-change',()=>window.__sprRefreshAdminPeriod?.());
+  if(window.__sprIsAdminMode===true&&window.__sprAdminPeriodOverride)window.__sprRefreshAdminPeriod();
   setInterval(()=>{syncExploreImages();syncResortTimeImages();syncRestaurantCafeImages();},30000);
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden){syncExploreImages();syncResortTimeImages();syncRestaurantCafeImages();}
