@@ -1950,7 +1950,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       freshAcorn:{label:'新鮮なドングリ',detail:'島で採れた、つやのある新鮮なドングリ。',max:Infinity},
       antidote:{label:'酔い覚まし',detail:'毒のように強すぎるお酒には、これが一番効きます。',max:Infinity},
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
-      lucaBalsaUsedTicket:{label:'切り取られた乗船チケット',detail:'赤い半券が切り取られた、水濡れの古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa_used.png',max:1},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
@@ -2306,6 +2305,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       try{
         window.__sprRemoteHydrating=true;
         const localBelongings=loadBelongings();
+        // 廃止した灯台由来の「切り取られた乗船チケット」は所持品へ残さない。
+        delete localBelongings.lucaBalsaUsedTicket;
         const localBarState=(()=>{try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}})();
         const localCoasters=loadCoasterInventory();
         const localFlags=collectLocalFlags();
@@ -2324,6 +2325,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           (invRes.data||[]).forEach(r=>{
             const key=String(r.item_key||''),updatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
             const staleForReset=!!(latestWorldResetAt&&updatedAt&&updatedAt<=latestWorldResetAt);
+            if(key==='lucaBalsaUsedTicket'){inventoryBootstrap.lucaBalsaUsedTicket=0;return}
             if(key==='lifeHearts'&&staleForReset){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3;return}
             if(key==='mermaidGuardShell'&&staleForReset){belongings.mermaidGuardShell=0;inventoryBootstrap.mermaidGuardShell=0;return}
             if(key==='mysteryBoxTicket'&&staleForReset){belongings.mysteryBoxTicket=0;inventoryBootstrap.mysteryBoxTicket=0;return}
@@ -8007,10 +8009,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='lucaBalsaDepartureTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaUsedTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -8207,6 +8209,25 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   document.getElementById('adminPeriodNormal')?.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.removeItem(ADMIN_PERIOD_KEY);refreshAdminTestControls();window.dispatchEvent(new CustomEvent('spr-admin-period-change'))});
   adminPoisonButtons.forEach(btn=>btn.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.setItem(ADMIN_POISON_KEY,btn.dataset.adminPoison);refreshAdminTestControls()}));
   document.getElementById('adminPoisonNormal')?.addEventListener('click',()=>{if(!IS_ADMIN)return;sessionStorage.removeItem(ADMIN_POISON_KEY);refreshAdminTestControls()});
+  if(IS_ADMIN){
+    const tools=document.querySelector('.admin-test-tools');
+    if(tools){
+      const animalReset=document.createElement('button');
+      animalReset.type='button';
+      animalReset.className='admin-world-reset';
+      animalReset.textContent='異変動物の遭遇履歴だけリセット';
+      animalReset.style.cssText='border-color:#8a6a32;color:#72551f;background:#fffaf0';
+      animalReset.addEventListener('click',()=>{
+        const who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+        const prefix=`spr-anomaly-animal:${who}:`;
+        const keys=Object.keys(localStorage).filter(key=>key.startsWith(prefix));
+        keys.forEach(key=>localStorage.removeItem(key));
+        localStorage.removeItem(`spr-story:${who}:fawn-acorn-given`);
+        if(adminPeriodState)adminPeriodState.textContent=`異変動物の遭遇履歴を${keys.length}件リセットしました。もう一度イベントを確認できます。`;
+      });
+      tools.append(animalReset);
+    }
+  }
   const statusEl=document.getElementById('adminMasterStatus');
   const currentEl=document.getElementById('adminCurrentDay');
   const dayButtons=[...document.querySelectorAll('[data-admin-day]')];
@@ -9504,7 +9525,14 @@ window.addEventListener('message',e=>{
  const K=`spr-story:${who}:day${day}:`;
  const seen=x=>localStorage.getItem(K+x)==='1',mark=x=>localStorage.setItem(K+x,'1');
  const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),anyHorrorDrink=()=>!!window.__sprHasAnyHorrorDrink?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
- const time=()=>{const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());return{h:+p.find(x=>x.type==='hour').value,m:+p.find(x=>x.type==='minute').value}};
+ const time=()=>{
+   const forced=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+   if(forced==='day')return{h:12,m:0};
+   if(forced==='sunset')return{h:18,m:0};
+   if(forced==='night')return{h:22,m:0};
+   const p=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+   return{h:+p.find(x=>x.type==='hour').value,m:+p.find(x=>x.type==='minute').value};
+ };
  const modal=document.createElement('div');modal.id='storyEventModal';modal.style.cssText='position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,20,.82);color:#fff';modal.innerHTML='<section style="width:min(560px,100%);max-height:82dvh;overflow:auto;padding:26px 20px;border:1px solid #c9aa68;background:linear-gradient(150deg,#142f42,#07131f);text-align:center"><small style="letter-spacing:.2em;color:#e6cc8e">SUMMER PARADISE / STORY</small><h2 style="font:22px Georgia,serif;color:#f2d895;margin:14px 0" id="storyTitle"></h2><img id="storyImage" alt="" hidden style="display:block;width:100%;max-height:42dvh;object-fit:contain;margin:0 auto 16px;border:1px solid rgba(201,170,104,.48);background:#020a12"><div id="storyBody" style="white-space:pre-line;font:15px/1.9 Yu Mincho,serif;margin:18px 0"></div><div id="storyChoices" style="display:grid;gap:9px"></div><button id="storyClose" style="margin-top:16px;padding:10px 20px;border:1px solid #a98d55;background:transparent;color:#fff">閉じる</button></section>';
  document.body.append(modal);const title=modal.querySelector('#storyTitle'),body=modal.querySelector('#storyBody'),choices=modal.querySelector('#storyChoices'),storyImage=modal.querySelector('#storyImage');
  function open(t,b,opts=[],image=''){title.textContent=t;body.textContent=b;choices.replaceChildren();storyImage.hidden=true;storyImage.removeAttribute('src');storyImage.alt='';if(image){storyImage.alt=t;storyImage.onerror=()=>{storyImage.hidden=true};storyImage.onload=()=>{storyImage.hidden=false};storyImage.src=image}for(const o of opts){const x=document.createElement('button');x.textContent=o.label;x.style.cssText='padding:13px;border:1px solid #c9aa68;background:#fff;color:#10243a;font:14px "Yu Mincho",serif';x.onclick=o.run;choices.append(x)}modal.style.display='flex'}
@@ -9687,15 +9715,6 @@ window.addEventListener('message',e=>{
    await closeAnimatedAnimalScene(smokeLizardStage);
  }
  function anomalySceneStageReady(){smokeLizardStage.style.display='block';smokeLizardStage.querySelectorAll('img').forEach(img=>{img.onerror=()=>console.warn('Smoke lizard layer could not be loaded:',img.getAttribute('src'))})}
- const usedTicketFoundKey=`spr-story:${who}:luca-balsa-used-ticket-found`;
- const usedTicketFound=()=>localStorage.getItem(usedTicketFoundKey)==='1'||count('lucaBalsaUsedTicket')>0;
- const usedTicketEligible=(spot,action)=>day>=4&&day<=7&&spot==='lighthouse'&&action==='fishing'&&anyHorrorDrink()&&!usedTicketFound();
- async function encounterUsedTicket(){
-   const granted=await window.__sprGrantStoryItem?.('lucaBalsaUsedTicket');
-   if(!granted){open('釣り糸に掛かったもの','濡れた紙片を引き上げたが、所持品へ保存できなかった。もう一度お試しください。');return}
-   localStorage.setItem(usedTicketFoundKey,'1');
-   open('切り取られた乗船チケット','釣り糸に、濡れた紙片が絡みついている。\n引き上げると、それは赤い半券が切り取られた古い乗船チケットだった。\n\n券面には “LUCA BALSA” と “BOARDING TIME 20:00–21:59” が記されている。',[],'worn_boarding_ticket_luca_balsa_used.png');
- }
  async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['写真を撮ろうと砂浜へ近づく。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\n拾おうとした瞬間、光は星明かりの中へ消えた。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
  function fawnEligible(){
    return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
@@ -9863,12 +9882,7 @@ window.addEventListener('message',e=>{
    const actionButton=e.target.closest?.('[data-explore-action]');
    if(actionButton){
      const spot=exploreSpot(),action=String(actionButton.dataset.exploreAction||'');
-     if(usedTicketEligible(spot,action)){
-       e.preventDefault();e.stopImmediatePropagation();
-       document.getElementById('exploreActionMessage')?.classList.add('hidden');
-       void encounterUsedTicket();
-       return;
-     }
+     // 探索操作に対応する異変動物を判定する。
      const kind=anomalyActionKind(spot,action,explorePeriod());
      if(kind){
        e.preventDefault();e.stopImmediatePropagation();
