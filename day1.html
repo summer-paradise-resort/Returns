@@ -2237,6 +2237,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const bool=v=>v===true||v===1||v==='1';
       if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
+      else if(flagKey===`sunset-meal-used:${resortDayToken()}`){const k=`spr-sunset-meal-used:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
       else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
@@ -2252,6 +2253,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       else if(flagKey==='sunset-mystery-intro-seen'){const k=`spr-sunset-mystery-intro-seen:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('sunset-mystery-awarded:')){const k=`spr-sunset-mystery-awarded:${playerStorageId}:${flagKey.slice('sunset-mystery-awarded:'.length)}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey.startsWith('sunset-meal-used:')){const k=`spr-sunset-meal-used:${playerStorageId}:${flagKey.slice('sunset-meal-used:'.length)}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='hernando-poison-until'){const until=Math.max(0,Number(value)||0);if(until)localStorage.setItem(`spr-hernando-poison-until:${playerStorageId}`,String(until));else localStorage.removeItem(`spr-hernando-poison-until:${playerStorageId}`)}
       else if(flagKey.startsWith('cafe-order:')){const rest=flagKey.slice('cafe-order:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-order:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey.startsWith('cafe-drink-ticket-used:')){const rest=flagKey.slice('cafe-drink-ticket-used:'.length),parts=rest.split(':'),scope=parts.shift(),d=parts.join(':');if(scope!==resortDayToken()||!d)return;const pid=encodeURIComponent(storedGuestName||'guest'),k=`spr-cafe-drink-ticket-used:${pid}:${scope}:${d}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
@@ -2273,6 +2275,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
       if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
       if(localStorage.getItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`)==='1')out['sunset-mystery-intro-seen']=true;
+      if(localStorage.getItem(`spr-sunset-meal-used:${playerStorageId}:${dayScope}`)==='1')out[`sunset-meal-used:${dayScope}`]=true;
       const mysteryAwardPrefix=`spr-sunset-mystery-awarded:${playerStorageId}:`;
       Object.keys(localStorage).filter(k=>k.startsWith(mysteryAwardPrefix)&&localStorage.getItem(k)==='1').forEach(k=>{out[`sunset-mystery-awarded:${k.slice(mysteryAwardPrefix.length)}`]=true});
       const hernandoPoisonUntil=Math.max(0,Number(localStorage.getItem(`spr-hernando-poison-until:${playerStorageId}`))||0);if(hernandoPoisonUntil>Date.now())out['hernando-poison-until']=hernandoPoisonUntil;
@@ -2343,7 +2346,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('bar-ng-effect:'))&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -3925,11 +3928,30 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
       return hour>=11&&hour<23;
     }
+    // 宿泊日(DAY)ごと、プレイヤー1名につき1回限り。別端末でもフラグを照合。
+    const terraceMealFlag=()=>`sunset-meal-used:${resortDayToken()}`;
+    const terraceMealLocalKey=()=>`spr-sunset-meal-used:${playerStorageId}:${resortDayToken()}`;
+    const terraceMealUsed=()=>localStorage.getItem(terraceMealLocalKey())==='1'||windowSprFlagCache[terraceMealFlag()]===true;
+    async function terraceMealUsedOnServer(){
+      if(terraceMealUsed())return true;
+      const id=await sprPlayerId(),client=window.supabaseClientSpecial;
+      if(!id||!client)return false;
+      const {data,error}=await client.from('spr_player_flags').select('value').eq('player_id',id).eq('flag_key',terraceMealFlag()).maybeSingle();
+      if(error){console.warn('Sunset meal limit check',error);return terraceMealUsed()}
+      if(data?.value===true){localStorage.setItem(terraceMealLocalKey(),'1');windowSprFlagCache[terraceMealFlag()]=true;return true}
+      return false;
+    }
     function syncSunsetTerraceHours(resetMessage=false){
-      const isOpen=sunsetTerraceIsOpenNow();
-      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=terraceOrderBusy||!isOpen||!(selectedSunsetFood&&selectedSunsetDrink);
+      const isOpen=sunsetTerraceIsOpenNow(),used=terraceMealUsed();
+      if(sunsetTerraceOrder)sunsetTerraceOrder.disabled=terraceOrderBusy||!isOpen||used||!(selectedSunsetFood&&selectedSunsetDrink);
       if(sunsetTerraceOrderStatus){
-        if(!isOpen) sunsetTerraceOrderStatus.textContent='営業時間は11:00〜23:00です。営業時間外はご注文いただけません。';
+        if(used){
+          // 食事写真・チケットの受取案内が出ている間は確認文を上書きしない。
+          const message=sunsetTerraceOrderStatus.textContent||'';
+          if(resetMessage||message.startsWith('お食事とドリンク')||message.startsWith('営業時間')||message.startsWith('本日のお食事'))
+            sunsetTerraceOrderStatus.textContent='本日のお食事はお済みです。サンセットテラスでのお食事は1日1回までとなります。';
+        }
+        else if(!isOpen) sunsetTerraceOrderStatus.textContent='営業時間は11:00〜23:00です。営業時間外はご注文いただけません。';
         else if(resetMessage||sunsetTerraceOrderStatus.textContent.startsWith('営業時間は11:00〜23:00'))
           sunsetTerraceOrderStatus.textContent='お食事とドリンクをそれぞれお選びください。';
       }
@@ -3941,6 +3963,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       pendingTerraceTicket=null;closeSunsetTerraceFoodPreview();closeSunsetTerraceTicket();
       openView('sunsetTerraceView');syncSunsetTerraceHours(true);
+      void terraceMealUsedOnServer().then(()=>syncSunsetTerraceHours(true));
     });
     setInterval(()=>{if(document.getElementById('sunsetTerraceView')?.classList.contains('open'))syncSunsetTerraceHours();},30000);
     const chooseSunsetOption=(selector,chosen)=>{
@@ -3989,6 +4012,22 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(terraceOrderBusy)return;
       if(!sunsetTerraceIsOpenNow()){syncSunsetTerraceHours(true);return;}
       if(!selectedSunsetFood||!selectedSunsetDrink)return;
+      terraceOrderBusy=true;sunsetTerraceOrder.disabled=true;
+      // 再注文を拒否する。サーバー側に記録された同日の注文も参照する。
+      try{
+        if(await terraceMealUsedOnServer()){
+          sunsetTerraceOrderStatus.textContent='本日のお食事はお済みです。お食事は1日1回までとなります。';
+          return;
+        }
+        localStorage.setItem(terraceMealLocalKey(),'1');
+        windowSprFlagCache[terraceMealFlag()]=true;
+        await setRemoteFlag(terraceMealFlag(),true).catch(error=>console.warn('Sunset meal flag sync',error));
+      }finally{
+        // 成立する注文では写真・チケット処理がこの後に続く。
+        terraceOrderBusy=false;
+        syncSunsetTerraceHours();
+      }
+      if(!terraceMealUsed())return;
       terraceOrderBusy=true;sunsetTerraceOrder.disabled=true;
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
@@ -6920,40 +6959,37 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           }
           const count=closetSearchCount()+1;localStorage.setItem(closetSearchKey(),String(count));setRemoteFlag(`closet-search:${activeRoom}`,count).catch(e=>console.warn('closet search sync',e));
           let text='クローゼットを調べた。特に変わったところはない。';
-          if(count>=4&&count<=6)text='奥の壁だけ、妙に冷たい。';
-          else if(count>=7&&count<=9)text='……奥行きが合わない気がする。壁の向こうに、まだ空間があるような。';
-          else if(count>=10){
-            if(hasClosetFoodKey()){
-              localStorage.setItem(closetDoorKey(),'1');setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
-              text='クローゼットの奥に隠し扉がある！';
-              updateRoomContextAction();publishHernandoRoomEntrance(activeRoom).catch(e=>console.warn('hernando discovery publish',e));
-              revealClosetDoorAfterSound(()=>{setExploreMessage(text);showHernandoDoorChoice()});return;
-            } else text='何度確かめても、奥の壁には妙な違和感が残る。けれど、今はそれ以上のことは分からない。';
+          if(count>=4&&count<=5)text='奥の壁だけ、妙に冷たい。';
+          else if(count===6)text='……奥行きが合わない気がする。壁の向こうに、まだ空間があるような。';
+          else if(count>=7){
+            // DAY2以降は7回目で発見。カフェで特定料理を食べる条件は不要。
+            localStorage.setItem(closetDoorKey(),'1');
+            setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
+            text='クローゼットの奥に隠し扉がある！';
+            updateRoomContextAction();
+            publishHernandoRoomEntrance(activeRoom).catch(e=>console.warn('hernando discovery publish',e));
+            revealClosetDoorAfterSound(()=>{setExploreMessage(text);showHernandoDoorChoice()});return;
           }
           setExploreMessage(text);
         };
-      } else if(selectedRoomScene==='bathroom'&&Number(document.documentElement.dataset.resortDay||1)===1){
-        roomContextAction.textContent='バスルームを調べる';
+      } else if(selectedRoomScene==='bathroom'){
+        // DAY1〜DAY7共通。既存の夜間の花イベントが優先される。
+        const bloomAvailable=roomTimeIndex()===2&&hasBathroomFoodKey();
+        const state=bloomAvailable?bathroomBloomState():2;
+        roomContextAction.textContent=bloomAvailable&&state===1?'水面の花に触れる':'バスルームを調べる';
         roomContextAction.classList.remove('hidden');
-        roomContextAction.onclick=()=>setExploreMessage('バスルームを調べた。特に変わったところはない。');
-      } else if(selectedRoomScene==='bathroom'&&roomTimeIndex()===2&&hasBathroomFoodKey()){
-        const state=bathroomBloomState();
-        if(state<2){
-          roomContextAction.textContent=state===0?'バスルームを調べる':'水面の花に触れる';
-          roomContextAction.classList.remove('hidden');
-          roomContextAction.onclick=()=>{
-            const current=bathroomBloomState();
+        roomContextAction.onclick=()=>{
+          const current=bloomAvailable?bathroomBloomState():2;
+          if(bloomAvailable&&current<2){
             if(current===0){
-              setBathroomBloomState(1);
-              updateRoomContextAction();
-              setExploreMessage('浴槽には、いつの間にか水が張られている。静かな水面に、一輪の花だけが浮かんでいる。');
-              return;
+              setBathroomBloomState(1);updateRoomContextAction();
+              setExploreMessage('浴槽には、いつの間にか水が張られている。静かな水面に、一輪の花だけが浮かんでいる。');return;
             }
-            setBathroomBloomState(2);
-            updateRoomContextAction();
-            setExploreMessage('花に指先が触れた瞬間、排水口がひとりでに開いた。水が引いていく。やがて浴槽の底に、濡れた文字が浮かび上がった。――「ここに沈んだものは、海へ還る。」');
-          };
-        }
+            setBathroomBloomState(2);updateRoomContextAction();
+            setExploreMessage('花に指先が触れた瞬間、排水口がひとりでに開いた。水が引いていく。やがて浴槽の底に、濡れた文字が浮かび上がった。――「ここに沈んだものは、海へ還る。」');return;
+          }
+          setExploreMessage('バスルームを調べた。特に変わったところはない。');
+        };
       }
     }
     const OCEAN_LAGOON_ASSET_VERSION='20261006-02';
@@ -8220,7 +8256,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       animalReset.addEventListener('click',()=>{
         const who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
         const prefix=`spr-anomaly-animal:${who}:`;
-        const keys=Object.keys(localStorage).filter(key=>key.startsWith(prefix));
+        const keys=Object.keys(localStorage).filter(key=>key.startsWith(prefix)||key.startsWith('spr-anomaly-animal:device:'));
         keys.forEach(key=>localStorage.removeItem(key));
         localStorage.removeItem(`spr-story:${who}:fawn-acorn-given`);
         if(adminPeriodState)adminPeriodState.textContent=`異変動物の遭遇履歴を${keys.length}件リセットしました。もう一度イベントを確認できます。`;
@@ -8421,6 +8457,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           if(hernandoSeenResetError)console.warn('hernando intro/visit reset',hernandoSeenResetError);
           const {error:roomServiceHorrorResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-service-horror:%');
           if(roomServiceHorrorResetError)console.warn('room service horror reset',roomServiceHorrorResetError);
+          // 追加した1日1食制限とDAY7一度きりの脱出状態も本番用リセットで初期化。
+          const {error:terraceMealResetError}=await c.from('spr_player_flags').delete().like('flag_key','sunset-meal-used:%');
+          if(terraceMealResetError)console.warn('sunset meal limit reset',terraceMealResetError);
+          const {error:escapeAttemptResetError}=await c.from('spr_player_flags').delete().eq('flag_key','day7-escape-attempt-state');
+          if(escapeAttemptResetError)console.warn('day7 attempt reset',escapeAttemptResetError);
           // ROOM電話イベントも本番用リセット対象。これで同じ夜でも2分後に再テストできる。
           const {error:roomPhoneResetError}=await c.from('spr_room_phone_events').delete().not('id','is',null);
           if(roomPhoneResetError)throw roomPhoneResetError;
@@ -9681,10 +9722,12 @@ window.addEventListener('message',e=>{
  }
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
- const anomalyPrefix=`spr-anomaly-animal:${who}:`;
- const animalSeen=id=>localStorage.getItem(anomalyPrefix+id)==='1';
+ // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
+ const anomalyPrefix='spr-anomaly-animal:device:';
+ const legacyAnimalPrefix=`spr-anomaly-animal:${who}:`;
+ const animalSeen=id=>localStorage.getItem(anomalyPrefix+id)==='1'||localStorage.getItem(legacyAnimalPrefix+id)==='1';
  const markAnimal=id=>localStorage.setItem(anomalyPrefix+id,'1');
- const animalStage=id=>Math.max(0,Number(localStorage.getItem(anomalyPrefix+id+'-stage'))||0);
+ const animalStage=id=>Math.max(0,Number(localStorage.getItem(anomalyPrefix+id+'-stage')||localStorage.getItem(legacyAnimalPrefix+id+'-stage'))||0);
  const setAnimalStage=(id,value)=>localStorage.setItem(anomalyPrefix+id+'-stage',String(value));
  // 全ての異変動物は、エルナンドの酔い＋NGまたは不穏ドリンクで遭遇可能。
  const anomalyEligible=()=>day>=2&&day<=6&&poison()&&anyHorrorDrink();
@@ -9814,7 +9857,7 @@ window.addEventListener('message',e=>{
  }
  async function encounterBlackHorse(){
    const stage=animalStage('black-horse');
-   const coveBackground='linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.88)),url("mermaids_cove_night.jpg") center/cover no-repeat';
+   const coveBackground='linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.65)),url("mermaids_cove_night.jpg") center/cover no-repeat';
    if(stage===0){
      setAnimalStage('black-horse',1);
      await runAnomalyScene(['望遠鏡を覗く。\n遠くの海に、青白いランタンの灯りが見える。','何か嫌な感じがする。'],{background:coveBackground});
@@ -9825,13 +9868,32 @@ window.addEventListener('message',e=>{
      await runAnomalyScene(['もう一度、望遠鏡を覗く。','青白いランタンと、波の上を渡る黒い影が、今度ははっきりと見え始める。'],{background:coveBackground});
      return;
    }
+   // 3回目。何も操作できない間に海がぼやけ、完全暗転、記憶喪失で客室へ。
    markAnimal('black-horse');setAnimalStage('black-horse',3);
-   await runAnomalyScene([
-     {text:'望遠鏡に手をかけた途端、足が勝手に海へ向かって進み始める。',hold:2200},
-     {text:'冷たい海の中へ引き込まれる。\n溺れる。息ができない。',run:()=>window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true}),hold:2700},
-     {text:'気がつくと部屋にいた。\n何があったか、思い出せない。',hold:2600}
-   ],{background:'#000',onBeforeExit:()=>window.__sprReturnToLastRoom?.()});
+   const scene=document.createElement('div');
+   scene.id='blackHorseFinalScene';
+   scene.style.cssText='position:fixed;inset:0;z-index:2147483005;background:#000;overflow:hidden;color:#fff;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:1';
+   scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');
+   const imageLayer=document.createElement('div');
+   imageLayer.style.cssText='position:absolute;inset:-7%;background:linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.3)),url("mermaids_cove_night.jpg") center/cover no-repeat;filter:blur(0px) brightness(1);transform:scale(1);transition:filter 3.2s ease-in,transform 3.2s ease-in,opacity 3.2s ease-in';
+   const caption=document.createElement('div');
+   caption.textContent='気がつくと自分の部屋にいた。\n何も、思い出せない…';
+   caption.style.cssText='position:relative;z-index:2;max-width:90vw;white-space:pre-line;text-align:center;font:clamp(17px,4.3vw,27px)/2 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.1em;opacity:0;transition:opacity .8s';
+   scene.append(imageLayer,caption);document.body.append(scene);
+   try{
+     await wait(60);
+     imageLayer.style.filter='blur(35px) brightness(0)';imageLayer.style.transform='scale(1.16)';imageLayer.style.opacity='0';
+     await wait(3400);
+     // 一度きりの減少。人魚の護り貝も貫通する黒馬固有の罰則。
+     await window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true});
+     await wait(250);caption.style.opacity='1';
+     await wait(3000);caption.style.opacity='0';
+     await wait(850);
+     window.__sprReturnToLastRoom?.();
+     await wait(1050);
+   }finally{scene.remove()}
  }
+
  function anomalyActionKind(spot,action,period){
    // ケムリトカゲは「エルナンドの酔い＋不穏またはNGドリンク」で発生するため、
    // 他の動物用の「不穏＋NGドリンク両方」判定より先に個別条件を確認する。
@@ -9863,17 +9925,149 @@ window.addEventListener('message',e=>{
  let sequenceStarted=false;
  document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';if(day!==4||sequenceStarted||!window.__sprArthurRoom||!/(アーサー|グレイ)/i.test(msg))return;sequenceStarted=true;const room=window.__sprArthurRoom;lines.forEach((line,i)=>setTimeout(()=>window.__sprSendArthurChat?.(room,line),1300+i*2300));setTimeout(async()=>{const id=await window.__sprGetPlayerId?.();if(!id||!window.supabaseClientSpecial)return;window.__sprSendArthurChat?.(room,'Room service, please. One demi-glace omelette rice.');const {error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:String(room),player_id:id,display_name:'Arthur Grey',items:[{name:'特製デミグラスオムライス',qty:1}]});if(error)console.warn('Arthur room-service order',error)},25000)},{capture:true});
  document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{if(day!==4||!sequenceStarted)return;const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/オムライス/.test(food))return;const r=window.__sprArthurRoom||window.__sprActiveRoom;setTimeout(()=>window.__sprSendArthurChat?.(r,'46 38 125 57'),1200);setTimeout(()=>window.__sprSendArthurChat?.(r,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);setTimeout(()=>open('Arthur Grey','The room fell silent. Arthur Grey was gone.'),5600)},450));
- // Day 5–6: at night on the beach, camera + Hernando poisoning + an ominous/NG drink reveals the glass-antler fawn.
- // Day 6 staff dialogue changes from hospitality to entrapment.
- const staff=['今夜も、こちらにいらしてください。外のことはお忘れになって。','お帰りの船は、まだ決まっていないようです。もう一晩お過ごしください。','この島を出る必要などありません。皆さま、ここで満たされています。','どうか海へ近づかないで。あなたの居場所は、もうこちらにあります。','灯台の光を追わないでください。迷わず、リゾートにお留まりください。'];
- function staffEvent(){if(day===6)open('スタッフの声',staff[Math.floor(Math.random()*staff.length)])}
- // Day 7 escape sequence: only 22:00–23:59 and only while at least one heart remains.
+ // Day6〜7: 海に心を奪われたスタッフ。ビーチの望遠鏡は専用の断絶演出。
+ const staff=[
+   '波の音を聴いていると、帰る時間が少し惜しくなりませんか。私どもも、つい時を忘れてしまうんです。',
+   'あの海の色は、不思議でしょう。昨夜もずっと見ていたはずなのに、朝にはまた見たくなるのです。',
+   '海は毎晩、同じ顔をするとは限りません。……それでも、目を離すのは難しいものですね。',
+   '潮騒が止むと、何か大切な声を聞き逃したような気持ちになるんです。',
+   '灯台の光より、波の向こうの暗がりの方が美しく思えることがあるんです。おかしな話ですね。'
+ ];
+ function staffEvent(){if(day>=6&&day<=7&&Math.random()<.45&&!document.getElementById('storyEventModal')?.offsetParent)open('スタッフの声',staff[Math.floor(Math.random()*staff.length)])}
+ let seaWatcherActive=false;
+ async function seaWatchingInterruption(){
+   const cut=document.createElement('div');
+   cut.style.cssText='position:fixed;inset:0;z-index:2147483500;background:#000;color:#fff;overflow:hidden;pointer-events:auto;opacity:1';
+   cut.setAttribute('role','presentation');
+   const textWall=document.createElement('div');
+   textWall.style.cssText='position:absolute;inset:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));align-content:space-around;justify-items:center;gap:4px 10px;padding:4px 0;font:clamp(14px,3.3vw,24px)/1.2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.03em;overflow:hidden';
+   for(let i=0;i<220;i++){const t=document.createElement('span');t.textContent='海はみている';t.style.whiteSpace='nowrap';textWall.append(t)}
+   cut.append(textWall);document.body.append(cut);
+   // 切断演出は必ず無音。再生中の音源のみ後で復帰させる。
+   const playing=[...document.querySelectorAll('audio,video')].filter(a=>!a.paused&&!a.ended);
+   for(const audio of playing){try{audio.pause()}catch{}}
+   try{
+     await wait(1150);textWall.style.display='none';
+     await wait(2000); // 黒画面・無音を2秒維持
+   }finally{
+     cut.remove();
+     for(const audio of playing){
+       if(!audio.isConnected||document.getElementById('exploreView')?.classList.contains('open')===false)continue;
+       try{const p=audio.play();if(p?.catch)p.catch(()=>{})}catch{}
+     }
+   }
+ }
+ function triggerSeaWatcher(){
+   if(seaWatcherActive)return;
+   seaWatcherActive=true;
+   const beginning=day===6?'海の方をご覧ですか。あの水平線を見ていると、いつまでも目が離せなくなるんですよ。':'よくお越しくださいました。今夜も海が、あなたを待っていたような気がいたします。';
+   const continuation='……失礼いたしました。何のお話でしたでしょうか。ああ、そうでした。今夜の海は、とても美しいですね。';
+   window.__sprShowStaffDialogue?.(beginning,()=>{seaWatcherActive=false},'スタッフ');
+   // スタッフが話している最中に、不意に文字の壁が現れて2秒間無音暗転する。
+   void (async()=>{
+     try{
+       await wait(2200);
+       if(!seaWatcherActive||!document.getElementById('cafeStaffOverlay')?.classList.contains('show'))return;
+       await seaWatchingInterruption();
+       if(document.getElementById('exploreView')?.classList.contains('open')){
+         window.__sprShowStaffDialogue?.(continuation,()=>{seaWatcherActive=false},'スタッフ');
+       }
+     }finally{
+       if(!document.getElementById('cafeStaffOverlay')?.classList.contains('show'))seaWatcherActive=false;
+     }
+   })();
+ }
+ // Day7脱出: 正しい座標を選んだ後だけ入り江が解放。一人一回限り。
+ const escapeKey=`spr-story:${who}:day7:escape-state`;
+ const escapeFlag='day7-escape-attempt-state';
+ const escapeValidStates=new Set(['unused','coordinates','station','failed','success']);
+ const escapeLocalState=()=>{const v=localStorage.getItem(escapeKey)||'unused';return escapeValidStates.has(v)?v:'unused'};
+ async function getEscapeState(){
+   const local=escapeLocalState();
+   if(local!=='unused')return local;
+   const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
+   if(!id||!c)return local;
+   try{
+     const {data,error}=await c.from('spr_player_flags').select('value').eq('player_id',id).eq('flag_key',escapeFlag).maybeSingle();
+     if(error)throw error;
+     const value=String(data?.value||'');
+     if(escapeValidStates.has(value)&&value!=='unused'){localStorage.setItem(escapeKey,value);return value}
+   }catch(e){console.warn('day7 escape state read',e)}
+   return local;
+ }
+ async function setEscapeState(value){
+   if(!escapeValidStates.has(value))return;
+   localStorage.setItem(escapeKey,value);
+   const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
+   if(!id||!c)return;
+   try{const {error}=await c.from('spr_player_flags').upsert({player_id:id,flag_key:escapeFlag,value,updated_at:new Date().toISOString()},{onConflict:'player_id,flag_key'});if(error)throw error}catch(e){console.warn('day7 escape state save',e)}
+ }
  const timeOK=()=>{const t=time();return t.h===22||t.h===23};
  function eligible(){return Number(window.__sprRemainingLives?.()??3)>0}
- function gate(t,b,opts){if(!timeOK()){open(t,'この手順は最終日の22:00〜23:59にしか選べない。');return}if(!eligible()){open(t,'♥️をすべて失った宿泊者には、選択肢が表示されない。');return}open(t,b,opts)}
- function addLighthouseButton(){if(day!==7||document.getElementById('day7RiseLighthouse'))return;const actions=document.querySelector('.explore-location-actions');if(!actions)return;const button=document.createElement('button');button.id='day7RiseLighthouse';button.className='explore-location-action';button.innerHTML='灯台に昇る<small>CLIMB THE LIGHTHOUSE</small>';button.onclick=()=>gate('灯台の灯り','灯台の灯りをどこへ向けて指し示す？',[['南緯47度09分、西経126度43分',false],['南緯49度51分、西経128度34分',false],['南緯46度38分、西経125度57分',true],['南緯44度27分、西経127度51分',false]].map(([label,ok])=>({label,run:()=>{close();if(ok){localStorage.setItem('spr-story:escape-coordinates','1');open('灯りは届いた','正しい座標へ光を向けた。もう一度探索に出ると、乗り場が示される。')}else open('違う座標','光は海のどこにも届かない。')}})));actions.append(button)}
- async function success(){localStorage.setItem('spr-story:escape-success','1');open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。');try{const c=window.supabaseClientSpecial,id=await window.__sprGetPlayerId?.();if(c&&id)await c.from('resort_announcements').insert({announcement_type:'resort-escape-success',message:'DAY7_ESCAPE_SUCCESS',created_by:id,expires_at:'2099-12-31T23:59:59Z'})}catch(e){console.warn('escape success sync',e)}}
- function chooseStation(){gate('正しい乗り場はどこ？','',['ビーチに行く','灯台に行く','人魚の入江に行く'].map(x=>({label:x,run:()=>{close();if(x==='人魚の入江'){localStorage.setItem('spr-story:escape-station','1');open('乗り場を見つけた','人魚の入り江に、四隻の船が待っている。どの船で生還する？',['TRUE SHORE','BEYOND','HOMEWARD','DAYBREAK','CROSSING'].map(name=>({label:name,run:()=>{close();if(name==='TRUE SHORE')void success();else open('船は動かない','その船は島から離れようとしない。')}})))}else open('違う場所','そこは正しい乗り場ではない。')}})))}
+ async function gate(t,b,opts,required='unused'){
+   if(!timeOK()){open(t,'この手順は最終日の22:00〜23:59にしか選べない。');return}
+   if(!eligible()){open(t,'♥️をすべて失った宿泊者には、選択肢が表示されない。');return}
+   const state=await getEscapeState();
+   if(state!==required){
+     if(state==='failed')open('脱出の機会','脱出への挑戦は一度きり。もう選び直すことはできない。');
+     else if(state==='success')open('脱出成功','TRUE SHOREはすでに島を離れている。');
+     else open('既に選択済み','脱出への挑戦は進行中。以前の段階へ戻ることはできない。');
+     return;
+   }
+   open(t,b,opts);
+ }
+ function addLighthouseButton(){
+   if(day!==7||document.getElementById('day7RiseLighthouse'))return;
+   const actions=document.querySelector('.explore-location-actions');if(!actions)return;
+   const button=document.createElement('button');button.id='day7RiseLighthouse';button.className='explore-location-action';
+   button.innerHTML='灯台に昇る<small>CLIMB THE LIGHTHOUSE</small>';
+   button.onclick=()=>void gate('灯台の灯り','灯台の灯りをどこへ向けて指し示す？',[
+     ['南緯47度09分、西経126度43分',false],
+     ['南緯49度51分、西経128度34分',false],
+     ['南緯46度38分、西経125度57分',true],
+     ['南緯44度27分、西経127度51分',false]
+   ].map(([label,ok])=>({label,run:async()=>{
+     close();if((await getEscapeState())!=='unused')return;
+     await setEscapeState(ok?'coordinates':'failed');
+     if(ok){
+       localStorage.setItem('spr-story:escape-coordinates','1');
+       open('灯りは届いた','正しい座標へ光を向けた。もう一度探索に出ると、乗り場が示される。');
+     }else open('脱出失敗','光は海のどこにも届かなかった。脱出への挑戦は、これで終わりだ。');
+   }})));
+   actions.append(button);
+ }
+ async function success(){
+   await setEscapeState('success');
+   localStorage.setItem('spr-story:escape-success','1');
+   open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。');
+   try{
+     const c=window.supabaseClientSpecial,id=await window.__sprGetPlayerId?.();
+     if(c&&id)await c.from('resort_announcements').insert({announcement_type:'resort-escape-success',message:'DAY7_ESCAPE_SUCCESS',created_by:id,expires_at:'2099-12-31T23:59:59Z'});
+   }catch(e){console.warn('escape success sync',e)}
+ }
+ function showEscapeBoats(){
+   open('乗り場を見つけた','人魚の入り江に、五隻の船が待っている。どの船で生還する？',
+     ['TRUE SHORE','BEYOND','HOMEWARD','DAYBREAK','CROSSING'].map(name=>({label:name,run:async()=>{
+       close();if((await getEscapeState())!=='station')return;
+       if(name==='TRUE SHORE')await success();
+       else{await setEscapeState('failed');open('脱出失敗','その船は島から離れようとしない。脱出の機会は失われた。')}
+     }})));
+ }
+ async function chooseStation(){
+   if((await getEscapeState())==='station'){
+     if(timeOK()&&eligible())showEscapeBoats();
+     return;
+   }
+   await gate('正しい乗り場はどこ？','',['ビーチに行く','灯台に行く','人魚の入江に行く'].map(x=>({label:x,run:async()=>{
+     close();if((await getEscapeState())!=='coordinates')return;
+     if(x!=='人魚の入江'){
+       await setEscapeState('failed');open('脱出失敗','そこは正しい乗り場ではなかった。もう一度やり直すことはできない。');return;
+     }
+     localStorage.setItem('spr-story:escape-station','1');
+     await setEscapeState('station');
+     showEscapeBoats();
+   }})),'coordinates');
+ }
  window.supabaseClientSpecial?.channel('spr-day7-escape-success').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{if(p.new?.announcement_type==='resort-escape-success')open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。')}).subscribe();
  document.addEventListener('click',e=>{
    const coveButton=e.target.closest?.('[data-explore-spot="mermaids_cove"]');
@@ -9888,6 +10082,11 @@ window.addEventListener('message',e=>{
    const actionButton=e.target.closest?.('[data-explore-action]');
    if(actionButton){
      const spot=exploreSpot(),action=String(actionButton.dataset.exploreAction||'');
+     // Day6・7 ビーチで望遠鏡を覗いた時だけ、スタッフの断絶演出を優先。
+     if(day>=6&&day<=7&&spot==='beach'&&action==='telescope'){
+       e.preventDefault();e.stopImmediatePropagation();
+       triggerSeaWatcher();return;
+     }
      // 探索操作に対応する異変動物を判定する。
      const kind=anomalyActionKind(spot,action,explorePeriod());
      if(kind){
@@ -9896,10 +10095,13 @@ window.addEventListener('message',e=>{
        void runAnomalyAction(kind);
        return;
      }
-     if(day===6)setTimeout(staffEvent,160);
+     if(day>=6&&day<=7)setTimeout(staffEvent,160);
    }
    if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(addLighthouseButton,260);
-   if(day===7&&coveButton&&localStorage.getItem('spr-story:escape-coordinates')==='1')setTimeout(chooseStation,260);
+   if(day===7&&coveButton){
+     // 古い保存済み座標の有無で判定しない。必ず今回の脱出状態が座標成功であること。
+     void getEscapeState().then(state=>{if(state==='coordinates'||state==='station')setTimeout(()=>void chooseStation(),260)});
+   }
  },true);
 })();
 </script>
