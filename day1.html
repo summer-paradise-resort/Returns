@@ -1218,7 +1218,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <button type="button" data-admin-preview-day="1">DAY 1</button><button type="button" data-admin-preview-day="2">DAY 2</button><button type="button" data-admin-preview-day="3">DAY 3</button><button type="button" data-admin-preview-day="4">DAY 4</button><button type="button" data-admin-preview-day="5">DAY 5</button><button type="button" data-admin-preview-day="6">DAY 6</button><button type="button" data-admin-preview-day="7">DAY 7</button>
           <button id="adminPreviewExit" class="admin-day-preview-exit" type="button">本番DAY</button>
         </div>
-        <button id="adminCoasterOpen" class="admin-coaster-open" type="button" aria-haspopup="dialog">ADMIN / コースター全89種を表示</button>
       </div>
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><div class="admin-test-tools"><p class="admin-test-title">ANOMALY EVENT TEST / THIS ADMIN SESSION ONLY</p><p class="admin-test-note">酔い状態と時間帯を、この管理端末だけで一時的に切り替えます。時間帯は選択中の画面へ反映されます。動物ごとのDAY・場所・行動・対象ドリンク条件は別途必要です。</p><p class="admin-test-title">エルナンドの酔い</p><div class="admin-test-grid two"><button type="button" data-admin-poison="on">酔い状態を付与</button><button type="button" data-admin-poison="off">酔い状態を解除</button></div><button id="adminPoisonNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">本来の状態判定に戻す</button><p id="adminPoisonState" class="admin-test-state" aria-live="polite"></p><p class="admin-test-title" style="margin-top:12px">時間帯（管理中のみ）</p><div class="admin-test-grid"><button type="button" data-admin-period="day">昼</button><button type="button" data-admin-period="sunset">夕</button><button type="button" data-admin-period="night">夜</button></div><button id="adminPeriodNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">現在時刻に戻す</button><p id="adminPeriodState" class="admin-test-state" aria-live="polite"></p></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
@@ -8166,8 +8165,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       mysteryFreeTicketOwned.textContent=`招待チケット ${tickets}枚`;
       buyMysteryDraw.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||casinoChips<20000;
       useMysteryFreeTicket.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||tickets<1;
-      buyMysteryDraw.textContent=remaining===0?'本日の受付終了':casinoChips<20000?'チップ不足':'1回引く';
+      buyMysteryDraw.textContent=!mysteryDrawVerified?'抽選情報を確認中':remaining===0?'本日の受付終了':casinoChips<20000?'チップ不足':'1回引く';
     }
+    // 管理者の全体リセット後、DAY1から移動しなかった場合も受付終了表示を解消する。
+    window.addEventListener('spr:world-reset-completed',()=>{
+      mysteryDrawVerified=false;
+      mysteryDrawInfo={...mysteryDrawInfo,remaining:7,drawn:0,villa_remaining:7};
+      renderMysteryCounter();
+      void refreshMysteryCounter();
+    });
     async function refreshMysteryCounter(){
       if(!window.supabaseClientSpecial){mysteryDrawVerified=false;renderMysteryCounter();return}
       const player=await sprPlayerId();if(!player){mysteryDrawVerified=false;renderMysteryCounter();return}
@@ -8760,11 +8766,18 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
     if(!IS_ADMIN)return;
-    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者のCHIPは0になります\n\nこの操作を実行しますか？'))return;
+    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者のCHIPは0になります\n・ミステリーボックスの抽選回数とヴィラ発行数を初期化します\n\nこの操作を実行しますか？'))return;
     if(!confirm('最終確認です。\n管理人以外の参加者ログインもリセットします。よろしいですか？'))return;
     try{
       resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミック＋参加者ログインを初期化中…';
       const adminId=await creator();if(!adminId)throw new Error('管理人のプレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');
+      // ミステリーボックスはSupabaseの抽選履歴を元に残回数を計算する。
+      // 端末の表示だけを7回に戻しても抽選RPCに拒否されるため、必ずサーバーで消去する。
+      // 先に実行し、追加SQL未導入の場合には参加者の強制ログアウトなどを開始しない。
+      const mysteryResetClient=client();
+      if(!mysteryResetClient)throw new Error('Supabaseに接続できません。');
+      const {error:mysteryResetError}=await mysteryResetClient.rpc('spr_admin_reset_mystery_box',{p_admin_player_id:adminId});
+      if(mysteryResetError)throw new Error('ミステリーボックスのリセットに失敗しました。付属のSQLをSupabaseで実行してください。\n'+mysteryResetError.message);
       // keep ID を共有リセット通知に含め、オンライン中の他端末を即座にログアウトさせる。
       await publishMarker(RESET_TYPE,'RESET:'+Date.now()+'|KEEP:'+encodeURIComponent(adminId));
       try{
@@ -8801,7 +8814,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
       try{const c=client();if(c)await c.from('players').update({last_seen_at:new Date().toISOString()}).eq('id',adminId)}catch(e){console.warn('admin last_seen restore',e)}
-      if(statusEl)statusEl.textContent='初期化完了。全参加者のCHIPを0にし、他の参加者はログアウトしました。DAY1へ戻ります。';
+      window.dispatchEvent(new Event('spr:world-reset-completed'));
+      if(statusEl)statusEl.textContent='初期化完了。抽選回数・ヴィラ残数もリセットしました。全参加者のCHIPを0にし、他の参加者はログアウトしました。DAY1へ戻ります。';
       setTimeout(()=>goDay(1),500);
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
@@ -10520,89 +10534,6 @@ window.addEventListener('message',e=>{
      void getEscapeState().then(state=>{if(state==='coordinates'||state==='station')setTimeout(()=>void chooseStation(),260)});
    }
  },true);
-})();
-</script>
-<!-- Administrator-only catalogue: viewing all designs does not grant inventory or achievements. -->
-<style id="sprAdminCoasterGalleryStyles">
-  .admin-coaster-open{width:100%;min-height:43px;border:1px solid rgba(168,123,47,.55);background:rgba(251,248,241,.94);color:#0d2743;font:11px Georgia,"Yu Mincho",serif;letter-spacing:.12em;padding:9px 12px}
-  .admin-coaster-open:focus-visible{outline:2px solid #a87b2f;outline-offset:3px}
-  .spr-admin-coaster-gallery{position:fixed;inset:0;z-index:150;overflow-y:auto;overscroll-behavior:contain;background:#081d32;color:#f8f1df;-webkit-overflow-scrolling:touch}
-  body.spr-admin-coaster-visible{overflow:hidden}
-  .spr-admin-coaster-head{position:sticky;top:0;z-index:2;min-height:66px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 16px;background:rgba(6,22,38,.96);border-bottom:1px solid rgba(215,188,123,.35);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-  .spr-admin-coaster-head strong{text-align:center;font:12px Georgia,serif;letter-spacing:.16em;color:#e7d19c;font-weight:400}
-  .spr-admin-coaster-head span{font:11px Georgia,serif;color:#e7d19c;white-space:nowrap}
-  .spr-admin-coaster-close{min-height:40px;padding:8px 11px;border:1px solid rgba(231,209,156,.6);background:transparent;color:#fff;font-size:11px}
-  .spr-admin-coaster-description{max-width:940px;margin:0 auto;padding:21px 16px 5px;text-align:center;color:#c6cbd0;font-size:11px;line-height:1.85;letter-spacing:.04em}
-  .spr-admin-coaster-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:940px;margin:0 auto;padding:16px 15px max(28px,env(safe-area-inset-bottom))}
-  .spr-admin-coaster-card{min-width:0;padding:8px;border:1px solid rgba(215,188,123,.27);background:#122e46;color:#f8f1df;text-align:center}
-  .spr-admin-coaster-card img{width:100%;aspect-ratio:1;object-fit:contain;background:#071929}
-  .spr-admin-coaster-card span{display:block;margin:8px 0 2px;font-size:11px;line-height:1.55;overflow-wrap:anywhere}
-  .spr-admin-coaster-card:focus-visible{outline:2px solid #e7d19c;outline-offset:2px}
-  .spr-admin-coaster-zoom{position:fixed;inset:0;z-index:3;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:16px 16px max(24px,env(safe-area-inset-bottom));background:rgba(0,7,15,.985);align-items:center;justify-items:center}
-  .spr-admin-coaster-zoom-close{justify-self:end;width:44px;height:44px;border:1px solid rgba(255,255,255,.5);border-radius:50%;background:rgba(255,255,255,.07);color:white;font-size:26px}
-  .spr-admin-coaster-zoom img{display:block;width:auto;height:auto;max-width:96vw;max-height:78dvh;object-fit:contain}
-  .spr-admin-coaster-zoom-title{text-align:center;color:#f0dbab;font:14px Georgia,"Yu Mincho",serif;line-height:1.6}
-  @media(max-width:620px){.spr-admin-coaster-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:12px 8px 28px}.spr-admin-coaster-card{padding:5px}.spr-admin-coaster-card span{font-size:9px}.spr-admin-coaster-head{padding:8px 10px;gap:7px}.spr-admin-coaster-head strong{font-size:10px}.spr-admin-coaster-head span{font-size:10px}}
-</style>
-<div id="adminCoasterGallery" class="spr-admin-coaster-gallery hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-label="管理者用コースター全種類表示">
-  <div class="spr-admin-coaster-head"><button id="adminCoasterClose" class="spr-admin-coaster-close" type="button">← 戻る</button><strong>ADMIN / COLLECTION</strong><span>89 / 89</span></div>
-  <p class="spr-admin-coaster-description">No.00〜88 の全コースターを確認できます。絵柄をタップすると拡大します。<br>管理用の閲覧機能です。所持数や入手記録は変更されません。</p>
-  <div id="adminCoasterGrid" class="spr-admin-coaster-grid"></div>
-  <div id="adminCoasterZoom" class="spr-admin-coaster-zoom hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-label="コースター拡大表示">
-    <button id="adminCoasterZoomClose" class="spr-admin-coaster-zoom-close" type="button" aria-label="拡大表示を閉じる">×</button>
-    <img id="adminCoasterZoomImage" alt="">
-    <div id="adminCoasterZoomTitle" class="spr-admin-coaster-zoom-title"></div>
-  </div>
-</div>
-<script id="sprAdminCoasterGalleryScript">
-(()=>{
-  'use strict';
-  const openButton=document.getElementById('adminCoasterOpen');
-  const gallery=document.getElementById('adminCoasterGallery');
-  const closeButton=document.getElementById('adminCoasterClose');
-  const grid=document.getElementById('adminCoasterGrid');
-  const zoom=document.getElementById('adminCoasterZoom');
-  const zoomImage=document.getElementById('adminCoasterZoomImage');
-  const zoomTitle=document.getElementById('adminCoasterZoomTitle');
-  const zoomClose=document.getElementById('adminCoasterZoomClose');
-  if(!openButton||!gallery||!grid)return;
-  const isAdmin=()=>window.__sprIsAdminMode===true&&document.body.classList.contains('spr-admin-mode');
-  let rendered=false;
-  function showZoom(number){
-    if(!isAdmin())return;
-    const file=`coaster${String(number).padStart(2,'0')}.PNG`;
-    const label=window.sprCoasterLabel(file);
-    zoomImage.src=file;zoomImage.alt=label;zoomTitle.textContent=label;
-    zoom.classList.remove('hidden');zoom.setAttribute('aria-hidden','false');zoomClose.focus({preventScroll:true});
-  }
-  function hideZoom(){
-    zoom.classList.add('hidden');zoom.setAttribute('aria-hidden','true');zoomImage.removeAttribute('src');
-  }
-  function makeGallery(){
-    if(rendered)return;
-    const fragment=document.createDocumentFragment();
-    for(let i=0;i<89;i++){
-      const file=`coaster${String(i).padStart(2,'0')}.PNG`;
-      const label=window.sprCoasterLabel(file);
-      const card=document.createElement('button');card.type='button';card.className='spr-admin-coaster-card';card.setAttribute('aria-label',`${label}を拡大表示`);
-      const image=document.createElement('img');image.src=file;image.alt=label;image.loading='lazy';image.decoding='async';
-      const caption=document.createElement('span');caption.textContent=label;
-      card.append(image,caption);card.addEventListener('click',()=>showZoom(i));fragment.append(card);
-    }
-    grid.append(fragment);rendered=true;
-  }
-  function hideGallery(){hideZoom();gallery.classList.add('hidden');gallery.setAttribute('aria-hidden','true');document.body.classList.remove('spr-admin-coaster-visible');openButton.focus({preventScroll:true})}
-  openButton.addEventListener('click',()=>{
-    if(!isAdmin())return;
-    makeGallery();gallery.classList.remove('hidden');gallery.setAttribute('aria-hidden','false');document.body.classList.add('spr-admin-coaster-visible');closeButton.focus({preventScroll:true});
-  });
-  closeButton.addEventListener('click',hideGallery);
-  zoomClose.addEventListener('click',hideZoom);
-  zoom.addEventListener('click',event=>{if(event.target===zoom)hideZoom()});
-  document.addEventListener('keydown',event=>{
-    if(event.key!=='Escape'||gallery.classList.contains('hidden'))return;
-    event.preventDefault();if(!zoom.classList.contains('hidden'))hideZoom();else hideGallery();
-  });
 })();
 </script>
 </body>
