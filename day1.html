@@ -170,6 +170,7 @@
     .casino-menu-card strong{display:block;font:18px Georgia,serif;letter-spacing:.14em;color:#f1d99d;font-weight:400;margin-bottom:10px}
     .casino-menu-card span{display:block;font-size:12px;line-height:1.8;color:rgba(255,255,255,.74)}
     .casino-menu-card small{display:block;margin-top:14px;font:10px Georgia,serif;letter-spacing:.16em;color:#d7bc79}
+    .casino-emily-rematch{grid-column:1/-1;min-height:122px;border-color:rgba(228,190,110,.75);background:linear-gradient(135deg,rgba(25,54,83,.98),rgba(10,28,56,.98))}
     .casino-prize-box{padding:26px 20px;border:1px solid rgba(221,191,119,.38);background:rgba(4,17,28,.82);text-align:center}
     .casino-prize-box .prize-chips{font:11px Georgia,serif;letter-spacing:.18em;color:#d8bd79}
     .casino-prize-box .prize-chips b{display:block;margin:8px 0 18px;font-size:30px;color:#fff;font-weight:400}
@@ -1773,6 +1774,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
           <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
+          <button id="casinoSeriousEmilyChallenge" class="casino-menu-card casino-emily-rematch hidden" type="button"><strong>運のみぞ知るに挑む</strong><span>5,000万CHIP以上と、今夜の「アンコール」を持って、再びオールインのテーブルへ。</span><small>ALL-IN SPECIAL TABLE　›</small></button>
         </div>
         <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
         <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
@@ -2255,6 +2257,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
       else if(flagKey===`sunset-meal-used:${resortDayToken()}`){const k=`spr-sunset-meal-used:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
+      else if(flagKey===`sunset-encore-night-date:${resortDayToken()}`){const k=`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
       else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
@@ -2287,6 +2290,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(emilyCasualProgress.heard.length||emilyCasualProgress.special_seen)out['emily-casual-progress']=emilyCasualProgress;
       const dayScope=resortDayToken();
       const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}:${dayScope}`);if(encore)out[`sunset-encore-date:${dayScope}`]=encore;
+      const nightEncore=localStorage.getItem(`spr-sunset-encore-night-date:${playerStorageId}:${dayScope}`);if(nightEncore)out[`sunset-encore-night-date:${dayScope}`]=nightEncore;
       if(localStorage.getItem(`spr-closet-food-key:${dayScope}`)==='1')out[`closet-food-key:${dayScope}`]=true;
       if(localStorage.getItem(`spr-bathroom-food-key:${dayScope}`)==='1')out[`bathroom-food-key:${dayScope}`]=true;
       const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
@@ -3363,7 +3367,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     document.addEventListener('keydown',event=>{if(event.key==='Escape'&&barMenuLightbox.classList.contains('open'))closeBarMenuLightbox()});
 
 
-    // SPECIAL TABLE / 140,000 CHIP EVENT
+    // SPECIAL TABLE / 140,000 CHIP EVENT + repeatable nighttime 50,000,000 CHIP challenge
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule');
     const emilyOpeners=[
@@ -3767,7 +3771,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const updateChallengerCountdown=()=>{const left=Math.max(0,Math.ceil((specialStartsAt-Date.now())/1000));specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　開卓まで ${left} 秒　｜　${specialSelectedGame?'選択済み':'ゲームをお選びください。'}`;if(!left){clearInterval(specialCountdownTimer);if(specialSelectedGame){pushSpecialState({challenger:storedGuestName,message:'SPECIAL TABLE 開卓'},'open');launchSelectedSpecialGame()}else{specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　ゲームをお選びください。`}}};
       updateChallengerCountdown();clearInterval(specialCountdownTimer);specialCountdownTimer=setInterval(updateChallengerCountdown,250);
     }
-    async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic()}
+    async function declineAllIn(){specialActions.innerHTML='';await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();syncSeriousEmilyChallenge()}
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
     }
@@ -3914,6 +3918,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       specialBgm.pause();specialBgm.currentTime=0;startCasinoMusic();document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null;}
       stopSpecialHeartbeat();clearSpecialPresenceMarker();activeSpecialSessionId=null;
+      // Offer a direct way back to the casino hub and the rematch button after a result.
+      for(const screen of [hiloScreen,blackjackScreen]){
+        const back=screen.querySelector('.casino-return');
+        if(back){back.classList.remove('hidden');back.textContent='カジノホールへ戻る';back.dataset.casinoReturn='hub'}
+      }
+      specialSelectedGame=null;seriousEmilyMode=false;
+      syncSeriousEmilyChallenge();
       refreshCasinoSpectatorMenu();
     }
     function startSpecialBlackjack(){
@@ -3937,7 +3948,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;
           hiloStatus.textContent=`ROUND ${round}　あなたのカードは ${a.rank}。HIGH？ LOW？`;
           pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,message:'挑戦者の選択をお待ちください。'});
-          const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.65:.35);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;hiloStatus.textContent=win?'YOU WIN':'SPECIAL DEALER WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'SPECIAL DEALERがこのラウンドを取りました。'});if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4),1100);else setTimeout(play,1100)};
+          const choose=c=>{if(locked)return;locked=true;const reverse=(a.rank==='2'&&c==='low')||(a.rank==='Q'&&c==='high');const win=Math.random()<(reverse?.70:.30);const candidates=win?(c==='high'?['K']:['A']):(c==='high'?['A']:['K']);const b={suit:bjSuits[Math.floor(Math.random()*bjSuits.length)],rank:candidates[0]};hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);if(win)pw++;else ew++;hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} SPECIAL DEALER`;hiloStatus.textContent=win?'YOU WIN':'SPECIAL DEALER WIN';pushSpecialState({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,visible_card:a,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'SPECIAL DEALERがこのラウンドを取りました。'});if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4),1100);else setTimeout(play,1100)};
           hiloHigh.onclick=()=>choose('high');hiloLow.onclick=()=>choose('low');return;
         }
         // 140,000 CHIPの通常スペシャル戦：通常HIGH & LOWと同じ完全ランダム。
@@ -4150,10 +4161,16 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
       const drinkName=selectedSunsetDrink.dataset.drink;
-      // The Emily "Encore" condition remains unchanged.
+      // Nighttime Encore (20:00–06:59 JST) is what unlocks repeatable serious-Emily challenges.
+      // Store the old date marker as before, but only the separate night marker grants access.
       if(drinkName==='アンコール'){
-        localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,tokyoDateKey());
-        setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(e=>console.warn('encore flag sync',e));
+        const orderedDate=tokyoDateKey();
+        localStorage.setItem(`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`,orderedDate);
+        setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,orderedDate).catch(e=>console.warn('encore flag sync',e));
+        if(tokyoHour()>=20||tokyoHour()<7){
+          localStorage.setItem(`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`,orderedDate);
+          setRemoteFlag(`sunset-encore-night-date:${resortDayToken()}`,orderedDate).catch(e=>console.warn('encore night flag sync',e));
+        }
       }
       // 注文は受付時点で成立。ギフトの通信が失敗しても写真を表示し、注文自体をエラーにしない。
       sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。お料理をお楽しみください。`;
@@ -4173,25 +4190,50 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     const seriousEmilyKey=`spr-emily-serious-announced:${playerStorageId}`;
     const encoreMealDateKey=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;
+    const encoreNightDateKey=`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`;
+    const seriousEmilyChallengeButton=document.getElementById('casinoSeriousEmilyChallenge');
     let seriousEmilyMode=false;
     function tokyoDateKey(date=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date)}
     function hasEncoreTonight(){
       const h=tokyoHour();
       if(h>=7&&h<20)return false;
-      const orderedOn=localStorage.getItem(encoreMealDateKey);
-      // DAYは7時に切り替わるため、深夜0〜6:59は前夜の注文も有効にする。
+      // Only an Encore actually ordered at night qualifies; an afternoon order is not enough.
+      // The same resort night continues until the following 07:00 JST.
+      const orderedOn=localStorage.getItem(encoreNightDateKey)||windowSprFlagCache[`sunset-encore-night-date:${resortDayToken()}`];
       return orderedOn===tokyoDateKey()||(h<7&&orderedOn===tokyoDateKey(new Date(Date.now()-86400000)));
     }
-    function tryTriggerSeriousEmily(){
-      // 5,000万CHIP + 赤ワイン「アンコール」注文済み + 夜間のみ。
-      if(Number(document.documentElement.dataset.resortDay||1)<3||casinoChips<50000000||!hasEncoreTonight()||localStorage.getItem(seriousEmilyKey))return false;
-      if(specialOverlay?.classList.contains('open')||document.body.classList.contains('special-table-playing'))return false;
-      localStorage.setItem(seriousEmilyKey,'1');
-      setRemoteFlag('emily-serious-announced',true).catch(e=>console.warn('Serious Emily flag sync',e));
+    function seriousEmilyRequirementsMet(){return casinoChips>=50000000&&hasEncoreTonight()}
+    function seriousEmilySessionBusy(){
+      return specialOverlay?.classList.contains('open')||!specialTableScreen?.classList.contains('hidden')||!!activeSpecialSessionId||document.body.classList.contains('special-table-playing');
+    }
+    function syncSeriousEmilyChallenge(){
+      if(!seriousEmilyChallengeButton)return;
+      const visible=casinoLevel==='hub'&&seriousEmilyRequirementsMet()&&!seriousEmilySessionBusy();
+      seriousEmilyChallengeButton.classList.toggle('hidden',!visible);
+      seriousEmilyChallengeButton.disabled=!visible;
+    }
+    function startSeriousEmilyChallenge(automatic=false){
+      if(casinoLevel!=='hub'||casinoGame.classList.contains('hidden')||!seriousEmilyRequirementsMet()||seriousEmilySessionBusy())return false;
+      // Automatically invite the player once, then let them request any number of rematches.
+      if(automatic&&localStorage.getItem(seriousEmilyKey)==='1')return false;
+      if(localStorage.getItem(seriousEmilyKey)!=='1'){
+        localStorage.setItem(seriousEmilyKey,'1');
+        setRemoteFlag('emily-serious-announced',true).catch(e=>console.warn('Serious Emily flag sync',e));
+      }
       seriousEmilyMode=true;
       void triggerEmilyInvitation();
+      syncSeriousEmilyChallenge();
       return true;
     }
+    function tryTriggerSeriousEmily(){return startSeriousEmilyChallenge(true)}
+    seriousEmilyChallengeButton?.addEventListener('click',async()=>{
+      if(casinoLevel!=='hub')return;
+      await refreshCasinoChipsFromSupabase();
+      if(!startSeriousEmilyChallenge(false)){
+        syncSeriousEmilyChallenge();
+        if(casinoVipDoorNotice){casinoVipDoorNotice.textContent='本気のオールインには5,000万CHIP以上と、今夜注文した「アンコール」が必要です。';casinoVipDoorNotice.classList.remove('hidden')}
+      }
+    });
     // CHIPの正本はSupabase players.chips。localStorageは通信不能時の表示用キャッシュとしてのみ使用する。
     let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
@@ -4265,7 +4307,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const adminSeriousReset=document.getElementById('adminSeriousReset');
     async function resetEmilyTest(chips,serious=false){
       localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});
-      if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());await setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{})}
+      if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());localStorage.setItem(encoreNightDateKey,tokyoDateKey());await setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{});await setRemoteFlag(`sunset-encore-night-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{})}
       casinoChips=chips;previousCasinoChips=chips;activeSpecialSessionId=null;seriousEmilyMode=false;stopSpecialHeartbeat();clearSpecialPresenceMarker();
       await queueCasinoChipSync(casinoChips);
       // テスト用リセットは、Supabaseへ実際に反映されたことを確認してから完了表示する。
@@ -4290,6 +4332,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function syncCasinoBalances(){
       casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips);
       if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
+      syncSeriousEmilyChallenge();
     }
     function casinoMinBet(){return casinoVipMode?100000:100}
     function casinoBetUnit(){return casinoVipMode?100000:100}
@@ -4528,7 +4571,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
       casinoGame.classList.toggle('gallery-lock',level==='gallery');
       if(level==='gallery')casinoGame.scrollTop=0;
-      if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
+      if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR');syncSeriousEmilyChallenge()}
       else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
       else if(level==='vip'){casinoVipRoom.classList.remove('hidden');setCasinoHeader('PRIVATE ROOM','BLUE SHELL / LOWER LEVEL')}
       else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL');renderPrizeCounter();void refreshMysteryCounter()}
@@ -10137,10 +10180,10 @@ window.addEventListener('message',e=>{
    await wait(80);anomalyScene.style.opacity='1';await wait(900);
    await Promise.race([closeupLoaded,wait(4500)]);
    fawnCloseupStage.style.opacity='1';fawnCloseupStage.style.transform='scale(1)';await wait(1000);
-   await showManualAnimalLine('ドングリを差し出すと、小鹿はおそるおそる近づき、静かに食べ始めた。');
-   await showManualAnimalLine('大人しくて可愛い。');
-   await showManualAnimalLine('鏡のような角には、人魚の入江の夜景が映り込んでいる……。');
-   await showManualAnimalLine('しばらく、そっと見守ることにした。','探索に戻る');
+   await showManualAnimalLine('ドングリを差し出すと、小鹿は一歩ずつ近づき、静かに食べ始めた。');
+   await showManualAnimalLine('小鹿はドングリをかじりながら、時折耳を動かしている。');
+   await showManualAnimalLine('鏡のような角には、人魚の入江の夜景が映り込んでいる。');
+   await showManualAnimalLine('小鹿はドングリを食べ終えると、静かにその場に立っている。','探索に戻る');
    await closeAnimatedAnimalScene(fawnCloseupStage);
  }
  function playAnimalSound(audio,volume=.8){try{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=volume;const p=audio.play();if(p?.catch)p.catch(()=>{})}catch{}}
@@ -10167,14 +10210,14 @@ window.addEventListener('message',e=>{
  const exploreSpot=()=>String(document.getElementById('exploreLocationBg')?.dataset.spot||'');
  const guestName=()=>String(window.__sprGetGuestName?.()||localStorage.getItem('spr-guest-name')||'お客様').trim()||'お客様';
 
- async function encounterSeabird(){markAnimal('seabird');primeAnimalSound(seabirdWingAudio);await runAnomalyScene([{text:`「${guestName()}サン」`,hold:1500},{text:'',sound:seabirdWingAudio,volume:.9,hold:1100},'声のした方を振り返る。\n足元の夕暮れの砂浜に、海鳥の羽が一枚落ちていることに気がついた。'],{background:'linear-gradient(rgba(0,0,0,.56),rgba(0,0,0,.76)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat'});}
+ async function encounterSeabird(){markAnimal('seabird');primeAnimalSound(seabirdWingAudio);await runAnomalyScene([{text:`「${guestName()}サン」`,hold:1500},{text:'',sound:seabirdWingAudio,volume:.9,hold:1100},'声は波音に混じって途切れた。\n足元の夕暮れの砂浜には、海鳥の羽が一枚落ちている。'],{background:'linear-gradient(rgba(0,0,0,.56),rgba(0,0,0,.76)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat'});}
  function encounterOtter(){
    markAnimal('drifting-otter');const opts=[];
    if(count('dimensionalBag')>0)opts.push({label:'次元バックを渡す',run:async()=>{close();const used=await window.__sprConsumeStoryItem?.('dimensionalBag');if(!used){open('漂流ラッコ','渡せるものがない。',[],'anomaly_drifting_otter.jpg');return}const granted=await window.__sprGrantStoryItem?.('lucaBalsaDepartureTicket');if(!granted){await window.__sprGrantStoryItem?.('dimensionalBag');open('漂流ラッコ','交換を完了できなかった。次元バックは所持品へ戻された。',[],'anomaly_drifting_otter.jpg');return}open('交換成立','漂流ラッコは次元バックを受け取り、代わりにボロボロの乗船チケットを差し出した。\n券面には “LUCA BALSA” と “BOARDING TIME 22:00–23:59” が記されている。',[],'anomaly_drifting_otter.jpg')}});
    opts.push({label:'渡せるものがない。',run:close});
-   open('漂流ラッコ','ラッコが、持っているチケットと貴方の何かと交換したそうにしている。',opts,'anomaly_drifting_otter.jpg');
+   open('漂流ラッコ','ラッコは古びた乗船チケットを胸に抱え、こちらの手元を見つめている。',opts,'anomaly_drifting_otter.jpg');
  }
- async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が、突然ものすごい勢いで引かれた。\n身体ごと海へ引き込まれそうになる。','どうにか糸を離す。\n遠くで、巨大な岩陰が動くような何かが見えた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
+ async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が大きくしなり、釣り糸が海の奥へ引かれていく。','やがて糸が切れ、遠くの波間で巨大な岩陰のような何かが動いた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
  async function encounterSmokeLizard(){
    markAnimal('smoke-lizard');
    resetAnimalSceneControls();fawnStage.style.display='none';
@@ -10189,13 +10232,13 @@ window.addEventListener('message',e=>{
    await wait(80);anomalyScene.style.opacity='1';await wait(950);
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
    smokeLizardStage.style.opacity='1';smokeLizardStage.style.transform='scale(1)';await wait(1000);
-   await showManualAnimalLine('煙を纏うドラゴン？！なんでこんなところに？');
-   await showManualAnimalLine('体は小さいが、どうやら威嚇しているようだ。');
-   await showManualAnimalLine('怖がらせないように離れよう。','探索に戻る');
+   await showManualAnimalLine('ドラゴンのような翼を持ち、薄い煙を漂わせるトカゲがいる。');
+   await showManualAnimalLine('小さなトカゲは翼を広げ、口を開いて威嚇している。');
+   await showManualAnimalLine('トカゲは翼を広げたまま、こちらを見つめている。','探索に戻る');
    await closeAnimatedAnimalScene(smokeLizardStage);
  }
  function anomalySceneStageReady(){smokeLizardStage.style.display='block';smokeLizardStage.querySelectorAll('img').forEach(img=>{img.onerror=()=>console.warn('Smoke lizard layer could not be loaded:',img.getAttribute('src'))})}
- async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['写真を撮ろうと砂浜へ近づく。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\n拾おうとした瞬間、光は星明かりの中へ消えた。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
+ async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['入り江の砂浜に、星のような小さな光が散っている。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\nやがて、その光は星明かりの中へ消えていった。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
  function fawnEligible(){
    return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
  }
@@ -10207,7 +10250,7 @@ window.addEventListener('message',e=>{
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';fawnStage.style.display='none';
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
    await wait(60);anomalyScene.style.opacity='1';await wait(720);
-   await showManualAnimalLine('背後から物音がする？！');
+   await showManualAnimalLine('背後で草が揺れ、小枝の折れる音がした。');
 
    const layerLoads=[...fawnStage.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}));
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
@@ -10215,9 +10258,9 @@ window.addEventListener('message',e=>{
    // 小鹿は横から現れず、暗転が明けた時点ですでにその場にいる。
    fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';
    await wait(1050);
-   await showManualAnimalLine('なんでこんなところに鹿が？！');
+   await showManualAnimalLine('不思議な角を生やした小鹿がいる。');
    anomalySceneText.style.opacity='0';await wait(260);
-   anomalySceneText.textContent='…怖がっているみたい、でも、お腹が空いているのかな？';anomalySceneText.style.opacity='1';
+   anomalySceneText.textContent='小鹿は耳を動かし、こちらをじっと見つめている。';anomalySceneText.style.opacity='1';
    fawnChoiceBox.style.display='grid';
    const choice=await new Promise(resolve=>{
      fawnGiveDrinkButton.onclick=()=>resolve('give');
@@ -10291,7 +10334,7 @@ window.addEventListener('message',e=>{
    const coveBackground='linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.65)),url("mermaids_cove_night.jpg") center/cover no-repeat';
    if(stage===0){
      setAnimalStage('black-horse',1);
-     await runAnomalyScene(['望遠鏡を覗く。\n遠くの海に、青白いランタンの灯りが見える。','何か嫌な感じがする。'],{background:coveBackground});
+     await runAnomalyScene(['望遠鏡を覗く。\n遠くの海に、青白いランタンの灯りが見える。','青白いランタンの灯りが、波に合わせて揺れている。'],{background:coveBackground});
      return;
    }
    if(stage===1){
