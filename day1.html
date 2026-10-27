@@ -1192,41 +1192,21 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   flex-shrink:0;
   line-height:1.95;
   letter-spacing:.045em;
+  white-space:pre-line;
+  word-break:normal !important;
+  text-wrap:wrap;
 }
 #blackHorseFinalScene .spr-reading-prose{
   max-width:min(33em,calc(100vw - 64px));
 }
 /* スタッフ会話では文字送りの順序を維持したまま語句単位で折り返す。 */
 .spr-reading-phrase{display:inline;white-space:nowrap}
-/* 探索の地の文では語句の途中（例：見てい／る）で折り返さない。 */
-#anomalyAnimalScene .spr-anomaly-phrase{display:inline;white-space:nowrap}
 @media(max-width:520px){
   #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 24px) !important}
   #storyEventModal #storyBody{max-width:none}
   #storyEventModal section{width:min(640px,calc(100vw - 20px)) !important;padding:22px 12px !important}
 }
 
-/* 夜の灯台・ケムリトカゲの導入は、一文を一行に収める専用レイアウト。
-   横幅を極力使い、最長行の実際の描画幅から文字サイズを計算する。 */
-#anomalyAnimalScene .spr-reading-prose.spr-anomaly-fit-lines{
-  box-sizing:border-box;
-  width:min(720px,calc(100vw - 30px)) !important;
-  max-width:calc(100vw - 30px) !important;
-  flex-shrink:0;
-  font-size:var(--spr-anomaly-fit-font,14px) !important;
-  letter-spacing:.015em !important;
-  line-height:1.9;
-  white-space:normal;
-  text-wrap:wrap;
-}
-#anomalyAnimalScene .spr-anomaly-fit-lines .spr-anomaly-line{
-  display:block;
-  width:max-content;
-  max-width:none;
-  white-space:nowrap;
-  overflow-wrap:normal;
-  word-break:keep-all;
-}
 /* ケムリトカゲ：全4画面を同じ字の大きさにし、スマホの横幅からはみ出さない。 */
 #anomalyAnimalScene.spr-smoke-lizard-scene{
   padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom)) !important;
@@ -10333,81 +10313,12 @@ window.addEventListener('message',e=>{
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';smokeLizardReturnButton.textContent='NEXT　›';
    fawnChoiceBox.style.display='none';fawnGiveDrinkButton.onclick=null;fawnDeclineDrinkButton.onclick=null;
  }
- // Safariでword-break:auto-phraseが効かない環境でも、探索の文節を途中で切らない。
- // 文節ごとのnowrap spanに分け、改行自体は画面幅に合わせてブラウザに任せる。
+ // 文節では区切らず、一文が終わったところでのみ改行する。
  function setAnomalyNarrativeText(value){
-   const content=String(value??'');
-   // この4行は一文ごとに改行している。途中で行を折り返さず、
-   // 最長の一文まで画面幅に収まるフォントサイズに自動調整する。
-   const oneLineScene=!anomalySceneText.classList.contains('spr-smoke-lizard-text')
-     && content.includes('月明かりが、黒い海を照らしている。')
-     && content.includes('けれど、何かがずっとこちらを見ている気がする。');
-   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',oneLineScene);
+   const content=String(value??'').replace(/\r\n?/g,'\n').replace(/\n+/g,'');
+   anomalySceneText.classList.remove('spr-anomaly-fit-lines');
    anomalySceneText.style.removeProperty('--spr-anomaly-fit-font');
-   if(oneLineScene){
-     const frag=document.createDocumentFragment();
-     for(const line of content.split('\n')){
-       const row=document.createElement('div');
-       row.className='spr-anomaly-line';
-       row.textContent=line;
-       frag.appendChild(row);
-     }
-     anomalySceneText.replaceChildren(frag);
-     const fitLines=()=>{
-       // まず18pxで実幅を測り、収まる最大値まで全行を同じ割合で縮小。
-       anomalySceneText.style.setProperty('--spr-anomaly-fit-font','18px');
-       const lines=[...anomalySceneText.querySelectorAll('.spr-anomaly-line')];
-       const maxLineWidth=Math.max(1,...lines.map(row=>row.getBoundingClientRect().width));
-       const availableWidth=Math.max(1,anomalySceneText.clientWidth-3);
-       const fitted=Math.min(18,18*availableWidth/maxLineWidth);
-       anomalySceneText.style.setProperty('--spr-anomaly-fit-font',`${Math.floor(fitted*100)/100}px`);
-     };
-     fitLines();
-     // Webフォントが後から読み込まれても、実際の幅で合わせ直す。
-     if(document.fonts?.ready)document.fonts.ready.then(()=>{
-       if(anomalySceneText.classList.contains('spr-anomaly-fit-lines')&&
-         anomalySceneText.textContent===content.replace(/\n/g,''))fitLines();
-     }).catch(()=>{});
-     return;
-   }
-   const frag=document.createDocumentFragment();
-   const segmenter=typeof Intl!=='undefined'&&typeof Intl.Segmenter==='function'
-     ?new Intl.Segmenter('ja',{granularity:'word'}):null;
-   const particles=new Set(['は','が','を','に','で','と','へ','も','の','から','まで','より','には','では']);
-   const lines=content.split('\n');
-   for(let lineNo=0;lineNo<lines.length;lineNo++){
-     if(lineNo)frag.appendChild(document.createTextNode('\n'));
-     const line=lines[lineNo];
-     const tokens=segmenter?Array.from(segmenter.segment(line),item=>item.segment):Array.from(line);
-     const groups=[];
-     let chunk='';
-     const push=()=>{if(chunk){groups.push(chunk);chunk='';}};
-     for(let i=0;i<tokens.length;i++){
-       const token=tokens[i];
-       if(/^[、。！？!?]$/.test(token)&&!chunk&&groups.length){
-         // 句読点だけを行頭に残さない。
-         groups[groups.length-1]+=token;
-         continue;
-       }
-       chunk+=token;
-       if(/[、。！？!?]$/.test(token))push();
-       else if(particles.has(token)&&Array.from(chunk).length>=4
-         &&!(token==='から'&&tokens[i+1]==='か'))push();
-     }
-     push();
-     // 短い末尾だけ次の行に残るのを避け、前の文節に結合する。
-     if(groups.length>=2&&Array.from(groups.at(-1)).length<=4
-       &&Array.from(groups.at(-1)+groups.at(-2)).length<=15){
-       groups.splice(-2,2,groups.at(-2)+groups.at(-1));
-     }
-     for(const group of groups){
-       const span=document.createElement('span');
-       span.className='spr-anomaly-phrase';
-       span.textContent=group;
-       frag.appendChild(span);
-     }
-   }
-   anomalySceneText.replaceChildren(frag);
+   anomalySceneText.textContent=content.replace(/([。]+[」』”’）)]*)(?=.)/g,'$1\n');
  }
  async function showManualAnimalLine(line,buttonLabel='NEXT　›',sound=null){
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
