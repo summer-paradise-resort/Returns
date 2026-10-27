@@ -1846,22 +1846,23 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
               <div class="prize-item-side"><b>20,000 CHIP</b><span id="afternoonTea2Owned">所持 0</span><button id="buyAfternoonTea2Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
-            <div class="prize-item"><div><strong>？？？</strong><small>ミステリーBOX 0.5%と同じ景品です。</small></div><div class="prize-item-side"><b>10,000,000,000 CHIP</b><span id="ultraMysteryOwned">所持 0</span><button id="buyUltraMystery" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>？？？</strong><small>ミステリーBOX 0.1%と同じ景品です。</small></div><div class="prize-item-side"><b>10,000,000,000 CHIP</b><span id="ultraMysteryOwned">所持 0</span><button id="buyUltraMystery" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item mystery-counter-item">
               <div>
                 <strong>ミステリーボックス</strong>
                 <small>MYSTERY BOX / 1回 20,000 CHIP・1日最大7回（朝7:00リセット）</small>
                 <div class="mystery-counter-rates" aria-label="ミステリーボックス景品確率">
-                  <span>91.5%　ランダムコースター</span>
-                  <span>3%　記念品【JOKER】カード</span>
-                  <span>2%　ヴィラ宿泊チケット（限定7枚）</span>
-                  <span>3%　？？？</span>
-                  <span>0.5%　？？？</span>
+                  <span>95.9%　ランダムコースター</span>
+                  <span>2%　記念品【JOKER】カード</span>
+                  <span>1%　？？？</span>
+                  <span>1%　？？？</span>
+                  <span>0.1%　？？？</span>
                 </div>
               </div>
               <div class="prize-item-side mystery-counter-side">
                 <b>20,000 CHIP</b>
                 <span id="mysteryDrawRemaining">本日残り 7回</span>
+                <span id="mysteryVillaRemaining">ヴィラ残り 7枚</span>
                 <button id="buyMysteryDraw" class="prize-exchange" type="button">1回引く</button>
                 <span id="mysteryFreeTicketOwned">招待チケット 0枚</span>
                 <button id="useMysteryFreeTicket" class="prize-exchange" type="button">チケットで引く</button>
@@ -1970,7 +1971,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
-      villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity,image:'villa_stay_ticket.png'},
+      villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
       mysteryLetter:{label:'封蝋の手紙',detail:'ミステリーボックスから届いた、謎めいた手紙。',max:Infinity},
       mysteryPostcard01:{label:'ポストカード・名前を呼ぶ海鳥',detail:'異変動物ポストカード No.01',max:Infinity,image:'postcard_seabird.png'},
@@ -8170,6 +8171,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     const mysteryBoxChoices=document.getElementById('mysteryBoxChoices');
     const mysteryBoxStatus=document.getElementById('mysteryBoxStatus');
     const mysteryDrawRemaining=document.getElementById('mysteryDrawRemaining');
+    const mysteryVillaRemaining=document.getElementById('mysteryVillaRemaining');
     const mysteryFreeTicketOwned=document.getElementById('mysteryFreeTicketOwned');
     const buyMysteryDraw=document.getElementById('buyMysteryDraw');
     const useMysteryFreeTicket=document.getElementById('useMysteryFreeTicket');
@@ -8207,8 +8209,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     function renderMysteryCounter(){
       if(!mysteryDrawRemaining)return;
       const remaining=Math.max(0,Number(mysteryDrawInfo.remaining)||0);
+      const villa=Math.max(0,Number(mysteryDrawInfo.villa_remaining)||0);
       const tickets=belongingCount('mysteryBoxTicket');
       mysteryDrawRemaining.textContent=mysteryDrawVerified?`本日残り ${remaining}/7回`:'本日の回数：確認中';
+      mysteryVillaRemaining.textContent=mysteryDrawVerified?(villa?`ヴィラ残り ${villa}/7枚`:'ヴィラは完売しました'):'ヴィラ残数：確認中';
       mysteryFreeTicketOwned.textContent=`招待チケット ${tickets}枚`;
       buyMysteryDraw.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||casinoChips<20000;
       useMysteryFreeTicket.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||tickets<1;
@@ -8240,7 +8244,7 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }
       if(!mysteryDrawVerified){void refreshMysteryCounter();prizeMessage.textContent='抽選情報を確認しています。';return}
       const cost=useTicket?'サンセットテラスの招待チケット1枚':'20,000 CHIP';
-      mysteryShow('ミステリーボックス',`${cost}で1回抽選しますか？\n本日残り ${mysteryDrawInfo.remaining}回`,[
+      mysteryShow('ミステリーボックス',`${cost}で1回抽選しますか？\n本日残り ${mysteryDrawInfo.remaining}回 / ヴィラ残り ${mysteryDrawInfo.villa_remaining}枚`,[
         {label:'箱を開ける',run:()=>void mysteryOpenBox(useTicket)},
         {label:'やめる',run:mysteryClose,cancel:true}
       ],'✧');
@@ -8279,13 +8283,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         const coasterImage=document.createElement('img');coasterImage.src=coasterFile;coasterImage.alt=coasterLabel||'ランダムコースター';coasterImage.className='mystery-coaster-image';
         coasterImage.onerror=()=>{mysteryBoxArt.textContent='✦';mysteryBoxStatus.textContent=`${coasterFile} を読み込めませんでした。画像ファイル名をご確認ください。`};
         mysteryBoxArt.replaceChildren(coasterImage);
-      }
-      if(reward==='villaStayTicket'){
-        const villaImage=document.createElement('img');
-        villaImage.src=belongingsCatalog.villaStayTicket.image;
-        villaImage.alt='ヴィラ宿泊チケット（限定7枚）';
-        villaImage.onerror=()=>{mysteryBoxArt.textContent='♜'};
-        mysteryBoxArt.replaceChildren(villaImage);
       }
       if(reward.startsWith('mysteryPostcard'))mysteryAttachPostcardImage(Math.max(1,Math.min(7,Number(reward.slice(-2))||1)));
       if(reward==='jokerCard'||reward==='mysteryJoker'||reward==='mysteryJokerCard'){
@@ -10077,7 +10074,13 @@ window.addEventListener('message',e=>{
    ['06_smoke_wisps_aligned.png','wisps'],
    ['02_lizard_head_aligned.png','head']
  ];
- smokeLizardLayers.forEach(([src,part])=>{const img=document.createElement('img');img.src=src;img.alt='';img.draggable=false;img.dataset.smokePart=part;img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';smokeLizardStage.append(img)});
+ // 背景だけを先に表示し、ケムリトカゲ本体・煙・翼・尾・頭は一括でフェードインする。
+ // もとの位置合わせ済み素材をそのまま使い、キャンバス寸法は変更しない。
+ const smokeLizardCharacter=document.createElement('div');
+ smokeLizardCharacter.id='smokeLizardCharacter';
+ smokeLizardCharacter.style.cssText='position:absolute;inset:0;opacity:0;visibility:hidden;transform:translateY(7px) scale(.985);transition:opacity 1.65s ease,transform 1.65s ease,visibility 0s linear 1.65s;pointer-events:none';
+ smokeLizardLayers.forEach(([src,part])=>{const img=document.createElement('img');img.src=src;img.alt='';img.draggable=false;img.dataset.smokePart=part;img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';if(part==='background')smokeLizardStage.append(img);else smokeLizardCharacter.append(img)});
+ smokeLizardStage.append(smokeLizardCharacter);
  const smokeLizardMotion=document.createElement('style');smokeLizardMotion.textContent=`
  #smokeLizardAnimation [data-smoke-part="wings"]{transform-origin:78% 47%;animation:smokeWingBeat 2.4s ease-in-out infinite}
  #smokeLizardAnimation [data-smoke-part="tail"]{transform-origin:61% 76%;animation:smokeTailSway 3s ease-in-out infinite}
@@ -10186,6 +10189,102 @@ window.addEventListener('message',e=>{
    for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);anomalySceneText.textContent=String(page.text||'');anomalySceneText.style.opacity='1';if(page.sound)playAnimalSound(page.sound,page.volume??.8);if(typeof page.run==='function')await page.run();await wait(Number(page.hold)||hold)}
    if(typeof onBeforeExit==='function')await onBeforeExit();anomalySceneText.style.opacity='0';await wait(300);anomalyScene.style.opacity='0';await wait(760);anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
  }
+ // ケムリトカゲは NEXT で1.65秒フェードインし、完全に現れてから鳴き声を鳴らす。
+ // 1回目→2回目→2秒間は鳴き声のみ無音→3回目。探索BGMは一切操作しない。
+ const smokeLizardCryFile='anomaly_smoke_lizard_cry.mp3';
+ const smokeLizardCryAudio=new Audio(smokeLizardCryFile);
+ smokeLizardCryAudio.preload='auto';smokeLizardCryAudio.playsInline=true;
+ let smokeLizardCryActive=false;
+ let smokeLizardCryPlayed=0;
+ let smokeLizardCrySilenceTimer=null;
+ let smokeLizardCryToken=0;
+ let smokeLizardAudioContext=null;
+ let smokeLizardAudioBufferPromise=null;
+ let smokeLizardAudioSources=[];
+ function stopSmokeLizardCrySequence(){
+   smokeLizardCryActive=false;
+   smokeLizardCryToken++;
+   if(smokeLizardCrySilenceTimer!==null){clearTimeout(smokeLizardCrySilenceTimer);smokeLizardCrySilenceTimer=null}
+   for(const source of smokeLizardAudioSources){try{source.stop()}catch{}try{source.disconnect()}catch{}}
+   smokeLizardAudioSources=[];
+   smokeLizardCryAudio.pause();
+   try{smokeLizardCryAudio.currentTime=0}catch{}
+ }
+ // 古いブラウザでWeb Audioが使えない場合はHTMLAudioElementで同じ順序を再生する。
+ function playSmokeLizardCryOnce(){
+   if(!smokeLizardCryActive)return;
+   try{
+     smokeLizardCryAudio.currentTime=0;
+     smokeLizardCryAudio.muted=false;smokeLizardCryAudio.volume=.85;
+     const playing=smokeLizardCryAudio.play();
+     if(playing?.catch)playing.catch(()=>stopSmokeLizardCrySequence());
+   }catch{stopSmokeLizardCrySequence()}
+ }
+ smokeLizardCryAudio.addEventListener('ended',()=>{
+   if(!smokeLizardCryActive)return;
+   smokeLizardCryPlayed++;
+   if(smokeLizardCryPlayed===1){
+     playSmokeLizardCryOnce();
+   }else if(smokeLizardCryPlayed===2){
+     smokeLizardCrySilenceTimer=setTimeout(()=>{
+       smokeLizardCrySilenceTimer=null;
+       if(smokeLizardCryActive)playSmokeLizardCryOnce();
+     },2000);
+   }else{
+     stopSmokeLizardCrySequence();
+   }
+ });
+ smokeLizardCryAudio.addEventListener('error',()=>{if(smokeLizardCryActive)stopSmokeLizardCrySequence()});
+ // iPhoneでもNEXTのタップから「フェードイン後の遅延再生」を許可できるよう
+ // AudioContext.resume()はタップ中に実行し、音源の再生開始だけを後にずらす。
+ function armSmokeLizardCryAfterFade(){
+   stopSmokeLizardCrySequence();
+   smokeLizardCryActive=true;smokeLizardCryPlayed=0;
+   const token=smokeLizardCryToken;
+   const Context=window.AudioContext||window.webkitAudioContext;
+   let resumePromise=Promise.resolve();
+   if(Context){
+     try{
+       if(!smokeLizardAudioContext)smokeLizardAudioContext=new Context();
+       // タップのユーザー操作内で再生権限を確保（まだ鳴かない）。
+       resumePromise=smokeLizardAudioContext.resume().catch(()=>false);
+       if(!smokeLizardAudioBufferPromise){
+         smokeLizardAudioBufferPromise=fetch(smokeLizardCryFile)
+           .then(response=>{if(!response.ok)throw new Error('cry MP3 unavailable');return response.arrayBuffer()})
+           .then(data=>smokeLizardAudioContext.decodeAudioData(data))
+           .catch(()=>null);
+       }
+     }catch{smokeLizardAudioContext=null;smokeLizardAudioBufferPromise=null}
+   }
+   // 完全にフェードインしてから鳴き声を開始する。画面切替後は鳴らさない。
+   (async()=>{
+     await wait(1750); // opacity 1.65秒＋100msの余裕
+     if(!smokeLizardCryActive||token!==smokeLizardCryToken)return;
+     if(smokeLizardAudioContext&&smokeLizardAudioBufferPromise){
+       try{
+         const [buffer]=await Promise.all([smokeLizardAudioBufferPromise,resumePromise]);
+         if(!smokeLizardCryActive||token!==smokeLizardCryToken)return;
+         if(!buffer||smokeLizardAudioContext.state!=='running')throw new Error('audio unavailable');
+         const ctx=smokeLizardAudioContext;
+         const gain=ctx.createGain();gain.gain.value=.85;gain.connect(ctx.destination);
+         const begin=ctx.currentTime+.02;
+         const times=[begin,begin+buffer.duration,begin+buffer.duration*2+2];
+         times.forEach((at,index)=>{
+           const source=ctx.createBufferSource();source.buffer=buffer;source.connect(gain);
+           smokeLizardAudioSources.push(source);
+           if(index===2)source.onended=()=>{
+             if(token===smokeLizardCryToken){smokeLizardCryActive=false;smokeLizardAudioSources=[];try{gain.disconnect()}catch{}}
+           };
+           source.start(at);
+         });
+         return;
+       }catch{
+         // 再生できない環境だけ、既存のAudio方式へフォールバックする。
+       }
+     }
+     if(smokeLizardCryActive&&token===smokeLizardCryToken)playSmokeLizardCryOnce();
+   })();
+ }
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
@@ -10212,11 +10311,16 @@ window.addEventListener('message',e=>{
  async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が大きくしなり、釣り糸が海の奥へ引かれていく。','やがて糸が切れ、遠くの波間で巨大な岩陰のような何かが動いた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
  async function encounterSmokeLizard(){
    markAnimal('smoke-lizard');
+   stopSmokeLizardCrySequence();
    resetAnimalSceneControls();fawnStage.style.display='none';
-   // ループ中の画像は固定したまま、台詞だけを下で更新する。
+   // 背景画像のみ→視線を感じる→NEXTでケムリトカゲをフェードイン→登場完了後に鳴き声。
+   // 登場後も既存の翼・頭・尾・煙のループアニメーションを継続する。
    anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
    smokeLizardStage.style.display='block';smokeLizardStage.setAttribute('aria-hidden','false');smokeLizardStage.style.opacity='0';smokeLizardStage.style.transform='scale(.975)';smokeLizardStage.style.transition='opacity .9s ease,transform 1.1s ease';
+   smokeLizardCharacter.style.opacity='0';smokeLizardCharacter.style.visibility='hidden';smokeLizardCharacter.style.transform='translateY(7px) scale(.985)';
+   smokeLizardCharacter.style.transition='none';void smokeLizardCharacter.offsetWidth;
+   smokeLizardCharacter.style.transition='opacity 1.65s ease,transform 1.65s ease,visibility 0s linear 1.65s';
    smokeLizardStage.querySelectorAll('[data-smoke-part]').forEach(layer=>{layer.style.animation='none';void layer.offsetWidth;layer.style.animation=''});
    anomalySceneStageReady();
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
@@ -10224,9 +10328,21 @@ window.addEventListener('message',e=>{
    await wait(80);anomalyScene.style.opacity='1';await wait(950);
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
    smokeLizardStage.style.opacity='1';smokeLizardStage.style.transform='scale(1)';await wait(1000);
-   await showManualAnimalLine('ドラゴンのような翼を持ち、薄い煙を漂わせるトカゲがいる。');
-   await showManualAnimalLine('小さなトカゲは翼を広げ、口を開いて威嚇している。');
-   await showManualAnimalLine('トカゲは翼を広げたまま、こちらを見つめている。','探索に戻る');
+   // NEXTタップで音声の遅延再生を準備（無音）し、まずトカゲをフェードインする。
+   // 鳴き声はトカゲが完全に現れてから再生される。
+   smokeLizardReturnButton.addEventListener('click',()=>{
+     armSmokeLizardCryAfterFade();
+     smokeLizardCharacter.style.visibility='visible';
+     smokeLizardCharacter.style.transition='opacity 1.65s ease,transform 1.65s ease,visibility 0s';
+     smokeLizardCharacter.style.opacity='1';smokeLizardCharacter.style.transform='translateY(0) scale(1)';
+   },{once:true});
+   await showManualAnimalLine('月明かりが、黒い海を照らしている。\nふと、どこからか視線を感じた。\n振り返っても、そこには誰もいない。\nけれど、何かがずっとこちらを見ている気がする。');
+   // NEXT後、フェードイン完了を待ってから登場の文章を表示。
+   await wait(1700);
+   await showManualAnimalLine('不意に、欄干の上で白い煙が揺らめいた。\n煙は小さな翼と長い尾を形作り、一匹のトカゲが姿を現した。');
+   await showManualAnimalLine('小さなトカゲは翼を広げ、こちらの背後に向かって鳴いた。\nその姿は、何かを威嚇しているようにも見える。');
+   await showManualAnimalLine('いつの間にか、まとわりついていた視線が消えたような気がした。\nトカゲは何事もなかったかのように、こちらを見つめている。','探索に戻る');
+   stopSmokeLizardCrySequence();
    await closeAnimatedAnimalScene(smokeLizardStage);
  }
  function anomalySceneStageReady(){smokeLizardStage.style.display='block';smokeLizardStage.querySelectorAll('img').forEach(img=>{img.onerror=()=>console.warn('Smoke lizard layer could not be loaded:',img.getAttribute('src'))})}
