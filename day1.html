@@ -6894,9 +6894,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const hernandoDialogueName=hernandoDialogue?.querySelector('.hernando-dialogue-name');
     const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline'),hernandoBullKnife=document.getElementById('hernandoBullKnife');
     const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
-    // Initial entrance movie is hosted on Supabase Storage. After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
-    // Public bucket: videos / object: hernandos_bullring.mp4
-    const HERNANDO_BULLRING_VIDEO_URL=`${SUPABASE_URL}/storage/v1/object/public/videos/hernandos_bullring.mp4`;
+    // Initial entrance movie is hosted on GitHub Pages (same directory as HTML). After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
+    // Upload the compressed video as hernandos_bullring.mp4 in the same directory as the published HTML.
+    const HERNANDO_BULLRING_VIDEO_URL='./hernandos_bullring.mp4';
     if(hernandoBullringVideo){hernandoBullringVideo.src=HERNANDO_BULLRING_VIDEO_URL;hernandoBullringVideo.load()}
     const hernandoVideoFallback=document.getElementById('hernandoVideoFallback'),hernandoVideoFallbackText=document.getElementById('hernandoVideoFallbackText');
     const hernandoVideoPlay=document.getElementById('hernandoVideoPlay'),hernandoVideoContinue=document.getElementById('hernandoVideoContinue');
@@ -7324,12 +7324,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     if(hernandoSecretCancel)hernandoSecretCancel.addEventListener('click',hideHernandoDoorChoice);
     if(hernandoVideoPlay)hernandoVideoPlay.addEventListener('click',()=>{
       hernandoVideoFallback.classList.remove('show');hernandoBullringVideo.muted=false;
-      const p=hernandoBullringVideo.play();if(p&&p.catch)p.catch(()=>{hernandoVideoFallbackText.textContent='動画を再生できませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
+      const p=hernandoBullringVideo.play();if(p&&p.catch)p.catch(()=>{hernandoVideoFallbackText.textContent='動画を再生できませんでした。GitHub Pages 上の hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     });
     if(hernandoVideoContinue)hernandoVideoContinue.addEventListener('click',showHernandoArena);
     if(hernandoBullringVideo){
       hernandoBullringVideo.addEventListener('ended',()=>{markHernandoIntroSeen();showHernandoArena()});
-      hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。Supabase Storage の videos / hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
+      hernandoBullringVideo.addEventListener('error',()=>{if(!hernandoVideoScreen.classList.contains('open'))return;hernandoVideoFallbackText.textContent='動画を読み込めませんでした。GitHub Pages 上の hernandos_bullring.mp4 を確認してください。';hernandoVideoPlay.classList.add('hidden');hernandoVideoContinue.classList.remove('hidden');hernandoVideoFallback.classList.add('show')});
     }
     // 文字送り中は、会話枠を1回タップすると現在のページだけ全文を即表示する。
     // NEXT・選択肢・酒杯ボタンの操作とは干渉させない。
@@ -9709,7 +9709,7 @@ window.addEventListener('message',e=>{
   const exploreEventVideoErrorText=document.getElementById('exploreEventVideoErrorText');
   const exploreEventVideoRetry=document.getElementById('exploreEventVideoRetry');
   const exploreEventVideoReturn=document.getElementById('exploreEventVideoReturn');
-  const EXPLORE_VIDEO_BASE_URL='https://yhzkqykzdfzsgdwhtszp.supabase.co/storage/v1/object/public/videos/';
+  const EXPLORE_VIDEO_BASE_URL='./';
   const DAY1_EXPLORE_VIDEO_EVENTS=[
     {spot:'lighthouse',period:'day',action:'telescope',drinks:['サマーパラダイス','シェルブリーズ'],filename:'lighthouse_day_telescope.mp4',label:'昼の灯台で望遠鏡を使ったときの映像'},
     {spot:'beach',period:'night',action:'snorkel',drinks:['ミッドナイトランタン'],filename:'beach_night_diving.mp4',label:'夜のビーチでダイビングをしたときの映像'},
