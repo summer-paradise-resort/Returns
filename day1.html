@@ -10295,13 +10295,13 @@ window.addEventListener('message',e=>{
  // 文節ごとのnowrap spanに分け、改行自体は画面幅に合わせてブラウザに任せる。
  function setAnomalyNarrativeText(value){
    const content=String(value??'');
-   // この4行は一文ごとに改行している。途中で行を折り返さず、
-   // 最長の一文まで画面幅に収まるフォントサイズに自動調整する。
-   const oneLineScene=content.includes('月明かりが、黒い海を照らしている。')
-     && content.includes('けれど、何かがずっとこちらを見ている気がする。');
-   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',oneLineScene);
+   // 手動で改行している探索文は、その1行ごとをきれいに保つ。
+   // 各行を途中で不自然に折り返さず、最長行が画面幅に収まるよう
+   // 同じ比率で文字サイズだけを少し調整する。
+   const fixedLineScene=content.includes('\n');
+   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',fixedLineScene);
    anomalySceneText.style.removeProperty('--spr-anomaly-fit-font');
-   if(oneLineScene){
+   if(fixedLineScene){
      const frag=document.createDocumentFragment();
      for(const line of content.split('\n')){
        const row=document.createElement('div');
@@ -10311,16 +10311,14 @@ window.addEventListener('message',e=>{
      }
      anomalySceneText.replaceChildren(frag);
      const fitLines=()=>{
-       // まず18pxで実幅を測り、収まる最大値まで全行を同じ割合で縮小。
        anomalySceneText.style.setProperty('--spr-anomaly-fit-font','18px');
        const lines=[...anomalySceneText.querySelectorAll('.spr-anomaly-line')];
        const maxLineWidth=Math.max(1,...lines.map(row=>row.getBoundingClientRect().width));
        const availableWidth=Math.max(1,anomalySceneText.clientWidth-3);
-       const fitted=Math.min(18,18*availableWidth/maxLineWidth);
+       const fitted=Math.max(13.2,Math.min(18,18*availableWidth/maxLineWidth));
        anomalySceneText.style.setProperty('--spr-anomaly-fit-font',`${Math.floor(fitted*100)/100}px`);
      };
      fitLines();
-     // Webフォントが後から読み込まれても、実際の幅で合わせ直す。
      if(document.fonts?.ready)document.fonts.ready.then(()=>{
        if(anomalySceneText.classList.contains('spr-anomaly-fit-lines')&&
          anomalySceneText.textContent===content.replace(/\n/g,''))fitLines();
