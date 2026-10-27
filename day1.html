@@ -1165,45 +1165,22 @@ body.night-theme #teaSalonView>.info{background:rgba(7,26,43,.44)}
 body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchange,body.night-theme #teaSalonView .tea-party-box{background:rgba(13,39,67,.89)}
 </style>
 
-<style id="sprNarrativeReadingStyles">
-/* SUMMER PARADISE — 物語本文の共通ルール (2026-10-27)
-   画像/ロゴ/見出し/ボタン/選択肢/チャット投稿は従来通り。
-   ストーリー本文のみ「中央に置いた読みやすい左揃え」に統一。 */
-:where(
-  .spr-reading-prose,
-  .story-copy,
-  .info > p,
-  .card-desc,
-  .explore-action-message-text,
-  .room-explore-result,
-  .room-chat-toast,
-  .room-entry-notice,
-  .room-phone-call-status,
-  .room-door-service-status,
-  .room-service-delivery-text,
-  .room-service-ng-fallback,
-  .hernando-dialogue-text,
-  .hernando-descent p,
-  .hernando-secret-text,
-  .casino-emily-dialogue-text,
-  .special-broadcast-text,
-  .mystery-dialog p,
-  .mystery-message,
-  .cafe-staff-text,
-  .staff-dialogue-text,
-  #sunsetTerraceView .terrace-description,
-  #sunsetTerraceView .terrace-gift-note
-){
+<style id="sprExploreReadingStyles">
+/* 探索の文章だけ読みやすくする。BAR・CAFE・ROOM・カジノ等の元の配置は変更しない。 */
+#exploreView .explore-action-message-text,
+#storyEventModal #storyBody,
+#anomalyAnimalScene .spr-reading-prose,
+#blackHorseFinalScene .spr-reading-prose{
   text-align:left !important;
   line-break:strict;
   overflow-wrap:break-word;
-  word-break:normal !important; /* old Safari fallback */
-  word-break:auto-phrase !important; /* phrase-aware Japanese line wrapping */
+  word-break:normal !important;
+  word-break:auto-phrase !important;
   text-wrap:pretty;
   hanging-punctuation:allow-end;
 }
-/* Centralize the BODY block itself, not individual lines. Keep dialogue and toast panel sizes. */
-:where(.spr-reading-prose,.explore-action-message-text,.special-broadcast-text,.mystery-dialog p){
+#exploreView .explore-action-message-text,
+#storyEventModal #storyBody{
   display:block;
   width:100%;
   max-width:min(100%,33em);
@@ -1216,16 +1193,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   line-height:1.95;
   letter-spacing:.045em;
 }
-#storyEventModal #storyBody{width:100%;max-width:33em;margin-inline:auto}
-#blackHorseFinalScene .spr-reading-prose{max-width:min(33em,calc(100vw - 64px))}
-/* Staff dialogue has paging/fade animation; preserve fixed box dimensions and text overflow. */
-.cafe-staff-text,.staff-dialogue-text,.hernando-dialogue-text,.casino-emily-dialogue-text{
-  text-align:left !important;
+#blackHorseFinalScene .spr-reading-prose{
+  max-width:min(33em,calc(100vw - 64px));
 }
-/* The dialogue typewriter uses one animated span per character.
-   A no-wrap word wrapper preserves phrases while leaving individual fade timing intact. */
+/* スタッフ会話では文字送りの順序を維持したまま語句単位で折り返す。 */
 .spr-reading-phrase{display:inline;white-space:nowrap}
-/* One-line decorative captions, controls and character labels remain centered. */
 @media(max-width:520px){
   #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 64px) !important}
   #storyEventModal #storyBody{max-width:calc(100vw - 84px)}
@@ -3687,7 +3659,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualNext.classList.toggle('hidden',!showNext);
       emilyCasualText.replaceChildren();
       const chars=Array.from(String(line));
-      emilyCasualSpans=window.sprBuildNarrativeCharSpans(emilyCasualText,line,'casino-emily-char');
+      emilyCasualSpans=chars.map(char=>{
+        const span=document.createElement('span');span.className='casino-emily-char';span.textContent=char;
+        emilyCasualText.appendChild(span);return span;
+      });
       emilyCasualTyping=true;
       let index=0;
       function tick(){
@@ -7141,7 +7116,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoDialogueTyping=true;
       hernandoDialogueText.textContent='';
       const chars=[...text];
-      const spans=window.sprBuildNarrativeCharSpans(hernandoDialogueText,text,'hernando-dialogue-char');
+      const spans=chars.map(ch=>{const span=document.createElement('span');span.className='hernando-dialogue-char';span.textContent=ch;hernandoDialogueText.appendChild(span);return span});
       const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
       (async()=>{
