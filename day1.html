@@ -943,7 +943,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 #sunsetTerraceView .terrace-food-name{margin:0;color:#fff;font-size:17px;letter-spacing:.08em;font-weight:400}
 #sunsetTerraceView .terrace-food-drink{margin:7px 0 0;font-size:11px;color:#e8cf96}
 #sunsetTerraceView .terrace-food-return{align-self:center;width:min(300px,calc(100% - 40px));min-height:46px;margin:3px 20px 0;border:1px solid #d8ba77;background:rgba(216,186,119,.12);color:#f5ead5;font-size:12px;letter-spacing:.12em}
-#sunsetTerraceView .terrace-gift-note{margin:22px 4px 0;text-align:center;color:#f2dba4;font-size:11px;line-height:1.85;letter-spacing:.045em}\n#sunsetTerraceView .terrace-gift-note .gift-line{display:inline-block;white-space:nowrap;max-width:100%}
+#sunsetTerraceView .terrace-gift-note{margin:22px 4px 0;text-align:center;color:#f2dba4;font-size:11px;line-height:1.85;letter-spacing:.045em}
 #sunsetTerraceView[data-terrace-period="day"] .terrace-gift-note{color:#f5e5be;text-shadow:0 2px 8px rgba(0,0,0,.9)}
 #sunsetTerraceView .terrace-ticket-modal{position:fixed;z-index:45;inset:0;padding:20px;display:flex;align-items:center;justify-content:center;background:rgba(3,15,27,.87);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 #sunsetTerraceView .terrace-ticket-dialog{width:min(440px,94vw);padding:29px 23px 24px;background:#fffaf1;color:#0d2743;text-align:center;border:1px solid #d8b97a;box-shadow:0 20px 55px rgba(0,0,0,.42)}
@@ -1226,6 +1226,35 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
   white-space:nowrap;
   overflow-wrap:normal;
   word-break:keep-all;
+}
+/* ケムリトカゲ：全4画面を同じ字の大きさにし、スマホの横幅からはみ出さない。 */
+#anomalyAnimalScene.spr-smoke-lizard-scene{
+  padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom)) !important;
+  gap:clamp(8px,1.5vh,14px) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+#anomalyAnimalScene.spr-smoke-lizard-scene #smokeLizardAnimation{
+  width:min(94vw,calc(48dvh * 1.777)) !important;
+  max-width:100%;
+}
+#anomalyAnimalScene.spr-smoke-lizard-scene .spr-reading-prose.spr-smoke-lizard-text{
+  box-sizing:border-box;
+  width:min(640px,calc(100vw - 32px)) !important;
+  max-width:100% !important;
+  min-width:0;
+  flex:0 0 auto;
+  font-size:clamp(15px,4vw,18px) !important;
+  line-height:1.75 !important;
+  letter-spacing:.025em !important;
+  white-space:pre-line;
+  overflow-wrap:anywhere !important;
+  margin-top:clamp(4px,1vh,12px) !important;
+}
+@media(max-height:620px){
+  #anomalyAnimalScene.spr-smoke-lizard-scene #smokeLizardAnimation{
+    width:min(92vw,calc(36dvh * 1.777)) !important;
+  }
 }
 </style>
 
@@ -1661,7 +1690,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="スターライト・ココ" aria-pressed="false"><strong>スターライト・ココ</strong><small>ココナッツミルクとバニラがやさしく広がるデザートドリンク（ノンアルコール）</small></button>
         </div>
       </div>
-      <p class="terrace-gift-note"><span class="gift-line">SPECIAL GIFT ・ お食事をご注文のお客様へ</span><br><span class="gift-line">ミステリーボックス・チケットを1日1枚プレゼント</span></p>
+      <p class="terrace-gift-note">SPECIAL GIFT　・　お食事をご注文のお客様へ、ミステリーボックス・チケットを1日1枚プレゼント</p>
       <button id="sunsetTerraceOrder" class="terrace-order" type="button" disabled>お料理とドリンクを注文する</button>
       <p class="terrace-order-status" id="sunsetTerraceOrderStatus" role="status" aria-live="polite">お食事とドリンクをそれぞれお選びください。</p>
     </div>
@@ -10295,13 +10324,14 @@ window.addEventListener('message',e=>{
  // 文節ごとのnowrap spanに分け、改行自体は画面幅に合わせてブラウザに任せる。
  function setAnomalyNarrativeText(value){
    const content=String(value??'');
-   // 手動で改行している探索文は、その1行ごとをきれいに保つ。
-   // 各行を途中で不自然に折り返さず、最長行が画面幅に収まるよう
-   // 同じ比率で文字サイズだけを少し調整する。
-   const fixedLineScene=content.includes('\n');
-   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',fixedLineScene);
+   // この4行は一文ごとに改行している。途中で行を折り返さず、
+   // 最長の一文まで画面幅に収まるフォントサイズに自動調整する。
+   const oneLineScene=!anomalySceneText.classList.contains('spr-smoke-lizard-text')
+     && content.includes('月明かりが、黒い海を照らしている。')
+     && content.includes('けれど、何かがずっとこちらを見ている気がする。');
+   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',oneLineScene);
    anomalySceneText.style.removeProperty('--spr-anomaly-fit-font');
-   if(fixedLineScene){
+   if(oneLineScene){
      const frag=document.createDocumentFragment();
      for(const line of content.split('\n')){
        const row=document.createElement('div');
@@ -10311,14 +10341,16 @@ window.addEventListener('message',e=>{
      }
      anomalySceneText.replaceChildren(frag);
      const fitLines=()=>{
+       // まず18pxで実幅を測り、収まる最大値まで全行を同じ割合で縮小。
        anomalySceneText.style.setProperty('--spr-anomaly-fit-font','18px');
        const lines=[...anomalySceneText.querySelectorAll('.spr-anomaly-line')];
        const maxLineWidth=Math.max(1,...lines.map(row=>row.getBoundingClientRect().width));
        const availableWidth=Math.max(1,anomalySceneText.clientWidth-3);
-       const fitted=Math.max(13.2,Math.min(18,18*availableWidth/maxLineWidth));
+       const fitted=Math.min(18,18*availableWidth/maxLineWidth);
        anomalySceneText.style.setProperty('--spr-anomaly-fit-font',`${Math.floor(fitted*100)/100}px`);
      };
      fitLines();
+     // Webフォントが後から読み込まれても、実際の幅で合わせ直す。
      if(document.fonts?.ready)document.fonts.ready.then(()=>{
        if(anomalySceneText.classList.contains('spr-anomaly-fit-lines')&&
          anomalySceneText.textContent===content.replace(/\n/g,''))fitLines();
@@ -10376,6 +10408,10 @@ window.addEventListener('message',e=>{
    await wait(700);anomalyScene.style.opacity='0';await wait(760);
    anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');
    anomalySceneText.textContent='';stage.style.display='none';stage.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
+   if(stage===smokeLizardStage){
+     anomalyScene.classList.remove('spr-smoke-lizard-scene');
+     anomalySceneText.classList.remove('spr-smoke-lizard-text','spr-anomaly-fit-lines');
+   }
  }
  async function showFawnCloseupScene(){
    resetAnimalSceneControls();smokeLizardStage.style.display='none';fawnStage.style.display='none';
@@ -10524,6 +10560,8 @@ window.addEventListener('message',e=>{
  async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が大きくしなり、釣り糸が海の奥へ引かれていく。','やがて糸が切れ、遠くの波間で巨大な岩陰のような何かが動いた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
  async function encounterSmokeLizard(){
    markAnimal('smoke-lizard');
+   anomalyScene.classList.add('spr-smoke-lizard-scene');
+   anomalySceneText.classList.add('spr-smoke-lizard-text');
    stopSmokeLizardCrySequence();
    resetAnimalSceneControls();fawnStage.style.display='none';
    // 背景画像のみ→視線を感じる→NEXTでケムリトカゲをフェードイン→登場完了後に鳴き声。
