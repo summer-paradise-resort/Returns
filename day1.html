@@ -10191,8 +10191,57 @@ window.addEventListener('message',e=>{
  };
  const modal=document.createElement('div');modal.id='storyEventModal';modal.style.cssText='position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(1,10,20,.82);color:#fff';modal.innerHTML='<section style="width:min(560px,100%);max-height:82dvh;overflow:auto;padding:26px 20px;border:1px solid #c9aa68;background:linear-gradient(150deg,#142f42,#07131f);text-align:center"><small style="letter-spacing:.2em;color:#e6cc8e">SUMMER PARADISE / STORY</small><h2 style="font:22px Georgia,serif;color:#f2d895;margin:14px 0" id="storyTitle"></h2><img id="storyImage" alt="" hidden style="display:block;width:100%;max-height:42dvh;object-fit:contain;margin:0 auto 16px;border:1px solid rgba(201,170,104,.48);background:#020a12"><div id="storyBody" class="spr-reading-prose" style="white-space:pre-line;font:15px/1.9 Yu Mincho,serif;margin:18px auto"></div><div id="storyChoices" style="display:grid;gap:9px"></div><button id="storyClose" style="margin-top:16px;padding:10px 20px;border:1px solid #a98d55;background:transparent;color:#fff">閉じる</button></section>';
  document.body.append(modal);const title=modal.querySelector('#storyTitle'),body=modal.querySelector('#storyBody'),choices=modal.querySelector('#storyChoices'),storyImage=modal.querySelector('#storyImage');
- function open(t,b,opts=[],image=''){title.textContent=t;body.textContent=b;choices.replaceChildren();storyImage.hidden=true;storyImage.removeAttribute('src');storyImage.alt='';if(image){storyImage.alt=t;storyImage.onerror=()=>{storyImage.hidden=true};storyImage.onload=()=>{storyImage.hidden=false};storyImage.src=image}for(const o of opts){const x=document.createElement('button');x.textContent=o.label;x.style.cssText='padding:13px;border:1px solid #c9aa68;background:#fff;color:#10243a;font:14px "Yu Mincho",serif';x.onclick=o.run;choices.append(x)}modal.style.display='flex'}
- const close=()=>modal.style.display='none';modal.querySelector('#storyClose').onclick=close;
+ // ラッコの元画像とまぶたは同じ親枠に重ね、その親だけを揺らす。
+ const otterFrame=document.createElement('div');otterFrame.id='driftingOtterFrame';
+ otterFrame.style.cssText='display:none;position:relative;width:min(100%,calc(42dvh * 1.7777778));aspect-ratio:16/9;overflow:hidden;margin:0 auto 16px;border:1px solid rgba(201,170,104,.48);background:#020a12';
+ const otterFloat=document.createElement('div');otterFloat.className='otter-float';
+ otterFloat.style.cssText='position:absolute;inset:0;transform-origin:center center';
+ const otterBaseImage=document.createElement('img'),otterBlinkImage=document.createElement('img');
+ for(const img of [otterBaseImage,otterBlinkImage]){
+   img.draggable=false;img.decoding='async';img.loading='eager';img.fetchPriority='high';
+   img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';
+   otterFloat.append(img);
+ }
+ otterBaseImage.alt='古びた乗船チケットを抱えて浮かぶラッコ';
+ otterBlinkImage.alt='';otterBlinkImage.setAttribute('aria-hidden','true');otterBlinkImage.className='otter-blink';
+ otterBlinkImage.style.display='none';
+ otterFrame.append(otterFloat);storyImage.before(otterFrame);
+ const otterMotion=document.createElement('style');otterMotion.textContent=`
+ #driftingOtterFrame .otter-float{transform:scale(1.04);animation:otterWholeFloat 6.2s ease-in-out infinite;animation-play-state:paused;will-change:transform}
+ #driftingOtterFrame .otter-blink{opacity:0;animation:otterEyeBlink 7.8s linear infinite;animation-play-state:paused;will-change:opacity}
+ #driftingOtterFrame.otter-active .otter-float,#driftingOtterFrame.otter-active .otter-blink{animation-play-state:running}
+ @keyframes otterWholeFloat{0%,100%{transform:translateY(-.65%) rotate(-.12deg) scale(1.04)}50%{transform:translateY(.65%) rotate(.12deg) scale(1.04)}}
+ @keyframes otterEyeBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
+ @media(prefers-reduced-motion:reduce){#driftingOtterFrame .otter-float{animation:none;transform:scale(1.04)}#driftingOtterFrame .otter-blink{animation:none;opacity:0}}
+ `;document.head.append(otterMotion);
+ function hideOtterAnimation(){otterFrame.style.display='none';otterFrame.classList.remove('otter-active');}
+ function showOtterAnimation(src){
+   otterFrame.style.display='block';
+   otterBaseImage.onload=()=>{otterFrame.classList.add('otter-active');};
+   otterBaseImage.onerror=()=>{hideOtterAnimation();};
+   otterBlinkImage.onload=()=>{otterBlinkImage.style.display='block';};
+   otterBlinkImage.onerror=()=>{otterBlinkImage.style.display='none';};
+   if(otterBaseImage.getAttribute('src')!==src)otterBaseImage.src=src;
+   if(otterBlinkImage.getAttribute('src')!=='otter_blink_aligned.png')otterBlinkImage.src='otter_blink_aligned.png';
+   if(otterBaseImage.complete&&otterBaseImage.naturalWidth>0)otterFrame.classList.add('otter-active');
+   if(otterBlinkImage.complete&&otterBlinkImage.naturalWidth>0)otterBlinkImage.style.display='block';
+ }
+ function open(t,b,opts=[],image=''){
+   title.textContent=t;body.textContent=b;choices.replaceChildren();hideOtterAnimation();
+   storyImage.hidden=true;storyImage.style.display='none';storyImage.removeAttribute('src');storyImage.alt='';
+   if(image){
+     if(/(^|\/)anomaly_drifting_otter\.jpg(?:[?#]|$)/.test(image))showOtterAnimation(image);
+     else{
+       storyImage.alt=t;
+       storyImage.onerror=()=>{storyImage.hidden=true;storyImage.style.display='none';};
+       storyImage.onload=()=>{storyImage.hidden=false;storyImage.style.display='block';};
+       storyImage.src=image;
+     }
+   }
+   for(const o of opts){const x=document.createElement('button');x.textContent=o.label;x.style.cssText='padding:13px;border:1px solid #c9aa68;background:#fff;color:#10243a;font:14px "Yu Mincho",serif';x.onclick=o.run;choices.append(x);}
+   modal.style.display='flex';
+ }
+ const close=()=>{hideOtterAnimation();modal.style.display='none';};modal.querySelector('#storyClose').onclick=close;
 
  // 異変動物のうち、全身画像を出さない場面に使う暗転演出。
  const anomalyScene=document.createElement('div');anomalyScene.id='anomalyAnimalScene';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
