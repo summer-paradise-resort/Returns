@@ -1183,8 +1183,8 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 #storyEventModal #storyBody{
   display:block;
   width:100%;
-  max-width:min(100%,33em);
-  margin-inline:auto;
+  max-width:none;
+  margin-inline:0;
 }
 #anomalyAnimalScene .spr-reading-prose{
   width:min(33em,calc(100vw - 64px)) !important;
@@ -1199,8 +1199,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 /* スタッフ会話では文字送りの順序を維持したまま語句単位で折り返す。 */
 .spr-reading-phrase{display:inline;white-space:nowrap}
 @media(max-width:520px){
-  #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 64px) !important}
-  #storyEventModal #storyBody{max-width:calc(100vw - 84px)}
+  #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 40px) !important}
+  #storyEventModal #storyBody{max-width:none}
+  #storyEventModal section{width:min(640px,calc(100vw - 20px)) !important;padding:22px 12px !important}
 }
 </style>
 
