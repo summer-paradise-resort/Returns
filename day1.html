@@ -4605,6 +4605,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
+      // 小鹿の草むら効果音中は、定期同期による波BGMの再開も止める。
+      if(window.__sprFawnGrassSoundActive){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
       const open=Boolean(view?.classList.contains('open'));
       const period=currentTokyoPeriod();
@@ -10624,11 +10626,15 @@ window.addEventListener('message',e=>{
    fawnStage.style.display='block';fawnStage.setAttribute('aria-hidden','false');fawnStage.style.opacity='0';fawnStage.style.transform='scale(.985)';void fawnStage.offsetWidth;
    fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';
    await wait(1050);
+   window.__sprFawnGrassSoundActive=true;
+   window.__sprPauseExploreBgmForGimmick?.();
    try{
      await showManualAnimalLine('波の音に混ざって、背後で草が揺れる音がした。','NEXT　›',fawnGrassRustleAudio);
    }finally{
-     // NEXTで次の場面へ進む際は、草木の音が残らないよう停止する。
+     // 草むらの音を止め、子鹿が現れる画面に移る時点で波BGMを再開する。
      fawnGrassRustleAudio.pause();try{fawnGrassRustleAudio.currentTime=0}catch{}
+     window.__sprFawnGrassSoundActive=false;
+     window.__sprResumeExploreBgmAfterGimmick?.();
    }
    // NEXT後、同じビーチ上に小鹿を表示する。
    fawnCharacterEntry.style.visibility='visible';void fawnCharacterEntry.offsetWidth;fawnCharacterEntry.style.opacity='1';
