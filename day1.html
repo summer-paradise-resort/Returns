@@ -10286,7 +10286,7 @@ window.addEventListener('message',e=>{
  #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="ear-left"]{transform-origin:80% 50%;animation:fawnLeftEarTwitch 9.4s ease-in-out infinite;will-change:transform}
- #glassFawnAnimation [data-fawn-part="ear-right"]{transform-origin:85% 50%;animation:fawnRightEarTwitch 11.2s ease-in-out 1.7s infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="ear-right"]{transform-origin:85% 50%;animation:fawnRightEarTwitch 9.4s ease-in-out infinite;will-change:transform}
  #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 10.8s ease-in-out infinite;will-change:opacity}
  #glassFawnAnimation [data-fawn-part="antler-reflection"]{animation:fawnAntlerShimmer 6.4s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:68% 100%;animation:fawnLeavesSway 6.6s cubic-bezier(.42,0,.58,1) infinite;will-change:transform}
@@ -10294,7 +10294,7 @@ window.addEventListener('message',e=>{
  @keyframes fawnMoonWater{0%{opacity:.88;filter:brightness(.96)}100%{opacity:1;filter:brightness(1.05)}}
  @keyframes fawnForestLights{0%,100%{opacity:.62}35%{opacity:.88}70%{opacity:.72}}
  @keyframes fawnLeftEarTwitch{0%,70%,73%,76%,100%{transform:rotate(0)}71%{transform:rotate(-1deg) translateY(-1px)}72%{transform:rotate(.45deg)}74%{transform:rotate(-.7deg)}75%{transform:rotate(.25deg)}}
- @keyframes fawnRightEarTwitch{0%,35%,38%,41%,100%{transform:rotate(0)}36%{transform:rotate(1deg) translateY(-1px)}37%{transform:rotate(-.45deg)}39%{transform:rotate(.7deg)}40%{transform:rotate(-.25deg)}}
+ @keyframes fawnRightEarTwitch{0%,70%,73%,76%,100%{transform:rotate(0)}71%{transform:rotate(1deg) translateY(-1px)}72%{transform:rotate(-.45deg)}74%{transform:rotate(.7deg)}75%{transform:rotate(-.25deg)}}
  @keyframes fawnBlink{0%,60%,67%,100%{opacity:0}62%{opacity:.25}63.2%,64.8%{opacity:1}66%{opacity:.25}}
  @keyframes fawnAntlerShimmer{0%{opacity:.62;filter:brightness(.95)}100%{opacity:1;filter:brightness(1.12)}}
  @keyframes fawnLeavesSway{0%,100%{transform:translate3d(-3px,1px,0) rotate(-.55deg) skewX(-.25deg)}28%{transform:translate3d(2px,-1px,0) rotate(.25deg) skewX(.12deg)}55%{transform:translate3d(5px,0,0) rotate(.75deg) skewX(.3deg)}78%{transform:translate3d(1px,-1px,0) rotate(.1deg) skewX(-.08deg)}}
@@ -10396,9 +10396,10 @@ window.addEventListener('message',e=>{
    }
    anomalySceneText.replaceChildren(frag);
  }
- async function showManualAnimalLine(line,buttonLabel='NEXT　›'){
+ async function showManualAnimalLine(line,buttonLabel='NEXT　›',sound=null){
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
    anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(line);anomalySceneText.style.opacity='1';
+   if(sound)playAnimalSound(sound,.8);
    smokeLizardReturnButton.textContent=buttonLabel;smokeLizardReturnButton.style.display='inline-flex';
    await wait(40);smokeLizardReturnButton.style.opacity='1';await waitForTap(smokeLizardReturnButton);
    smokeLizardReturnButton.style.opacity='0';await wait(180);smokeLizardReturnButton.style.display='none';
@@ -10414,20 +10415,23 @@ window.addEventListener('message',e=>{
    }
  }
  async function showFawnCloseupScene(){
-   resetAnimalSceneControls();smokeLizardStage.style.display='none';fawnStage.style.display='none';
-   // 画像を上端基準で固定し、台詞やボタンの高さが変わっても上下へ再配置しない。
-   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none';
-   anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
-   fawnCloseupStage.style.display='block';fawnCloseupStage.setAttribute('aria-hidden','false');fawnCloseupStage.style.opacity='0';fawnCloseupStage.style.transform='scale(.985)';
-   anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
+   resetAnimalSceneControls();smokeLizardStage.style.display='none';
+   // 探索画面へ戻さず、黒いイベント画面を開いたまま画像だけを切り替える。
    const closeupLoaded=fawnCloseupImage.complete?Promise.resolve():new Promise(resolve=>{fawnCloseupImage.addEventListener('load',resolve,{once:true});fawnCloseupImage.addEventListener('error',resolve,{once:true})});
-   await wait(80);anomalyScene.style.opacity='1';await wait(900);
    await Promise.race([closeupLoaded,wait(4500)]);
+   anomalySceneText.style.opacity='0';fawnStage.style.opacity='0';fawnStage.style.transform='scale(.985)';
+   await wait(700);
+   fawnStage.style.display='none';fawnStage.setAttribute('aria-hidden','true');
+   // 画像を上端基準で固定し、台詞やボタンの高さが変わっても上下へ再配置しない。
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:1;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
+   anomalyScene.setAttribute('aria-hidden','false');anomalySceneText.textContent='';
+   fawnCloseupStage.style.display='block';fawnCloseupStage.setAttribute('aria-hidden','false');fawnCloseupStage.style.opacity='0';fawnCloseupStage.style.transform='scale(.985)';
+   void fawnCloseupStage.offsetWidth;await wait(40);
    fawnCloseupStage.style.opacity='1';fawnCloseupStage.style.transform='scale(1)';await wait(1000);
-   await showManualAnimalLine('ドングリを差し出すと、小鹿は一歩ずつ近づき、静かに食べ始めた。');
-   await showManualAnimalLine('小鹿はドングリをかじりながら、時折耳を動かしている。');
-   await showManualAnimalLine('鏡のような角には、人魚の入江の夜景が映り込んでいる。');
-   await showManualAnimalLine('小鹿はドングリを食べ終えると、静かにその場に立っている。','探索に戻る');
+   await showManualAnimalLine('差し出したドングリに気づくと、小鹿は警戒するように足を止め、それから静かに近づいてきた。');
+   await showManualAnimalLine('小鹿はドングリをかじりながら、ときおり耳を動かしている。\n気に入ったのか、夢中で食べているようだ。');
+   await showManualAnimalLine('鏡のような角には、どこかで見たことのある風景が映り込んでいる。');
+   await showManualAnimalLine('小鹿はドングリを食べ終えると、静かにその場から去っていった。','探索に戻る');
    await closeAnimatedAnimalScene(fawnCloseupStage);
  }
  function playAnimalSound(audio,volume=.8){try{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=volume;const p=audio.play();if(p?.catch)p.catch(()=>{})}catch{}}
@@ -10534,6 +10538,8 @@ window.addEventListener('message',e=>{
      if(smokeLizardCryActive&&token===smokeLizardCryToken)playSmokeLizardCryOnce();
    })();
  }
+ const fawnGrassRustleAudio=new Audio('fawn_grass_rustle.mp3');
+ fawnGrassRustleAudio.preload='auto';fawnGrassRustleAudio.playsInline=true;fawnGrassRustleAudio.loop=false;
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
@@ -10602,6 +10608,7 @@ window.addEventListener('message',e=>{
    return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
  }
  async function encounterFawn(){
+   primeAnimalSound(fawnGrassRustleAudio);
    markAnimal('glass-fawn');
    resetAnimalSceneControls();smokeLizardStage.style.display='none';
    // 台詞更新による再センタリングを止め、画像とアニメーションを同じ位置で継続する。
@@ -10609,28 +10616,38 @@ window.addEventListener('message',e=>{
    anomalySceneText.textContent='';anomalySceneText.style.opacity='0';fawnStage.style.display='none';
    anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.setAttribute('aria-hidden','false');
    await wait(60);anomalyScene.style.opacity='1';await wait(720);
-   await showManualAnimalLine('背後で草が揺れ、小枝の折れる音がした。');
 
    const layerLoads=[...fawnStage.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true})}));
    await Promise.race([Promise.all(layerLoads),wait(4500)]);
+   // 最初は背景・海・木の葉だけを表示し、鹿の全パーツを隠す。
+   fawnCharacterEntry.style.visibility='hidden';fawnCharacterEntry.style.opacity='0';fawnCharacterEntry.style.transition='opacity .9s ease';
    fawnStage.style.display='block';fawnStage.setAttribute('aria-hidden','false');fawnStage.style.opacity='0';fawnStage.style.transform='scale(.985)';void fawnStage.offsetWidth;
-   // 小鹿は横から現れず、暗転が明けた時点ですでにその場にいる。
    fawnStage.style.opacity='1';fawnStage.style.transform='scale(1)';
    await wait(1050);
-   await showManualAnimalLine('不思議な角を生やした小鹿がいる。');
+   try{
+     await showManualAnimalLine('波の音に混ざって、背後で草が揺れる音がした。','NEXT　›',fawnGrassRustleAudio);
+   }finally{
+     // NEXTで次の場面へ進む際は、草木の音が残らないよう停止する。
+     fawnGrassRustleAudio.pause();try{fawnGrassRustleAudio.currentTime=0}catch{}
+   }
+   // NEXT後、同じビーチ上に小鹿を表示する。
+   fawnCharacterEntry.style.visibility='visible';void fawnCharacterEntry.offsetWidth;fawnCharacterEntry.style.opacity='1';
+   await wait(1050);
+   await showManualAnimalLine('振り向くと、不思議な角を持つ小鹿がこちらを見つめている。');
    anomalySceneText.style.opacity='0';await wait(260);
-   setAnomalyNarrativeText('小鹿は耳を動かし、こちらをじっと見つめている。');anomalySceneText.style.opacity='1';
+   setAnomalyNarrativeText('小鹿は耳をぴくりと動かしながら、じっとこちらの様子をうかがっている。');anomalySceneText.style.opacity='1';
    fawnChoiceBox.style.display='grid';
    const choice=await new Promise(resolve=>{
      fawnGiveDrinkButton.onclick=()=>resolve('give');
      fawnDeclineDrinkButton.onclick=()=>resolve('decline');
    });
-   await closeAnimatedAnimalScene(fawnStage);
    if(choice==='give'){
      localStorage.setItem(`spr-story:${who}:fawn-acorn-given`,'1');
      await showFawnCloseupScene();
    }else{
-     open('硝子角の小鹿','小鹿はしばらくこちらを見つめたあと、音もなく林の奥へ戻っていった。');
+     resetAnimalSceneControls();
+     await showManualAnimalLine('小鹿はこちらを見つめたまましばらく動かなかったが、やがて音もなく草むらの奥へ消えていった。','探索に戻る');
+     await closeAnimatedAnimalScene(fawnStage);
    }
  }
  let horseEntryNeighPending=false,horseEntryContinueNextClick=false;
