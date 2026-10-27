@@ -943,7 +943,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 #sunsetTerraceView .terrace-food-name{margin:0;color:#fff;font-size:17px;letter-spacing:.08em;font-weight:400}
 #sunsetTerraceView .terrace-food-drink{margin:7px 0 0;font-size:11px;color:#e8cf96}
 #sunsetTerraceView .terrace-food-return{align-self:center;width:min(300px,calc(100% - 40px));min-height:46px;margin:3px 20px 0;border:1px solid #d8ba77;background:rgba(216,186,119,.12);color:#f5ead5;font-size:12px;letter-spacing:.12em}
-#sunsetTerraceView .terrace-gift-note{margin:22px 4px 0;text-align:center;color:#f2dba4;font-size:11px;line-height:1.85;letter-spacing:.045em}
+#sunsetTerraceView .terrace-gift-note{margin:22px 4px 0;text-align:center;color:#f2dba4;font-size:11px;line-height:1.85;letter-spacing:.045em}\n#sunsetTerraceView .terrace-gift-note .gift-line{display:inline-block;white-space:nowrap;max-width:100%}
 #sunsetTerraceView[data-terrace-period="day"] .terrace-gift-note{color:#f5e5be;text-shadow:0 2px 8px rgba(0,0,0,.9)}
 #sunsetTerraceView .terrace-ticket-modal{position:fixed;z-index:45;inset:0;padding:20px;display:flex;align-items:center;justify-content:center;background:rgba(3,15,27,.87);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 #sunsetTerraceView .terrace-ticket-dialog{width:min(440px,94vw);padding:29px 23px 24px;background:#fffaf1;color:#0d2743;text-align:center;border:1px solid #d8b97a;box-shadow:0 20px 55px rgba(0,0,0,.42)}
@@ -1198,10 +1198,34 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
 }
 /* スタッフ会話では文字送りの順序を維持したまま語句単位で折り返す。 */
 .spr-reading-phrase{display:inline;white-space:nowrap}
+/* 探索の地の文では語句の途中（例：見てい／る）で折り返さない。 */
+#anomalyAnimalScene .spr-anomaly-phrase{display:inline;white-space:nowrap}
 @media(max-width:520px){
-  #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 40px) !important}
+  #anomalyAnimalScene .spr-reading-prose{width:calc(100vw - 24px) !important}
   #storyEventModal #storyBody{max-width:none}
   #storyEventModal section{width:min(640px,calc(100vw - 20px)) !important;padding:22px 12px !important}
+}
+
+/* 夜の灯台・ケムリトカゲの導入は、一文を一行に収める専用レイアウト。
+   横幅を極力使い、最長行の実際の描画幅から文字サイズを計算する。 */
+#anomalyAnimalScene .spr-reading-prose.spr-anomaly-fit-lines{
+  box-sizing:border-box;
+  width:min(720px,calc(100vw - 30px)) !important;
+  max-width:calc(100vw - 30px) !important;
+  flex-shrink:0;
+  font-size:var(--spr-anomaly-fit-font,14px) !important;
+  letter-spacing:.015em !important;
+  line-height:1.9;
+  white-space:normal;
+  text-wrap:wrap;
+}
+#anomalyAnimalScene .spr-anomaly-fit-lines .spr-anomaly-line{
+  display:block;
+  width:max-content;
+  max-width:none;
+  white-space:nowrap;
+  overflow-wrap:normal;
+  word-break:keep-all;
 }
 </style>
 
@@ -1637,7 +1661,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="スターライト・ココ" aria-pressed="false"><strong>スターライト・ココ</strong><small>ココナッツミルクとバニラがやさしく広がるデザートドリンク（ノンアルコール）</small></button>
         </div>
       </div>
-      <p class="terrace-gift-note">SPECIAL GIFT　・　お食事をご注文のお客様へ、ミステリーボックス・チケットを1日1枚プレゼント</p>
+      <p class="terrace-gift-note"><span class="gift-line">SPECIAL GIFT ・ お食事をご注文のお客様へ</span><br><span class="gift-line">ミステリーボックス・チケットを1日1枚プレゼント</span></p>
       <button id="sunsetTerraceOrder" class="terrace-order" type="button" disabled>お料理とドリンクを注文する</button>
       <p class="terrace-order-status" id="sunsetTerraceOrderStatus" role="status" aria-live="polite">お食事とドリンクをそれぞれお選びください。</p>
     </div>
@@ -10267,9 +10291,84 @@ window.addEventListener('message',e=>{
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';smokeLizardReturnButton.textContent='NEXT　›';
    fawnChoiceBox.style.display='none';fawnGiveDrinkButton.onclick=null;fawnDeclineDrinkButton.onclick=null;
  }
+ // Safariでword-break:auto-phraseが効かない環境でも、探索の文節を途中で切らない。
+ // 文節ごとのnowrap spanに分け、改行自体は画面幅に合わせてブラウザに任せる。
+ function setAnomalyNarrativeText(value){
+   const content=String(value??'');
+   // この4行は一文ごとに改行している。途中で行を折り返さず、
+   // 最長の一文まで画面幅に収まるフォントサイズに自動調整する。
+   const oneLineScene=content.includes('月明かりが、黒い海を照らしている。')
+     && content.includes('けれど、何かがずっとこちらを見ている気がする。');
+   anomalySceneText.classList.toggle('spr-anomaly-fit-lines',oneLineScene);
+   anomalySceneText.style.removeProperty('--spr-anomaly-fit-font');
+   if(oneLineScene){
+     const frag=document.createDocumentFragment();
+     for(const line of content.split('\n')){
+       const row=document.createElement('div');
+       row.className='spr-anomaly-line';
+       row.textContent=line;
+       frag.appendChild(row);
+     }
+     anomalySceneText.replaceChildren(frag);
+     const fitLines=()=>{
+       // まず18pxで実幅を測り、収まる最大値まで全行を同じ割合で縮小。
+       anomalySceneText.style.setProperty('--spr-anomaly-fit-font','18px');
+       const lines=[...anomalySceneText.querySelectorAll('.spr-anomaly-line')];
+       const maxLineWidth=Math.max(1,...lines.map(row=>row.getBoundingClientRect().width));
+       const availableWidth=Math.max(1,anomalySceneText.clientWidth-3);
+       const fitted=Math.min(18,18*availableWidth/maxLineWidth);
+       anomalySceneText.style.setProperty('--spr-anomaly-fit-font',`${Math.floor(fitted*100)/100}px`);
+     };
+     fitLines();
+     // Webフォントが後から読み込まれても、実際の幅で合わせ直す。
+     if(document.fonts?.ready)document.fonts.ready.then(()=>{
+       if(anomalySceneText.classList.contains('spr-anomaly-fit-lines')&&
+         anomalySceneText.textContent===content.replace(/\n/g,''))fitLines();
+     }).catch(()=>{});
+     return;
+   }
+   const frag=document.createDocumentFragment();
+   const segmenter=typeof Intl!=='undefined'&&typeof Intl.Segmenter==='function'
+     ?new Intl.Segmenter('ja',{granularity:'word'}):null;
+   const particles=new Set(['は','が','を','に','で','と','へ','も','の','から','まで','より','には','では']);
+   const lines=content.split('\n');
+   for(let lineNo=0;lineNo<lines.length;lineNo++){
+     if(lineNo)frag.appendChild(document.createTextNode('\n'));
+     const line=lines[lineNo];
+     const tokens=segmenter?Array.from(segmenter.segment(line),item=>item.segment):Array.from(line);
+     const groups=[];
+     let chunk='';
+     const push=()=>{if(chunk){groups.push(chunk);chunk='';}};
+     for(let i=0;i<tokens.length;i++){
+       const token=tokens[i];
+       if(/^[、。！？!?]$/.test(token)&&!chunk&&groups.length){
+         // 句読点だけを行頭に残さない。
+         groups[groups.length-1]+=token;
+         continue;
+       }
+       chunk+=token;
+       if(/[、。！？!?]$/.test(token))push();
+       else if(particles.has(token)&&Array.from(chunk).length>=4
+         &&!(token==='から'&&tokens[i+1]==='か'))push();
+     }
+     push();
+     // 短い末尾だけ次の行に残るのを避け、前の文節に結合する。
+     if(groups.length>=2&&Array.from(groups.at(-1)).length<=4
+       &&Array.from(groups.at(-1)+groups.at(-2)).length<=15){
+       groups.splice(-2,2,groups.at(-2)+groups.at(-1));
+     }
+     for(const group of groups){
+       const span=document.createElement('span');
+       span.className='spr-anomaly-phrase';
+       span.textContent=group;
+       frag.appendChild(span);
+     }
+   }
+   anomalySceneText.replaceChildren(frag);
+ }
  async function showManualAnimalLine(line,buttonLabel='NEXT　›'){
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
-   anomalySceneText.style.opacity='0';await wait(260);anomalySceneText.textContent=String(line||'');anomalySceneText.style.opacity='1';
+   anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(line);anomalySceneText.style.opacity='1';
    smokeLizardReturnButton.textContent=buttonLabel;smokeLizardReturnButton.style.display='inline-flex';
    await wait(40);smokeLizardReturnButton.style.opacity='1';await waitForTap(smokeLizardReturnButton);
    smokeLizardReturnButton.style.opacity='0';await wait(180);smokeLizardReturnButton.style.display='none';
@@ -10302,7 +10401,7 @@ window.addEventListener('message',e=>{
  async function runAnomalyScene(pages,{background='#02070c',hold=2100,onBeforeExit=null}={}){
    smokeLizardStage.style.display='none';fawnStage.style.display='none';resetAnimalSceneControls();
    anomalyScene.style.background=background;anomalySceneText.textContent='';anomalySceneText.style.opacity='0';anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.style.opacity='1';anomalyScene.setAttribute('aria-hidden','false');await wait(650);
-   for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);anomalySceneText.textContent=String(page.text||'');anomalySceneText.style.opacity='1';if(page.sound)playAnimalSound(page.sound,page.volume??.8);if(typeof page.run==='function')await page.run();await wait(Number(page.hold)||hold)}
+   for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(page.text);anomalySceneText.style.opacity='1';if(page.sound)playAnimalSound(page.sound,page.volume??.8);if(typeof page.run==='function')await page.run();await wait(Number(page.hold)||hold)}
    if(typeof onBeforeExit==='function')await onBeforeExit();anomalySceneText.style.opacity='0';await wait(300);anomalyScene.style.opacity='0';await wait(760);anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
  }
  // ケムリトカゲは NEXT で1.65秒フェードインし、完全に現れてから鳴き声を鳴らす。
@@ -10484,7 +10583,7 @@ window.addEventListener('message',e=>{
    await wait(1050);
    await showManualAnimalLine('不思議な角を生やした小鹿がいる。');
    anomalySceneText.style.opacity='0';await wait(260);
-   anomalySceneText.textContent='小鹿は耳を動かし、こちらをじっと見つめている。';anomalySceneText.style.opacity='1';
+   setAnomalyNarrativeText('小鹿は耳を動かし、こちらをじっと見つめている。');anomalySceneText.style.opacity='1';
    fawnChoiceBox.style.display='grid';
    const choice=await new Promise(resolve=>{
      fawnGiveDrinkButton.onclick=()=>resolve('give');
@@ -10507,7 +10606,7 @@ window.addEventListener('message',e=>{
    if(horseEntryNeighPending||!horseEntryNeighEligible())return false;
    horseEntryNeighPending=true;
   const entryKey=anomalyPrefix+'black-horse-entry-played-v4';
-  anomalySceneText.textContent='馬のいななき声が聞こえる。';anomalySceneText.style.opacity='0';
+  setAnomalyNarrativeText('馬のいななき声が聞こえる。');anomalySceneText.style.opacity='0';
   anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';
   anomalyScene.style.opacity='0';anomalyScene.setAttribute('aria-hidden','false');
   requestAnimationFrame(()=>{anomalyScene.style.opacity='1';anomalySceneText.style.opacity='1'});
