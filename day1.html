@@ -865,8 +865,6 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 .casino-emily-dialogue-choices button.emily-close-action{min-height:38px;min-width:92px;padding:0 4px;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em;text-align:right}
 .casino-emily-dialogue-choices button:disabled{opacity:.45}
 @media(max-width:520px){.casino-emily-dialogue{padding:16px 15px 14px}.casino-emily-dialogue-text{font-size:14px;min-height:56px}.casino-emily-dialogue-choices{gap:8px}.casino-emily-dialogue-choices button{font-size:11px}}
-/* The guest information prize is a single administrator-supplied JPG, not a database table. */
-.mystery-dialog .mystery-result-art img.mystery-guest-image{display:block;width:auto;max-width:100%;max-height:65dvh;object-fit:contain;margin:0 auto}
     
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1959,6 +1957,9 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
     if(!localStorage.getItem(coasterInventoryKey)&&localStorage.getItem('spr-cafe-coasters'))localStorage.setItem(coasterInventoryKey,localStorage.getItem('spr-cafe-coasters'));
     function loadCoasterInventory(){try{const v=JSON.parse(localStorage.getItem(coasterInventoryKey)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
     function coasterCounts(){const c=Array(89).fill(0);loadCoasterInventory().forEach(x=>{const m=String(x?.file||'').match(/coaster(\d{2})\.PNG/i);if(m){const n=Number(m[1]);if(n>=0&&n<=88)c[n]++}});return c}
+    // Old releases may still have this key in device storage or player inventory.
+    // Keep it only for one-way cleanup; it is no longer a playable reward.
+    const retiredInventoryItemKey='mysteryGuestFoodList';
     const belongingsCatalog={
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
@@ -1971,7 +1972,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
-      mysteryGuestFoodList:{label:'宿泊者情報',detail:'島に滞在する宿泊者の情報をまとめた一枚の資料。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
       mysteryLetter:{label:'封蝋の手紙',detail:'ミステリーボックスから届いた、謎めいた手紙。',max:Infinity},
       mysteryPostcard01:{label:'ポストカード・名前を呼ぶ海鳥',detail:'異変動物ポストカード No.01',max:Infinity,image:'postcard_seabird.png'},
@@ -2090,8 +2090,15 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       setInterval(()=>updateHeroBackground(),60*1000);
     }
     function loadBelongings(){
-      try{const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');return saved&&typeof saved==='object'?saved:{}}
-      catch{return {}}
+      try{
+        const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');
+        if(!saved||typeof saved!=='object'||Array.isArray(saved))return {};
+        if(Object.prototype.hasOwnProperty.call(saved,retiredInventoryItemKey)){
+          delete saved[retiredInventoryItemKey];
+          localStorage.setItem(belongingsKey,JSON.stringify(saved));
+        }
+        return saved;
+      }catch{return {}}
     }
     function saveBelongings(items){
       localStorage.setItem(belongingsKey,JSON.stringify(items));
@@ -2349,12 +2356,13 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
           (invRes.data||[]).forEach(r=>{
             const key=String(r.item_key||''),updatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
             const staleForReset=!!(latestWorldResetAt&&updatedAt&&updatedAt<=latestWorldResetAt);
+            if(key===retiredInventoryItemKey){if(Number(r.quantity)>0)inventoryBootstrap[key]=0;return}
             if(key==='lucaBalsaUsedTicket'){inventoryBootstrap.lucaBalsaUsedTicket=0;return}
             if(key==='lifeHearts'&&staleForReset){belongings.lifeHearts=3;inventoryBootstrap.lifeHearts=3;return}
             if(key==='mermaidGuardShell'&&staleForReset){belongings.mermaidGuardShell=0;inventoryBootstrap.mermaidGuardShell=0;return}
             if(key==='mysteryBoxTicket'&&staleForReset){belongings.mysteryBoxTicket=0;inventoryBootstrap.mysteryBoxTicket=0;return}
             if(key==='mysteryKnife'&&staleForReset){belongings.mysteryKnife=0;inventoryBootstrap.mysteryKnife=0;return}
-            if((key==='villaStayTicket'||key==='mysteryGuestFoodList'||key.startsWith('mysteryPostcard'))&&staleForReset){belongings[key]=0;inventoryBootstrap[key]=0;return}
+            if((key==='villaStayTicket'||key.startsWith('mysteryPostcard'))&&staleForReset){belongings[key]=0;inventoryBootstrap[key]=0;return}
             let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);belongings[key]=qty;
           });
         }else if(Object.values(localBelongings).some(v=>Number(v)>0)){
@@ -8260,13 +8268,11 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       }else if(reward.startsWith('mysteryPostcard')){
         const n=Math.max(1,Math.min(7,Number(reward.slice(-2))||1));const card=POSTCARD_GUIDE[n-1];
         title='異変動物ポストカード';description=`No.${String(n).padStart(2,'0')} ${card.name}\n所持品からいつでもご覧になれます。`;art='✉';
-      }else if(reward==='mysteryGuestFoodList'){
-        title='宿泊者情報';description='宿泊者の情報をまとめた秘密の資料を入手しました。\nROOMの所持品からいつでも閲覧できます。';art='▤';
       }else if(reward==='mysteryKnife'){
         title='ナイフ';description='ナイフを1本手に入れました。ROOMでは同室者の♥️を1つ減らせます（奪った♥️は自分には増えません）。エルナンドやエミリーにも使用できます。いずれも使用ごとに1本消費します。';art='†';
       }else{title='景品を受け取りました';description='所持品をご確認ください。'}
       const inventoryReward=(reward==='mysteryJoker'||reward==='mysteryJokerCard')?'jokerCard':reward;
-      if(reward!=='coaster'&&Number.isFinite(Number(data.inventory_quantity)))setLocalInventoryQuantity(inventoryReward,Number(data.inventory_quantity),{sync:false});
+      if(reward!=='coaster'&&reward!==retiredInventoryItemKey&&Number.isFinite(Number(data.inventory_quantity)))setLocalInventoryQuantity(inventoryReward,Number(data.inventory_quantity),{sync:false});
       mysteryDrawInfo={...mysteryDrawInfo,remaining:data.remaining,drawn:data.drawn,villa_remaining:data.villa_remaining,tickets:data.tickets};
       mysteryDrawVerified=true;
       if(Number.isFinite(Number(data.chips))){casinoChips=Number(data.chips);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances()}
@@ -8321,23 +8327,6 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
       const n=Number(String(key).slice(-2));const card=POSTCARD_GUIDE[n-1];if(!card)return;
       // Show the original full card, not a reduced icon or a text-only reward dialog.
       openBelongingPreview(card.file,`No.${String(n).padStart(2,'0')} ${card.name}`,{postcard:true});
-    }
-    // 宿泊者情報は管理者が後から用意する1枚の画像だけで表示する。
-    // SQL の spr_mystery_guest_food_list は呼ばない（プレイヤー別の登録も不要）。
-    function openMysteryGuestFoodList(){
-      const file='mystery_guest_info.jpg';
-      mysteryShow('宿泊者情報','宿泊者の情報が記された資料。',[{label:'閉じる',run:mysteryClose}],'▤');
-      const img=document.createElement('img');
-      img.className='mystery-guest-image';img.alt='宿泊者情報';img.loading='eager';
-      img.addEventListener('load',()=>{
-        mysteryBoxText.textContent='';
-      },{once:true});
-      img.addEventListener('error',()=>{
-        mysteryBoxArt.textContent='▤';
-        mysteryBoxText.textContent='資料はまだ準備中です。\n画像が完成したら mystery_guest_info.jpg の名前でアップロードしてください。';
-      },{once:true});
-      mysteryBoxArt.replaceChildren(img);
-      img.src=file;
     }
     if(buyMysteryDraw)buyMysteryDraw.addEventListener('click',()=>openMysteryBoxPrompt(false));
     if(useMysteryFreeTicket)useMysteryFreeTicket.addEventListener('click',()=>openMysteryBoxPrompt(true));
@@ -8415,10 +8404,10 @@ body.night-theme #teaSalonView .panel,body.night-theme #teaSalonView .tea-exchan
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='mysteryGuestFoodList'||key==='lucaBalsaDepartureTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='lucaBalsaDepartureTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='mysteryGuestFoodList'?'画像を見る':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='mysteryGuestFoodList')openMysteryGuestFoodList();else if(key==='lucaBalsaDepartureTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
