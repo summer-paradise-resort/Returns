@@ -10400,7 +10400,7 @@ window.addEventListener('message',e=>{
  otterFrame.append(otterFloat);storyImage.before(otterFrame);
  const otterMotion=document.createElement('style');otterMotion.textContent=`
  #driftingOtterFrame .otter-float{transform:scale(1.06);animation:otterWholeFloat 6.2s ease-in-out infinite;animation-play-state:paused;will-change:transform}
- #driftingOtterFrame .otter-blink{opacity:0;animation:otterEyeBlink 7.8s linear infinite;animation-play-state:paused;will-change:opacity}
+ #driftingOtterFrame .otter-blink{opacity:0;animation:otterEyeBlink 5.8s linear infinite;animation-play-state:paused;will-change:opacity}
  #driftingOtterFrame .otter-whiskers{animation:otterWhiskerTwitch 8.6s linear infinite;animation-play-state:paused;will-change:transform}
  #driftingOtterFrame .otter-whiskers-left{clip-path:inset(0 56% 0 0);transform-origin:40% 42%}
  #driftingOtterFrame .otter-whiskers-right{clip-path:inset(0 0 0 44%);transform-origin:46% 38%;animation-name:otterWhiskerTwitchRight}
@@ -10410,7 +10410,7 @@ window.addEventListener('message',e=>{
  #driftingOtterFrame.otter-active .otter-float,#driftingOtterFrame.otter-active .otter-blink{animation-play-state:running}
  /* ラッコのベース画像・まぶた・ひげを同じ親ごと上下させ、パーツの位置ずれを防止。 */
  @keyframes otterWholeFloat{0%,100%{transform:translateY(-2.5%) rotate(-.65deg) scale(1.06)}25%{transform:translateY(.3%) rotate(.3deg) scale(1.06)}50%{transform:translateY(2.5%) rotate(.65deg) scale(1.06)}75%{transform:translateY(.3%) rotate(-.3deg) scale(1.06)}}
- @keyframes otterEyeBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
+ @keyframes otterEyeBlink{0%,23%,27%,61%,65%,100%{opacity:0}24%,26%,62%,64%{opacity:1}}
  @media(prefers-reduced-motion:reduce){#driftingOtterFrame .otter-float{animation:none;transform:scale(1.06)}#driftingOtterFrame .otter-blink{animation:none;opacity:0}}
  `;document.head.append(otterMotion);
  function hideOtterAnimation(){otterFrame.style.display='none';otterFrame.classList.remove('otter-active');otterFrame.setAttribute('aria-hidden','true');otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';}
@@ -10481,6 +10481,12 @@ window.addEventListener('message',e=>{
  const otterChoiceBox=document.createElement('div');otterChoiceBox.id='otterChoiceBox';
  otterChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
  anomalyScene.append(otterChoiceBox);
+ // 交換後に表示する乗船チケット。所持品画像と同じファイル名を保持する。
+ const otterTicketReveal=document.createElement('div');otterTicketReveal.id='otterTicketReveal';
+ otterTicketReveal.dataset.fileName='worn_boarding_ticket_luca_balsa.png';
+ otterTicketReveal.style.cssText='display:none;box-sizing:border-box;width:min(94vw,520px);padding:clamp(12px,2.4vw,20px);border:1px solid #c5a86c;background:linear-gradient(135deg,#f4e8c8,#d8c28f 48%,#f7edda);color:#183247;box-shadow:0 8px 30px rgba(0,0,0,.45);font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;position:relative;overflow:hidden';
+ otterTicketReveal.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(24,50,71,.55);padding-bottom:8px;font-size:10px;letter-spacing:.18em"><span>M/V LUCA BALSA</span><span>ONE WAY</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 8px"><div><div style="font-size:clamp(18px,4vw,26px);letter-spacing:.1em;font-weight:700">BOARDING PASS</div><div style="margin-top:5px;font-size:11px;letter-spacing:.12em">DEPARTURE TICKET</div></div><div aria-hidden="true" style="font-size:32px;color:#a67c34">⚓</div></div><div style="display:flex;justify-content:space-between;gap:10px;border-top:1px dashed rgba(24,50,71,.55);padding-top:8px;font-size:11px;letter-spacing:.1em"><span>BOARDING TIME</span><strong>22:00–23:59</strong></div>`;
+ anomalyScene.insertBefore(otterTicketReveal,anomalySceneText);
  function resetOtterChoices(){otterChoiceBox.style.display='none';otterChoiceBox.replaceChildren();}
   // ラッコの画像は、泳ぐを選び衝突の文章を読んだ後まで出さない。
   function waitForOtterSwimChoice(){
@@ -10505,7 +10511,7 @@ window.addEventListener('message',e=>{
        button.onclick=()=>{for(const item of otterChoiceBox.querySelectorAll('button')){item.disabled=true;item.onclick=null;}otterChoiceBox.style.display='none';resolve(value);};
        otterChoiceBox.append(button);
      };
-     if(count('dimensionalBag')>0)add('次元バックを渡す','give');
+     if(count('dimensionalBag')>0)add('次元バックを渡す。','give');
      add('渡せるものがない。','leave');
      otterChoiceBox.style.display='grid';
    });
@@ -10799,21 +10805,29 @@ window.addEventListener('message',e=>{
  // 名前を呼ぶ海鳥：夕方のビーチ・カメラだけ。暗転→沈黙→「？？？」の呼び声→羽ばたき→探索復帰。
  // 探索BGMを抑止している間、1秒ごとの同期で不意に再生されることも防ぐ。
  let seabirdEventRunning=false;
- function waitForSeabirdWings(){
-   return new Promise(resolve=>{
+ async function playSeabirdWingsToCompletion(){
+   await new Promise(resolve=>{
      let done=false,timer=null;
      const finish=()=>{
-       if(done)return;done=true;
-       clearTimeout(timer);
+       if(done)return;done=true;clearTimeout(timer);
        seabirdWingAudio.removeEventListener('ended',finish);
        seabirdWingAudio.removeEventListener('error',finish);
        resolve();
      };
+     const safetyStop=()=>{seabirdWingAudio.pause();finish()};
      seabirdWingAudio.addEventListener('ended',finish);
      seabirdWingAudio.addEventListener('error',finish);
-     timer=setTimeout(finish,3500);
-     if(seabirdWingAudio.ended)finish();
+     timer=setTimeout(safetyStop,15000);
+     try{
+       seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
+       seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
+       const playing=seabirdWingAudio.play();
+       if(playing?.then)playing.catch(error=>{console.warn('seabird wings playback',error);finish()});
+       if(seabirdWingAudio.ended)finish();
+     }catch(error){console.warn('seabird wings playback',error);finish()}
    });
+   // 羽ばたき音が終わるまで探索BGMの抑止状態を解除しない。
+   resumeSeabirdBgm();
  }
  function resumeSeabirdBgm(){
    if(!window.__sprSeabirdBgmSuppressed)return;
@@ -10822,21 +10836,8 @@ window.addEventListener('message',e=>{
    window.__sprResumeExploreBgmAfterGimmick?.();
  }
  function startSeabirdWings(){
-   // この時点まで BGM は必ず抑止状態。羽ばたきの再生開始が成功したら再開。
-   const finished=waitForSeabirdWings();
-   try{
-     seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
-     seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
-     const playing=seabirdWingAudio.play();
-     if(playing?.then){
-       playing.then(()=>resumeSeabirdBgm(),error=>{
-         // 音声が見つからない／iOSが再生を許可しなかった場合は、
-         // 「羽ばたきが聞こえた」ことにせず、イベント終了時にだけBGM復帰。
-         console.warn('seabird wings playback',error);
-       });
-     }else if(!seabirdWingAudio.paused)resumeSeabirdBgm();
-   }catch(error){console.warn('seabird wings playback',error)}
-   return finished;
+   // 羽ばたき音の終了を待ってから探索BGMを復帰する。
+   return playSeabirdWingsToCompletion();
  }
  async function encounterSeabird(){
    if(seabirdEventRunning)return;
@@ -10877,6 +10878,7 @@ window.addEventListener('message',e=>{
      anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
      anomalyScene.setAttribute('aria-hidden','false');
      // 選択前は元の夕方ビーチ。新しいラッコのいない海は「泳ぐ」を選んだ後だけ表示する。
+     otterTicketReveal.style.display='none';
      otterBeachIntroImage.src='summer_paradise_beach_evening.jpg';
      otterBeachIntroImage.style.display='block';
      otterBeachIntroImage.style.opacity='1';
@@ -10892,14 +10894,15 @@ window.addEventListener('message',e=>{
      anomalySceneText.style.opacity='1';
      const direction=await waitForOtterSwimChoice();
      if(direction!=='swim')return; // 岸へ戻る場合は画像を切り替えず、遭遇済みにしない。
-     // 「泳ぐ」を押してから初めて場面を暗転し、ラッコのいない海へ移る。
-     // まず風景だけをフェードインさせる。ラッコは衝突の文章のNEXT後に初登場。
+     // イベント画面を表示したまま、写真だけを暗転して差し替える。
+     // 画面全体はフェードアウトさせず、探索画面が見える瞬間を作らない。
      anomalySceneText.style.opacity='0';
-     anomalyScene.style.opacity='0';
-     await wait(950);
+     otterTicketReveal.style.display='none';
+     anomalyScene.style.background='#000';
      otterBeachIntroImage.style.opacity='0';
+     await wait(1150);
      otterBeachIntroImage.src='anomaly_drifting_otter_sea_evening.jpg';
-     // 通信状況に左右されず、切り替え後の画像をなるべく読み込んでから表示する。
+     // 切り替えた写真を読み込んでから、同じイベント画面内で表示する。
      await Promise.race([
        otterBeachIntroImage.complete ? Promise.resolve() : new Promise(resolve=>{
          otterBeachIntroImage.addEventListener('load',resolve,{once:true});
@@ -10907,8 +10910,6 @@ window.addEventListener('message',e=>{
        }),
        wait(3500)
      ]);
-     anomalyScene.style.opacity='1';
-     await wait(900);
      otterBeachIntroImage.style.opacity='1';
      await wait(1350);
      // 導入の風景はNEXTまで残し、ラッコが登場する瞬間にだけ切り替える。
@@ -10931,22 +10932,64 @@ window.addEventListener('message',e=>{
        playAnimalSound(otterCryAudio,.85);
        await wait(1100);
      });
-     setAnomalyNarrativeText('ラッコは古びた乗船チケットを胸に抱え、こちらの手元を見つめている。');anomalySceneText.style.opacity='1';
+     setAnomalyNarrativeText('ラッコだ。つぶらな瞳でこちらを見上げている。\nどうやら、手元に持っているチケットと自分の何かを交換したいらしい。');anomalySceneText.style.opacity='1';
+     const showOtterLeaves=async()=>{
+       await showManualAnimalLine('ラッコは悲しそうに鳴いて海の中に戻っていった。','探索に戻る',otterCryAudio,async()=>{
+         otterFrame.style.opacity='0';otterFrame.style.transform='scale(.985)';
+         await wait(900);
+       });
+     };
      const choice=await waitForOtterChoice();
-     if(choice!=='give')return;
+     if(choice!=='give'){await showOtterLeaves();return;}
      const used=await window.__sprConsumeStoryItem?.('dimensionalBag');
-     if(!used){await showManualAnimalLine('渡せるものがない。','探索に戻る');return;}
+     if(!used){await showOtterLeaves();return;}
      const granted=await window.__sprGrantStoryItem?.('lucaBalsaDepartureTicket');
      if(!granted){
        await window.__sprGrantStoryItem?.('dimensionalBag');
        await showManualAnimalLine('交換を完了できなかった。次元バックは所持品へ戻された。','探索に戻る');return;
      }
-     await showManualAnimalLine('漂流ラッコは次元バックを受け取り、代わりにボロボロの乗船チケットを差し出した。\n券面には “LUCA BALSA” と “BOARDING TIME 22:00–23:59” が記されている。','探索に戻る');
+     // まず券面を見せ、フェードアウトしてから交換後の文章と鳴き声へ進む。
+     anomalySceneText.style.opacity='0';anomalySceneText.textContent='';
+     otterTicketReveal.style.transition='opacity .65s ease,transform .8s ease';
+     otterTicketReveal.style.opacity='0';otterTicketReveal.style.transform='scale(.96)';
+     otterTicketReveal.style.display='block';void otterTicketReveal.offsetWidth;await wait(50);
+     otterTicketReveal.style.opacity='1';otterTicketReveal.style.transform='scale(1)';
+     await wait(2300);
+     otterTicketReveal.style.opacity='0';otterTicketReveal.style.transform='scale(.98)';
+     await wait(700);otterTicketReveal.style.display='none';otterTicketReveal.style.opacity='1';otterTicketReveal.style.transform='scale(1)';
+     otterTicketReveal.style.transition='';
+     smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
+     anomalySceneText.style.opacity='0';await wait(220);
+     setAnomalyNarrativeText('持っていた次元バックとチケットを交換した。\nラッコは嬉しそうに鳴き声をあげると、海の中に潜っていった。');
+     anomalySceneText.style.opacity='1';
+     // 交換を喜ぶ鳴き声を最後まで流してから、ラッコを海へ潜らせる。
+     await new Promise(resolve=>{
+       let done=false,timer=null;
+       const finish=()=>{
+         if(done)return;done=true;clearTimeout(timer);
+         otterCryAudio.removeEventListener('ended',finish);
+         otterCryAudio.removeEventListener('error',finish);
+         resolve();
+       };
+       otterCryAudio.addEventListener('ended',finish);
+       otterCryAudio.addEventListener('error',finish);
+       timer=setTimeout(()=>{otterCryAudio.pause();finish()},7000);
+       try{
+         otterCryAudio.pause();otterCryAudio.currentTime=0;otterCryAudio.muted=false;otterCryAudio.volume=.85;
+         const playing=otterCryAudio.play();
+         if(playing?.then)playing.catch(()=>finish());
+       }catch{finish()}
+     });
+     otterFrame.style.opacity='0';otterFrame.style.transform='scale(.94)';
+     await wait(900);
+     smokeLizardReturnButton.textContent='探索に戻る';smokeLizardReturnButton.style.display='inline-flex';
+     await wait(40);smokeLizardReturnButton.style.opacity='1';await waitForTap(smokeLizardReturnButton);
+     smokeLizardReturnButton.style.opacity='0';await wait(180);smokeLizardReturnButton.style.display='none';
    }finally{
      otterCryAudio.pause();
      otterBeachIntroImage.style.display='none';
      try{await closeAnimatedAnimalScene(otterFrame);}finally{
-       hideOtterAnimation();resetOtterChoices();otterEventRunning=false;
+       hideOtterAnimation();resetOtterChoices();otterTicketReveal.style.display='none';otterEventRunning=false;
        anomalySceneText.style.width='min(33em,calc(100vw - 64px))';
        anomalySceneText.style.flex='0 0 auto';anomalySceneText.style.marginTop='clamp(8px,2vh,20px)';
        otterChoiceBox.style.width='min(620px,94vw)';
