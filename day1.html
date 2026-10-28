@@ -4809,7 +4809,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
       // 小鹿の草むら効果音中と、海鳥が名前を呼ぶ間は、1秒ごとのBGM同期でも再開しない。
-      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed){pauseExploreMusic();return;}
+      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed||window.__sprGiantShadowBgmSuppressed){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
       const open=Boolean(view?.classList.contains('open'));
       const period=currentTokyoPeriod();
@@ -11406,20 +11406,27 @@ window.addEventListener('message',e=>{
      smokeLizardReturnButton.style.opacity='0';anomalySceneText.style.opacity='0';await wait(260);smokeLizardReturnButton.style.display='none';
      setAnomalyNarrativeText('？！すごい勢いで引っ張られている！！！');anomalySceneText.style.opacity='1';
      await reelFinished;
-     anomalySceneText.style.opacity='0';await wait(260);
+     smokeLizardReturnButton.textContent='NEXT　›';smokeLizardReturnButton.style.display='inline-flex';await wait(40);smokeLizardReturnButton.style.opacity='1';
+     await waitForTap(smokeLizardReturnButton);
+     smokeLizardReturnButton.style.opacity='0';anomalySceneText.style.opacity='0';await wait(260);smokeLizardReturnButton.style.display='none';
      setAnomalyNarrativeText('ほどなくして糸が切れた。サメでもかかったのだろう、か───');anomalySceneText.style.opacity='1';
-     await wait(2200);
-     frame.style.opacity='0';anomalySceneText.style.opacity='0';await wait(700);frame.style.display='none';
-     anomalyScene.style.justifyContent='center';anomalyScene.style.gap='0';anomalyScene.style.padding='28px';anomalyScene.style.background='#000';
+     smokeLizardReturnButton.textContent='NEXT　›';smokeLizardReturnButton.style.display='inline-flex';await wait(40);smokeLizardReturnButton.style.opacity='1';
+     await waitForTap(smokeLizardReturnButton);
+     smokeLizardReturnButton.style.opacity='0';anomalySceneText.style.opacity='0';frame.style.opacity='0';await wait(700);smokeLizardReturnButton.style.display='none';frame.style.display='none';
+     // 暗転した不穏な文章の間だけ、夜の探索BGM（波音）を止める。
+     window.__sprGiantShadowBgmSuppressed=true;pauseExploreMusic();
+     anomalyScene.style.justifyContent='center';anomalyScene.style.gap='clamp(18px,3vh,28px)';anomalyScene.style.padding='28px';anomalyScene.style.background='#000';
      anomalySceneText.style.width='min(33em,calc(100vw - 64px))';anomalySceneText.style.textAlign='center';anomalySceneText.style.whiteSpace='pre-line';anomalySceneText.style.margin='0';
      anomalySceneText.textContent='───ちがう。\n\nちがう、サメじゃない。違う。';
-     void anomalySceneText.offsetWidth;anomalySceneText.style.opacity='1';await wait(3200);
+     void anomalySceneText.offsetWidth;anomalySceneText.style.opacity='1';
+     await waitForTap(anomalyScene);
+     anomalySceneText.style.opacity='0';await wait(500);
    }catch(error){console.error('giant shadow fishing event:',error)}
    finally{
      reelAudio.pause();try{reelAudio.currentTime=0}catch{}
      resetAnimalSceneControls();frame.remove();anomalySceneText.textContent='';anomalySceneText.style.cssText='width:min(33em,calc(100vw - 64px));max-width:100%;flex:0 0 auto;white-space:pre-line;text-align:left;font:clamp(15px,3.8vw,23px)/1.85 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .55s ease;margin-top:clamp(8px,2vh,20px)';
      anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
-     anomalyScene.setAttribute('aria-hidden','true');giantShadowEventRunning=false;
+     anomalyScene.setAttribute('aria-hidden','true');window.__sprGiantShadowBgmSuppressed=false;resumeExploreMusicAfterGimmick();giantShadowEventRunning=false;
    }
  } async function encounterSmokeLizard(){
    loadAnimalStageImages(smokeLizardStage);
