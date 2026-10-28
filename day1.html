@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- build: 2026-10-28 horse-wave-fade hedgehog-stable-image v2 -->
+<!-- build: 2026-10-28 horse-wave-fade hedgehog-stable-image v3 -->
 <html lang="ja" data-resort-day="1">
 <head>
 <script>
@@ -11137,7 +11137,7 @@ window.addEventListener('message',e=>{
    caption.style.cssText='position:relative;flex:0 0 auto;width:min(36em,calc(100vw - 38px));max-width:100%;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-align:left;line-break:strict;overflow-wrap:break-word;white-space:normal;text-wrap:pretty;text-shadow:0 2px 12px #000;opacity:1;transition:none';
    const next=document.createElement('button');
    next.type='button';next.textContent='NEXT　›';
-   next.style.cssText='display:none;flex:0 0 auto;align-items:center;justify-content:center;width:auto;min-width:0;min-height:50px;margin:clamp(6px,2vh,14px) auto 0;padding:12px 28px;border:1px solid #c9aa68;background:rgba(5,14,27,.9);color:#e8d5a3;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;cursor:pointer;opacity:0;transition:opacity .35s ease';
+   next.style.cssText='display:none;flex:0 0 auto;align-items:center;justify-content:center;width:auto;min-width:0;min-height:50px;margin:clamp(6px,2vh,14px) auto 0;padding:12px 28px;border:1px solid #c9aa68;background:rgba(5,14,27,.9);color:#e8d5a3;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;cursor:pointer;opacity:1;transition:none';
    scene.append(picture,caption,next);
    document.body.append(scene);
    const loadSceneImage=src=>new Promise(resolve=>{
@@ -11153,27 +11153,34 @@ window.addEventListener('message',e=>{
    let currentSceneImage='';
    const showPage=async(src,alt,text)=>{
      const sameImage=currentSceneImage===src&&image.naturalWidth>0;
-     next.disabled=true;next.style.opacity='0';next.style.display='none';
-     // 画像が変わるページだけ画像をフェードアウト・イン。同じ針の画像では表示を維持する。
+     next.disabled=true;
+     // 画像が同じページでは画像・NEXTを維持し、文章だけ即時に差し替える。
      if(!sameImage){
+       next.style.display='none';
+       picture.style.transition='opacity .65s ease';
        picture.style.opacity='0';
        await wait(700);
        image.alt=alt;
        await loadSceneImage(src);
        currentSceneImage=src;
        image.style.visibility=image.naturalWidth>0?'visible':'hidden';
+       caption.textContent=text;
        picture.style.opacity='1';
+       // 画像のフェードが終わるまでNEXTを出さず、同一画像ページへ入る時に残像化させない。
+       await wait(700);
      }else{
+       picture.style.transition='none';
+       picture.style.opacity='1';
+       image.style.visibility='visible';
        image.alt=alt;
+       caption.textContent=text;
+       next.style.display='inline-flex';
      }
-     // 文章はフェードさせず、画像を保ったまま即座に差し替える。
-     caption.textContent=text;
+     // 文章は常にフェードさせない。
      caption.style.opacity='1';
-     next.style.display='inline-flex';
-     void next.offsetWidth;await wait(40);next.style.opacity='1';next.disabled=false;
+     next.style.display='inline-flex';next.disabled=false;
      await waitForTap(next);
-     next.disabled=true;next.style.opacity='0';
-     await wait(350);next.style.display='none';
+     next.disabled=true;
    };
    try{
      await wait(40);scene.style.opacity='1';await wait(820);
