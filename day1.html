@@ -2920,9 +2920,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let activeSpectatorChallenger='';
     function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
+    // 同じ SECURITY CHECK の名前について、2回目以降はplayers照会を繰り返さない。
+    // 名前が変わったら自動的に別IDを取得し直す。
+    let specialIdentityCache=null;
     async function currentSpecialIdentity(){
+      const name=String(storedGuestName||'').trim();
+      if(specialIdentityCache?.name===name&&specialIdentityCache.id)return specialIdentityCache;
       const id=await resolveSpecialPlayerId();
-      return {id:String(id||'').trim(),name:String(storedGuestName||'').trim()};
+      const identity={id:String(id||'').trim(),name};
+      if(identity.id)specialIdentityCache=identity;
+      return identity;
     }
     function isOwnSpecialSession(row,identity){
       const pid=String(row?.challenger_player_id||row?.public_state?.challenger_player_id||'').trim();
@@ -2971,8 +2978,30 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         specialTableRule.textContent=`${casinoMoney(specialStake)} CHIP ALL-IN　｜　HIGH & LOWをお選びください。`;
       }
     }
+    // 通常時はRealtime通知で特別卓の開始を検知し、定期的なDB照会は一切しない。
+    // DBで「開催中の卓」を確認できた場合だけ、通知漏れ対策の30秒タイマーを開始する。
+    // 終了して開催卓がなくなった時点でタイマーを完全に破棄する。
+    let specialMenuRefreshBusy=false;
+    let specialMenuRefreshQueued=false;
+    let specialMenuHasLiveTable=false;
+    function setSpecialMenuPeriodicCheck(hasLiveTable){
+      const shouldPoll=!!hasLiveTable;
+      if(specialMenuHasLiveTable===shouldPoll && !!window.__sprSpectatorMenuPoll===shouldPoll)return;
+      specialMenuHasLiveTable=shouldPoll;
+      if(window.__sprSpectatorMenuPoll){
+        clearInterval(window.__sprSpectatorMenuPoll);
+        window.__sprSpectatorMenuPoll=null;
+      }
+      if(shouldPoll){
+        window.__sprSpectatorMenuPoll=setInterval(()=>{
+          if(!document.hidden)refreshCasinoSpectatorMenu();
+        },30000);
+      }
+    }
     async function refreshCasinoSpectatorMenu(){
       if(!casinoSpectatorMenu||!window.supabaseClientSpecial)return;
+      if(specialMenuRefreshBusy){specialMenuRefreshQueued=true;return}
+      specialMenuRefreshBusy=true;
       try{
         const identity=await currentSpecialIdentity();
         const {data,error}=await window.supabaseClientSpecial
@@ -2981,7 +3010,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           .in('status',['countdown','open','playing'])
           .order('created_at',{ascending:false})
           .limit(10);
-        if(!error&&Array.isArray(data)&&data.length){
+        // ネットワークエラーで開催中の卓を「終了」と誤認しない。
+        if(error){console.warn('special table availability check',error);return}
+        if(Array.isArray(data)&&data.length){
           const now=Date.now();
           let row=null;
           for(const candidate of data){
@@ -3014,6 +3045,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             break;
           }
           if(row){
+            setSpecialMenuPeriodicCheck(true);
             if(isOwnSpecialSession(row,identity)){
               const sameActiveSession=String(activeSpecialSessionId||'')===String(row.id||'');
               const localFlowAlreadyOpen=sameActiveSession&&(specialOverlay.classList.contains('open')||!specialTableScreen.classList.contains('hidden')||document.body.classList.contains('special-table-playing'));
@@ -3027,10 +3059,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             return;
           }
         }
+        // 開催中の卓がゼロ。30秒タイマーは作らない／残っていれば停止する。
+        setSpecialMenuPeriodicCheck(false);
         casinoSpectatorMenu.classList.add('hidden');
         casinoSpectatorMenu.dataset.sessionId='';
         casinoSpectatorMenu.dataset.challenger='';
       }catch(e){console.warn('spectator menu refresh',e)}
+      finally{
+        specialMenuRefreshBusy=false;
+        // 開始通知がDB確認中に届いても、更新を取り逃さない。
+        if(specialMenuRefreshQueued){
+          specialMenuRefreshQueued=false;
+          refreshCasinoSpectatorMenu();
+        }
+      }
     }
     if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
@@ -3198,10 +3240,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         setResortAnnouncement(String(r.message||'').replace(/\n/g,'　｜　'),{alert:true,global:false});
         localStorage.setItem('spr-resort-announcement',JSON.stringify({type:'special-table',message:String(r.message||'').replace(/\n/g,'　｜　'),createdAt:Date.now(),sessionId:incomingSession}));
         showSpecialBroadcast(r);setTimeout(refreshCasinoSpectatorMenu,150);
-      }).subscribe();
+      }).subscribe(status=>{
+        // 回線復帰時も特別卓を再照会。通知を取り逃しても自動復旧する。
+        if(status==='SUBSCRIBED'&&!document.hidden)refreshCasinoSpectatorMenu();
+      });
+      // 起動時に一度だけ状態を復元。定期確認は開催中の卓がある場合だけ自動開始。
+      // 未開催時もRealtime受信・ページ復帰・回線再接続時は1回だけ照会する。
       refreshCasinoSpectatorMenu();
-      // 別端末がRealtime通知の瞬間に開いていなくても、開催中は自動検出する。
-      window.__sprSpectatorMenuPoll=setInterval(refreshCasinoSpectatorMenu,2000);
       document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCasinoSpectatorMenu()});
       window.addEventListener('focus',refreshCasinoSpectatorMenu);
     }
