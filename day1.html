@@ -2289,6 +2289,27 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const {data,error}=await window.supabaseClientSpecial.rpc('spr_inventory_adjust',{p_player_id:playerId,p_item_key:itemKey,p_delta:delta});
       if(error)throw error;return Math.max(0,Number(data)||0);
     }
+    // ライフ残数は毎15秒のポーリングではなく、所持品を開く時・被攻撃時・再接続時に確認。
+    // 通信が重なっても同時に問い合わせず、後着イベントはもう一度照合して取り逃しを防ぐ。
+    let lifeHeartsRefreshPromise=null,lifeHeartsRefreshQueued=false;
+    function refreshLifeHeartsOnDemand(reason='manual'){
+      if(!window.supabaseClientSpecial||document.hidden)return Promise.resolve();
+      if(lifeHeartsRefreshPromise){
+        lifeHeartsRefreshQueued=true;
+        return lifeHeartsRefreshPromise;
+      }
+      lifeHeartsRefreshPromise=(async()=>{
+        do{
+          lifeHeartsRefreshQueued=false;
+          const value=await remoteInventoryAdjust('lifeHearts',0);
+          if(value!==null&&value!==remainingLives()){
+            setLocalInventoryQuantity('lifeHearts',value,{sync:false});
+          }
+        }while(lifeHeartsRefreshQueued);
+      })().catch(error=>console.warn('life hearts on-demand refresh',reason,error))
+        .finally(()=>{lifeHeartsRefreshPromise=null});
+      return lifeHeartsRefreshPromise;
+    }
     async function authoritativeInventoryCount(itemKey){
       try{const value=await remoteInventoryAdjust(itemKey,0);if(value!==null)return Math.max(0,Math.floor(Number(value)||0))}catch(e){console.warn('inventory count sync',itemKey,e)}
       return belongingCount(itemKey);
@@ -2430,13 +2451,60 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const {error}=await window.supabaseClientSpecial.from('spr_bar_orders').delete().eq('player_id',playerId).eq('service_date',serviceDate).eq('period',period);if(error)throw error;
     }
-    async function syncCafeCoastersSnapshot(){
+    // CAFE 通信量最適化：通常注文は新規1枚、ドリンクチケットは新規10枚だけ送信。
+    // エラー時には未送信IDを端末に残し、起動・オンライン復帰時に再送する。
+    const cafePendingCoastersKey=`spr-cafe-coasters-pending:${playerStorageId}`;
+    let cafeCoasterSyncRunning=false;
+    function loadPendingCafeCoasterIds(){
+      try{const ids=JSON.parse(localStorage.getItem(cafePendingCoastersKey)||'[]');return Array.isArray(ids)?ids.filter(id=>typeof id==='string'&&id):[]}catch{return []}
+    }
+    function updatePendingCafeCoasterIds(ids){
+      const clean=[...new Set((ids||[]).map(id=>String(id||'')).filter(Boolean))];
+      if(clean.length)localStorage.setItem(cafePendingCoastersKey,JSON.stringify(clean));
+      else localStorage.removeItem(cafePendingCoastersKey);
+    }
+    function cafeCoasterRemoteRows(cards,playerId){
+      return cards.map(x=>({client_id:x.client_id,player_id:playerId,venue:String(x.venue||''),file:String(x.file||''),meal:String(x.meal||''),drink:String(x.drink||''),acquired_at:x.at||new Date().toISOString()}));
+    }
+    function queueCafeCoastersForSync(ids){
+      const additions=Array.isArray(ids)?ids.map(id=>String(id||'')).filter(Boolean):[];
+      if(!additions.length)return;
+      updatePendingCafeCoasterIds([...loadPendingCafeCoasterIds(),...additions]);
+      void syncPendingCafeCoasters();
+    }
+    async function syncPendingCafeCoasters(){
+      if(cafeCoasterSyncRunning||!window.supabaseClientSpecial)return;
+      cafeCoasterSyncRunning=true;
+      try{
+        const playerId=await sprPlayerId();if(!playerId)return;
+        while(true){
+          const pending=loadPendingCafeCoasterIds();if(!pending.length)break;
+          const pendingSet=new Set(pending);
+          const cards=loadCoasterInventory().filter(x=>x&&pendingSet.has(String(x.client_id||'')));
+          const batchIds=new Set(cards.map(x=>String(x.client_id)));
+          if(cards.length){
+            const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(cafeCoasterRemoteRows(cards,playerId),{onConflict:'client_id'});
+            if(error)throw error;
+          }
+          // 送信済みIDのみ削除する。通信中に追加された別のカードは次の周回で送る。
+          updatePendingCafeCoasterIds(loadPendingCafeCoasterIds().filter(id=>!pendingSet.has(id)));
+        }
+      }catch(error){console.warn('cafe coaster incremental sync; retry on reconnect',error)}
+      finally{cafeCoasterSyncRunning=false}
+    }
+    // 初回のみ、旧バージョンの端末に所持履歴がありDBが空だった場合の移行。
+    async function bootstrapCafeCoastersSnapshot(){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const inv=loadCoasterInventory();let changed=false;
       inv.forEach(x=>{if(!x.client_id){x.client_id=sprSafeUuid();changed=true}});if(changed)localStorage.setItem(coasterInventoryKey,JSON.stringify(inv));
-      const rows=inv.map(x=>({client_id:x.client_id,player_id:playerId,venue:String(x.venue||''),file:String(x.file||''),meal:String(x.meal||''),drink:String(x.drink||''),acquired_at:x.at||new Date().toISOString()}));
-      if(rows.length){const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(rows,{onConflict:'client_id'});if(error)throw error}
+      if(inv.length){
+        const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(cafeCoasterRemoteRows(inv,playerId),{onConflict:'client_id'});
+        if(error)throw error;
+        const syncedIds=new Set(inv.map(x=>String(x.client_id)));
+        updatePendingCafeCoasterIds(loadPendingCafeCoasterIds().filter(id=>!syncedIds.has(id)));
+      }
     }
+    window.addEventListener('online',()=>{void syncPendingCafeCoasters()});
     async function hydratePersistentState(){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
       try{
@@ -2446,6 +2514,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         delete localBelongings.lucaBalsaUsedTicket;
         const localBarState=(()=>{try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}})();
         const localCoasters=loadCoasterInventory();
+        const coastersBeforeHydrationIds=new Set(localCoasters.map(x=>String(x?.client_id||'')).filter(Boolean));
         const localFlags=collectLocalFlags();
         const [invRes,flagRes,barRes,coRes,resetRes]=await Promise.all([
           window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity,updated_at').eq('player_id',playerId),
@@ -2495,9 +2564,24 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         localStorage.setItem(barDrinkStorageKey,JSON.stringify(barState));
 
         let coasters=[];
-        if((coRes.data||[]).length){coasters=(coRes.data||[]).map(r=>({client_id:r.client_id,venue:r.venue,file:r.file,meal:r.meal,drink:r.drink,at:r.acquired_at}))}
-        else if(localCoasters.length){coasters=localCoasters.map(x=>({...x,client_id:x.client_id||sprSafeUuid()}));localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));await syncCafeCoastersSnapshot()}
+        if((coRes.data||[]).length){
+          coasters=(coRes.data||[]).map(r=>({client_id:r.client_id,venue:r.venue,file:r.file,meal:r.meal,drink:r.drink,at:r.acquired_at}));
+          // データベース読み込み中に取得したカードも消さず、未送信分だけ合流。
+          const serverIds=new Set(coasters.map(x=>String(x.client_id)));
+          const pendingSet=new Set(loadPendingCafeCoasterIds());
+          loadCoasterInventory().forEach(x=>{
+            // DB読み込み中に新規獲得した分は、すでに送信成功していても消さない。
+            const id=String(x?.client_id||'');
+            if(id&&(pendingSet.has(id)||!coastersBeforeHydrationIds.has(id))&&!serverIds.has(id)){coasters.push(x);serverIds.add(id)}
+          });
+        }
+        else if(localCoasters.length||loadCoasterInventory().length){
+          coasters=loadCoasterInventory().map(x=>({...x,client_id:x.client_id||sprSafeUuid()}));
+          localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
+          await bootstrapCafeCoastersSnapshot();
+        }
         localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
+        void syncPendingCafeCoasters();
 
         if(typeof renderPrizeCounter==='function')renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(typeof renderBarOrderState==='function')renderBarOrderState();if(typeof updateCollectionButton==='function')updateCollectionButton();if(typeof renderRoomCollection==='function'&&activeRoom)renderRoomCollection();if(typeof renderTeaExchange==='function')renderTeaExchange();if(typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();if(typeof startRoomServiceHorrorStay==='function'&&activeRoom)startRoomServiceHorrorStay();
         return true;
@@ -5094,7 +5178,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         return;
       }
       if(d.type==='spr-cafe-coasters-updated'){
-        updateCollectionButton();renderTeaExchange();syncCafeCoastersSnapshot().catch(err=>console.warn('cafe coaster sync',err));return;
+        if(!frame)return; // 受信元が実際のCAFEフレームのときだけ保存する。
+        updateCollectionButton();renderTeaExchange();
+        queueCafeCoastersForSync(d.client_ids);
+        return;
       }
       if(d.type==='spr-cafe-state-updated'){
         if(d.kind==='order'&&d.date){
@@ -6453,13 +6540,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{const {error}=await c.rpc('spr_mystery_room_checkin',{p_player_id:playerId,p_room:String(room||'')});if(error)throw error}
       catch(e){console.warn('mystery room presence sync',e)}
     }
+    // ナイフ対象の在室確認に必要な15秒のチェックインだけ維持。
+    // ライフの定期問い合わせは廃止し、必要な操作時だけ照合する。
     setInterval(()=>{
       if(activeRoom&&roomView.classList.contains('room-active')){
         void syncMysteryRoomPresence(activeRoom);
-        // Reconcile hearts after a knife strike from another device.
-        if(window.supabaseClientSpecial&&roomBelongingsSheet?.classList.contains('open')){
-          remoteInventoryAdjust('lifeHearts',0).then(n=>{if(n!==null&&n!==remainingLives())setLocalInventoryQuantity('lifeHearts',n,{sync:false})}).catch(e=>console.warn('hearts refresh',e));
-        }
       }
     },15000);
     function stopRoomPhonePresence(){
@@ -6507,7 +6592,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'room-member-left'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomMemberLeft(payload)})
         .on('broadcast',{event:'mystery-knife-strike'},({payload})=>{
           if(String(payload?.target_id||'')!==String(storedPlayerId||'')||String(payload?.room_no||'')!==String(activeRoom||''))return;
-          remoteInventoryAdjust('lifeHearts',0).then(n=>{if(n!==null)setLocalInventoryQuantity('lifeHearts',n,{sync:false})}).catch(e=>console.warn('knife heart refresh',e));
+          void refreshLifeHeartsOnDemand('knife-strike');
         })
         .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
         .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)})
@@ -8619,6 +8704,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function closeRoomCollection(){const s=document.getElementById('roomCollectionSheet');if(s){s.classList.remove('open');s.setAttribute('aria-hidden','true')}}
     function openRoomBelongings(){
       if(!activeRoom)return;closeChatSheet();closeRoomService();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');renderRoomBelongings();roomBelongingsSheet.classList.add('open');roomBelongingsSheet.setAttribute('aria-hidden','false');
+      // まず手元の残数を即表示し、サーバーの最新値が届いた時だけ表示を更新。
+      void refreshLifeHeartsOnDemand('belongings-open');
     }
     function closeRoomBelongings(){roomBelongingsSheet.classList.remove('open');roomBelongingsSheet.setAttribute('aria-hidden','true')}
     function showChatToast(message){if(!message)return;clearTimeout(toastTimer);roomChatToast.textContent=`${message.name}「${message.text.slice(0,52)}${message.text.length>52?'…':''}」`;roomChatToast.classList.add('show');toastTimer=setTimeout(()=>roomChatToast.classList.remove('show'),4200)}
@@ -8766,8 +8853,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')){mysteryClose();return}if(sunsetTerraceFoodPreview&&!sunsetTerraceFoodPreview.classList.contains('hidden')){closeSunsetTerraceFoodPreview();return}if(roomServiceFoodGallery&&!roomServiceFoodGallery.classList.contains('hidden')){advanceRoomServiceFoodGallery();return}if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
     setTimeout(()=>hydratePersistentState(),0);
+    // 復帰時は既存のhydratePersistentStateでlifeHeartsを含む所持品を最新化。
+    // ここで別のライフRPCを重ねると通信増になるため追加しない。
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)hydratePersistentState()});
     window.addEventListener('focus',()=>hydratePersistentState());
+    // ページを開いたまま回線が切れて通知を逃した場合だけ、再接続時に確認。
+    window.addEventListener('online',()=>{
+      if(activeRoom&&roomView.classList.contains('room-active'))void refreshLifeHeartsOnDemand('connection-restored');
+    });
   </script>
 <script>
 (function(){
@@ -9132,14 +9225,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];
     let inv=[];try{inv=JSON.parse(localStorage.getItem(coKey)||&#x27;[]&#x27;)}catch{}
-    inv.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()});
+    const newCoaster={client_id:(crypto.randomUUID?crypto.randomUUID():&#x27;xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx&#x27;.replace(/[xy]/g,c=&gt;{const r=Math.random()*16|0,v=c===&#x27;x&#x27;?r:(r&amp;3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()};
+    inv.push(newCoaster);
     localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
     parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
-    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;,client_ids:[newCoaster.client_id]},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
     document.getElementById(&#x27;coasterFile&#x27;).textContent=parent.sprCoasterLabel(file);
@@ -9175,14 +9269,16 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
     localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
     const nums=Array.from({length:10},()=&gt;Math.floor(Math.random()*(52-0+1))+0);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
+    const awardedIds=[];
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
-      cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;10 DRINKS&#x27;,at:new Date().toISOString()});
+      const newCoaster={client_id:(crypto.randomUUID?crypto.randomUUID():&#x27;xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx&#x27;.replace(/[xy]/g,c=&gt;{const r=Math.random()*16|0,v=c===&#x27;x&#x27;?r:(r&amp;3|8);return v.toString(16)})),venue:&#x27;The Pearl Terrace&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;10 DRINKS&#x27;,at:new Date().toISOString()};
+      cs.push(newCoaster);awardedIds.push(newCoaster.client_id);
       const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;im.alt=parent.sprCoasterLabel(file);bt.title=im.alt;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
     document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
-    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;,client_ids:awardedIds},&#x27;*&#x27;);
   }
 });
 document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
@@ -9318,14 +9414,15 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     }
     const file=COASTERS[Math.floor(Math.random()*COASTERS.length)];
     let inv=[];try{inv=JSON.parse(localStorage.getItem(coKey)||&#x27;[]&#x27;)}catch{}
-    inv.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()});
+    const newCoaster={client_id:(crypto.randomUUID?crypto.randomUUID():&#x27;xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx&#x27;.replace(/[xy]/g,c=&gt;{const r=Math.random()*16|0,v=c===&#x27;x&#x27;?r:(r&amp;3|8);return v.toString(16)})),venue:VENUE,file,meal,drink,at:new Date().toISOString()};
+    inv.push(newCoaster);
     localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
     const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
     parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
-    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;,client_ids:[newCoaster.client_id]},&#x27;*&#x27;);
     status.textContent=`${meal} と ${drink} を注文しました。`;
     document.getElementById(&#x27;coasterImage&#x27;).src=file;
     document.getElementById(&#x27;coasterFile&#x27;).textContent=parent.sprCoasterLabel(file);
@@ -9361,14 +9458,16 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
     localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
     const nums=Array.from({length:10},()=&gt;Math.floor(Math.random()*(88-53+1))+53);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
+    const awardedIds=[];
     nums.forEach(n=&gt;{
       const k=String(n).padStart(2,&#x27;0&#x27;),file=`coaster${k}.PNG`;
-      cs.push({client_id:(crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16)})),venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;10 DRINKS&#x27;,at:new Date().toISOString()});
+      const newCoaster={client_id:(crypto.randomUUID?crypto.randomUUID():&#x27;xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx&#x27;.replace(/[xy]/g,c=&gt;{const r=Math.random()*16|0,v=c===&#x27;x&#x27;?r:(r&amp;3|8);return v.toString(16)})),venue:&#x27;Marine Bloom Cafe&#x27;,file,meal:&#x27;CAFE DRINK TICKET&#x27;,drink:&#x27;10 DRINKS&#x27;,at:new Date().toISOString()};
+      cs.push(newCoaster);awardedIds.push(newCoaster.client_id);
       const bt=document.createElement(&#x27;button&#x27;),im=document.createElement(&#x27;img&#x27;);im.src=file;bt.type=&#x27;button&#x27;;bt.dataset.coasterFile=file;im.alt=parent.sprCoasterLabel(file);bt.title=im.alt;bt.append(im);g.append(bt);
     });
     localStorage.setItem(coKey,JSON.stringify(cs));
     document.getElementById(&#x27;coaster14Modal&#x27;).classList.add(&#x27;show&#x27;);refresh();
-    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;},&#x27;*&#x27;);
+    parent.postMessage({type:&#x27;spr-cafe-coasters-updated&#x27;,client_ids:awardedIds},&#x27;*&#x27;);
   }
 });
 document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
