@@ -10481,16 +10481,26 @@ window.addEventListener('message',e=>{
  const otterChoiceBox=document.createElement('div');otterChoiceBox.id='otterChoiceBox';
  otterChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
  anomalyScene.append(otterChoiceBox);
- // 交換後は所持品にも登録される実物の乗船チケット画像を、そのまま表示する。
+ // 交換後の実物チケットをラッコ画像の上に重ね、✕で閉じるまで表示する。
  const otterTicketReveal=document.createElement('div');otterTicketReveal.id='otterTicketReveal';
- otterTicketReveal.style.cssText='display:none;box-sizing:border-box;width:min(94vw,520px);max-height:58dvh;position:relative;overflow:hidden;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45))';
+ otterTicketReveal.setAttribute('role','dialog');otterTicketReveal.setAttribute('aria-modal','true');
+ otterTicketReveal.style.cssText='display:none;position:fixed;z-index:630;box-sizing:border-box;align-items:center;justify-content:center;padding:12px;background:rgba(0,0,0,.42);overflow:hidden';
+ function positionOtterTicketReveal(){
+   const rect=otterFrame.getBoundingClientRect();
+   otterTicketReveal.style.left=`${rect.left}px`;otterTicketReveal.style.top=`${rect.top}px`;
+   otterTicketReveal.style.width=`${rect.width}px`;otterTicketReveal.style.height=`${rect.height}px`;
+ }
  const otterTicketImage=document.createElement('img');
  otterTicketImage.src='worn_boarding_ticket_luca_balsa.png';
  otterTicketImage.alt='ラッコと交換した、ボロボロの乗船チケット';
  otterTicketImage.decoding='async';
- otterTicketImage.style.cssText='display:block;width:100%;height:auto;max-height:58dvh;object-fit:contain;margin:0 auto';
- otterTicketReveal.append(otterTicketImage);
- anomalyScene.insertBefore(otterTicketReveal,anomalySceneText);
+ otterTicketImage.style.cssText='display:block;width:min(82%,430px);height:auto;max-height:88%;object-fit:contain;margin:0 auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,.5))';
+ const otterTicketCloseButton=document.createElement('button');
+ otterTicketCloseButton.type='button';otterTicketCloseButton.textContent='×';
+ otterTicketCloseButton.setAttribute('aria-label','チケットを閉じる');
+ otterTicketCloseButton.style.cssText='position:absolute;top:6px;right:6px;z-index:1;width:44px;height:44px;border:1px solid rgba(255,255,255,.78);border-radius:50%;background:rgba(4,15,27,.84);color:#fff;font:30px/1 Georgia,serif;cursor:pointer';
+ otterTicketReveal.append(otterTicketImage,otterTicketCloseButton);
+ document.body.append(otterTicketReveal);
  function resetOtterChoices(){otterChoiceBox.style.display='none';otterChoiceBox.replaceChildren();}
   // ラッコの画像は、泳ぐを選び衝突の文章を読んだ後まで出さない。
   function waitForOtterSwimChoice(){
@@ -10922,7 +10932,7 @@ window.addEventListener('message',e=>{
      anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
      anomalyScene.setAttribute('aria-hidden','false');
      // 選択前は元の夕方ビーチ。新しいラッコのいない海は「泳ぐ」を選んだ後だけ表示する。
-     otterTicketReveal.style.display='none';
+     otterTicketReveal.style.display='none';otterTicketReveal.setAttribute('aria-hidden','true');
      otterBeachIntroImage.src='summer_paradise_beach_evening.jpg';
      otterBeachIntroImage.style.display='block';
      otterBeachIntroImage.style.opacity='1';
@@ -10992,16 +11002,25 @@ window.addEventListener('message',e=>{
        await window.__sprGrantStoryItem?.('dimensionalBag');
        await showManualAnimalLine('交換を完了できなかった。次元バックは所持品へ戻された。','探索に戻る');return;
      }
-     // まず券面を見せ、フェードアウトしてから交換後の文章と鳴き声へ進む。
+     // チケットはラッコの画像に重ね、✕を押すまで消さない。
      anomalySceneText.style.opacity='0';anomalySceneText.textContent='';
-     otterTicketReveal.style.transition='opacity .65s ease,transform .8s ease';
-     otterTicketReveal.style.opacity='0';otterTicketReveal.style.transform='scale(.96)';
-     otterTicketReveal.style.display='block';void otterTicketReveal.offsetWidth;await wait(50);
-     otterTicketReveal.style.opacity='1';otterTicketReveal.style.transform='scale(1)';
-     await wait(2300);
-     otterTicketReveal.style.opacity='0';otterTicketReveal.style.transform='scale(.98)';
-     await wait(700);otterTicketReveal.style.display='none';otterTicketReveal.style.opacity='1';otterTicketReveal.style.transform='scale(1)';
-     otterTicketReveal.style.transition='';
+     otterTicketReveal.setAttribute('aria-hidden','false');
+     positionOtterTicketReveal();
+     otterTicketReveal.style.display='flex';
+     window.addEventListener('resize',positionOtterTicketReveal);
+     window.addEventListener('scroll',positionOtterTicketReveal,true);
+     await new Promise(resolve=>{
+       otterTicketCloseButton.onclick=event=>{event.preventDefault();event.stopPropagation();resolve()};
+       otterTicketCloseButton.focus({preventScroll:true});
+     });
+     otterTicketCloseButton.onclick=null;otterTicketReveal.style.display='none';
+     window.removeEventListener('resize',positionOtterTicketReveal);
+     window.removeEventListener('scroll',positionOtterTicketReveal,true);
+     otterTicketReveal.setAttribute('aria-hidden','true');
+     // チケットを閉じたらラッコを隠し、ラッコのいない海の画像へ切り替える。
+     otterFrame.style.display='none';otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';
+     otterBeachIntroImage.src='anomaly_drifting_otter_sea_evening.jpg';
+     otterBeachIntroImage.style.display='block';otterBeachIntroImage.style.opacity='1';
      smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
      anomalySceneText.style.opacity='0';await wait(220);
      setAnomalyNarrativeText('持っていた次元バックとチケットを交換した。\nラッコは嬉しそうに鳴き声をあげると、海の中に潜っていった。');
@@ -11033,7 +11052,8 @@ window.addEventListener('message',e=>{
      otterCryAudio.pause();
      otterBeachIntroImage.style.display='none';
      try{await closeAnimatedAnimalScene(otterFrame);}finally{
-       hideOtterAnimation();resetOtterChoices();otterTicketReveal.style.display='none';otterEventRunning=false;
+       hideOtterAnimation();resetOtterChoices();otterTicketReveal.style.display='none';otterTicketReveal.setAttribute('aria-hidden','true');
+       window.removeEventListener('resize',positionOtterTicketReveal);window.removeEventListener('scroll',positionOtterTicketReveal,true);otterEventRunning=false;
        anomalySceneText.style.width='min(33em,calc(100vw - 64px))';
        anomalySceneText.style.flex='0 0 auto';anomalySceneText.style.marginTop='clamp(8px,2vh,20px)';
        otterChoiceBox.style.width='min(620px,94vw)';
@@ -11109,7 +11129,7 @@ window.addEventListener('message',e=>{
    caption.style.cssText='position:relative;flex:0 0 auto;width:min(36em,calc(100vw - 38px));max-width:100%;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-align:left;line-break:strict;overflow-wrap:break-word;white-space:normal;text-wrap:pretty;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .45s ease';
    const next=document.createElement('button');
    next.type='button';next.textContent='NEXT　›';
-   next.style.cssText='display:block;flex:0 0 auto;width:min(238px,72vw);min-height:82px;margin:clamp(2px,1vh,12px) 0 0;border:2px solid #bd9c63;background:#040c17;color:#e8d6ad;font:600 clamp(19px,4vw,26px)/1 Georgia,"Yu Mincho",serif;letter-spacing:.14em;cursor:pointer;opacity:0;transition:opacity .35s ease';
+   next.style.cssText='display:none;flex:0 0 auto;align-items:center;justify-content:center;width:auto;min-width:0;min-height:50px;margin:clamp(6px,2vh,14px) auto 0;padding:12px 28px;border:1px solid #c9aa68;background:rgba(5,14,27,.9);color:#e8d5a3;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;cursor:pointer;opacity:0;transition:opacity .35s ease';
    scene.append(picture,caption,next);
    document.body.append(scene);
    const loadSceneImage=src=>new Promise(resolve=>{
@@ -11123,17 +11143,22 @@ window.addEventListener('message',e=>{
      setTimeout(()=>finish(image.complete&&image.naturalWidth>0),4500);
    });
    const showPage=async(src,alt,text)=>{
-     caption.style.opacity='0';next.style.opacity='0';picture.style.opacity='0';
-     await wait(420);
+     const firstPage=!caption.textContent;
+     next.disabled=true;next.style.opacity='0';picture.style.opacity='0';
+     if(firstPage)caption.style.opacity='0';
+     await wait(700);
+     next.style.display='none';
      image.alt=alt;
      await loadSceneImage(src);
      image.style.visibility=image.naturalWidth>0?'visible':'hidden';
+     // 文章は黒い切替中にそのまま差し替え、ページごとのフェードを重ねない。
      caption.textContent=text;
-     picture.style.opacity='1';caption.style.opacity='1';next.style.display='block';
-     await wait(40);next.style.opacity='1';
+     if(firstPage)caption.style.opacity='1';
+     picture.style.opacity='1';next.style.display='inline-flex';
+     void next.offsetWidth;await wait(40);next.style.opacity='1';next.disabled=false;
      await waitForTap(next);
-     next.style.opacity='0';caption.style.opacity='0';picture.style.opacity='0';
-     await wait(420);
+     next.disabled=true;next.style.opacity='0';picture.style.opacity='0';
+     await wait(700);
    };
    try{
      await wait(40);scene.style.opacity='1';await wait(820);
@@ -11184,8 +11209,29 @@ window.addEventListener('message',e=>{
    anomalySceneText.style.opacity='0';await wait(260);
    setAnomalyNarrativeText('小鹿は耳をぴくりと動かしながら、じっとこちらの様子をうかがっている。');anomalySceneText.style.opacity='1';
    fawnChoiceBox.style.display='grid';
+   const updateFawnAcornChoice=()=>{
+     const hasFreshAcorn=count('freshAcorn')>0;
+     fawnGiveDrinkButton.disabled=!hasFreshAcorn;
+     fawnGiveDrinkButton.textContent=hasFreshAcorn?'ドングリをあげる':'新鮮なドングリがない';
+     fawnGiveDrinkButton.style.opacity=hasFreshAcorn?'1':'.48';
+     fawnGiveDrinkButton.style.cursor=hasFreshAcorn?'pointer':'not-allowed';
+   };
+   updateFawnAcornChoice();
    const choice=await new Promise(resolve=>{
-     fawnGiveDrinkButton.onclick=()=>resolve('give');
+     fawnGiveDrinkButton.onclick=async()=>{
+       if(fawnGiveDrinkButton.disabled)return;
+       fawnGiveDrinkButton.disabled=true;fawnDeclineDrinkButton.disabled=true;
+       const consumed=await window.__sprConsumeStoryItem?.('freshAcorn');
+       if(!consumed){
+         fawnGiveDrinkButton.disabled=true;
+         fawnGiveDrinkButton.textContent='ドングリをあげられない';
+         fawnGiveDrinkButton.style.opacity='.48';fawnGiveDrinkButton.style.cursor='not-allowed';
+         fawnDeclineDrinkButton.disabled=false;
+         setAnomalyNarrativeText('新鮮なドングリを確認できなかったため、小鹿にあげることはできない。');
+         return;
+       }
+       resolve('give');
+     };
      fawnDeclineDrinkButton.onclick=()=>resolve('decline');
    });
    if(choice==='give'){
@@ -11199,18 +11245,14 @@ window.addEventListener('message',e=>{
  }
  // 波渡の黒馬：DAY2〜6／夜／人魚の入江／エルナンドの酔い＋不穏またはNGドリンク。
  // 望遠鏡を覗くごとに 星空→馬の足元→青いランタン。各シーンは黒フェードを挟む。
- // PNGは写真の上に重ねる。1枚の写真を拡大位置だけ変える。未配置時も壊れたアイコンは出さない。
- // ★馬の写真は1枚だけ。同じ写真を望遠鏡の角度と倍率だけ変えて再利用する。
- // この画像（元寸法 1536×1024）の実際の位置を基準に、望遠鏡の向きを変える。
- // 中心座標は元画像上のピクセル。写真が object-fit:cover で切られても正しい位置を合わせる。
- // 1回目は星・天の川だけ、2回目は水面を踏む脚、3回目は口元の青いランタン。
- // 画像は1枚のみアップロードすればよい。縮尺が大きいため2・3回目は多少ぼやける。
- const blackHorsePhoto='anomaly_black_horse_telescope_01.jpg';
- const blackHorseFocus=[
-   {name:'星空',px:760,py:155,zoom:3.2},           // 雲や月、馬を映さない星空の中心
-   {name:'水面の足元',px:1056,py:496,zoom:16.0},   // 水面に立つ脚とその周囲の水しぶき
-   {name:'青いランタン',px:1094,py:447,zoom:18.0} // 口元の灯りをアップに
+ // 望遠鏡の3場面は別画像を使い、全体を切り抜かず表示する。
+ // 01＝星空、02＝水面の足元、03＝青いランタン。各画像は16:9推奨。
+ const blackHorsePhotos=[
+   'anomaly_black_horse_telescope_01.jpg',
+   'anomaly_black_horse_telescope_02.jpg',
+   'anomaly_black_horse_telescope_03.jpg'
  ];
+ const blackHorseSceneNames=['星空','水面の足元','青いランタン'];
  const blackHorseTelescopeOverlayFile='telescope_frame_clean_transparent.png';
  const blackHorseSeaPhoto='mermaids_cove_night.jpg';
  let blackHorseRunning=false;
@@ -11267,7 +11309,7 @@ window.addEventListener('message',e=>{
  const blackHorsePicture=document.createElement('img');
  blackHorsePicture.id='blackHorseTelescopePicture';blackHorsePicture.alt='望遠鏡の向こうに見える景色';
  blackHorsePicture.draggable=false;
- blackHorsePicture.style.cssText='position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;user-select:none';
+ blackHorsePicture.style.cssText='position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:contain;object-position:center;pointer-events:none;user-select:none';
  const blackHorseMissingPhoto=document.createElement('div');
  blackHorseMissingPhoto.style.cssText='position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:20px;color:rgba(255,255,255,.55);font:11px/1.8 Georgia,serif;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere';
  const blackHorseTelescopeOverlay=document.createElement('img');
@@ -11341,41 +11383,34 @@ window.addEventListener('message',e=>{
    });
  }
  async function horseShowTelescopePhoto(index,narration=''){
-   // 背景が黒に戻った後で次の写真を読み込む。切替時に前の画像が見えない。
+   // 直前の場面を黒へフェードアウトしてから、対応する専用画像を読み込む。
    blackHorseText.style.opacity='0';blackHorseViewport.style.opacity='0';blackHorseNext.style.opacity='0';
    await horseFade(900);
    blackHorseSea.style.opacity='0';blackHorseViewport.style.display='block';
-   await horseLoadPhoto(blackHorsePhoto);
-   // 16:9の望遠鏡枠に3:2の画像を object-fit:cover すると上下が切れる。
-   // 元画像ピクセルをまず描画座標へ変換してから拡大・移動する（スマホ／PC共通）。
-   const focus=blackHorseFocus[Math.max(0,Math.min(index,blackHorseFocus.length-1))];
-   const sourceW=blackHorsePicture.naturalWidth||1536;
-   const sourceH=blackHorsePicture.naturalHeight||1024;
-   const frame=blackHorseViewport.getBoundingClientRect();
-   const frameW=Math.max(frame.width,1),frameH=Math.max(frame.height,1);
-   const cover=Math.max(frameW/sourceW,frameH/sourceH);
-   const visualX=(focus.px*sourceW/1536*cover-(sourceW*cover-frameW)/2)/frameW;
-   const visualY=(focus.py*sourceH/1024*cover-(sourceH*cover-frameH)/2)/frameH;
-   const shiftX=(.5-visualX)*focus.zoom*100;
-   const shiftY=(.5-visualY)*focus.zoom*100;
-   blackHorsePicture.style.transformOrigin='center center';
-   blackHorsePicture.style.transform=`translate(${shiftX.toFixed(3)}%,${shiftY.toFixed(3)}%) scale(${focus.zoom})`;
-   blackHorsePicture.setAttribute('aria-label',`望遠鏡の景色：${focus.name}`);
+   const photoIndex=Math.max(0,Math.min(index,blackHorsePhotos.length-1));
+   await horseLoadPhoto(blackHorsePhotos[photoIndex]);
+   blackHorsePicture.style.transform='none';
+   blackHorsePicture.setAttribute('aria-label',`望遠鏡の景色：${blackHorseSceneNames[photoIndex]}`);
    void blackHorseViewport.offsetWidth;blackHorseViewport.style.opacity='1';
    await horseFade(1150);
    if(narration){blackHorseText.textContent=narration;blackHorseText.style.opacity='1';await horseFade(900)}
  }
- async function horseWaitReturnButton(){
+
+ async function horseWaitNextButton(label='NEXT　›'){
+   blackHorseNext.textContent=label;
    blackHorseNext.disabled=false;blackHorseNext.style.display='inline-flex';
    void blackHorseNext.offsetWidth;blackHorseNext.style.opacity='1';
    await waitForTap(blackHorseNext);
    blackHorseNext.disabled=true;blackHorseNext.style.opacity='0';
+   await horseFade(450);blackHorseNext.style.display='none';
  }
- async function horseTextPage(line,duration=2100){
+ async function horseWaitReturnButton(){await horseWaitNextButton('探索に戻る')}
+ async function horseTapTextPage(line){
    blackHorseText.style.opacity='0';await horseFade(850);
    blackHorseText.textContent=line;
    void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
-   await horseFade(850+duration);
+   await horseFade(850);
+   await horseWaitNextButton('NEXT　›');
  }
  async function horseBlackout(){
    blackHorseText.style.opacity='0';
@@ -11395,17 +11430,16 @@ window.addEventListener('message',e=>{
    try{
      await horseBegin();
      if(stage===0){
-       // 1回目：同じ写真の上空へ望遠鏡を向ける。表示後にいななき。
+       // 1回目：星空の専用画像を見て入江の探索画面へ戻った後、馬の嘶きを聞く。
        await horseShowTelescopePhoto(0,'満天の星空が広がっている。\n月明かりが海面を照らし、遠くの水平線まで見渡せる。\n今夜は、ずいぶんと星が綺麗だ。');
-       await horseFade(900);
-       await playBlackHorseNeighAfterPhoto();
        await horseWaitReturnButton();
        setAnimalStage('black-horse',1);
        await horseEnd();
+       await playBlackHorseNeighAfterPhoto();
        return;
      }
      if(stage===1){
-       // 2回目：同じ写真の水面を拡大。先に正体を明かさない。
+       // 2回目：水面の足元を写した専用画像。先に正体を明かさない。
        await horseShowTelescopePhoto(1,'先ほどの鳴き声が気になり、もう一度望遠鏡を覗き込む。\n水面に、生き物の足が見える。\n波が寄せては返している。それなのに、足は少しも沈んでいない。\n……酔いが回ったのだろうか。');
        await horseWaitReturnButton();
        setAnimalStage('black-horse',2);
@@ -11418,19 +11452,19 @@ window.addEventListener('message',e=>{
      await horseBlackout();
      horseSetCenteredMonologue(true);
      // 海の写真は出さず、黒一色の画面に独白だけを中央表示する。
-     await horseTextPage('気がつくと、上半身まで海に浸かっていた。\n海水はあたたかい。\nぬるい。きもちいい。',2200);
-     await horseTextPage('波が身体を撫でるたびに、力が抜けていく。',1900);
-     await horseTextPage('このまま、海と一つに“なりたい”。',1900);
-     await horseTextPage('ああ、',1200);
-     await horseTextPage('息が、できない───',2200);
+     await horseTapTextPage('気がつくと、上半身まで海に浸かっていた。\n海水はあたたかい。\nぬるい。きもちいい。');
+     await horseTapTextPage('波が身体を撫でるたびに、力が抜けていく。');
+     await horseTapTextPage('このまま、海と一つに“なりたい”。');
+     await horseTapTextPage('ああ、');
+     await horseTapTextPage('息が、できない───');
      // 海の写真と文字をどちらもフェードアウトして、完全な黒に落とす。
      await horseBlackout();
-     horseSetCenteredMonologue(false);
      await horseFade(850);
      // 先に完了済みを記録し、再アクセスやイベント重複による二重減少を防ぐ。
      markAnimal('black-horse');setAnimalStage('black-horse',3);
      await window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true});
-     await horseTextPage('気がつくと自分の部屋にいた。\n何があったのか、思い出せない。',2600);
+     horseSetCenteredMonologue(true);
+     await horseTapTextPage('気がつくとホテルの部屋にいた。\n何があったのか、思い出せない。');
      blackHorseText.style.opacity='0';
      await horseFade(950);
      // 黒背景の背後でROOMを再開。最後に黒い幕をフェードアウトする。
