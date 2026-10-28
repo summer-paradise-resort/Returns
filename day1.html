@@ -4942,7 +4942,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!atHub)casinoVipDoorNotice?.classList.add('hidden');
     }
     let casinoGalleryDiscoveryPromise=null,casinoGalleryDiscovered=false,casinoGalleryLoadedPeriod='';
-    let casinoElevatorState='idle',casinoElevatorGlitchTimer=null;
+    let casinoElevatorState='idle',casinoElevatorGlitchTimer=null,casinoElevatorAftermathRunning=false;
 
     function hasJokerForElevator(){return belongingCount('jokerCard')>0}
     function isCasinoElevatorSlide(){
@@ -4978,7 +4978,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(casinoGalleryHint)casinoGalleryHint.classList.toggle('hidden',active);
       if(active){
         stopCasinoMusic();
-        if(!['confirm','dialogue'].includes(casinoElevatorState)){casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm')}
+        if(!['confirm','dialogue','aftermath'].includes(casinoElevatorState)){casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm')}
       }else{
         stopElevatorGlitch();
         if(casinoElevatorVideo.classList.contains('open'))closeElevatorMovie();
@@ -4998,11 +4998,44 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function playCasinoElevatorMovie(){
       casinoElevatorState='video';stopCasinoMusic();casinoElevatorVideoError.classList.add('hidden');
+      casinoElevatorAftermathRunning=false;
       casinoElevatorMovie.src=CASINO_ELEVATOR_MOVIE;
       casinoElevatorVideo.classList.add('open');casinoElevatorVideo.setAttribute('aria-hidden','false');
       try{casinoElevatorMovie.currentTime=0}catch{}
       const p=casinoElevatorMovie.play();
       if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
+    }
+    async function finishCasinoElevatorMovie(){
+      if(casinoElevatorAftermathRunning)return;
+      casinoElevatorAftermathRunning=true;casinoElevatorState='aftermath';
+      stopElevatorGlitchSound();
+      try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
+      casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
+      casinoElevatorVideoError.classList.add('hidden');
+      try{
+        // 馬のイベントと同じ黒い独白画面を使い、映像から暗転へつなぐ。
+        horseSetCenteredMonologue(true);
+        blackHorseViewport.style.display='none';blackHorseViewport.style.opacity='0';
+        blackHorseSea.style.opacity='0';blackHorseText.textContent='';blackHorseText.style.opacity='0';
+        blackHorseNext.style.display='none';blackHorseNext.style.opacity='0';
+        blackHorseScene.style.visibility='visible';blackHorseScene.style.pointerEvents='auto';
+        blackHorseScene.setAttribute('aria-hidden','false');
+        void blackHorseScene.offsetWidth;
+        blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear 0s';
+        blackHorseScene.style.opacity='1';
+        await horseFade(900);
+        await window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});
+        blackHorseText.textContent='気がつくと、ホテルの部屋にいた。\n地下へ向かったはずなのに、どうやって戻ってきたのか思い出せない。';
+        void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
+        await horseFade(900);
+        await waitForTap(blackHorseScene);
+        await horseEnd();
+      }catch(error){
+        console.error('casino elevator aftermath:',error);
+        await horseEnd();
+      }finally{
+        casinoElevatorAftermathRunning=false;casinoElevatorState='idle';updateCasinoElevatorAccess();
+      }
     }
     function startCasinoElevatorDialogue(){
       if(casinoElevatorState!=='confirm'||!emilyCasualOverlay)return;
@@ -5030,7 +5063,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(!['glitch','video','dialogue'].includes(casinoElevatorState))runCasinoElevatorGlitch();
     });
     casinoElevatorVideoClose.addEventListener('click',closeElevatorMovie);
-    casinoElevatorMovie.addEventListener('ended',closeElevatorMovie);
+    casinoElevatorMovie.addEventListener('ended',()=>void finishCasinoElevatorMovie());
     casinoElevatorMovie.addEventListener('error',()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
     window.__sprLeaveCasinoGalleryElevator=()=>{
       stopElevatorGlitch();
@@ -9924,6 +9957,13 @@ window.addEventListener('message',e=>{
     {spot:'beach',period:'night',action:'snorkel',drinks:['ミッドナイトランタン'],filename:'beach_night_diving.mp4',label:'夜のビーチでダイビングをしたときの映像'},
     {spot:'mermaids_cove',period:'night',action:'snorkel',drinks:['ラグーンブリーズ','マーメイドキス'],filename:'mermaids_cove_night_diving.mp4',label:'夜の人魚の入り江でダイビングをしたときの映像'}
   ];
+  const lighthouseEveningAnomalySeenKey=`spr-lighthouse-evening-telescope-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}`;
+  function matchingLighthouseEveningAnomaly(spotKey,actionKey){
+    const resortDay=Number(document.documentElement.dataset.resortDay||1);
+    if(resortDay<3||resortDay>6||spotKey!=='lighthouse'||actionKey!=='telescope'||explorePeriod()!=='sunset')return null;
+    if(localStorage.getItem(lighthouseEveningAnomalySeenKey)==='1'||!window.__sprHasAnyHorrorDrink?.())return null;
+    return {spot:'lighthouse',period:'sunset',action:'telescope',filename:'lighthouse_evening_telescope_anomaly.mp4',label:'夕方の灯台で望遠鏡を覗いたときの映像',aftermath:'lighthouse-telescope',seenKey:lighthouseEveningAnomalySeenKey};
+  }
   // 画面上は「ダイビングをする」。snorkelは既存の探索アクションIDとして維持する。
   function matchingDay1ExploreVideo(spotKey,actionKey){
     if(document.documentElement.dataset.resortDay!=='1')return null;
@@ -9937,7 +9977,7 @@ window.addEventListener('message',e=>{
   function clearExploreVideoStartupTimer(){
     if(exploreVideoStartupTimer!==null){clearTimeout(exploreVideoStartupTimer);exploreVideoStartupTimer=null;}
   }
-  function closeExploreEventVideo(){
+  function closeExploreEventVideo({resumeBgm=true}={}){
     clearExploreVideoStartupTimer();
     if(!exploreEventVideoScreen)return;
     // 画面を先に閉じてからソースを解除（解除時のerrorイベントを表示しない）。
@@ -9946,8 +9986,8 @@ window.addEventListener('message',e=>{
     try{exploreEventVideo.pause();exploreEventVideo.removeAttribute('src');exploreEventVideo.load()}catch{}
     exploreEventVideoError?.classList.add('hidden');
     activeExploreVideoEvent=null;
-    window.__sprExploreVideoPlaying=false;
-    window.__sprResumeExploreBgmAfterGimmick?.();
+    window.__sprExploreVideoPlaying=!resumeBgm;
+    if(resumeBgm)window.__sprResumeExploreBgmAfterGimmick?.();
   }
   // iPhoneの標準フルスクリーン動画プレイヤーではなく、闘牛場と同じページ内再生に統一。
   // 音声付き再生がSafariにブロックされた場合は、専用ボタンでユーザー操作から再開する。
@@ -10005,12 +10045,57 @@ window.addEventListener('message',e=>{
     exploreEventVideoScreen.setAttribute('aria-hidden','false');
     startExploreEventVideoPlayback();
   }
+  let lighthouseAftermathRunning=false;
+  const lighthouseAftermathScene=document.createElement('div');
+  lighthouseAftermathScene.setAttribute('role','dialog');lighthouseAftermathScene.setAttribute('aria-modal','true');lighthouseAftermathScene.setAttribute('aria-hidden','true');
+  lighthouseAftermathScene.style.cssText='position:fixed;inset:0;z-index:2147483501;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:max(24px,env(safe-area-inset-top)) 3vw max(24px,env(safe-area-inset-bottom));overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .85s ease,visibility 0s linear .85s';
+  const lighthouseAftermathText=document.createElement('div');
+  lighthouseAftermathText.style.cssText='width:min(33em,calc(100vw - 64px));max-width:100%;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;line-break:strict;white-space:pre-line;overflow-wrap:break-word;text-align:center;color:#fff;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .8s ease';
+  lighthouseAftermathScene.append(lighthouseAftermathText);document.body.append(lighthouseAftermathScene);
+  const lighthouseAftermathWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  function waitForLighthouseAftermathTap(){return new Promise(resolve=>lighthouseAftermathScene.addEventListener('click',resolve,{once:true}))}
+  async function playLighthouseAftermath(){
+    if(lighthouseAftermathRunning)return;
+    lighthouseAftermathRunning=true;
+    try{
+      lighthouseAftermathText.textContent='';lighthouseAftermathText.style.opacity='0';
+      lighthouseAftermathScene.style.visibility='visible';lighthouseAftermathScene.style.pointerEvents='auto';lighthouseAftermathScene.setAttribute('aria-hidden','false');
+      void lighthouseAftermathScene.offsetWidth;
+      lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear 0s';lighthouseAftermathScene.style.opacity='1';
+      await lighthouseAftermathWait(900);
+      closeExploreEventVideo({resumeBgm:false});
+      await window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡',{ignoreProtection:true});
+      lighthouseAftermathText.textContent='気がつくと、ホテルの部屋にいた。\n灯台で望遠鏡を覗いていたはずなのに、どうしてここにいるのか思い出せない。';
+      void lighthouseAftermathText.offsetWidth;lighthouseAftermathText.style.opacity='1';
+      await lighthouseAftermathWait(900);
+      await waitForLighthouseAftermathTap();
+      lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
+      lighthouseAftermathScene.style.opacity='0';await lighthouseAftermathWait(900);
+    }catch(error){
+      console.error('lighthouse evening anomaly aftermath:',error);
+    }finally{
+      lighthouseAftermathScene.style.visibility='hidden';lighthouseAftermathScene.style.pointerEvents='none';lighthouseAftermathScene.setAttribute('aria-hidden','true');
+      lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear .85s';
+      closeExploreEventVideo();lighthouseAftermathRunning=false;
+    }
+  }
+  function finishExploreEventVideo(){
+    const event=activeExploreVideoEvent;
+    if(event?.aftermath==='lighthouse-telescope'){
+      if(lighthouseAftermathRunning)return;
+      if(localStorage.getItem(event.seenKey)==='1'){closeExploreEventVideo();return}
+      localStorage.setItem(event.seenKey,'1');
+      void playLighthouseAftermath();
+      return;
+    }
+    closeExploreEventVideo();
+  }
   // 通常再生中は閉じる操作を出さず、映像終了時に自動で探索へ戻す。
   // 読み込み失敗時だけ、再試行または「探索へ戻る」を表示する。
   exploreEventVideoReturn?.addEventListener('click',closeExploreEventVideo);
   exploreEventVideoRetry?.addEventListener('click',startExploreEventVideoPlayback);
   exploreEventVideo?.addEventListener('playing',clearExploreVideoStartupTimer);
-  exploreEventVideo?.addEventListener('ended',closeExploreEventVideo);
+  exploreEventVideo?.addEventListener('ended',finishExploreEventVideo);
   exploreEventVideo?.addEventListener('error',()=>{
     clearExploreVideoStartupTimer();
     if(!exploreEventVideoScreen?.classList.contains('open'))return;
@@ -10337,6 +10422,13 @@ window.addEventListener('message',e=>{
     const actionKey=btn.dataset.exploreAction;
     btn.dataset.selectedSpot=selectedSpot;
 
+    const lighthouseEvent=matchingLighthouseEveningAnomaly(selectedSpot,actionKey);
+    if(lighthouseEvent){
+      clearActionMessage();
+      openExploreEventVideo(lighthouseEvent);
+      return;
+    }
+
     // 毒杯を引いた後は、翌朝7:00まで探索文が100%異常な内容へ切り替わる。
     if(explorePoisoned()){
       clearActionMessage();
@@ -10379,7 +10471,7 @@ window.addEventListener('message',e=>{
     if(e.target instanceof HTMLVideoElement)window.__sprPauseExploreBgmForGimmick?.();
   },true);
   exploreView.addEventListener('ended',e=>{
-    if(e.target instanceof HTMLVideoElement)window.__sprResumeExploreBgmAfterGimmick?.();
+    if(e.target instanceof HTMLVideoElement&&!(e.target===exploreEventVideo&&activeExploreVideoEvent?.aftermath==='lighthouse-telescope'))window.__sprResumeExploreBgmAfterGimmick?.();
   },true);
 })();
 </script>
