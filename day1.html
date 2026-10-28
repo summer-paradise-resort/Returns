@@ -8283,9 +8283,51 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!row?.id)return;const normalized=normalizeRoomServiceDeliveryOrder(row);
       roomServiceDeliveryOrders=roomServiceDeliveryOrders.filter(order=>String(order.id)!==String(normalized.id));roomServiceDeliveryOrders.push(normalized);scheduleRoomServiceDeliveryCheck();
     }
-    setTimeout(()=>refreshRoomServiceDeliveryOrders(),700);
-    setInterval(()=>refreshRoomServiceDeliveryOrders(),60000);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden){primeRoomServiceDoorbellAudio();refreshRoomServiceDeliveryOrders()}});
+    // ルームサービス：全ページで60秒ごとに全注文履歴を取得する処理を廃止。
+    // 注文が追加されたときのRealtime通知で追加分だけ受け取り、
+    // 3分後の到着は既存のローカルタイマーで処理する。
+    // 通知の取り逃しはページ起動・接続復帰・アプリ復帰・ROOM入室時の単発取得で補う。
+    let roomServicePersonalOrdersChannel=null;
+    async function startRoomServicePersonalOrderSync(){
+      const playerId=await sprPlayerId(),c=window.supabaseClientSpecial;
+      if(!playerId||!c||roomServicePersonalOrdersChannel)return;
+      const channel=c.channel(`spr-room-service-personal-${playerId}`)
+        .on('postgres_changes',{
+          event:'INSERT',schema:'public',table:'spr_room_service_orders',
+          filter:`player_id=eq.${playerId}`
+        },payload=>{
+          const row=payload?.new;
+          if(!row||String(row.player_id||'')!==String(playerId))return;
+          trackNewRoomServiceDeliveryOrder(row);
+          evaluateRoomServiceDeliveries();
+        });
+      roomServicePersonalOrdersChannel=channel;
+      channel.subscribe(status=>{
+        if(status==='SUBSCRIBED'){
+          // 接続・再接続時の差分を一度だけ照合（通常時の定期照会はしない）。
+          void refreshRoomServiceDeliveryOrders();
+        }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+          // Realtimeが使えない場合も、少なくとも復帰時に注文を取得できる。
+          console.warn('room service personal orders realtime',status);
+        }
+      });
+    }
+    setTimeout(()=>{
+      // Realtimeがつながらない環境でも起動時の注文復元は確保する。
+      void refreshRoomServiceDeliveryOrders();
+      void startRoomServicePersonalOrderSync();
+    },700);
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden){
+        primeRoomServiceDoorbellAudio();
+        void refreshRoomServiceDeliveryOrders();
+        void startRoomServicePersonalOrderSync();
+      }
+    });
+    window.addEventListener('online',()=>{
+      void refreshRoomServiceDeliveryOrders();
+      void startRoomServicePersonalOrderSync();
+    });
 
     function renderRoomServiceCart(){
       const selected=Object.entries(roomServiceCart).filter(([,qty])=>qty>0);
