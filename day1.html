@@ -37,7 +37,7 @@
     .menu-lines{width:20px;height:14px;display:flex;flex-direction:column;justify-content:space-between}
     .menu-lines i{display:block;height:1px;background:currentColor;width:100%}
     /* STORY MENU: resort background visible through a deep-blue translucent layer */
-    .story-menu{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,rgba(9,53,91,.57),rgba(4,27,49,.72)),url("summer_paradise_noon.jpg") center 48%/cover no-repeat;overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s;color:#fff}
+    .story-menu{position:fixed;inset:0;z-index:90;background:linear-gradient(180deg,rgba(9,53,91,.57),rgba(4,27,49,.72)),#0b2743;overflow:auto;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.22s;color:#fff}
     .story-menu.open{opacity:1;visibility:visible;transform:none}
     .story-menu-top{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.18);position:sticky;top:0;background:rgba(10,61,103,.90);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
     .story-menu-top .brand-name{color:#f0d89d}
@@ -325,7 +325,7 @@
     .room-context-action{grid-column:1/-1;min-height:48px;border:1px solid rgba(240,216,157,.72);background:rgba(168,123,47,.92);color:#fff;font-size:13px;letter-spacing:.1em;padding:10px 12px}
     .room-context-action.hidden{display:none!important}
     body.villa-pool-active{overflow:hidden}
-    .villa-pool-experience{--villa-pool-image:url('Royal_Villa_Pool_Underwater.jpg');position:fixed;z-index:2147483000;inset:0;overflow:hidden;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s ease,visibility 0s linear .55s}
+    .villa-pool-experience{--villa-pool-image:none;position:fixed;z-index:2147483000;inset:0;overflow:hidden;background:#000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s ease,visibility 0s linear .55s}
     .villa-pool-experience.open{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
     .villa-pool-water{position:absolute;inset:0;overflow:hidden;opacity:0;transform:scale(1.035);background-color:#075f83;background-image:linear-gradient(180deg,rgba(0,85,116,.03) 0%,rgba(0,64,100,.11) 58%,rgba(0,31,67,.34) 100%),var(--villa-pool-image);background-position:center center;background-size:cover;background-repeat:no-repeat;transition:opacity 1.05s ease,transform 1.45s ease}
     .villa-pool-experience.underwater .villa-pool-water{opacity:1;transform:scale(1)}
@@ -549,7 +549,7 @@
 
     /* 「ドリンクを注文する」後の選択画面だけ、元のBAR画像を全面背景にする。 */
     #barOrderSheet{
-      --bar-order-bg:url("seaside_bar.jpg");
+      --bar-order-bg:none;
       background:#071a2b;
       isolation:isolate;
     }
@@ -898,7 +898,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 </style>
 <style id="sunsetTerraceDedicatedStyles">
 /* SUNSET TERRACE — independent in-page view, with time-matched zoomed photo backdrop */
-#sunsetTerraceView{isolation:isolate;background:#071a2b;color:#fff;--terrace-photo:url("sunset_terrace_day.jpg")}
+#sunsetTerraceView{isolation:isolate;background:#071a2b;color:#fff;--terrace-photo:none}
 #sunsetTerraceView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(4,17,32,.28),rgba(3,15,29,.46) 58%,rgba(3,14,27,.62)),var(--terrace-photo);background-position:center center;background-size:cover;transform:scale(1.035)}
 #sunsetTerraceView .subhead{position:sticky;z-index:3;background:rgba(5,24,42,.95);border-bottom:1px solid rgba(216,182,112,.45)}
 #sunsetTerraceView .subhead .back{color:#f9f0db}
@@ -1152,7 +1152,7 @@ window.sprCoasterLabel=function(value){const n=window.sprCoasterNumber(value);re
 </style>
 <style id="teaSalonCafeFloorStyles">
 /* AFTERNOON TEA SALON: enter directly into the café floor; image follows Tokyo time. */
-#teaSalonView{isolation:isolate;--tea-salon-photo:url("cafe_floor.jpg");background-color:#f7f1e7}
+#teaSalonView{isolation:isolate;--tea-salon-photo:none;background-color:#f7f1e7}
 #teaSalonView::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(180deg,rgba(255,252,247,.61),rgba(255,250,242,.76)),var(--tea-salon-photo);background-position:center center;background-size:cover;background-repeat:no-repeat;transform:scale(1.035)}
 #teaSalonView>.gallery,#teaSalonView>.dots,#teaSalonView>.info{position:relative;z-index:1}
 #teaSalonView>.info{background:rgba(255,252,247,.53);-webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px)}
@@ -1275,7 +1275,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 </head>
 <body>
   <header>
-    <div class="brand"><img src="LOG.PNG" alt=""><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
+    <div class="brand"><img src="LOG.PNG" alt="" loading="eager" decoding="async" fetchpriority="high"><div class="brand-name">Summer Paradise<small>RESORT</small></div></div>
     <div class="header-actions">
       <button id="topBgmToggle" class="header-icon music-toggle" type="button" aria-label="BGM ON / OFF" title="BGM ON / OFF">♪</button>
       <button id="storyMenuOpen" class="header-icon" type="button" aria-label="リゾートの歴史を開く"><span class="menu-lines" aria-hidden="true"><i></i><i></i><i></i></span></button>
@@ -1329,23 +1329,23 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <details class="admin-master-panel"><summary>ADMIN / DAY & WORLD CONTROL</summary><div class="admin-master-inner"><div class="admin-current-day">CURRENT DAY <b id="adminCurrentDay">1</b></div><div class="admin-day-grid"><button type="button" data-admin-day="1">DAY 1</button><button type="button" data-admin-day="2">DAY 2</button><button type="button" data-admin-day="3">DAY 3</button><button type="button" data-admin-day="4">DAY 4</button><button type="button" data-admin-day="5">DAY 5</button><button type="button" data-admin-day="6">DAY 6</button><button type="button" data-admin-day="7">DAY 7</button></div><button id="adminAutoDayToggle" class="admin-world-reset" type="button" style="border-color:#4d6f8f;color:#31536f;background:#f7fbff">本番自動DAY進行を開始（毎朝7:00）</button><button id="adminPhoneSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">着信音テスト（3秒）</button><button id="adminDoorbellSoundTest" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">ドアベル音テスト（1回）</button><div class="admin-test-tools"><p class="admin-test-title">ANOMALY EVENT TEST / THIS ADMIN SESSION ONLY</p><p class="admin-test-note">酔い状態と時間帯を、この管理端末だけで一時的に切り替えます。時間帯は選択中の画面へ反映されます。動物ごとのDAY・場所・行動・対象ドリンク条件は別途必要です。</p><p class="admin-test-title">エルナンドの酔い</p><div class="admin-test-grid two"><button type="button" data-admin-poison="on">酔い状態を付与</button><button type="button" data-admin-poison="off">酔い状態を解除</button></div><button id="adminPoisonNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">本来の状態判定に戻す</button><p id="adminPoisonState" class="admin-test-state" aria-live="polite"></p><p class="admin-test-title" style="margin-top:12px">時間帯（管理中のみ）</p><div class="admin-test-grid"><button type="button" data-admin-period="day">昼</button><button type="button" data-admin-period="sunset">夕</button><button type="button" data-admin-period="night">夜</button></div><button id="adminPeriodNormal" class="admin-world-reset" type="button" style="border-color:#6b7480;color:#6b7480;background:#fff">現在時刻に戻す</button><p id="adminPeriodState" class="admin-test-state" aria-live="polite"></p></div><button id="adminWorldReset" class="admin-world-reset" type="button">本番用・全ギミック／参加者ログイン初期化</button><p id="adminMasterStatus" class="admin-master-status"></p></div></details>
       <div class="cards">
         <button class="card" type="button" data-open="roomView">
-          <img id="roomHomeCardImage" src="Deluxe_Ocean_Window.jpg" alt="オーシャンビューの客室">
+          <img id="roomHomeCardImage" src="Deluxe_Ocean_Window.jpg" alt="オーシャンビューの客室" loading="lazy" decoding="async">
           <div class="card-body"><h3 class="card-title">ROOM<span id="roomDeliveryBadge" class="room-delivery-badge hidden" aria-label="ルームサービス到着"></span></h3><div class="card-en">YOUR PRIVATE ROOM</div><p class="card-desc">部屋番号を入力して下さい。</p><div class="view">ENTER YOUR ROOM　›</div></div>
         </button>
         <button class="card" type="button" data-open="exploreView">
-          <img id="exploreHomeCardImage" src="lighthouse.jpg" alt="島の灯台">
+          <img id="exploreHomeCardImage" src="lighthouse.jpg" alt="島の灯台" loading="lazy" decoding="async">
           <div class="card-body"><h3 class="card-title">島を探索する</h3><div class="card-en">EXPLORE THE ISLAND</div><p class="card-desc">海辺、灯台、入り江。島の景色をたどる散策へ。</p><div class="view">EXPLORE　›</div></div>
         </button>
         <button class="card" type="button" data-open="restaurantView">
-          <img id="restaurantHomeCardImage" data-cafe-scene="sunset_terrace" src="sunset_terrace_day.jpg" alt="レストラン＆カフェのテラス">
+          <img id="restaurantHomeCardImage" data-cafe-scene="sunset_terrace" src="sunset_terrace_day.jpg" alt="レストラン＆カフェのテラス" loading="lazy" decoding="async">
           <div class="card-body"><h3 class="card-title">レストランへ行く</h3><div class="card-en">RESTAURANT &amp; CAFÉ</div><p class="card-desc">島の恵みを味わう、食事とくつろぎのひととき。</p><div class="view">VIEW MENU　›</div></div>
         </button>
         <button class="card" type="button" data-open="barView">
-          <img id="barHomeCardImage" src="seaside_bar.jpg" alt="シーサイドバー">
+          <img id="barHomeCardImage" src="seaside_bar.jpg" alt="シーサイドバー" loading="lazy" decoding="async">
           <div class="card-body"><h3 class="card-title">BARへ行く</h3><div class="card-en">SEASIDE BAR &amp; LOUNGE</div><p class="card-desc">海を眺めながら、リゾートの一杯を。</p><div class="view">VISIT THE BAR　›</div></div>
         </button>
         <button class="card" type="button" data-open="casinoView">
-          <img id="casinoHomeCardImage" src="casino_blue_shell_day.jpg" alt="カジノ・ブルーシェル">
+          <img id="casinoHomeCardImage" src="casino_blue_shell_day.jpg" alt="カジノ・ブルーシェル" loading="lazy" decoding="async">
           <div class="card-body"><h3 class="card-title">カジノへ行く</h3><div class="card-en">CASINO BLUE SHELL</div><p class="card-desc">海辺の夜を彩る、ブルーシェルのゲームテーブル。</p><div class="view">ENTER CASINO　›</div></div>
         </button>
       </div>
@@ -1597,7 +1597,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <section class="subview" id="exploreView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
     <div class="gallery" data-gallery="explore"><div class="track">
-      <div class="slide"><img id="exploreBeachGalleryImage" src="summer_paradise_beach.jpg" alt="海辺"></div><div class="slide"><img id="exploreLighthouseGalleryImage" src="lighthouse.jpg" alt="灯台"></div><div class="slide"><img id="exploreCoveGalleryImage" src="mermaids_cove.jpg" alt="マーメイドの入り江"></div>
+      <div class="slide"><img id="exploreBeachGalleryImage" data-deferred-src="summer_paradise_beach.jpg" alt="海辺" loading="lazy" decoding="async"></div><div class="slide"><img id="exploreLighthouseGalleryImage" data-deferred-src="lighthouse.jpg" alt="灯台" loading="lazy" decoding="async"></div><div class="slide"><img id="exploreCoveGalleryImage" data-deferred-src="mermaids_cove.jpg" alt="マーメイドの入り江" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="explore"></div>
     <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel explore-destination-panel"><h3>行き先を選ぶ</h3><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div></div>
     <audio id="exploreBgm" src="explore_bgm.mp3" loop preload="auto"></audio>
@@ -1620,9 +1620,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <section class="subview" id="restaurantView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">RESTAURANT &amp; CAFÉ</div><div></div></div>
     <div class="gallery" data-gallery="restaurant"><div class="track">
-      <div class="slide"><img data-cafe-scene="sunset_terrace" src="sunset_terrace_day.jpg" alt="サンセットテラス"></div>
-      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace 店内"></div>
-      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe 店内"></div>
+      <div class="slide"><img data-cafe-scene="sunset_terrace" data-deferred-src="sunset_terrace_day.jpg" alt="サンセットテラス" loading="lazy" decoding="async"></div>
+      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" data-deferred-src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace 店内" loading="lazy" decoding="async"></div>
+      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" data-deferred-src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe 店内" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="restaurant"></div>
     <div class="info"><h2>RESTAURANT &amp; CAFÉ</h2><div class="jp">レストラン＆カフェ</div><div class="meta">SUNSET TERRACE　/　THE PEARL TERRACE　/　MARINE BLOOM CAFE</div><p>海辺の景色とともに、食事やくつろぎのひとときをお楽しみください。</p>
       <div class="panel"><h3>お食事を選ぶ</h3><p>滞在中のご利用方法をお選びください。</p>
@@ -1644,7 +1644,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   </section>
 
   <!-- Sunset Terrace is a separate screen, preserving the parent restaurant gallery underneath. -->
-  <section class="subview" id="sunsetTerraceView" aria-hidden="true" style="--terrace-photo:url('sunset_terrace_day.jpg')">
+  <section class="subview" id="sunsetTerraceView" aria-hidden="true" style="--terrace-photo:none">
     <audio id="sunsetTerraceBgm" src="sunset_terrace_bgm.mp3" preload="auto" loop></audio>
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SUNSET TERRACE</div><div></div></div>
     <div class="sunset-terrace-content">
@@ -1702,13 +1702,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     </div>
   </section>
 
-  <section class="subview" id="teaSalonView" aria-hidden="true" style="--tea-salon-photo:url('cafe_floor.jpg')">
+  <section class="subview" id="teaSalonView" aria-hidden="true" style="--tea-salon-photo:none">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">AFTERNOON TEA SALON</div><div></div></div>
     <div class="gallery" data-gallery="teaSalon"><div class="track">
-      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace"></div>
-      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe"></div>
-      <div class="slide"><img data-tea-scene="pearl_terrace_afternoon_tea" src="pearl_terrace_afternoon_tea_day.jpg" alt="The Pearl Terraceのアフタヌーンティー"></div>
-      <div class="slide"><img data-tea-scene="marine_bloom_afternoon_tea" src="marine_bloom_afternoon_tea_day.jpg" alt="Marine Bloom Cafeのアフタヌーンティー"></div>
+      <div class="slide"><img data-cafe-scene="the_pearl_terrace_i" data-deferred-src="the_pearl_terrace_i_day.jpg" alt="The Pearl Terrace" loading="lazy" decoding="async"></div>
+      <div class="slide"><img data-cafe-scene="marine_bloom_cafe_i" data-deferred-src="marine_bloom_cafe_i_day.jpg" alt="Marine Bloom Cafe" loading="lazy" decoding="async"></div>
+      <div class="slide"><img data-tea-scene="pearl_terrace_afternoon_tea" data-deferred-src="pearl_terrace_afternoon_tea_day.jpg" alt="The Pearl Terraceのアフタヌーンティー" loading="lazy" decoding="async"></div>
+      <div class="slide"><img data-tea-scene="marine_bloom_afternoon_tea" data-deferred-src="marine_bloom_afternoon_tea_day.jpg" alt="Marine Bloom Cafeのアフタヌーンティー" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="teaSalon"></div>
     <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES</div>
       <p>チケットを使用して、特別なアフタヌーンティーのひとときをお楽しみいただけます。</p>
@@ -1780,8 +1780,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   </section>
 
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
-    <img id="hernandoArenaBgBlur" class="hernando-arena-blur" src="hernandos_bullring01.jpg" alt="" aria-hidden="true">
-    <img id="hernandoArenaBg" class="hernando-arena-loop" src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場">
+    <img id="hernandoArenaBgBlur" class="hernando-arena-blur" data-deferred-src="hernandos_bullring01.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async">
+    <img id="hernandoArenaBg" class="hernando-arena-loop" data-deferred-src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場" loading="lazy" decoding="async">
     <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop playsinline webkit-playsinline></audio>
     <div class="hernando-encounter-shade"></div>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
@@ -1807,7 +1807,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
   <section class="subview" id="barView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SEASIDE BAR &amp; LOUNGE</div><div></div></div>
-    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img id="barGalleryHeroImage" src="seaside_bar.jpg" alt="シーサイドバー"></div><div class="slide"><img id="barGalleryLoungeImage" src="seaside_lounge.jpg" alt="シーサイドラウンジ"></div><div class="slide"><img src="seaside1.jpg" alt="シーサイドバーのカクテル"></div></div></div><div class="dots" data-dots="bar"></div>
+    <div class="gallery" data-gallery="bar"><div class="track"><div class="slide"><img id="barGalleryHeroImage" data-deferred-src="seaside_bar.jpg" alt="シーサイドバー" loading="lazy" decoding="async"></div><div class="slide"><img id="barGalleryLoungeImage" data-deferred-src="seaside_lounge.jpg" alt="シーサイドラウンジ" loading="lazy" decoding="async"></div><div class="slide"><img data-deferred-src="seaside1.jpg" alt="シーサイドバーのカクテル" loading="lazy" decoding="async"></div></div></div><div class="dots" data-dots="bar"></div>
     <div class="info"><h2>SEASIDE BAR &amp; LOUNGE</h2><div class="jp">シーサイドバー＆ラウンジ</div><div class="meta">A DRINK BY THE SEA</div><p>海を眺めながら、ゆったりと一杯を。館内のラウンジと屋外のシーサイドバーを行き来してお楽しみいただけます。</p>
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
@@ -1821,8 +1821,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div id="barExtraTicketBox" class="bar-order-confirm-wrap hidden"><div id="barExtraTicketStatus" class="bar-selection"></div><button id="useExtraDrinkTicket" class="bar-order-confirm" type="button">BARドリンクチケットを使用する</button></div>
         <div class="bar-menu-title">ORIGINAL DRINK MENU</div>
         <div class="bar-menu-pages" aria-label="シーサイドバーのメニュー表">
-          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10"></button></figure>
-          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_02.jpg" aria-label="ドリンクメニュー 11〜20を拡大表示"><img src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20"></button></figure>
+          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img data-deferred-src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10" loading="lazy" decoding="async"></button></figure>
+          <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_02.jpg" aria-label="ドリンクメニュー 11〜20を拡大表示"><img data-deferred-src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20" loading="lazy" decoding="async"></button></figure>
         </div>
         <div class="bar-menu-hint">左右にスワイプしてメニュー表をご覧いただけます。<br><strong>メニュー表をタップすると拡大表示できます。</strong></div>
         <div id="barDrinkList" class="bar-drink-list"></div>
@@ -1860,7 +1860,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
   <section class="subview" id="casinoView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">CASINO BLUE SHELL</div><div></div></div>
-    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img data-casino-gallery-slot="1" src="casino.gallery01_day.jpg" alt="カジノ・ブルーシェル館内 1"></div><div class="slide"><img data-casino-gallery-slot="2" src="casino.gallery02_day.jpg" alt="カジノ・ブルーシェル館内 2"></div><div class="slide"><img data-casino-gallery-slot="3" src="casino.gallery03_day.jpg" alt="カジノ・ブルーシェル館内 3"></div></div></div><div class="dots" data-dots="casino"></div>
+    <div class="gallery" data-gallery="casino"><div class="track"><div class="slide"><img data-casino-gallery-slot="1" data-deferred-src="casino.gallery01_day.jpg" alt="カジノ・ブルーシェル館内 1" loading="lazy" decoding="async"></div><div class="slide"><img data-casino-gallery-slot="2" data-deferred-src="casino.gallery02_day.jpg" alt="カジノ・ブルーシェル館内 2" loading="lazy" decoding="async"></div><div class="slide"><img data-casino-gallery-slot="3" data-deferred-src="casino.gallery03_day.jpg" alt="カジノ・ブルーシェル館内 3" loading="lazy" decoding="async"></div></div></div><div class="dots" data-dots="casino"></div>
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
@@ -2905,7 +2905,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         });
     }
     const views = [...document.querySelectorAll('.subview')];
-    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();if(id==='sunsetTerraceView'){pauseResortMusic();syncSunsetTerraceMusic();}if(id==='teaSalonView'){pauseResortMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}syncResortLiveLocationFromUi()}
+    function openView(id){const view=document.getElementById(id);if(!view)return;view.classList.add('open');view.setAttribute('aria-hidden','false');window.__sprLoadDeferredViewAssets?.(view);view.scrollTop=0;document.body.style.overflow='hidden';if(id==='exploreView'&&typeof startExploreMusic==='function')startExploreMusic();if(id==='barView'&&typeof startSeasideBarMusic==='function')startSeasideBarMusic();if(id==='sunsetTerraceView'){pauseResortMusic();syncSunsetTerraceMusic();}if(id==='teaSalonView'){pauseResortMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();}syncResortLiveLocationFromUi()}
     function closeView(view){if(view&&view.id==='casinoView'&&typeof casinoGame!=='undefined'&&!casinoGame.classList.contains('hidden')){casinoGame.classList.add('hidden');casinoGame.setAttribute('aria-hidden','true');if(typeof stopCasinoMusic==='function')stopCasinoMusic()}if(view&&view.id==='exploreView'&&typeof stopExploreMusic==='function')stopExploreMusic(true);if(view&&view.id==='barView'&&typeof stopSeasideBarMusic==='function')stopSeasideBarMusic(true);view.classList.remove('open');view.setAttribute('aria-hidden','true');document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';if(view.id==='sunsetTerraceView')syncSunsetTerraceMusic();if(view.id==='teaSalonView'&&typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm();syncResortLiveLocationFromUi()}
     document.querySelectorAll('[data-open]').forEach(button=>button.addEventListener('click',()=>openView(button.dataset.open)));
     document.querySelectorAll('[data-back]').forEach(button=>button.addEventListener('click',()=>closeView(button.closest('.subview'))));
@@ -3477,6 +3477,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       renderBarOrderState();
       barOrderSheet.classList.add('open');
       barOrderSheet.setAttribute('aria-hidden','false');
+      window.__sprLoadDeferredViewAssets?.(barOrderSheet);
       // 注文確定前のタップで乾杯SEを先読みし、iPhone / iPadでも即時再生しやすくする。
       void primeSeasideKanpai();
     }
@@ -4163,7 +4164,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function showSpecialJokerReward(){
       specialOverlay.classList.add('reward-mode');
-      specialActions.innerHTML=`<div class="special-loss-reward"><div class="special-loss-joker"><img src="casino.joker.PNG" alt="JOKER CARD" onerror="this.style.display='none'"><strong>JOKER CARDを手に入れました。</strong></div></div><button id="specialJokerRewardClose" type="button">JOKER CARDを受け取る</button>`;
+      specialActions.innerHTML=`<div class="special-loss-reward"><div class="special-loss-joker"><img src="casino.joker.PNG" alt="JOKER CARD" onerror="this.style.display='none'" loading="lazy" decoding="async"><strong>JOKER CARDを手に入れました。</strong></div></div><button id="specialJokerRewardClose" type="button">JOKER CARDを受け取る</button>`;
       specialOverlay.scrollTop=0;
       return new Promise(resolve=>{
         const btn=document.getElementById('specialJokerRewardClose');
@@ -4787,7 +4788,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         disarmRoomPhoneAudioMaster();
       }
     });
-    document.getElementById('storyMenuOpen').addEventListener('click',()=>{storyMenu.classList.add('open');storyMenu.setAttribute('aria-hidden','false')});
+    document.getElementById('storyMenuOpen').addEventListener('click',()=>{storyMenu.style.backgroundImage='linear-gradient(180deg,rgba(9,53,91,.57),rgba(4,27,49,.72)),url("summer_paradise_noon.jpg")';storyMenu.style.backgroundPosition='center 48%';storyMenu.style.backgroundSize='cover';storyMenu.style.backgroundRepeat='no-repeat';storyMenu.classList.add('open');storyMenu.setAttribute('aria-hidden','false')});
     document.getElementById('storyMenuClose').addEventListener('click',()=>{storyMenu.classList.remove('open');storyMenu.setAttribute('aria-hidden','true')});
     storyMenu.querySelectorAll('.story-toggle').forEach(button=>button.addEventListener('click',()=>{const item=button.closest('.story-item'),open=!item.classList.contains('open');item.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.querySelector('span').textContent=open?'−':'＋'}));
     renderTopBgmToggle();
@@ -5317,8 +5318,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(guide)guide.textContent=original.guide;
       }
     });
-    // カジノ入場後にギャラリーを開いた時、準備表示が出ないよう先読みしておく。
-    discoverCasinoGallery().catch(e=>console.warn('casino gallery preload',e));
+    // 館内写真の検索・読み込みは、カジノ内でギャラリーを開いた時にだけ行う。
     window.__sprSyncCasinoGalleryPeriod=async(force=false)=>{
       const period=casinoGalleryTimePeriod();
       if(!force&&casinoGalleryDiscovered&&casinoGalleryLoadedPeriod===period)return;
@@ -5591,7 +5591,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function preloadVillaPoolBackdrops(){
       if(villaPoolImagesPreloaded)return;
       villaPoolImagesPreloaded=true;
-      villaPoolUnderwaterImages.forEach(src=>{const image=new Image();image.src=src});
+      const index=Math.max(0,Math.min(2,Number(roomTimeIndex())||0));
+      const image=new Image();image.src=villaPoolUnderwaterImages[index];
     }
     // VILLA DARK ROOM: 501 only. Only the exact SECURITY CHECK name may send commands.
     const VILLA_DARKROOM_CONTROLLER='エルナンド・ロメロ';
@@ -9361,8 +9362,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 </script>
 <div id="integratedCafeShell" aria-hidden="true">
   <audio id="integratedCafeBgm" src="cafe_bgm.mp3" preload="auto" loop></audio>
-  <iframe id="integratedCafeHome" title="CAFE" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;CAFE | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:#0d2743;background:#fff url(&quot;cafe_floor.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:#0d2743}.title{text-align:center;font:12px Georgia,serif;letter-spacing:.18em;color:#a87b2f}.wrap{max-width:760px;margin:auto;padding:42px 18px 80px;min-height:calc(100vh - 66px);background:rgba(255,255,255,.20);backdrop-filter:blur(1px)}.lead{text-align:center;line-height:2;color:#24394e;font-size:13px;text-shadow:0 1px 8px rgba(255,255,255,.95)}.venues{display:grid;gap:14px;margin-top:25px}.venue{border:1px solid rgba(168,123,47,.38);background:rgba(255,252,245,.90);padding:26px 22px;text-align:center;color:#0d2743;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;box-shadow:0 8px 24px rgba(13,39,67,.08)}.venue strong{display:block;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:21px;font-weight:400;letter-spacing:.12em}.venue small{display:block;margin-top:9px;color:#a87b2f;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:10px;letter-spacing:.20em}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;exit&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main class=&quot;wrap&quot;&gt;&lt;h1 style=&quot;text-align:center;font-weight:400;letter-spacing:.12em&quot;&gt;CAFE&lt;/h1&gt;&lt;p class=&quot;lead&quot;&gt;ご利用になるカフェをお選びください。&lt;br&gt;営業時間　10:00〜翌3:00&lt;br&gt;各カフェは別ページでご案内します。&lt;/p&gt;&lt;div class=&quot;venues&quot;&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;pearl&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;The Pearl Terrace&lt;/strong&gt;&lt;small&gt;THE PEARL TERRACE&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;marine&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;Marine Bloom Cafe&lt;/strong&gt;&lt;small&gt;MARINE BLOOM CAFE&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
-  <iframe id="integratedCafePearl" title="The Pearl Terrace" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;The Pearl Terrace | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;the_pearl_terrace_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
+  <iframe loading="lazy" id="integratedCafeHome" title="CAFE" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;CAFE | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:#0d2743;background:#fff url(&quot;cafe_floor.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:#0d2743}.title{text-align:center;font:12px Georgia,serif;letter-spacing:.18em;color:#a87b2f}.wrap{max-width:760px;margin:auto;padding:42px 18px 80px;min-height:calc(100vh - 66px);background:rgba(255,255,255,.20);backdrop-filter:blur(1px)}.lead{text-align:center;line-height:2;color:#24394e;font-size:13px;text-shadow:0 1px 8px rgba(255,255,255,.95)}.venues{display:grid;gap:14px;margin-top:25px}.venue{border:1px solid rgba(168,123,47,.38);background:rgba(255,252,245,.90);padding:26px 22px;text-align:center;color:#0d2743;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;box-shadow:0 8px 24px rgba(13,39,67,.08)}.venue strong{display:block;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:21px;font-weight:400;letter-spacing:.12em}.venue small{display:block;margin-top:9px;color:#a87b2f;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:10px;letter-spacing:.20em}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;exit&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main class=&quot;wrap&quot;&gt;&lt;h1 style=&quot;text-align:center;font-weight:400;letter-spacing:.12em&quot;&gt;CAFE&lt;/h1&gt;&lt;p class=&quot;lead&quot;&gt;ご利用になるカフェをお選びください。&lt;br&gt;営業時間　10:00〜翌3:00&lt;br&gt;各カフェは別ページでご案内します。&lt;/p&gt;&lt;div class=&quot;venues&quot;&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;pearl&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;The Pearl Terrace&lt;/strong&gt;&lt;small&gt;THE PEARL TERRACE&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;marine&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;Marine Bloom Cafe&lt;/strong&gt;&lt;small&gt;MARINE BLOOM CAFE&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
+  <iframe loading="lazy" id="integratedCafePearl" title="The Pearl Terrace" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;The Pearl Terrace | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;the_pearl_terrace_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
 .cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
 #useCafeDrinkTicket{padding:13px 20px;background:#173a5e;color:white;border:0;font-family:inherit}#useCafeDrinkTicket:disabled{opacity:.38}
 .c14,.cz{position:fixed;inset:0;z-index:9998;background:rgba(7,18,29,.58);display:none;align-items:center;justify-content:center;padding:18px}.c14.show,.cz.show{display:flex}
@@ -9551,7 +9552,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   &lt;img id=&quot;coasterZoomImage&quot; src=&quot;&quot; alt=&quot;コースター拡大画像&quot;&gt;
 &lt;/div&gt;
 &lt;/body&gt;&lt;/html&gt;"></iframe>
-  <iframe id="integratedCafeMarine" title="Marine Bloom Cafe" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;Marine Bloom Cafe | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;marine_bloom_cafe_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
+  <iframe loading="lazy" id="integratedCafeMarine" title="Marine Bloom Cafe" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;Marine Bloom Cafe | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;marine_bloom_cafe_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
 .cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
 #useCafeDrinkTicket{padding:13px 20px;background:#173a5e;color:white;border:0;font-family:inherit}#useCafeDrinkTicket:disabled{opacity:.38}
 .c14,.cz{position:fixed;inset:0;z-index:9998;background:rgba(7,18,29,.58);display:none;align-items:center;justify-content:center;padding:18px}.c14.show,.cz.show{display:flex}
@@ -10351,6 +10352,45 @@ window.addEventListener('message',e=>{
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
     return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
   }
+  function setSubviewImageSource(img,filename){
+    if(!img||!filename)return;
+    const owner=img.closest('.subview');
+    if(owner&&!owner.classList.contains('open')){
+      img.dataset.deferredSrc=filename;img.removeAttribute('src');img.loading='lazy';img.decoding='async';return;
+    }
+    if(img.getAttribute('src')!==filename)img.src=filename;
+  }
+  function loadDeferredViewAssets(root){
+    if(!root)return;
+    const insideActivePanel=el=>{
+      for(let node=el.parentElement;node&&node!==root;node=node.parentElement){
+        if(node.classList?.contains('hidden')||node.getAttribute?.('aria-hidden')==='true')return false;
+      }
+      return true;
+    };
+    const deferredImages=[];
+    if(root.matches?.('img[data-deferred-src]'))deferredImages.push(root);
+    deferredImages.push(...root.querySelectorAll('img[data-deferred-src]'));
+    deferredImages.forEach(img=>{
+      if(!insideActivePanel(img))return;
+      const src=img.dataset.deferredSrc;delete img.dataset.deferredSrc;
+      if(src){img.loading='lazy';img.decoding='async';img.src=src}
+    });
+    root.querySelectorAll('[data-deferred-css-background]').forEach(el=>{
+      if(!insideActivePanel(el))return;
+      const value=el.dataset.deferredCssBackground;delete el.dataset.deferredCssBackground;el.style.backgroundImage=value;
+    });
+    if(root.id==='sunsetTerraceView'&&root.dataset.deferredTerracePhoto){root.style.setProperty('--terrace-photo',`url("${root.dataset.deferredTerracePhoto}")`)}
+    if(root.id==='teaSalonView'&&root.dataset.deferredTeaPhoto){root.style.setProperty('--tea-salon-photo',`url("${root.dataset.deferredTeaPhoto}")`)}
+    const orderSheet=root.id==='barOrderSheet'?root:root.querySelector('#barOrderSheet');
+    if(orderSheet?.classList.contains('open')&&orderSheet.dataset.deferredBarImage){orderSheet.style.setProperty('--bar-order-bg',`url("${orderSheet.dataset.deferredBarImage}")`)}
+  }
+  window.__sprLoadDeferredViewAssets=loadDeferredViewAssets;
+  function deferOrSetSubviewBackground(el,value){
+    const owner=el.closest('.subview');
+    if(owner&&!owner.classList.contains('open')){el.dataset.deferredCssBackground=value;el.style.backgroundImage='none'}
+    else el.style.backgroundImage=value;
+  }
   function currentExploreImage(spotKey,period=explorePeriod()){
     const images=exploreSpotImages[spotKey];
     return images?(images[period]||images.day):'';
@@ -10365,7 +10405,7 @@ window.addEventListener('message',e=>{
     // 探索一覧の3枚 + ホームの灯台サムネイル。
     Object.entries(exploreGalleryImages).forEach(([spotKey,img])=>{
       const filename=currentExploreImage(spotKey,period);
-      if(img&&img.getAttribute('src')!==filename)img.src=filename;
+      if(img&&img.getAttribute('src')!==filename)setSubviewImageSource(img,filename);
     });
     const homeImage=currentExploreImage('lighthouse',period);
     if(exploreHomeCardImage&&exploreHomeCardImage.getAttribute('src')!==homeImage){
@@ -10389,13 +10429,13 @@ window.addEventListener('message',e=>{
     document.querySelectorAll('img[data-cafe-scene]').forEach(img=>{
       const base=img.dataset.cafeScene;
       const next=base+'_'+suffix+'.jpg';
-      if(img.getAttribute('src')!==next)img.src=next;
+      if(img.getAttribute('src')!==next)setSubviewImageSource(img,next);
     });
     // サンセットテラス専用ページのアップ背景も昼・夕・夜で切り替える。
     const terraceView=document.getElementById('sunsetTerraceView');
     if(terraceView){
       const terraceImg='sunset_terrace_'+suffix+'.jpg';
-      terraceView.style.setProperty('--terrace-photo',`url("${terraceImg}")`);
+      if(terraceView.classList.contains('open'))terraceView.style.setProperty('--terrace-photo',`url("${terraceImg}")`);else terraceView.dataset.deferredTerracePhoto=terraceImg;
       terraceView.dataset.terracePeriod=period;
     }
     // アフタヌーンティーに入った時点でCAFEフロアのアップ写真を背景表示。
@@ -10403,18 +10443,18 @@ window.addEventListener('message',e=>{
     const teaView=document.getElementById('teaSalonView');
     if(teaView){
       const teaFloorPhoto=period==='night'?'cafe_floor_night.jpg':period==='sunset'?'cafe_floor_evening.jpg':'cafe_floor.jpg';
-      teaView.style.setProperty('--tea-salon-photo',`url("${teaFloorPhoto}")`);
+      if(teaView.classList.contains('open'))teaView.style.setProperty('--tea-salon-photo',`url("${teaFloorPhoto}")`);else teaView.dataset.deferredTeaPhoto=teaFloorPhoto;
       teaView.dataset.teaPeriod=period;
     }
     // 新しく追加した2店舗のアフタヌーンティー画像（昼・夕・夜）。
     document.querySelectorAll('#teaSalonView img[data-tea-scene]').forEach(img=>{
       const next=img.dataset.teaScene+'_'+suffix+'.jpg';
-      if(img.getAttribute('src')!==next)img.src=next;
+      if(img.getAttribute('src')!==next)setSubviewImageSource(img,next);
     });
     // The menu backdrop in the main document uses the same time-specific assets.
     document.querySelectorAll('[data-cafe-background]').forEach(el=>{
       const base=el.dataset.cafeBackground;
-      el.style.backgroundImage='linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("'+base+'_'+suffix+'.jpg")';
+      deferOrSetSubviewBackground(el,'linear-gradient(rgba(7,26,43,.78),rgba(7,26,43,.78)),url("'+base+'_'+suffix+'.jpg")');
     });
   }
   window.__sprSyncRestaurantCafeImages=syncRestaurantCafeImages;
@@ -10428,21 +10468,18 @@ window.addEventListener('message',e=>{
     document.body.classList.toggle('resort-evening',period==='sunset');
     if(roomHomeCardImage&&roomHomeCardImage.getAttribute('src')!==roomImage)roomHomeCardImage.src=roomImage;
     if(barHomeCardImage&&barHomeCardImage.getAttribute('src')!==barImage)barHomeCardImage.src=barImage;
-    if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)barGalleryHeroImage.src=barImage;
+    if(barGalleryHeroImage&&barGalleryHeroImage.getAttribute('src')!==barImage)setSubviewImageSource(barGalleryHeroImage,barImage);
     const barLoungeImage=currentTimedImage(barLoungeTimedImages,period);
-    if(barGalleryLoungeImage&&barGalleryLoungeImage.getAttribute('src')!==barLoungeImage)barGalleryLoungeImage.src=barLoungeImage;
+    if(barGalleryLoungeImage&&barGalleryLoungeImage.getAttribute('src')!==barLoungeImage)setSubviewImageSource(barGalleryLoungeImage,barLoungeImage);
     if(casinoHomeCardImage&&casinoHomeCardImage.getAttribute('src')!==casinoImage)casinoHomeCardImage.src=casinoImage;
     const casinoGallerySuffix=period==='day'?'_day':period==='sunset'?'_evening':'';
     casinoGalleryTopImages.forEach(img=>{
       const number=String(img.dataset.casinoGallerySlot||'1').padStart(2,'0');
       const next=`casino.gallery${number}${casinoGallerySuffix}.jpg`;
-      if(img.getAttribute('src')!==next)img.src=next;
+      if(img.getAttribute('src')!==next)setSubviewImageSource(img,next);
     });
-    if(typeof window.__sprSyncCasinoGalleryPeriod==='function'){
-      window.__sprSyncCasinoGalleryPeriod(force).catch(error=>console.warn('casino gallery time sync',error));
-    }
     const barOrderSheet=document.getElementById('barOrderSheet');
-    if(barOrderSheet)barOrderSheet.style.setProperty('--bar-order-bg',`url("${barImage}")`);
+    if(barOrderSheet){if(barOrderSheet.classList.contains('open'))barOrderSheet.style.setProperty('--bar-order-bg',`url("${barImage}")`);else barOrderSheet.dataset.deferredBarImage=barImage;}
   }
   // 配信直後などに時間帯別の画像が見つからない場合は、昼の画像で表示を保つ。
   Object.entries(exploreGalleryImages).forEach(([spotKey,img])=>{
