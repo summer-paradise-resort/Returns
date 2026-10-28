@@ -1270,6 +1270,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   return out;
 };
 </script>
+<!-- ANIMAL_EVENTS_REVIEW_V2_20261028: seabird silent intro + otter swim choice -->
 </head>
 <body>
   <header>
@@ -10398,7 +10399,7 @@ window.addEventListener('message',e=>{
  otterWhiskerRight.className='otter-whiskers otter-whiskers-right';
  otterFrame.append(otterFloat);storyImage.before(otterFrame);
  const otterMotion=document.createElement('style');otterMotion.textContent=`
- #driftingOtterFrame .otter-float{transform:scale(1.04);animation:otterWholeFloat 6.2s ease-in-out infinite;animation-play-state:paused;will-change:transform}
+ #driftingOtterFrame .otter-float{transform:scale(1.06);animation:otterWholeFloat 6.2s ease-in-out infinite;animation-play-state:paused;will-change:transform}
  #driftingOtterFrame .otter-blink{opacity:0;animation:otterEyeBlink 7.8s linear infinite;animation-play-state:paused;will-change:opacity}
  #driftingOtterFrame .otter-whiskers{animation:otterWhiskerTwitch 8.6s linear infinite;animation-play-state:paused;will-change:transform}
  #driftingOtterFrame .otter-whiskers-left{clip-path:inset(0 56% 0 0);transform-origin:40% 42%}
@@ -10407,11 +10408,12 @@ window.addEventListener('message',e=>{
  @keyframes otterWhiskerTwitch{0%,62%,68%,100%{transform:rotate(0deg)}63%,65.5%{transform:rotate(-.9deg)}64.3%,67%{transform:rotate(.5deg)}}
  @keyframes otterWhiskerTwitchRight{0%,62%,68%,100%{transform:rotate(0deg)}63%,65.5%{transform:rotate(.9deg)}64.3%,67%{transform:rotate(-.5deg)}}
  #driftingOtterFrame.otter-active .otter-float,#driftingOtterFrame.otter-active .otter-blink{animation-play-state:running}
- @keyframes otterWholeFloat{0%,100%{transform:translateY(-1.25%) rotate(-.45deg) scale(1.04)}25%{transform:translateY(.15%) rotate(.2deg) scale(1.04)}50%{transform:translateY(1.25%) rotate(.45deg) scale(1.04)}75%{transform:translateY(.15%) rotate(-.2deg) scale(1.04)}}
+ /* ラッコのベース画像・まぶた・ひげを同じ親ごと上下させ、パーツの位置ずれを防止。 */
+ @keyframes otterWholeFloat{0%,100%{transform:translateY(-2.5%) rotate(-.65deg) scale(1.06)}25%{transform:translateY(.3%) rotate(.3deg) scale(1.06)}50%{transform:translateY(2.5%) rotate(.65deg) scale(1.06)}75%{transform:translateY(.3%) rotate(-.3deg) scale(1.06)}}
  @keyframes otterEyeBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
- @media(prefers-reduced-motion:reduce){#driftingOtterFrame .otter-float{animation:none;transform:scale(1.04)}#driftingOtterFrame .otter-blink{animation:none;opacity:0}}
+ @media(prefers-reduced-motion:reduce){#driftingOtterFrame .otter-float{animation:none;transform:scale(1.06)}#driftingOtterFrame .otter-blink{animation:none;opacity:0}}
  `;document.head.append(otterMotion);
- function hideOtterAnimation(){otterFrame.style.display='none';otterFrame.classList.remove('otter-active');}
+ function hideOtterAnimation(){otterFrame.style.display='none';otterFrame.classList.remove('otter-active');otterFrame.setAttribute('aria-hidden','true');otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';}
  function showOtterAnimation(src){
    otterFrame.style.display='block';
    otterBaseImage.onload=()=>{otterFrame.classList.add('otter-active');};
@@ -10468,6 +10470,14 @@ window.addEventListener('message',e=>{
  document.body.append(anomalyScene);
  // ラッコも、トカゲ・子鹿と同じ全画面イベントに表示する。
  anomalyScene.prepend(otterFrame);otterFrame.setAttribute('aria-hidden','true');
+ // ラッコ導入は、背景全面ではなく16:9の夕方のビーチ写真を文章の上に表示する。
+ const otterBeachIntroImage=document.createElement('img');
+ otterBeachIntroImage.id='otterBeachIntroImage';
+ otterBeachIntroImage.alt='夕方のビーチ';
+ otterBeachIntroImage.draggable=false;
+ otterBeachIntroImage.decoding='async';
+ otterBeachIntroImage.style.cssText='display:none;flex:0 0 auto;width:min(94vw,780px);height:auto;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(181,202,255,.27);box-sizing:border-box;background:#07101c;pointer-events:none';
+ anomalyScene.insertBefore(otterBeachIntroImage,anomalySceneText);
  const otterChoiceBox=document.createElement('div');otterChoiceBox.id='otterChoiceBox';
  otterChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
  anomalyScene.append(otterChoiceBox);
@@ -10561,19 +10571,19 @@ window.addEventListener('message',e=>{
  #glassFawnAnimation .fawn-character-idle{transform-origin:83% 69%;animation:fawnQuietBreath 4.6s ease-in-out infinite}
  #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
- #glassFawnAnimation [data-fawn-part="ear-left"]{transform-origin:80% 50%;animation:fawnLeftEarTwitch 9.4s ease-in-out infinite;will-change:transform}
- #glassFawnAnimation [data-fawn-part="ear-right"]{transform-origin:85% 50%;animation:fawnRightEarTwitch 9.4s ease-in-out infinite;will-change:transform}
- #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 10.8s ease-in-out infinite;will-change:opacity}
+ #glassFawnAnimation [data-fawn-part="ear-left"]{animation:fawnLeftEarTwitch 8.4s linear infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="ear-right"]{animation:fawnRightEarTwitch 8.4s linear infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 8.4s linear infinite;will-change:opacity}
  #glassFawnAnimation [data-fawn-part="antler-reflection"]{animation:fawnAntlerShimmer 6.4s ease-in-out infinite alternate}
- #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:68% 100%;animation:fawnLeavesSway 6.6s cubic-bezier(.42,0,.58,1) infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:68% 100%;animation:fawnLeavesSway 5.8s ease-in-out infinite;will-change:transform}
  @keyframes fawnQuietBreath{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1px) rotate(-.22deg)}}
  @keyframes fawnMoonWater{0%{opacity:.88;filter:brightness(.96)}100%{opacity:1;filter:brightness(1.05)}}
  @keyframes fawnForestLights{0%,100%{opacity:.62}35%{opacity:.88}70%{opacity:.72}}
- @keyframes fawnLeftEarTwitch{0%,70%,73%,76%,100%{transform:rotate(0)}71%{transform:rotate(-1deg) translateY(-1px)}72%{transform:rotate(.45deg)}74%{transform:rotate(-.7deg)}75%{transform:rotate(.25deg)}}
- @keyframes fawnRightEarTwitch{0%,70%,73%,76%,100%{transform:rotate(0)}71%{transform:rotate(1deg) translateY(-1px)}72%{transform:rotate(-.45deg)}74%{transform:rotate(.7deg)}75%{transform:rotate(-.25deg)}}
- @keyframes fawnBlink{0%,60%,67%,100%{opacity:0}62%{opacity:.25}63.2%,64.8%{opacity:1}66%{opacity:.25}}
+ @keyframes fawnLeftEarTwitch{0%,22%,26%,62%,66%,100%{transform:translate3d(0,0,0)}23%{transform:translate3d(0,-3.5px,0)}24%{transform:translate3d(0,1px,0)}25%{transform:translate3d(0,-2px,0)}63%{transform:translate3d(0,-3px,0)}64%{transform:translate3d(0,.8px,0)}65%{transform:translate3d(0,-1.6px,0)}}
+ @keyframes fawnRightEarTwitch{0%,39%,43%,76%,80%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,-3px,0)}41%{transform:translate3d(0,1.1px,0)}42%{transform:translate3d(0,-1.8px,0)}77%{transform:translate3d(0,-3.4px,0)}78%{transform:translate3d(0,.7px,0)}79%{transform:translate3d(0,-1.5px,0)}}
+ @keyframes fawnBlink{0%,20%,23.8%,67%,70.8%,100%{opacity:0}21.3%,68.3%{opacity:1}22.2%,69.2%{opacity:1}}
  @keyframes fawnAntlerShimmer{0%{opacity:.62;filter:brightness(.95)}100%{opacity:1;filter:brightness(1.12)}}
- @keyframes fawnLeavesSway{0%,100%{transform:translate3d(-3px,1px,0) rotate(-.55deg) skewX(-.25deg)}28%{transform:translate3d(2px,-1px,0) rotate(.25deg) skewX(.12deg)}55%{transform:translate3d(5px,0,0) rotate(.75deg) skewX(.3deg)}78%{transform:translate3d(1px,-1px,0) rotate(.1deg) skewX(-.08deg)}}
+ @keyframes fawnLeavesSway{0%,100%{transform:translate3d(-7px,2px,0) rotate(-1.3deg)}26%{transform:translate3d(5px,-2px,0) rotate(.85deg)}53%{transform:translate3d(12px,0,0) rotate(1.65deg)}78%{transform:translate3d(-1px,-2px,0) rotate(-.2deg)}}
  @media(max-width:520px){#anomalyAnimalScene .fawn-choice-box{grid-template-columns:1fr!important}}
  @media(prefers-reduced-motion:reduce){#glassFawnAnimation *{animation:none!important;transition:none!important}}
  `;document.head.append(fawnMotion);anomalyScene.prepend(fawnStage);
@@ -10604,13 +10614,22 @@ window.addEventListener('message',e=>{
    anomalySceneText.style.removeProperty('--spr-anomaly-fit-font');
    anomalySceneText.textContent=content.replace(/([。]+[」』”’）)]*)(?=.)/g,'$1\n');
  }
- async function showManualAnimalLine(line,buttonLabel='NEXT　›',sound=null){
+ async function showManualAnimalLine(line,buttonLabel='NEXT　›',sound=null,onAdvance=null){
    smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';
    anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(line);anomalySceneText.style.opacity='1';
    if(sound)playAnimalSound(sound,.8);
    smokeLizardReturnButton.textContent=buttonLabel;smokeLizardReturnButton.style.display='inline-flex';
    await wait(40);smokeLizardReturnButton.style.opacity='1';await waitForTap(smokeLizardReturnButton);
-   smokeLizardReturnButton.style.opacity='0';await wait(180);smokeLizardReturnButton.style.display='none';
+   smokeLizardReturnButton.style.opacity='0';
+   if(typeof onAdvance==='function'){
+     // 今回のラッコだけはNEXTの瞬間に登場演出を開始する。
+     smokeLizardReturnButton.style.display='none';
+     await onAdvance();
+   }else{
+     // ケムリトカゲ・小鹿の従来のNEXTフェードは変更しない。
+     await wait(180);
+     smokeLizardReturnButton.style.display='none';
+   }
  }
  async function closeAnimatedAnimalScene(stage){
    resetAnimalSceneControls();anomalySceneText.style.opacity='0';stage.style.opacity='0';stage.style.transform='scale(.985)';
@@ -10645,7 +10664,9 @@ window.addEventListener('message',e=>{
  function playAnimalSound(audio,volume=.8){try{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=volume;const p=audio.play();if(p?.catch)p.catch(()=>{})}catch{}}
  function primeAnimalSound(audio){try{audio.preload='auto';audio.muted=true;audio.volume=0;const p=audio.play();if(p?.then)p.then(()=>{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=1}).catch(()=>{audio.muted=false;audio.volume=1})}catch{}}
  async function runAnomalyScene(pages,{background='#02070c',hold=2100,onBeforeExit=null}={}){
-   smokeLizardStage.style.display='none';fawnStage.style.display='none';resetAnimalSceneControls();
+   smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
+   otterBeachIntroImage.style.display='none';blackHorseTelescopeFrame.style.display='none';
+   anomalyScene.style.flexDirection='column';resetAnimalSceneControls();
    anomalyScene.style.background=background;anomalySceneText.textContent='';anomalySceneText.style.opacity='0';anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.style.opacity='1';anomalyScene.setAttribute('aria-hidden','false');await wait(650);
    for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(page.text);anomalySceneText.style.opacity='1';
    // 話者名は、指定があるイベントだけ会話欄の上に表示する。
@@ -10775,8 +10796,9 @@ window.addEventListener('message',e=>{
  const exploreSpot=()=>String(document.getElementById('exploreLocationBg')?.dataset.spot||'');
  const guestName=()=>String(window.__sprGetGuestName?.()||localStorage.getItem('spr-guest-name')||'お客様').trim()||'お客様';
 
- // 名前を呼ぶ海鳥：夕方のビーチ・カメラのみ。鳥の姿は見せず、黒い画面で声だけがする。
- // 羽ばたき音の再生が終わるまで次の文章を出さない（未再生時も最大4秒で先へ進む）。
+ // 名前を呼ぶ海鳥：夕方のビーチ・カメラだけ。暗転→沈黙→「？？？」の呼び声→羽ばたき→探索復帰。
+ // 探索BGMを抑止している間、1秒ごとの同期で不意に再生されることも防ぐ。
+ let seabirdEventRunning=false;
  function waitForSeabirdWings(){
    return new Promise(resolve=>{
      let done=false,timer=null;
@@ -10789,44 +10811,57 @@ window.addEventListener('message',e=>{
      };
      seabirdWingAudio.addEventListener('ended',finish);
      seabirdWingAudio.addEventListener('error',finish);
-     timer=setTimeout(finish,4000);
+     timer=setTimeout(finish,3500);
      if(seabirdWingAudio.ended)finish();
    });
  }
  function resumeSeabirdBgm(){
-   // 羽ばたきが始まった瞬間にBGMを戻す。二重再開はせず、♪OFFなら再生しない。
    if(!window.__sprSeabirdBgmSuppressed)return;
    window.__sprSeabirdBgmSuppressed=false;
+   // ♪OFFの設定を尊重。探索画面が開いている場合だけ通常のBGM同期へ戻す。
    window.__sprResumeExploreBgmAfterGimmick?.();
  }
  function startSeabirdWings(){
-   // 完了待ちは再生開始前に登録し、短い効果音でも終了を取り逃さない。
+   // この時点まで BGM は必ず抑止状態。羽ばたきの再生開始が成功したら再開。
    const finished=waitForSeabirdWings();
    try{
      seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
      seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
      const playing=seabirdWingAudio.play();
      if(playing?.then){
-       playing.then(()=>resumeSeabirdBgm(),error=>{console.warn('seabird wings playback',error);resumeSeabirdBgm()});
-     }else resumeSeabirdBgm();
-   }catch(error){console.warn('seabird wings playback',error);resumeSeabirdBgm()}
+       playing.then(()=>resumeSeabirdBgm(),error=>{
+         // 音声が見つからない／iOSが再生を許可しなかった場合は、
+         // 「羽ばたきが聞こえた」ことにせず、イベント終了時にだけBGM復帰。
+         console.warn('seabird wings playback',error);
+       });
+     }else if(!seabirdWingAudio.paused)resumeSeabirdBgm();
+   }catch(error){console.warn('seabird wings playback',error)}
    return finished;
  }
  async function encounterSeabird(){
-   // 初めの沈黙と名前の呼びかけの間、探索BGMを確実に止める。
+   if(seabirdEventRunning)return;
+   seabirdEventRunning=true;
+   // 羽ばたき音が鳴る前に探索BGMが復帰しないよう、最初のawaitより先にロックする。
    window.__sprSeabirdBgmSuppressed=true;
    window.__sprPauseExploreBgmForGimmick?.();
-   markAnimal('seabird');
+   // ほかの動物を直前に見た場合にも、画面配置と暗転を前の演出から引き継がない。
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:28px 5vw;box-sizing:border-box;overflow:hidden;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
+   anomalySceneText.style.opacity='0';anomalySceneText.textContent='';
+   seabirdWingAudio.pause();try{seabirdWingAudio.currentTime=0}catch{}
    primeAnimalSound(seabirdWingAudio);
    try{
+     // 「………………。」は必ず最初に表示。名前を呼ぶ場面を飛ばさない。
      await runAnomalyScene([
-       {text:'………………。',hold:1600},
-       {speaker:'？？？',text:`「${guestName()}」`,hold:1900},
+       {text:'………………。',hold:1900},
+       {speaker:'？？？',text:`「${guestName()}」`,hold:2000},
        {text:'',run:startSeabirdWings,hold:200},
        {text:'周囲を見渡すが、誰もいない。',hold:2600}
      ],{background:'#000000'});
+     markAnimal('seabird');
    }finally{
+     seabirdWingAudio.pause();
      resumeSeabirdBgm();
+     seabirdEventRunning=false;
    }
  }
  let otterEventRunning=false;
@@ -10838,9 +10873,16 @@ window.addEventListener('message',e=>{
      smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
      anomalyScene.classList.remove('spr-smoke-lizard-scene');
      anomalySceneText.classList.remove('spr-smoke-lizard-text','spr-anomaly-fit-lines');
-     // 最初は夕方の砂浜だけ。ラッコの画像・鳴き声は表示／再生しない。
-     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.78)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
+     // 最初の画面は黒背景＋上部に夕方のビーチ画像。ラッコ自身はまだ出さない。
+     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
      anomalyScene.setAttribute('aria-hidden','false');
+     otterBeachIntroImage.src='summer_paradise_beach_evening.jpg';
+     otterBeachIntroImage.style.display='block';
+     // 写真・本文・選択肢を同じ横幅で揃える。画面の右側へ文章がはみ出さないようにする。
+     anomalySceneText.style.width='min(94vw,780px)';
+     anomalySceneText.style.flex='0 0 auto';
+     anomalySceneText.style.margin='0';
+     otterChoiceBox.style.width='min(94vw,780px)';
      setAnomalyNarrativeText('冷たすぎない海の水が気持ちいい。少し先まで泳いでみようかな。');
      anomalySceneText.style.opacity='0';
      await wait(60);anomalyScene.style.opacity='1';await wait(950);
@@ -10848,22 +10890,26 @@ window.addEventListener('message',e=>{
      const direction=await waitForOtterSwimChoice();
      if(direction!=='swim')return; // 岸へ戻る場合は、遭遇済みにしない。
      // 画像は泳ぐ選択後にだけ準備し、衝突の文章までは一切見せない。
+     // 導入の風景はNEXTまで残し、ラッコが登場する瞬間にだけ切り替える。
      const otterAsset='anomaly_drifting_otter.jpg?v=whiskers-1';
      const preloadOtter=new Image();preloadOtter.src=otterAsset;
-     // NEXTのタップでラッコを表示し、同じユーザー操作で鳴き声を再生する。
-     smokeLizardReturnButton.addEventListener('click',()=>{
+     // 衝突の文章をNEXTで読み終えるまでは、ラッコの画像は絶対に表示しない。
+     // タップ後に画像をフェードインし、その瞬間に鳴き声を一度だけ鳴らす。
+     await showManualAnimalLine('先まで泳いだ。海の中を覗き込もうとした時、不意に何かがぶつかった。','NEXT　›',null,async()=>{
        markAnimal('drifting-otter');
+       anomalySceneText.style.opacity='0';
+       otterBeachIntroImage.style.display='none';
+       anomalyScene.style.background='#000';
        otterFrame.style.opacity='0';otterFrame.style.transform='scale(.985)';
        otterFrame.setAttribute('aria-hidden','false');
        showOtterAnimation(otterAsset);
-       anomalyScene.style.background='#000';
-       requestAnimationFrame(()=>{
-         otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';
-       });
+       // 透明状態でレイアウトを確定してからフェードイン。
+       void otterFrame.offsetWidth;
+       await wait(60);
+       otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';
        playAnimalSound(otterCryAudio,.85);
-     },{once:true});
-     await showManualAnimalLine('先まで泳いだ。海の中を覗き込もうとした時、不意に何かがぶつかった。');
-     await wait(950);
+       await wait(1100);
+     });
      setAnomalyNarrativeText('ラッコは古びた乗船チケットを胸に抱え、こちらの手元を見つめている。');anomalySceneText.style.opacity='1';
      const choice=await waitForOtterChoice();
      if(choice!=='give')return;
@@ -10877,7 +10923,14 @@ window.addEventListener('message',e=>{
      await showManualAnimalLine('漂流ラッコは次元バックを受け取り、代わりにボロボロの乗船チケットを差し出した。\n券面には “LUCA BALSA” と “BOARDING TIME 22:00–23:59” が記されている。','探索に戻る');
    }finally{
      otterCryAudio.pause();
-     try{await closeAnimatedAnimalScene(otterFrame);}finally{hideOtterAnimation();resetOtterChoices();otterEventRunning=false;}
+     otterBeachIntroImage.style.display='none';
+     try{await closeAnimatedAnimalScene(otterFrame);}finally{
+       hideOtterAnimation();resetOtterChoices();otterEventRunning=false;
+       anomalySceneText.style.width='min(33em,calc(100vw - 64px))';
+       anomalySceneText.style.flex='0 0 auto';anomalySceneText.style.marginTop='clamp(8px,2vh,20px)';
+       otterChoiceBox.style.width='min(620px,94vw)';
+       anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
+     }
    }
  }
  async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が大きくしなり、釣り糸が海の奥へ引かれていく。','やがて糸が切れ、遠くの波間で巨大な岩陰のような何かが動いた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
@@ -10914,7 +10967,7 @@ window.addEventListener('message',e=>{
    await showManualAnimalLine('月明かりが、黒い海を照らしている。\nふと、どこからか視線を感じた。\n振り返っても、そこには誰もいない。\nけれど、何かがずっとこちらを見ている気がする。');
    // NEXT後、フェードイン完了を待ってから登場の文章を表示。
    await wait(1700);
-   await showManualAnimalLine('不意に、欄干の上で白い煙が揺らめいた。\n煙は小さな翼と長い尾を形作り、一匹のトカゲが姿を現した。');
+   await showManualAnimalLine('不意に、欄干の上で白い煙が揺らめいた。\n煙の中には、一匹の小さなトカゲがいた。\nその体にまとわりつく煙が、まるで生き物のように翼と長い尾を形作っている。');
    await showManualAnimalLine('小さなトカゲは翼を広げ、こちらの背後に向かって鳴いた。\nその姿は、何かを威嚇しているようにも見える。');
    await showManualAnimalLine('いつの間にか、まとわりついていた視線が消えたような気がした。\nトカゲは何事もなかったかのように、こちらを見つめている。','探索に戻る');
    stopSmokeLizardCrySequence();
@@ -11039,67 +11092,125 @@ window.addEventListener('message',e=>{
      await closeAnimatedAnimalScene(fawnStage);
    }
  }
- let horseEntryNeighPending=false,horseEntryContinueNextClick=false;
- function horseEntryNeighEligible(){
-   return anomalyEligible()&&explorePeriod()==='night'&&!animalSeen('black-horse')&&
-    localStorage.getItem(anomalyPrefix+'black-horse-entry-played-v4')!=='1';
- }
- function startHorseEntryNeigh(coveButton){
-   if(horseEntryNeighPending||!horseEntryNeighEligible())return false;
-   horseEntryNeighPending=true;
-  const entryKey=anomalyPrefix+'black-horse-entry-played-v4';
-  setAnomalyNarrativeText('馬のいななき声が聞こえる。');anomalySceneText.style.opacity='0';
-  anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';
-  anomalyScene.style.opacity='0';anomalyScene.setAttribute('aria-hidden','false');
-  requestAnimationFrame(()=>{anomalyScene.style.opacity='1';anomalySceneText.style.opacity='1'});
-   let playback;
+ // 黒馬のいななきは入江に入るときではなく、最初に望遠鏡を覗いた後に鳴らす。
+ // iOSの音声制限に備え、望遠鏡のタップ時点でWeb Audioを有効化しておく。
+ const blackHorseFirstPhoto='anomaly_black_horse_telescope_01.jpg'; // 画像受領後、この名前でGitHubへ配置
+ const blackHorseFallbackPhoto='mermaids_cove_night.jpg';
+ // 望遠鏡のフレームPNG。透過素材は風景写真の上に重ね、なければ写真だけ表示する。
+ const blackHorseTelescopeOverlayFile='anomaly_telescope_overlay.png';
+ let blackHorseRunning=false;
+ let blackHorseAudioContext=null,blackHorseDecodedSound=null;
+ const blackHorseTelescopeFrame=document.createElement('div');
+ blackHorseTelescopeFrame.id='blackHorseTelescopeFrame';
+ blackHorseTelescopeFrame.style.cssText='position:relative;display:none;flex:0 0 auto;width:min(94vw,780px);max-width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(181,202,255,.27);box-sizing:border-box;background:#02070c;opacity:0;transition:opacity 1s ease;isolation:isolate';
+ const blackHorsePicture=document.createElement('img');
+ blackHorsePicture.id='blackHorseTelescopePicture';
+ blackHorsePicture.alt='望遠鏡から見えた夜の海';
+ blackHorsePicture.draggable=false;
+ blackHorsePicture.style.cssText='position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none';
+ const blackHorseTelescopeOverlay=document.createElement('img');
+ blackHorseTelescopeOverlay.id='blackHorseTelescopeOverlay';
+ blackHorseTelescopeOverlay.alt='';blackHorseTelescopeOverlay.setAttribute('aria-hidden','true');
+ blackHorseTelescopeOverlay.draggable=false;
+ blackHorseTelescopeOverlay.style.cssText='position:absolute;z-index:2;inset:0;display:none;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;-webkit-user-select:none';
+ blackHorseTelescopeOverlay.onload=()=>{blackHorseTelescopeOverlay.style.display='block'};
+ blackHorseTelescopeOverlay.onerror=()=>{blackHorseTelescopeOverlay.style.display='none'};
+ blackHorseTelescopeOverlay.src=blackHorseTelescopeOverlayFile;
+ blackHorseTelescopeFrame.append(blackHorsePicture,blackHorseTelescopeOverlay);
+ anomalyScene.insertBefore(blackHorseTelescopeFrame,anomalySceneText);
+ function armBlackHorseNeigh(){
+   const Ctx=window.AudioContext||window.webkitAudioContext;
+   if(!Ctx)return;
    try{
-     blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;
-    blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
-     playback=Promise.resolve(blackHorseNeighAudio.play()).then(()=>true).catch(error=>{
-       console.warn('black horse neigh playback',error);return false;
-     });
-   }catch(error){
-     console.warn('black horse neigh playback',error);
-     playback=Promise.resolve(false);
-   }
-   void (async()=>{
-    const started=await Promise.race([playback,wait(1800).then(()=>false)]);
-     if(started){
-       await new Promise(resolve=>{
-         let done=false;
-         const finish=()=>{if(done)return;done=true;clearTimeout(timer);resolve()};
-         const timer=setTimeout(finish,8000);
-         blackHorseNeighAudio.addEventListener('ended',finish,{once:true});
-         blackHorseNeighAudio.addEventListener('error',finish,{once:true});
-       });
-       localStorage.setItem(entryKey,'1');
-     }else{
-       await wait(1000);
+     if(!blackHorseAudioContext)blackHorseAudioContext=new Ctx();
+     void blackHorseAudioContext.resume().catch(()=>{});
+     if(!blackHorseDecodedSound){
+       blackHorseDecodedSound=fetch('wavewalker_black_horse_neigh.mp3?v=20261018')
+         .then(r=>{if(!r.ok)throw new Error('黒馬の鳴き声を取得できません');return r.arrayBuffer()})
+         .then(buf=>blackHorseAudioContext.decodeAudioData(buf)).catch(()=>null);
      }
-     blackHorseNeighAudio.pause();blackHorseNeighAudio.muted=false;
-     anomalySceneText.style.opacity='0';await wait(350);
-     anomalyScene.style.opacity='0';await wait(780);
+   }catch(error){console.warn('black horse audio unlock',error)}
+ }
+ async function playBlackHorseNeighAfterPhoto(){
+   try{
+     const buffer=await Promise.race([blackHorseDecodedSound||Promise.resolve(null),wait(3000).then(()=>null)]);
+     if(buffer&&blackHorseAudioContext?.state==='running'){
+       await new Promise(resolve=>{
+         const source=blackHorseAudioContext.createBufferSource();
+         const gain=blackHorseAudioContext.createGain();gain.gain.value=.88;
+         source.buffer=buffer;source.connect(gain);gain.connect(blackHorseAudioContext.destination);
+         const fallback=setTimeout(()=>{try{source.stop()}catch{}resolve()},9000);
+         source.onended=()=>{clearTimeout(fallback);try{source.disconnect();gain.disconnect()}catch{}resolve()};
+         source.start(0);
+       });
+       return;
+     }
+   }catch(error){console.warn('black horse Web Audio',error)}
+   // 古いブラウザ向けフォールバック。
+   try{
+     blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;blackHorseNeighAudio.volume=.9;
+     await Promise.resolve(blackHorseNeighAudio.play());
+     await Promise.race([new Promise(resolve=>blackHorseNeighAudio.addEventListener('ended',resolve,{once:true})),wait(8000)]);
+   }catch(error){console.warn('black horse sound playback',error)}
+ }
+ async function loadBlackHorseFirstPhoto(){
+   // 素材がまだ未配布でも壊れた画像枠にならず、仮の夜の入り江を表示する。
+   const photo=blackHorsePicture;
+   await new Promise(resolve=>{
+     let settled=false;const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve()};
+     const timer=setTimeout(()=>{photo.onerror=null;photo.onload=null;photo.src=blackHorseFallbackPhoto;finish()},3000);
+     photo.onload=finish;
+     photo.onerror=()=>{photo.onerror=null;photo.src=blackHorseFallbackPhoto;finish()};
+     photo.src=blackHorseFirstPhoto;
+     if(photo.complete&&photo.naturalWidth>0)finish();
+   });
+ }
+ async function showBlackHorseFirstTelescope(){
+   close();resetAnimalSceneControls();hideOtterAnimation();
+   smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
+   otterBeachIntroImage.style.display='none';
+   anomalyScene.classList.remove('spr-smoke-lizard-scene');
+   anomalySceneText.classList.remove('spr-smoke-lizard-text','spr-anomaly-fit-lines');
+   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .85s ease;pointer-events:auto';
+   anomalyScene.setAttribute('aria-hidden','false');
+   anomalySceneText.style.width='min(94vw,780px)';
+   anomalySceneText.style.margin='0';
+   anomalySceneText.style.opacity='0';
+   anomalySceneText.textContent='';
+   blackHorseTelescopeFrame.style.opacity='0';blackHorseTelescopeFrame.style.display='block';
+   try{
+     await loadBlackHorseFirstPhoto();
+     await wait(60);anomalyScene.style.opacity='1';
+     await wait(650);blackHorseTelescopeFrame.style.opacity='1';
+     await wait(1100); // 最初に画像を十分見せたあとで音を鳴らす。
+     setAnomalyNarrativeText('馬のいななきが聞こえる。');
+     anomalySceneText.style.opacity='1';
+     await playBlackHorseNeighAfterPhoto();
+     await showManualAnimalLine('馬のいななきが聞こえる。','探索に戻る');
+     setAnimalStage('black-horse',1);
+   }finally{
+     blackHorseNeighAudio.pause();
+     anomalySceneText.style.opacity='0';
+     blackHorseTelescopeFrame.style.opacity='0';
+     await wait(260);anomalyScene.style.opacity='0';await wait(760);
+     blackHorseTelescopeFrame.style.display='none';
      anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';
      anomalyScene.setAttribute('aria-hidden','true');
-     horseEntryNeighPending=false;
-     if(coveButton?.isConnected){horseEntryContinueNextClick=true;coveButton.click()}
-   })().catch(error=>{
-     console.warn('black horse neigh scene',error);
-     blackHorseNeighAudio.pause();blackHorseNeighAudio.muted=false;
-     anomalyScene.style.opacity='0';anomalyScene.style.visibility='hidden';
-     anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');
-     horseEntryNeighPending=false;
-     if(coveButton?.isConnected){horseEntryContinueNextClick=true;coveButton.click()}
-   });
-   return true;
+     anomalySceneText.style.width='min(33em,calc(100vw - 64px))';
+     anomalySceneText.style.marginTop='clamp(8px,2vh,20px)';
+     resetAnimalSceneControls();
+     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
+   }
  }
  async function encounterBlackHorse(){
    const stage=animalStage('black-horse');
    const coveBackground='linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.65)),url("mermaids_cove_night.jpg") center/cover no-repeat';
    if(stage===0){
-     setAnimalStage('black-horse',1);
-     await runAnomalyScene(['望遠鏡を覗く。\n遠くの海に、青白いランタンの灯りが見える。','青白いランタンの灯りが、波に合わせて揺れている。'],{background:coveBackground});
+     if(blackHorseRunning)return;
+     blackHorseRunning=true;
+     // clickの同期処理中に音声の再生権限を確保する。画像はこの直後に表示する。
+     armBlackHorseNeigh();
+     try{await showBlackHorseFirstTelescope()}finally{blackHorseRunning=false}
      return;
    }
    if(stage===1){
@@ -11311,14 +11422,7 @@ window.addEventListener('message',e=>{
  window.supabaseClientSpecial?.channel('spr-day7-escape-success').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{if(p.new?.announcement_type==='resort-escape-success')open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。')}).subscribe();
  document.addEventListener('click',e=>{
    const coveButton=e.target.closest?.('[data-explore-spot="mermaids_cove"]');
-   if(coveButton){
-     if(horseEntryContinueNextClick){horseEntryContinueNextClick=false}
-     else if(horseEntryNeighPending){e.preventDefault();e.stopImmediatePropagation();return}
-     else if(horseEntryNeighEligible()){
-       e.preventDefault();e.stopImmediatePropagation();
-       startHorseEntryNeigh(coveButton);return;
-     }
-   }
+   // 入江を選んだだけでは黒馬の音声・異変演出を開始しない。
    const actionButton=e.target.closest?.('[data-explore-action]');
    if(actionButton){
      const spot=exploreSpot(),action=String(actionButton.dataset.exploreAction||'');
