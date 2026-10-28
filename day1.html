@@ -11041,6 +11041,7 @@ window.addEventListener('message',e=>{
  // 星空ハリネズミ：夜の人魚の入江でカメラを使うと、砂浜に落ちた針を発見する。
  // 動物の本体は見せない。画像はイベント発生時だけ取得し、前後をフェードさせる。
  const starHedgehogSpineImage='anomaly_starry_hedgehog_spine.jpg';
+ const starHedgehogWalkImage='star_hedgehog_walk_mermaids_cove_beach_night.png';
  let starHedgehogScenePlaying=false;
  async function encounterStarHedgehog(){
    if(starHedgehogScenePlaying)return;
@@ -11050,61 +11051,57 @@ window.addEventListener('message',e=>{
    scene.id='starHedgehogSpineScene';
    scene.setAttribute('role','dialog');
    scene.setAttribute('aria-modal','true');
-   scene.setAttribute('aria-label','砂浜で見つけたもの');
-   scene.style.cssText='position:fixed;inset:0;z-index:630;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.5vh,25px);padding:max(22px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;background:linear-gradient(rgba(2,8,16,.74),rgba(2,8,16,.88)),url("mermaids_cove_night.jpg") center/cover no-repeat;color:#fff;opacity:0;transition:opacity .95s ease;pointer-events:auto';
+   scene.setAttribute('aria-label','人魚の入江の散歩');
+   scene.style.cssText='position:fixed;inset:0;z-index:630;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(18px,3vh,34px);padding:clamp(26px,4vh,48px) 16px max(24px,env(safe-area-inset-bottom));box-sizing:border-box;overflow-y:auto;background:#000;color:#fff;opacity:0;transition:opacity .8s ease;pointer-events:auto';
    const picture=document.createElement('div');
-   picture.style.cssText='display:none;flex:0 1 auto;width:min(94vw,820px);max-height:57dvh;aspect-ratio:16 / 9;opacity:0;transition:opacity 1.55s ease;overflow:hidden;background:#02070c';
+   picture.style.cssText='display:block;flex:0 0 auto;width:min(94vw,820px,calc(47dvh * 1.7777778));max-height:47dvh;aspect-ratio:16 / 9;opacity:0;transition:opacity .65s ease;overflow:hidden;background:#02070c;border:1px solid rgba(181,202,255,.27);box-shadow:0 0 32px rgba(72,112,173,.16)';
    const image=document.createElement('img');
-   image.alt='夜の砂浜に落ちた、星屑のように光る一本の針';
+   image.alt='';
    image.draggable=false;
-   image.style.cssText='display:block;width:100%;height:100%;object-fit:contain;visibility:hidden';
+   image.decoding='async';
+   image.style.cssText='display:block;width:100%;height:100%;object-fit:cover;visibility:hidden';
    picture.append(image);
    const caption=document.createElement('div');
-   caption.style.cssText='position:relative;flex:0 0 auto;width:min(36em,calc(100vw - 38px));max-width:100%;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-align:left;line-break:strict;overflow-wrap:break-word;white-space:normal;text-wrap:pretty;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .6s ease';
-   scene.append(picture,caption);
+   caption.style.cssText='position:relative;flex:0 0 auto;width:min(36em,calc(100vw - 38px));max-width:100%;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-align:left;line-break:strict;overflow-wrap:break-word;white-space:normal;text-wrap:pretty;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .45s ease';
+   const next=document.createElement('button');
+   next.type='button';next.textContent='NEXT　›';
+   next.style.cssText='display:block;flex:0 0 auto;width:min(238px,72vw);min-height:82px;margin:clamp(2px,1vh,12px) 0 0;border:2px solid #bd9c63;background:#040c17;color:#e8d6ad;font:600 clamp(19px,4vw,26px)/1 Georgia,"Yu Mincho",serif;letter-spacing:.14em;cursor:pointer;opacity:0;transition:opacity .35s ease';
+   scene.append(picture,caption,next);
    document.body.append(scene);
-   // 画像は事前の全ページロードではなく、この遭遇時にだけ読み込む。
-   const imageReady=new Promise(resolve=>{
-     image.onload=()=>{image.style.visibility='visible';resolve(true)};
-     image.onerror=()=>{console.warn('Star hedgehog image could not be loaded:',starHedgehogSpineImage);resolve(false)};
+   const loadSceneImage=src=>new Promise(resolve=>{
+     let settled=false;
+     const finish=ok=>{if(settled)return;settled=true;image.onload=null;image.onerror=null;resolve(ok)};
+     image.style.visibility='hidden';
+     image.onload=()=>finish(true);
+     image.onerror=()=>{console.warn('Star hedgehog image could not be loaded:',src);finish(false)};
+     image.src=src;
+     if(image.complete)finish(image.naturalWidth>0);
+     setTimeout(()=>finish(image.complete&&image.naturalWidth>0),4500);
    });
-   image.src=starHedgehogSpineImage;
-   const showLine=async(text,ms)=>{
-     caption.style.opacity='0';
-     await wait(580);
+   const showPage=async(src,alt,text)=>{
+     caption.style.opacity='0';next.style.opacity='0';picture.style.opacity='0';
+     await wait(420);
+     image.alt=alt;
+     await loadSceneImage(src);
+     image.style.visibility=image.naturalWidth>0?'visible':'hidden';
      caption.textContent=text;
-     caption.style.opacity='1';
-     await wait(ms);
+     picture.style.opacity='1';caption.style.opacity='1';next.style.display='block';
+     await wait(40);next.style.opacity='1';
+     await waitForTap(next);
+     next.style.opacity='0';caption.style.opacity='0';picture.style.opacity='0';
+     await wait(420);
    };
    try{
-     await wait(50);
-     scene.style.opacity='1';
-     await wait(1000);
-     await showLine('夜の潮風が気持ちいい。そのままカメラを片手に散歩をした。',3600);
-     await showLine('少し先に、砂浜に光っている細い棒のようなものが落ちている。',3800);
-     caption.style.opacity='0';
-     await wait(650);
-     scene.style.background='#02070c';
-     const ready=await Promise.race([imageReady,wait(3000).then(()=>image.complete&&image.naturalWidth>0)]);
-     if(ready){
-       picture.style.display='block';
-       await wait(50);
-       picture.style.opacity='1';
-       await wait(1750);
-     }
-     await showLine('キラキラ光っている。綺麗だけれど、得体が知れない。持ち帰るのはやめておこう。',4400);
-     caption.style.opacity='0';
-     await wait(450);
-     picture.style.opacity='0';
-     await wait(1550);
-     scene.style.opacity='0';
-     await wait(1000);
+     await wait(40);scene.style.opacity='1';await wait(820);
+     await showPage(starHedgehogWalkImage,'月明かりに照らされた人魚の入江を散歩する景色','夜の潮風が気持ちいい。そのままカメラを片手に散歩をした。');
+     await showPage(starHedgehogSpineImage,'砂浜に落ちた、星屑のように光る一本の針','少し先に、砂浜に光っている細い棒のようなものが落ちている。');
+     await showPage(starHedgehogSpineImage,'星屑のように光る一本の針','キラキラ光っている。綺麗だけれど、得体が知れない。持ち帰るのはやめておこう。');
+     scene.style.opacity='0';await wait(850);
    }finally{
      scene.remove();
      starHedgehogScenePlaying=false;
    }
  }
-
  function fawnEligible(){
    return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
  }
