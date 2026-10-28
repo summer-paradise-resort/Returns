@@ -5130,11 +5130,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(casinoElevatorAftermathRunning)return;
       casinoElevatorAftermathRunning=true;casinoElevatorState='aftermath';
       stopElevatorGlitchSound();
-      try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
-      casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
       casinoElevatorVideoError.classList.add('hidden');
       try{
         await showCasinoElevatorAftermath(()=>{
+          // 黒いレイヤーが映像を覆ってから、映像とカジノ画面を隠す。
+          try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
+          casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
           // 所持品同期は独白表示を待たせず、暗転中に開始する。
           try{const penalty=window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('casino elevator life sync',error))}catch(error){console.warn('casino elevator life sync',error)}
         });
