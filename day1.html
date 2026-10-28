@@ -10633,7 +10633,17 @@ window.addEventListener('message',e=>{
  async function runAnomalyScene(pages,{background='#02070c',hold=2100,onBeforeExit=null}={}){
    smokeLizardStage.style.display='none';fawnStage.style.display='none';resetAnimalSceneControls();
    anomalyScene.style.background=background;anomalySceneText.textContent='';anomalySceneText.style.opacity='0';anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.style.opacity='1';anomalyScene.setAttribute('aria-hidden','false');await wait(650);
-   for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(page.text);anomalySceneText.style.opacity='1';if(page.sound)playAnimalSound(page.sound,page.volume??.8);if(typeof page.run==='function')await page.run();await wait(Number(page.hold)||hold)}
+   for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(page.text);anomalySceneText.style.opacity='1';
+   // 話者名は、指定があるイベントだけ会話欄の上に表示する。
+   if(page.speaker){
+     const speakerLabel=document.createElement('span');
+     speakerLabel.textContent=String(page.speaker);
+     speakerLabel.style.cssText='display:block;margin-bottom:clamp(10px,2vh,18px);font:600 clamp(14px,3.3vw,18px)/1.6 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.2em;color:#e1cfad';
+     anomalySceneText.prepend(speakerLabel);
+   }
+   if(page.sound)playAnimalSound(page.sound,page.volume??.8);
+   if(typeof page.run==='function')await page.run();
+   await wait(Number(page.hold)||hold)}
    if(typeof onBeforeExit==='function')await onBeforeExit();anomalySceneText.style.opacity='0';await wait(300);anomalyScene.style.opacity='0';await wait(760);anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.background='#02070c';
  }
  // ケムリトカゲは NEXT で1.65秒フェードインし、完全に現れてから鳴き声を鳴らす。
@@ -10750,7 +10760,33 @@ window.addEventListener('message',e=>{
  const exploreSpot=()=>String(document.getElementById('exploreLocationBg')?.dataset.spot||'');
  const guestName=()=>String(window.__sprGetGuestName?.()||localStorage.getItem('spr-guest-name')||'お客様').trim()||'お客様';
 
- async function encounterSeabird(){markAnimal('seabird');primeAnimalSound(seabirdWingAudio);await runAnomalyScene([{text:`「${guestName()}サン」`,hold:1500},{text:'',sound:seabirdWingAudio,volume:.9,hold:1100},'声は波音に混じって途切れた。\n足元の夕暮れの砂浜には、海鳥の羽が一枚落ちている。'],{background:'linear-gradient(rgba(0,0,0,.56),rgba(0,0,0,.76)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat'});}
+ // 名前を呼ぶ海鳥：夕方のビーチ・カメラのみ。鳥の姿は見せず、黒い画面で声だけがする。
+ // 羽ばたき音の再生が終わるまで次の文章を出さない（未再生時も最大4秒で先へ進む）。
+ function waitForSeabirdWings(){
+   return new Promise(resolve=>{
+     let done=false,timer=null;
+     const finish=()=>{
+       if(done)return;done=true;
+       clearTimeout(timer);
+       seabirdWingAudio.removeEventListener('ended',finish);
+       seabirdWingAudio.removeEventListener('error',finish);
+       resolve();
+     };
+     seabirdWingAudio.addEventListener('ended',finish);
+     seabirdWingAudio.addEventListener('error',finish);
+     timer=setTimeout(finish,4000);
+     if(seabirdWingAudio.ended)finish();
+   });
+ }
+ async function encounterSeabird(){
+   markAnimal('seabird');
+   primeAnimalSound(seabirdWingAudio);
+   await runAnomalyScene([
+     {speaker:'？？？',text:`「${guestName()}」`,hold:1900},
+     {text:'',sound:seabirdWingAudio,volume:.9,run:waitForSeabirdWings,hold:200},
+     {text:'周囲を見渡すが、誰もいない。',hold:2600}
+   ],{background:'#000000'});
+ }
  let otterEventRunning=false;
  async function encounterOtter(){
    if(otterEventRunning)return;
