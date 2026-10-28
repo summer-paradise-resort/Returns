@@ -10581,16 +10581,15 @@ window.addEventListener('message',e=>{
  #glassFawnAnimation .fawn-character-idle{transform-origin:83% 69%;animation:fawnQuietBreath 4.6s ease-in-out infinite}
  #glassFawnAnimation [data-fawn-part="ocean"]{animation:fawnMoonWater 6.8s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="lights"]{animation:fawnForestLights 4.9s ease-in-out infinite alternate}
- #glassFawnAnimation [data-fawn-part="ear-left"]{animation:fawnLeftEarTwitch 8.4s linear infinite;will-change:transform}
- #glassFawnAnimation [data-fawn-part="ear-right"]{animation:fawnRightEarTwitch 8.4s linear infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="ear-left"]{animation:fawnEarTwitch 8.4s linear infinite;will-change:transform}
+ #glassFawnAnimation [data-fawn-part="ear-right"]{animation:fawnEarTwitch 8.4s linear infinite;will-change:transform}
  #glassFawnAnimation [data-fawn-part="blink"]{opacity:0;animation:fawnBlink 8.4s linear infinite;will-change:opacity}
  #glassFawnAnimation [data-fawn-part="antler-reflection"]{animation:fawnAntlerShimmer 6.4s ease-in-out infinite alternate}
  #glassFawnAnimation [data-fawn-part="foreground"]{transform-origin:68% 100%;animation:fawnLeavesSway 5.8s ease-in-out infinite;will-change:transform}
  @keyframes fawnQuietBreath{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1px) rotate(-.22deg)}}
  @keyframes fawnMoonWater{0%{opacity:.88;filter:brightness(.96)}100%{opacity:1;filter:brightness(1.05)}}
  @keyframes fawnForestLights{0%,100%{opacity:.62}35%{opacity:.88}70%{opacity:.72}}
- @keyframes fawnLeftEarTwitch{0%,22%,26%,62%,66%,100%{transform:translate3d(0,0,0)}23%{transform:translate3d(0,-3.5px,0)}24%{transform:translate3d(0,1px,0)}25%{transform:translate3d(0,-2px,0)}63%{transform:translate3d(0,-3px,0)}64%{transform:translate3d(0,.8px,0)}65%{transform:translate3d(0,-1.6px,0)}}
- @keyframes fawnRightEarTwitch{0%,39%,43%,76%,80%,100%{transform:translate3d(0,0,0)}40%{transform:translate3d(0,-3px,0)}41%{transform:translate3d(0,1.1px,0)}42%{transform:translate3d(0,-1.8px,0)}77%{transform:translate3d(0,-3.4px,0)}78%{transform:translate3d(0,.7px,0)}79%{transform:translate3d(0,-1.5px,0)}}
+ @keyframes fawnEarTwitch{0%,22%,26%,62%,66%,100%{transform:translate3d(0,0,0)}23%{transform:translate3d(0,-3.5px,0)}24%{transform:translate3d(0,1px,0)}25%{transform:translate3d(0,-2px,0)}63%{transform:translate3d(0,-3px,0)}64%{transform:translate3d(0,.8px,0)}65%{transform:translate3d(0,-1.6px,0)}}
  @keyframes fawnBlink{0%,20%,23.8%,67%,70.8%,100%{opacity:0}21.3%,68.3%{opacity:1}22.2%,69.2%{opacity:1}}
  @keyframes fawnAntlerShimmer{0%{opacity:.62;filter:brightness(.95)}100%{opacity:1;filter:brightness(1.12)}}
  @keyframes fawnLeavesSway{0%,100%{transform:translate3d(-7px,2px,0) rotate(-1.3deg)}26%{transform:translate3d(5px,-2px,0) rotate(.85deg)}53%{transform:translate3d(12px,0,0) rotate(1.65deg)}78%{transform:translate3d(-1px,-2px,0) rotate(-.2deg)}}
@@ -11171,7 +11170,7 @@ window.addEventListener('message',e=>{
    {name:'水面の足元',px:1056,py:496,zoom:16.0},   // 水面に立つ脚とその周囲の水しぶき
    {name:'青いランタン',px:1094,py:447,zoom:18.0} // 口元の灯りをアップに
  ];
- const blackHorseTelescopeOverlayFile='anomaly_telescope_overlay.png';
+ const blackHorseTelescopeOverlayFile='telescope_frame_clean_transparent.png';
  const blackHorseSeaPhoto='mermaids_cove_night.jpg';
  let blackHorseRunning=false;
  let blackHorseAudioContext=null,blackHorseDecodedSound=null;
@@ -11251,8 +11250,14 @@ window.addEventListener('message',e=>{
  blackHorseScene.append(blackHorseSea,blackHorseViewport,blackHorseText,blackHorseNext);
  document.body.append(blackHorseScene);
  const horseFade=async(ms=850)=>{await wait(ms)};
+ function horseSetCenteredMonologue(enabled){
+   blackHorseScene.style.justifyContent=enabled?'center':'flex-start';
+   blackHorseScene.style.gap=enabled?'0':'clamp(14px,2.5vh,22px)';
+   blackHorseText.style.textAlign=enabled?'center':'left';
+ }
  async function horseBegin(){
    close();
+   horseSetCenteredMonologue(false);
    blackHorseText.textContent='';blackHorseText.style.opacity='0';
    blackHorseViewport.style.opacity='0';blackHorseViewport.style.display='block';
    blackHorseSea.style.opacity='0';blackHorseSea.style.filter='none';blackHorseSea.style.transform='none';
@@ -11265,6 +11270,7 @@ window.addEventListener('message',e=>{
    await horseFade(900);
  }
  async function horseEnd(){
+   horseSetCenteredMonologue(false);
    blackHorseNext.style.opacity='0';blackHorseText.style.opacity='0';blackHorseViewport.style.opacity='0';blackHorseSea.style.opacity='0';
    await horseFade(900);
    blackHorseScene.style.opacity='0';
@@ -11365,12 +11371,12 @@ window.addEventListener('message',e=>{
        await horseEnd();
        return;
      }
-     // 3回目：同じ写真の青いランタンをアップ→温かい海への没入→暗転→記憶喪失→ROOM。
+     // 3回目：青いランタンを見た後に全面を黒くし、中央の独白だけで海へ引き込まれる。
      await horseShowTelescopePhoto(2,'青いランタンが見える。\n小さな灯りが、ゆっくりと揺れている。\nもう少し、もう少しあれを見ていたい。');
      await horseFade(2700);
      await horseBlackout();
-     blackHorseSea.style.opacity='1';
-     await horseFade(1300);
+     horseSetCenteredMonologue(true);
+     // 海の写真は出さず、黒一色の画面に独白だけを中央表示する。
      await horseTextPage('気がつくと、上半身まで海に浸かっていた。\n海水はあたたかい。\nぬるい。きもちいい。',2200);
      await horseTextPage('波が身体を撫でるたびに、力が抜けていく。',1900);
      await horseTextPage('このまま、海と一つに“なりたい”。',1900);
@@ -11378,6 +11384,7 @@ window.addEventListener('message',e=>{
      await horseTextPage('息が、できない───',2200);
      // 海の写真と文字をどちらもフェードアウトして、完全な黒に落とす。
      await horseBlackout();
+     horseSetCenteredMonologue(false);
      await horseFade(850);
      // 先に完了済みを記録し、再アクセスやイベント重複による二重減少を防ぐ。
      markAnimal('black-horse');setAnimalStage('black-horse',3);
