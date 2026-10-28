@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- build: 2026-10-28 horse-frame-wave-stop-hedgehog-stable v5 -->
+<!-- build: 2026-10-28 horse-frame-wave-stop-hedgehog-stable v6 -->
 <html lang="ja" data-resort-day="1">
 <head>
 <script>
@@ -9327,6 +9327,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     if(await enforceLatestResetSession())return;
     await syncCurrentDay(true);
     const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();
+    // Realtime publication is not enabled/reliable on every Supabase project or device.
+    // Keep DAY changes shared by polling the authoritative announcement markers.
+    const sharedDayPoll=setInterval(()=>{if(!document.hidden)void syncCurrentDay(true)},5000);
+    window.addEventListener('pagehide',()=>clearInterval(sharedDayPoll),{once:true});
     if(activeRoom)refreshHernandoRoomEntrance(activeRoom);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)void syncCurrentDay(true)});
     window.addEventListener('focus',()=>{void syncCurrentDay(true)});
