@@ -10876,8 +10876,11 @@ window.addEventListener('message',e=>{
      // 最初の画面は黒背景＋上部に夕方のビーチ画像。ラッコ自身はまだ出さない。
      anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
      anomalyScene.setAttribute('aria-hidden','false');
+     // 選択前は元の夕方ビーチ。新しいラッコのいない海は「泳ぐ」を選んだ後だけ表示する。
      otterBeachIntroImage.src='summer_paradise_beach_evening.jpg';
      otterBeachIntroImage.style.display='block';
+     otterBeachIntroImage.style.opacity='1';
+     otterBeachIntroImage.style.transition='opacity 1.15s ease';
      // 写真・本文・選択肢を同じ横幅で揃える。画面の右側へ文章がはみ出さないようにする。
      anomalySceneText.style.width='min(94vw,780px)';
      anomalySceneText.style.flex='0 0 auto';
@@ -10888,8 +10891,26 @@ window.addEventListener('message',e=>{
      await wait(60);anomalyScene.style.opacity='1';await wait(950);
      anomalySceneText.style.opacity='1';
      const direction=await waitForOtterSwimChoice();
-     if(direction!=='swim')return; // 岸へ戻る場合は、遭遇済みにしない。
-     // 画像は泳ぐ選択後にだけ準備し、衝突の文章までは一切見せない。
+     if(direction!=='swim')return; // 岸へ戻る場合は画像を切り替えず、遭遇済みにしない。
+     // 「泳ぐ」を押してから初めて場面を暗転し、ラッコのいない海へ移る。
+     // まず風景だけをフェードインさせる。ラッコは衝突の文章のNEXT後に初登場。
+     anomalySceneText.style.opacity='0';
+     anomalyScene.style.opacity='0';
+     await wait(950);
+     otterBeachIntroImage.style.opacity='0';
+     otterBeachIntroImage.src='anomaly_drifting_otter_sea_evening.jpg';
+     // 通信状況に左右されず、切り替え後の画像をなるべく読み込んでから表示する。
+     await Promise.race([
+       otterBeachIntroImage.complete ? Promise.resolve() : new Promise(resolve=>{
+         otterBeachIntroImage.addEventListener('load',resolve,{once:true});
+         otterBeachIntroImage.addEventListener('error',resolve,{once:true});
+       }),
+       wait(3500)
+     ]);
+     anomalyScene.style.opacity='1';
+     await wait(900);
+     otterBeachIntroImage.style.opacity='1';
+     await wait(1350);
      // 導入の風景はNEXTまで残し、ラッコが登場する瞬間にだけ切り替える。
      const otterAsset='anomaly_drifting_otter.jpg?v=whiskers-1';
      const preloadOtter=new Image();preloadOtter.src=otterAsset;
