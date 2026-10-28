@@ -4716,7 +4716,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
       // 小鹿の草むら効果音中と、海鳥が名前を呼ぶ間は、1秒ごとのBGM同期でも再開しない。
-      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed){pauseExploreMusic();return;}
+      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
       const open=Boolean(view?.classList.contains('open'));
       const period=currentTokyoPeriod();
@@ -10665,7 +10665,7 @@ window.addEventListener('message',e=>{
  function primeAnimalSound(audio){try{audio.preload='auto';audio.muted=true;audio.volume=0;const p=audio.play();if(p?.then)p.then(()=>{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=1}).catch(()=>{audio.muted=false;audio.volume=1})}catch{}}
  async function runAnomalyScene(pages,{background='#02070c',hold=2100,onBeforeExit=null}={}){
    smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
-   otterBeachIntroImage.style.display='none';blackHorseTelescopeFrame.style.display='none';
+   otterBeachIntroImage.style.display='none';
    anomalyScene.style.flexDirection='column';resetAnimalSceneControls();
    anomalyScene.style.background=background;anomalySceneText.textContent='';anomalySceneText.style.opacity='0';anomalyScene.style.visibility='visible';anomalyScene.style.pointerEvents='auto';anomalyScene.style.opacity='1';anomalyScene.setAttribute('aria-hidden','false');await wait(650);
    for(const raw of pages){const page=typeof raw==='string'?{text:raw}:raw;anomalySceneText.style.opacity='0';await wait(260);setAnomalyNarrativeText(page.text);anomalySceneText.style.opacity='1';
@@ -11092,44 +11092,37 @@ window.addEventListener('message',e=>{
      await closeAnimatedAnimalScene(fawnStage);
    }
  }
- // 黒馬のいななきは入江に入るときではなく、最初に望遠鏡を覗いた後に鳴らす。
- // iOSの音声制限に備え、望遠鏡のタップ時点でWeb Audioを有効化しておく。
- const blackHorseFirstPhoto='anomaly_black_horse_telescope_01.jpg'; // 画像受領後、この名前でGitHubへ配置
- const blackHorseFallbackPhoto='mermaids_cove_night.jpg';
- // 望遠鏡のフレームPNG。透過素材は風景写真の上に重ね、なければ写真だけ表示する。
+ // 波渡の黒馬：DAY2〜6／夜／人魚の入江／エルナンドの酔い＋不穏またはNGドリンク。
+ // 望遠鏡を覗くごとに 星空→馬の足元→青いランタン。各シーンは黒フェードを挟む。
+ // PNGは写真の上に重ねる。1枚の写真を拡大位置だけ変える。未配置時も壊れたアイコンは出さない。
+ // ★馬の写真は1枚だけ。同じ写真を望遠鏡の角度と倍率だけ変えて再利用する。
+ // この画像（元寸法 1536×1024）の実際の位置を基準に、望遠鏡の向きを変える。
+ // 中心座標は元画像上のピクセル。写真が object-fit:cover で切られても正しい位置を合わせる。
+ // 1回目は星・天の川だけ、2回目は水面を踏む脚、3回目は口元の青いランタン。
+ // 画像は1枚のみアップロードすればよい。縮尺が大きいため2・3回目は多少ぼやける。
+ const blackHorsePhoto='anomaly_black_horse_telescope_01.jpg';
+ const blackHorseFocus=[
+   {name:'星空',px:760,py:155,zoom:3.2},           // 雲や月、馬を映さない星空の中心
+   {name:'水面の足元',px:1056,py:496,zoom:16.0},   // 水面に立つ脚とその周囲の水しぶき
+   {name:'青いランタン',px:1094,py:447,zoom:18.0} // 口元の灯りをアップに
+ ];
  const blackHorseTelescopeOverlayFile='anomaly_telescope_overlay.png';
+ const blackHorseSeaPhoto='mermaids_cove_night.jpg';
  let blackHorseRunning=false;
  let blackHorseAudioContext=null,blackHorseDecodedSound=null;
- const blackHorseTelescopeFrame=document.createElement('div');
- blackHorseTelescopeFrame.id='blackHorseTelescopeFrame';
- blackHorseTelescopeFrame.style.cssText='position:relative;display:none;flex:0 0 auto;width:min(94vw,780px);max-width:100%;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(181,202,255,.27);box-sizing:border-box;background:#02070c;opacity:0;transition:opacity 1s ease;isolation:isolate';
- const blackHorsePicture=document.createElement('img');
- blackHorsePicture.id='blackHorseTelescopePicture';
- blackHorsePicture.alt='望遠鏡から見えた夜の海';
- blackHorsePicture.draggable=false;
- blackHorsePicture.style.cssText='position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;pointer-events:none;user-select:none';
- const blackHorseTelescopeOverlay=document.createElement('img');
- blackHorseTelescopeOverlay.id='blackHorseTelescopeOverlay';
- blackHorseTelescopeOverlay.alt='';blackHorseTelescopeOverlay.setAttribute('aria-hidden','true');
- blackHorseTelescopeOverlay.draggable=false;
- blackHorseTelescopeOverlay.style.cssText='position:absolute;z-index:2;inset:0;display:none;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;-webkit-user-select:none';
- blackHorseTelescopeOverlay.onload=()=>{blackHorseTelescopeOverlay.style.display='block'};
- blackHorseTelescopeOverlay.onerror=()=>{blackHorseTelescopeOverlay.style.display='none'};
- blackHorseTelescopeOverlay.src=blackHorseTelescopeOverlayFile;
- blackHorseTelescopeFrame.append(blackHorsePicture,blackHorseTelescopeOverlay);
- anomalyScene.insertBefore(blackHorseTelescopeFrame,anomalySceneText);
+ // iOSで遅延したmp3が再生できるよう、最初の望遠鏡タップ中にAudioContextを開く。
  function armBlackHorseNeigh(){
-   const Ctx=window.AudioContext||window.webkitAudioContext;
-   if(!Ctx)return;
+   const Context=window.AudioContext||window.webkitAudioContext;
+   if(!Context)return;
    try{
-     if(!blackHorseAudioContext)blackHorseAudioContext=new Ctx();
+     if(!blackHorseAudioContext)blackHorseAudioContext=new Context();
      void blackHorseAudioContext.resume().catch(()=>{});
      if(!blackHorseDecodedSound){
        blackHorseDecodedSound=fetch('wavewalker_black_horse_neigh.mp3?v=20261018')
-         .then(r=>{if(!r.ok)throw new Error('黒馬の鳴き声を取得できません');return r.arrayBuffer()})
-         .then(buf=>blackHorseAudioContext.decodeAudioData(buf)).catch(()=>null);
+         .then(response=>{if(!response.ok)throw Error('黒馬のmp3を取得できません');return response.arrayBuffer()})
+         .then(data=>blackHorseAudioContext.decodeAudioData(data)).catch(()=>null);
      }
-   }catch(error){console.warn('black horse audio unlock',error)}
+   }catch(error){console.warn('black horse audio init:',error)}
  }
  async function playBlackHorseNeighAfterPhoto(){
    try{
@@ -11139,110 +11132,210 @@ window.addEventListener('message',e=>{
          const source=blackHorseAudioContext.createBufferSource();
          const gain=blackHorseAudioContext.createGain();gain.gain.value=.88;
          source.buffer=buffer;source.connect(gain);gain.connect(blackHorseAudioContext.destination);
-         const fallback=setTimeout(()=>{try{source.stop()}catch{}resolve()},9000);
-         source.onended=()=>{clearTimeout(fallback);try{source.disconnect();gain.disconnect()}catch{}resolve()};
+         const timer=setTimeout(()=>{try{source.stop()}catch{}resolve()},9000);
+         source.onended=()=>{clearTimeout(timer);try{source.disconnect();gain.disconnect()}catch{}resolve()};
          source.start(0);
        });
        return;
      }
-   }catch(error){console.warn('black horse Web Audio',error)}
-   // 古いブラウザ向けフォールバック。
+   }catch(error){console.warn('black horse Web Audio:',error)}
+   // Web Audioが使えない端末のみHTML Audioへフォールバック。
    try{
-     blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;blackHorseNeighAudio.volume=.9;
-     await Promise.resolve(blackHorseNeighAudio.play());
-     await Promise.race([new Promise(resolve=>blackHorseNeighAudio.addEventListener('ended',resolve,{once:true})),wait(8000)]);
-   }catch(error){console.warn('black horse sound playback',error)}
+     blackHorseNeighAudio.pause();blackHorseNeighAudio.currentTime=0;
+     blackHorseNeighAudio.muted=false;blackHorseNeighAudio.volume=.9;
+     await blackHorseNeighAudio.play();
+     await Promise.race([
+       new Promise(resolve=>blackHorseNeighAudio.addEventListener('ended',resolve,{once:true})),wait(8000)
+     ]);
+   }catch(error){console.warn('black horse mp3 playback:',error)}
  }
- async function loadBlackHorseFirstPhoto(){
-   // 素材がまだ未配布でも壊れた画像枠にならず、仮の夜の入り江を表示する。
-   const photo=blackHorsePicture;
-   await new Promise(resolve=>{
-     let settled=false;const finish=()=>{if(settled)return;settled=true;clearTimeout(timer);resolve()};
-     const timer=setTimeout(()=>{photo.onerror=null;photo.onload=null;photo.src=blackHorseFallbackPhoto;finish()},3000);
-     photo.onload=finish;
-     photo.onerror=()=>{photo.onerror=null;photo.src=blackHorseFallbackPhoto;finish()};
-     photo.src=blackHorseFirstPhoto;
-     if(photo.complete&&photo.naturalWidth>0)finish();
+
+ // 異変動物の共通パネルと独立した固定レイアウトにし、過去の画面状態で横並びにならないようにする。
+ const blackHorseScene=document.createElement('div');
+ blackHorseScene.id='blackHorseStoryScene';
+ blackHorseScene.setAttribute('aria-hidden','true');
+ blackHorseScene.style.cssText='position:fixed;inset:0;z-index:2147483005;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.5vh,22px);box-sizing:border-box;padding:max(22px,env(safe-area-inset-top)) 3vw max(24px,env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;background:#000;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .85s ease,visibility 0s linear .85s';
+ blackHorseScene.setAttribute('role','dialog');blackHorseScene.setAttribute('aria-modal','true');
+ const blackHorseViewport=document.createElement('div');
+ blackHorseViewport.id='blackHorseTelescopeFrame';
+ blackHorseViewport.style.cssText='position:relative;display:block;flex:0 0 auto;align-self:center;width:min(94vw,780px);max-width:100%;aspect-ratio:16/9;box-sizing:border-box;isolation:isolate;overflow:hidden;border:1px solid rgba(181,202,255,.26);background:#02070c;opacity:0;transition:opacity .9s ease';
+ const blackHorsePicture=document.createElement('img');
+ blackHorsePicture.id='blackHorseTelescopePicture';blackHorsePicture.alt='望遠鏡の向こうに見える景色';
+ blackHorsePicture.draggable=false;
+ blackHorsePicture.style.cssText='position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;user-select:none';
+ const blackHorseMissingPhoto=document.createElement('div');
+ blackHorseMissingPhoto.style.cssText='position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:20px;color:rgba(255,255,255,.55);font:11px/1.8 Georgia,serif;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere';
+ const blackHorseTelescopeOverlay=document.createElement('img');
+ blackHorseTelescopeOverlay.id='blackHorseTelescopeOverlay';blackHorseTelescopeOverlay.alt='';
+ blackHorseTelescopeOverlay.setAttribute('aria-hidden','true');blackHorseTelescopeOverlay.draggable=false;
+ blackHorseTelescopeOverlay.style.cssText='position:absolute;inset:0;z-index:2;display:none;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';
+ blackHorseTelescopeOverlay.onload=()=>{blackHorseTelescopeOverlay.style.display='block'};
+ blackHorseTelescopeOverlay.onerror=()=>{blackHorseTelescopeOverlay.style.display='none'};
+ blackHorseTelescopeOverlay.src=blackHorseTelescopeOverlayFile;
+ blackHorseViewport.append(blackHorsePicture,blackHorseMissingPhoto,blackHorseTelescopeOverlay);
+ const blackHorseSea=document.createElement('div');
+ blackHorseSea.style.cssText='position:absolute;inset:0;z-index:0;opacity:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.56),rgba(0,0,0,.78)),url("'+blackHorseSeaPhoto+'") center/cover no-repeat;transition:opacity 1.25s ease,filter 3.1s ease,transform 3.1s ease';
+ const blackHorseText=document.createElement('div');
+ blackHorseText.id='blackHorseStoryText';
+ blackHorseText.classList.add('spr-reading-prose');
+ blackHorseText.style.cssText='position:relative;z-index:3;flex:0 0 auto;align-self:center;width:min(94vw,780px);max-width:100%;margin:0;padding:0 2px;box-sizing:border-box;white-space:pre-line;overflow-wrap:anywhere;text-align:left;color:#fff;text-shadow:0 2px 12px #000;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;opacity:0;transition:opacity .8s ease';
+ const blackHorseNext=document.createElement('button');
+ blackHorseNext.id='blackHorseStoryContinue';blackHorseNext.type='button';
+ blackHorseNext.textContent='探索に戻る';
+ blackHorseNext.style.cssText='position:relative;z-index:4;display:none;flex:0 0 auto;align-items:center;justify-content:center;min-height:52px;margin:clamp(6px,2vh,14px) auto 0;padding:12px 34px;border:1px solid #c9aa68;background:#06111d;color:#e8d5a3;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.12em;opacity:0;transition:opacity .45s ease';
+ blackHorseScene.append(blackHorseSea,blackHorseViewport,blackHorseText,blackHorseNext);
+ document.body.append(blackHorseScene);
+ const horseFade=async(ms=850)=>{await wait(ms)};
+ async function horseBegin(){
+   close();
+   blackHorseText.textContent='';blackHorseText.style.opacity='0';
+   blackHorseViewport.style.opacity='0';blackHorseViewport.style.display='block';
+   blackHorseSea.style.opacity='0';blackHorseSea.style.filter='none';blackHorseSea.style.transform='none';
+   blackHorseNext.style.display='none';blackHorseNext.style.opacity='0';
+   blackHorseScene.style.visibility='visible';blackHorseScene.style.pointerEvents='auto';
+   blackHorseScene.setAttribute('aria-hidden','false');
+   void blackHorseScene.offsetWidth;
+   blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear 0s';
+   blackHorseScene.style.opacity='1';
+   await horseFade(900);
+ }
+ async function horseEnd(){
+   blackHorseNext.style.opacity='0';blackHorseText.style.opacity='0';blackHorseViewport.style.opacity='0';blackHorseSea.style.opacity='0';
+   await horseFade(900);
+   blackHorseScene.style.opacity='0';
+   await horseFade(900);
+   blackHorseScene.style.visibility='hidden';blackHorseScene.style.pointerEvents='none';
+   blackHorseScene.setAttribute('aria-hidden','true');
+   blackHorseNext.style.display='none';blackHorseText.textContent='';
+   blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear .85s';
+ }
+ function horseLoadPhoto(src){
+   return new Promise(resolve=>{
+     let finished=false;
+     const done=ok=>{
+       if(finished)return;finished=true;clearTimeout(timer);
+       blackHorsePicture.onload=null;blackHorsePicture.onerror=null;
+       blackHorsePicture.style.display=ok?'block':'none';
+       blackHorseMissingPhoto.style.display=ok?'none':'flex';
+       blackHorseMissingPhoto.textContent=ok?'':`画像を配置してください：${src}`;
+       resolve();
+     };
+     blackHorsePicture.style.display='none';blackHorseMissingPhoto.style.display='none';
+     const timer=setTimeout(()=>done(false),4500);
+     blackHorsePicture.onload=()=>done(true);
+     blackHorsePicture.onerror=()=>done(false);
+     blackHorsePicture.src=src;
+     if(blackHorsePicture.complete&&blackHorsePicture.naturalWidth>0)done(true);
    });
  }
- async function showBlackHorseFirstTelescope(){
-   close();resetAnimalSceneControls();hideOtterAnimation();
-   smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
-   otterBeachIntroImage.style.display='none';
-   anomalyScene.classList.remove('spr-smoke-lizard-scene');
-   anomalySceneText.classList.remove('spr-smoke-lizard-text','spr-anomaly-fit-lines');
-   anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.4vh,22px);padding:clamp(20px,3vh,28px) 3vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .85s ease;pointer-events:auto';
-   anomalyScene.setAttribute('aria-hidden','false');
-   anomalySceneText.style.width='min(94vw,780px)';
-   anomalySceneText.style.margin='0';
-   anomalySceneText.style.opacity='0';
-   anomalySceneText.textContent='';
-   blackHorseTelescopeFrame.style.opacity='0';blackHorseTelescopeFrame.style.display='block';
-   try{
-     await loadBlackHorseFirstPhoto();
-     await wait(60);anomalyScene.style.opacity='1';
-     await wait(650);blackHorseTelescopeFrame.style.opacity='1';
-     await wait(1100); // 最初に画像を十分見せたあとで音を鳴らす。
-     setAnomalyNarrativeText('馬のいななきが聞こえる。');
-     anomalySceneText.style.opacity='1';
-     await playBlackHorseNeighAfterPhoto();
-     await showManualAnimalLine('馬のいななきが聞こえる。','探索に戻る');
-     setAnimalStage('black-horse',1);
-   }finally{
-     blackHorseNeighAudio.pause();
-     anomalySceneText.style.opacity='0';
-     blackHorseTelescopeFrame.style.opacity='0';
-     await wait(260);anomalyScene.style.opacity='0';await wait(760);
-     blackHorseTelescopeFrame.style.display='none';
-     anomalyScene.style.visibility='hidden';anomalyScene.style.pointerEvents='none';
-     anomalyScene.setAttribute('aria-hidden','true');
-     anomalySceneText.style.width='min(33em,calc(100vw - 64px))';
-     anomalySceneText.style.marginTop='clamp(8px,2vh,20px)';
-     resetAnimalSceneControls();
-     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
-   }
+ async function horseShowTelescopePhoto(index,narration=''){
+   // 背景が黒に戻った後で次の写真を読み込む。切替時に前の画像が見えない。
+   blackHorseText.style.opacity='0';blackHorseViewport.style.opacity='0';blackHorseNext.style.opacity='0';
+   await horseFade(900);
+   blackHorseSea.style.opacity='0';blackHorseViewport.style.display='block';
+   await horseLoadPhoto(blackHorsePhoto);
+   // 16:9の望遠鏡枠に3:2の画像を object-fit:cover すると上下が切れる。
+   // 元画像ピクセルをまず描画座標へ変換してから拡大・移動する（スマホ／PC共通）。
+   const focus=blackHorseFocus[Math.max(0,Math.min(index,blackHorseFocus.length-1))];
+   const sourceW=blackHorsePicture.naturalWidth||1536;
+   const sourceH=blackHorsePicture.naturalHeight||1024;
+   const frame=blackHorseViewport.getBoundingClientRect();
+   const frameW=Math.max(frame.width,1),frameH=Math.max(frame.height,1);
+   const cover=Math.max(frameW/sourceW,frameH/sourceH);
+   const visualX=(focus.px*sourceW/1536*cover-(sourceW*cover-frameW)/2)/frameW;
+   const visualY=(focus.py*sourceH/1024*cover-(sourceH*cover-frameH)/2)/frameH;
+   const shiftX=(.5-visualX)*focus.zoom*100;
+   const shiftY=(.5-visualY)*focus.zoom*100;
+   blackHorsePicture.style.transformOrigin='center center';
+   blackHorsePicture.style.transform=`translate(${shiftX.toFixed(3)}%,${shiftY.toFixed(3)}%) scale(${focus.zoom})`;
+   blackHorsePicture.setAttribute('aria-label',`望遠鏡の景色：${focus.name}`);
+   void blackHorseViewport.offsetWidth;blackHorseViewport.style.opacity='1';
+   await horseFade(1150);
+   if(narration){blackHorseText.textContent=narration;blackHorseText.style.opacity='1';await horseFade(900)}
+ }
+ async function horseWaitReturnButton(){
+   blackHorseNext.disabled=false;blackHorseNext.style.display='inline-flex';
+   void blackHorseNext.offsetWidth;blackHorseNext.style.opacity='1';
+   await waitForTap(blackHorseNext);
+   blackHorseNext.disabled=true;blackHorseNext.style.opacity='0';
+ }
+ async function horseTextPage(line,duration=2100){
+   blackHorseText.style.opacity='0';await horseFade(850);
+   blackHorseText.textContent=line;
+   void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
+   await horseFade(850+duration);
+ }
+ async function horseBlackout(){
+   blackHorseText.style.opacity='0';
+   blackHorseViewport.style.opacity='0';
+   blackHorseSea.style.opacity='0';
+   await horseFade(1050);
+   blackHorseViewport.style.display='none';
  }
  async function encounterBlackHorse(){
+   if(blackHorseRunning)return;
+   blackHorseRunning=true;
    const stage=animalStage('black-horse');
-   const coveBackground='linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.65)),url("mermaids_cove_night.jpg") center/cover no-repeat';
-   if(stage===0){
-     if(blackHorseRunning)return;
-     blackHorseRunning=true;
-     // clickの同期処理中に音声の再生権限を確保する。画像はこの直後に表示する。
-     armBlackHorseNeigh();
-     try{await showBlackHorseFirstTelescope()}finally{blackHorseRunning=false}
-     return;
-   }
-   if(stage===1){
-     setAnimalStage('black-horse',2);
-     await runAnomalyScene(['もう一度、望遠鏡を覗く。','青白いランタンと、波の上を渡る黒い影が、今度ははっきりと見え始める。'],{background:coveBackground});
-     return;
-   }
-   // 3回目。何も操作できない間に海がぼやけ、完全暗転、記憶喪失で客室へ。
-   markAnimal('black-horse');setAnimalStage('black-horse',3);
-   const scene=document.createElement('div');
-   scene.id='blackHorseFinalScene';
-   scene.style.cssText='position:fixed;inset:0;z-index:2147483005;background:#000;overflow:hidden;color:#fff;display:flex;align-items:center;justify-content:center;pointer-events:auto;opacity:1';
-   scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');
-   const imageLayer=document.createElement('div');
-   imageLayer.style.cssText='position:absolute;inset:-7%;background:linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.3)),url("mermaids_cove_night.jpg") center/cover no-repeat;filter:blur(0px) brightness(1);transform:scale(1);transition:filter 3.2s ease-in,transform 3.2s ease-in,opacity 3.2s ease-in';
-   const caption=document.createElement('div');
-   caption.textContent='気がつくと自分の部屋にいた。\n何も、思い出せない…';
-   caption.classList.add('spr-reading-prose');
-   caption.style.cssText='position:relative;z-index:2;width:min(33em,calc(100vw - 64px));max-width:100%;white-space:pre-line;text-align:left;font:clamp(17px,4.3vw,27px)/2 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.1em;opacity:0;transition:opacity .8s';
-   scene.append(imageLayer,caption);document.body.append(scene);
+   // 同期的に音声をアンロック。iPhoneではこのタップを逃すと遅延mp3を再生できない。
+   if(stage===0)armBlackHorseNeigh();
+   window.__sprBlackHorseBgmSuppressed=true;
+   window.__sprPauseExploreBgmForGimmick?.();
    try{
-     await wait(60);
-     imageLayer.style.filter='blur(35px) brightness(0)';imageLayer.style.transform='scale(1.16)';imageLayer.style.opacity='0';
-     await wait(3400);
-     // 一度きりの減少。人魚の護り貝も貫通する黒馬固有の罰則。
+     await horseBegin();
+     if(stage===0){
+       // 1回目：同じ写真の上空へ望遠鏡を向ける。表示後にいななき。
+       await horseShowTelescopePhoto(0,'満天の星空が広がっている。\n月明かりが海面を照らし、遠くの水平線まで見渡せる。\n今夜は、ずいぶんと星が綺麗だ。');
+       await horseFade(900);
+       await playBlackHorseNeighAfterPhoto();
+       await horseWaitReturnButton();
+       setAnimalStage('black-horse',1);
+       await horseEnd();
+       return;
+     }
+     if(stage===1){
+       // 2回目：同じ写真の水面を拡大。先に正体を明かさない。
+       await horseShowTelescopePhoto(1,'先ほどの鳴き声が気になり、もう一度望遠鏡を覗き込む。\n水面に、生き物の足が見える。\n波が寄せては返している。それなのに、足は少しも沈んでいない。\n……酔いが回ったのだろうか。');
+       await horseWaitReturnButton();
+       setAnimalStage('black-horse',2);
+       await horseEnd();
+       return;
+     }
+     // 3回目：同じ写真の青いランタンをアップ→温かい海への没入→暗転→記憶喪失→ROOM。
+     await horseShowTelescopePhoto(2,'青いランタンが見える。\n小さな灯りが、ゆっくりと揺れている。\nもう少し、もう少しあれを見ていたい。');
+     await horseFade(2700);
+     await horseBlackout();
+     blackHorseSea.style.opacity='1';
+     await horseFade(1300);
+     await horseTextPage('気がつくと、上半身まで海に浸かっていた。\n海水はあたたかい。\nぬるい。きもちいい。',2200);
+     await horseTextPage('波が身体を撫でるたびに、力が抜けていく。',1900);
+     await horseTextPage('このまま、海と一つに“なりたい”。',1900);
+     await horseTextPage('ああ、',1200);
+     await horseTextPage('息が、できない───',2200);
+     // 海の写真と文字をどちらもフェードアウトして、完全な黒に落とす。
+     await horseBlackout();
+     await horseFade(850);
+     // 先に完了済みを記録し、再アクセスやイベント重複による二重減少を防ぐ。
+     markAnimal('black-horse');setAnimalStage('black-horse',3);
      await window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true});
-     await wait(250);caption.style.opacity='1';
-     await wait(3000);caption.style.opacity='0';
-     await wait(850);
-     window.__sprReturnToLastRoom?.();
-     await wait(1050);
-   }finally{scene.remove()}
+     await horseTextPage('気がつくと自分の部屋にいた。\n何があったのか、思い出せない。',2600);
+     blackHorseText.style.opacity='0';
+     await horseFade(950);
+     // 黒背景の背後でROOMを再開。最後に黒い幕をフェードアウトする。
+     const returned=window.__sprReturnToLastRoom?.();
+     if(returned===false&&!document.getElementById('roomView')?.classList.contains('open')){
+       window.__sprShowView?.('roomView');
+     }
+     await horseFade(650);
+     await horseEnd();
+   }catch(error){
+     console.error('black horse story:',error);
+     await horseEnd();
+   }finally{
+     blackHorseNeighAudio.pause();
+     window.__sprBlackHorseBgmSuppressed=false;
+     window.__sprResumeExploreBgmAfterGimmick?.();
+     blackHorseRunning=false;
+   }
  }
 
  function anomalyActionKind(spot,action,period){
