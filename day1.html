@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- build: 2026-10-28 horse-wave-fade hedgehog-stable-image v3 -->
+<!-- build: 2026-10-28 horse-frame-wave-stop-hedgehog-stable v5 -->
 <html lang="ja" data-resort-day="1">
 <head>
 <script>
@@ -11169,11 +11169,15 @@ window.addEventListener('message',e=>{
        // 画像のフェードが終わるまでNEXTを出さず、同一画像ページへ入る時に残像化させない。
        await wait(700);
      }else{
-       picture.style.transition='none';
-       picture.style.opacity='1';
+       picture.style.setProperty('transition','none','important');
+       picture.style.setProperty('animation','none','important');
+       picture.style.setProperty('opacity','1','important');
        image.style.visibility='visible';
        image.alt=alt;
        caption.textContent=text;
+       caption.style.setProperty('transition','none','important');
+       caption.style.setProperty('animation','none','important');
+       caption.style.setProperty('opacity','1','important');
        next.style.display='inline-flex';
      }
      // 文章は常にフェードさせない。
@@ -11332,7 +11336,7 @@ window.addEventListener('message',e=>{
  const blackHorsePicture=document.createElement('img');
  blackHorsePicture.id='blackHorseTelescopePicture';blackHorsePicture.alt='望遠鏡の向こうに見える景色';
  blackHorsePicture.draggable=false;
- blackHorsePicture.style.cssText='position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;user-select:none';
+ blackHorsePicture.style.cssText='position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.2);transform-origin:center center;pointer-events:none;user-select:none';
  const blackHorseMissingPhoto=document.createElement('div');
  blackHorseMissingPhoto.style.cssText='position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:20px;color:rgba(255,255,255,.55);font:11px/1.8 Georgia,serif;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere';
  const blackHorseTelescopeOverlay=document.createElement('img');
@@ -11430,7 +11434,8 @@ window.addEventListener('message',e=>{
    blackHorseSea.style.opacity='0';blackHorseViewport.style.display='block';
    const photoIndex=Math.max(0,Math.min(index,blackHorsePhotos.length-1));
    await horseLoadPhoto(blackHorsePhotos[photoIndex]);
-   blackHorsePicture.style.transform='none';
+   // 外側に黒い余白が焼き込まれた望遠鏡画像でも、枠いっぱいになるよう少し拡大して切り抜く。
+   blackHorsePicture.style.transform='scale(1.2)';
    blackHorsePicture.setAttribute('aria-label',`望遠鏡の景色：${blackHorseSceneNames[photoIndex]}`);
    void blackHorseViewport.offsetWidth;blackHorseViewport.style.opacity='1';
    await horseFade(1150);
@@ -11497,14 +11502,14 @@ window.addEventListener('message',e=>{
      await horseTapTextPage('このまま、海と一つに“なりたい”。');
      await horseTapTextPage('ああ、');
      await horseTapTextPage('息が、できない───');
-     // 最後の独白をタップした後、波音だけをゆっくり消してから無音にする。
-     await horseFadeOutExploreWave(4200);
      // 海の写真と文字をどちらもフェードアウトして、完全な黒に落とす。
      await horseBlackout();
      await horseFade(850);
      // 先に完了済みを記録し、再アクセスやイベント重複による二重減少を防ぐ。
      markAnimal('black-horse');setAnimalStage('black-horse',3);
      await window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true});
+     // ホテルの部屋の台詞が始まる前に、波音を消して無音にする。
+     await horseFadeOutExploreWave(4200);
      horseSetCenteredMonologue(true);
      await horseTapTextPage('気がつくとホテルの部屋にいた。\n何があったのか、思い出せない。');
      blackHorseText.style.opacity='0';
