@@ -10859,7 +10859,73 @@ window.addEventListener('message',e=>{
    await closeAnimatedAnimalScene(smokeLizardStage);
  }
  function anomalySceneStageReady(){smokeLizardStage.style.display='block';smokeLizardStage.querySelectorAll('img').forEach(img=>{img.onerror=()=>console.warn('Smoke lizard layer could not be loaded:',img.getAttribute('src'))})}
- async function encounterStarHedgehog(){markAnimal('star-hedgehog');await runAnomalyScene(['入り江の砂浜に、星のような小さな光が散っている。','入り江の砂の上に、きらきら光る細長い棘のようなものが何本も落ちている。\nやがて、その光は星明かりの中へ消えていった。'],{background:'linear-gradient(rgba(0,0,0,.62),rgba(0,0,0,.82)),url("mermaids_cove_night.jpg") center/cover no-repeat'});}
+ // 星空ハリネズミ：夜の人魚の入江でカメラを使うと、砂浜に落ちた針を発見する。
+ // 動物の本体は見せない。画像はイベント発生時だけ取得し、前後をフェードさせる。
+ const starHedgehogSpineImage='anomaly_starry_hedgehog_spine.jpg';
+ let starHedgehogScenePlaying=false;
+ async function encounterStarHedgehog(){
+   if(starHedgehogScenePlaying)return;
+   starHedgehogScenePlaying=true;
+   markAnimal('star-hedgehog');
+   const scene=document.createElement('div');
+   scene.id='starHedgehogSpineScene';
+   scene.setAttribute('role','dialog');
+   scene.setAttribute('aria-modal','true');
+   scene.setAttribute('aria-label','砂浜で見つけたもの');
+   scene.style.cssText='position:fixed;inset:0;z-index:630;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.5vh,25px);padding:max(22px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;background:linear-gradient(rgba(2,8,16,.74),rgba(2,8,16,.88)),url("mermaids_cove_night.jpg") center/cover no-repeat;color:#fff;opacity:0;transition:opacity .95s ease;pointer-events:auto';
+   const picture=document.createElement('div');
+   picture.style.cssText='display:none;flex:0 1 auto;width:min(94vw,820px);max-height:57dvh;aspect-ratio:16 / 9;opacity:0;transition:opacity 1.55s ease;overflow:hidden;background:#02070c';
+   const image=document.createElement('img');
+   image.alt='夜の砂浜に落ちた、星屑のように光る一本の針';
+   image.draggable=false;
+   image.style.cssText='display:block;width:100%;height:100%;object-fit:contain;visibility:hidden';
+   picture.append(image);
+   const caption=document.createElement('div');
+   caption.style.cssText='position:relative;flex:0 0 auto;width:min(36em,calc(100vw - 38px));max-width:100%;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-align:left;line-break:strict;overflow-wrap:break-word;white-space:normal;text-wrap:pretty;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .6s ease';
+   scene.append(picture,caption);
+   document.body.append(scene);
+   // 画像は事前の全ページロードではなく、この遭遇時にだけ読み込む。
+   const imageReady=new Promise(resolve=>{
+     image.onload=()=>{image.style.visibility='visible';resolve(true)};
+     image.onerror=()=>{console.warn('Star hedgehog image could not be loaded:',starHedgehogSpineImage);resolve(false)};
+   });
+   image.src=starHedgehogSpineImage;
+   const showLine=async(text,ms)=>{
+     caption.style.opacity='0';
+     await wait(580);
+     caption.textContent=text;
+     caption.style.opacity='1';
+     await wait(ms);
+   };
+   try{
+     await wait(50);
+     scene.style.opacity='1';
+     await wait(1000);
+     await showLine('夜の潮風が気持ちいい。そのままカメラを片手に散歩をした。',3600);
+     await showLine('少し先に、砂浜に光っている細い棒のようなものが落ちている。',3800);
+     caption.style.opacity='0';
+     await wait(650);
+     scene.style.background='#02070c';
+     const ready=await Promise.race([imageReady,wait(3000).then(()=>image.complete&&image.naturalWidth>0)]);
+     if(ready){
+       picture.style.display='block';
+       await wait(50);
+       picture.style.opacity='1';
+       await wait(1750);
+     }
+     await showLine('キラキラ光っている。綺麗だけれど、得体が知れない。持ち帰るのはやめておこう。',4400);
+     caption.style.opacity='0';
+     await wait(450);
+     picture.style.opacity='0';
+     await wait(1550);
+     scene.style.opacity='0';
+     await wait(1000);
+   }finally{
+     scene.remove();
+     starHedgehogScenePlaying=false;
+   }
+ }
+
  function fawnEligible(){
    return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
  }
