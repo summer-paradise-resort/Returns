@@ -5099,6 +5099,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const p=casinoElevatorMovie.play();
       if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden');casinoElevatorVideoClose.classList.remove('hidden')});
     }
+    function returnFromCasinoElevatorToRoom(){
+      const casinoView=document.getElementById('casinoView');
+      if(casinoView?.classList.contains('open'))closeView(casinoView);
+      const returned=window.__sprReturnToLastRoom?.();
+      if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+    }
     async function finishCasinoElevatorMovie(){
       if(casinoElevatorAftermathRunning)return;
       casinoElevatorAftermathRunning=true;casinoElevatorState='aftermath';
@@ -5125,9 +5131,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
         await horseFade(900);
         await waitForTap(blackHorseScene);
+        returnFromCasinoElevatorToRoom();
         await horseEnd();
       }catch(error){
         console.error('casino elevator aftermath:',error);
+        returnFromCasinoElevatorToRoom();
         await horseEnd();
       }finally{
         casinoElevatorAftermathRunning=false;casinoElevatorState='idle';updateCasinoElevatorAccess();
