@@ -10481,11 +10481,15 @@ window.addEventListener('message',e=>{
  const otterChoiceBox=document.createElement('div');otterChoiceBox.id='otterChoiceBox';
  otterChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
  anomalyScene.append(otterChoiceBox);
- // 交換後に表示する乗船チケット。所持品画像と同じファイル名を保持する。
+ // 交換後は所持品にも登録される実物の乗船チケット画像を、そのまま表示する。
  const otterTicketReveal=document.createElement('div');otterTicketReveal.id='otterTicketReveal';
- otterTicketReveal.dataset.fileName='worn_boarding_ticket_luca_balsa.png';
- otterTicketReveal.style.cssText='display:none;box-sizing:border-box;width:min(94vw,520px);padding:clamp(12px,2.4vw,20px);border:1px solid #c5a86c;background:linear-gradient(135deg,#f4e8c8,#d8c28f 48%,#f7edda);color:#183247;box-shadow:0 8px 30px rgba(0,0,0,.45);font-family:Georgia,"Yu Mincho","Hiragino Mincho ProN",serif;position:relative;overflow:hidden';
- otterTicketReveal.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(24,50,71,.55);padding-bottom:8px;font-size:10px;letter-spacing:.18em"><span>M/V LUCA BALSA</span><span>ONE WAY</span></div><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 8px"><div><div style="font-size:clamp(18px,4vw,26px);letter-spacing:.1em;font-weight:700">BOARDING PASS</div><div style="margin-top:5px;font-size:11px;letter-spacing:.12em">DEPARTURE TICKET</div></div><div aria-hidden="true" style="font-size:32px;color:#a67c34">⚓</div></div><div style="display:flex;justify-content:space-between;gap:10px;border-top:1px dashed rgba(24,50,71,.55);padding-top:8px;font-size:11px;letter-spacing:.1em"><span>BOARDING TIME</span><strong>22:00–23:59</strong></div>`;
+ otterTicketReveal.style.cssText='display:none;box-sizing:border-box;width:min(94vw,520px);max-height:58dvh;position:relative;overflow:hidden;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45))';
+ const otterTicketImage=document.createElement('img');
+ otterTicketImage.src='worn_boarding_ticket_luca_balsa.png';
+ otterTicketImage.alt='ラッコと交換した、ボロボロの乗船チケット';
+ otterTicketImage.decoding='async';
+ otterTicketImage.style.cssText='display:block;width:100%;height:auto;max-height:58dvh;object-fit:contain;margin:0 auto';
+ otterTicketReveal.append(otterTicketImage);
  anomalyScene.insertBefore(otterTicketReveal,anomalySceneText);
  function resetOtterChoices(){otterChoiceBox.style.display='none';otterChoiceBox.replaceChildren();}
   // ラッコの画像は、泳ぐを選び衝突の文章を読んだ後まで出さない。
