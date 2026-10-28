@@ -5105,6 +5105,27 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const returned=window.__sprReturnToLastRoom?.();
       if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
     }
+    async function showCasinoElevatorAftermath(onBlackout){
+      // 馬イベント用の blackHorseScene は別IIFEの内側にあるため、ここから直接参照しない。
+      // 独立した暗転レイヤーで、文章を見せてから客室へ戻す。
+      const scene=document.createElement('div');
+      scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');
+      scene.style.cssText='position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:max(24px,env(safe-area-inset-top)) 7vw max(24px,env(safe-area-inset-bottom));box-sizing:border-box;background:#000;color:#fff;opacity:0;transition:opacity .85s ease';
+      const text=document.createElement('div');
+      text.textContent='気がつくと、ホテルの部屋にいた。\n\nどうやって戻ってきたのか、思い出せない。';
+      text.style.cssText='width:min(780px,100%);white-space:pre-line;text-align:center;color:#fff;text-shadow:0 2px 12px #000;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;opacity:0;transition:opacity .8s ease';
+      scene.append(text);document.body.append(scene);
+      void scene.offsetWidth;scene.style.opacity='1';
+      await new Promise(resolve=>setTimeout(resolve,850));
+      try{onBlackout?.()}catch(error){console.warn('casino elevator life sync',error)}
+      text.style.opacity='1';
+      await new Promise(resolve=>setTimeout(resolve,800));
+      await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
+      returnFromCasinoElevatorToRoom();
+      scene.style.opacity='0';
+      await new Promise(resolve=>setTimeout(resolve,850));
+      scene.remove();
+    }
     async function finishCasinoElevatorMovie(){
       if(casinoElevatorAftermathRunning)return;
       casinoElevatorAftermathRunning=true;casinoElevatorState='aftermath';
@@ -5113,30 +5134,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
       casinoElevatorVideoError.classList.add('hidden');
       try{
-        // 馬のイベントと同じ黒い独白画面を使い、映像から暗転へつなぐ。
-        horseSetCenteredMonologue(true);
-        blackHorseViewport.style.display='none';blackHorseViewport.style.opacity='0';
-        blackHorseSea.style.opacity='0';blackHorseText.textContent='';blackHorseText.style.opacity='0';
-        blackHorseNext.style.display='none';blackHorseNext.style.opacity='0';
-        blackHorseScene.style.visibility='visible';blackHorseScene.style.pointerEvents='auto';
-        blackHorseScene.setAttribute('aria-hidden','false');
-        void blackHorseScene.offsetWidth;
-        blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear 0s';
-        blackHorseScene.style.opacity='1';
-        await horseFade(900);
-        // 暗転中に所持品同期の通信を待つと、黒画面のまま止まることがある。
-        // ライフ処理は開始しておき、画面の文章は通信完了を待たずに表示する。
-        try{const penalty=window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('casino elevator life sync',error))}catch(error){console.warn('casino elevator life sync',error)}
-        blackHorseText.textContent='気がつくと、ホテルの部屋にいた。\n地下へ向かったはずなのに、どうやって戻ってきたのか思い出せない。';
-        void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
-        await horseFade(900);
-        await waitForTap(blackHorseScene);
-        returnFromCasinoElevatorToRoom();
-        await horseEnd();
+        await showCasinoElevatorAftermath(()=>{
+          // 所持品同期は独白表示を待たせず、暗転中に開始する。
+          try{const penalty=window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('casino elevator life sync',error))}catch(error){console.warn('casino elevator life sync',error)}
+        });
       }catch(error){
         console.error('casino elevator aftermath:',error);
-        returnFromCasinoElevatorToRoom();
-        await horseEnd();
       }finally{
         casinoElevatorAftermathRunning=false;casinoElevatorState='idle';updateCasinoElevatorAccess();
       }
