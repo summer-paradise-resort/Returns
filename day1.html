@@ -10789,6 +10789,23 @@ window.addEventListener('message',e=>{
  const fawnGrassRustleAudio=new Audio('fawn_grass_rustle.mp3');
  fawnGrassRustleAudio.preload='auto';fawnGrassRustleAudio.playsInline=true;fawnGrassRustleAudio.loop=false;
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
+ let seabirdAudioContext=null,seabirdDecodedSoundPromise=null;
+ // カメラ操作中に無音のHTMLAudio再生で解錠すると、端末によって羽音が先に漏れるため、
+ // ユーザー操作中にWeb Audioを準備し、物語の「羽ばたき」ページでだけ実音を再生する。
+ function armSeabirdWingSound(){
+   try{
+     const Context=window.AudioContext||window.webkitAudioContext;
+     if(!Context)return;
+     if(!seabirdAudioContext)seabirdAudioContext=new Context();
+     if(seabirdAudioContext.state==='suspended')void seabirdAudioContext.resume().catch(()=>{});
+     if(!seabirdDecodedSoundPromise){
+       seabirdDecodedSoundPromise=fetch('anomaly_seabird_wingbeat.mp3')
+         .then(response=>{if(!response.ok)throw Error('海鳥の羽音を取得できません');return response.arrayBuffer()})
+         .then(data=>seabirdAudioContext.decodeAudioData(data))
+         .catch(error=>{console.warn('seabird wing decode:',error);return null});
+     }
+   }catch(error){console.warn('seabird audio init:',error)}
+ }
  const otterCryAudio=new Audio('anomaly_drifting_otter_cry.mp3');otterCryAudio.preload='auto';otterCryAudio.playsInline=true;
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
@@ -10809,29 +10826,53 @@ window.addEventListener('message',e=>{
  // 探索BGMを抑止している間、1秒ごとの同期で不意に再生されることも防ぐ。
  let seabirdEventRunning=false;
  async function playSeabirdWingsToCompletion(){
-   await new Promise(resolve=>{
-     let done=false,timer=null;
-     const finish=()=>{
-       if(done)return;done=true;clearTimeout(timer);
-       seabirdWingAudio.removeEventListener('ended',finish);
-       seabirdWingAudio.removeEventListener('error',finish);
-       resolve();
-     };
-     const safetyStop=()=>{seabirdWingAudio.pause();finish()};
-     seabirdWingAudio.addEventListener('ended',finish);
-     seabirdWingAudio.addEventListener('error',finish);
-     timer=setTimeout(safetyStop,15000);
-     try{
-       seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
-       seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
-       const playing=seabirdWingAudio.play();
-       if(playing?.then)playing.catch(error=>{console.warn('seabird wings playback',error);finish()});
-       if(seabirdWingAudio.ended)finish();
-     }catch(error){console.warn('seabird wings playback',error);finish()}
-   });
+   let playedByWebAudio=false;
+   try{
+     const buffer=await Promise.race([seabirdDecodedSoundPromise||Promise.resolve(null),wait(3000).then(()=>null)]);
+     if(buffer&&seabirdAudioContext?.state==='running'){
+       await new Promise(resolve=>{
+         let done=false,timer=null;
+         const source=seabirdAudioContext.createBufferSource();
+         const gain=seabirdAudioContext.createGain();gain.gain.value=.9;
+         const finish=()=>{
+           if(done)return;done=true;clearTimeout(timer);
+           source.onended=null;try{source.disconnect();gain.disconnect()}catch{}
+           resolve();
+         };
+         const safetyStop=()=>{try{source.stop()}catch{}finish()};
+         source.buffer=buffer;source.connect(gain);gain.connect(seabirdAudioContext.destination);
+         source.onended=finish;timer=setTimeout(safetyStop,15000);
+         try{source.start();playedByWebAudio=true}catch(error){console.warn('seabird Web Audio playback:',error);finish()}
+       });
+     }
+   }catch(error){console.warn('seabird Web Audio:',error)}
+   // Web Audio非対応時だけ、物語の羽ばたきページでHTMLAudio再生へフォールバック。
+   if(!playedByWebAudio){
+     await new Promise(resolve=>{
+       let done=false,timer=null;
+       const finish=()=>{
+         if(done)return;done=true;clearTimeout(timer);
+         seabirdWingAudio.removeEventListener('ended',finish);
+         seabirdWingAudio.removeEventListener('error',finish);
+         resolve();
+       };
+       const safetyStop=()=>{seabirdWingAudio.pause();finish()};
+       seabirdWingAudio.addEventListener('ended',finish);
+       seabirdWingAudio.addEventListener('error',finish);
+       timer=setTimeout(safetyStop,15000);
+       try{
+         seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
+         seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
+         const playing=seabirdWingAudio.play();
+         if(playing?.then)playing.catch(error=>{console.warn('seabird wings playback',error);finish()});
+         if(seabirdWingAudio.ended)finish();
+       }catch(error){console.warn('seabird wings playback',error);finish()}
+     });
+   }
    // 羽ばたき音が終わるまで探索BGMの抑止状態を解除しない。
    resumeSeabirdBgm();
  }
+
  function resumeSeabirdBgm(){
    if(!window.__sprSeabirdBgmSuppressed)return;
    window.__sprSeabirdBgmSuppressed=false;
@@ -10852,7 +10893,7 @@ window.addEventListener('message',e=>{
    anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2vh,18px);padding:28px 5vw;box-sizing:border-box;overflow:hidden;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
    anomalySceneText.style.opacity='0';anomalySceneText.textContent='';
    seabirdWingAudio.pause();try{seabirdWingAudio.currentTime=0}catch{}
-   primeAnimalSound(seabirdWingAudio);
+   armSeabirdWingSound();
    try{
      // 「………………。」は必ず最初に表示。名前を呼ぶ場面を飛ばさない。
      await runAnomalyScene([
