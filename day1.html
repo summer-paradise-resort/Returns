@@ -3798,6 +3798,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       stopEmilyCasualTyping();emilyCasualSpans=[];emilyCasualNextAction=null;
       emilyCasualOverlay.classList.add('hidden');
       emilyCasualOverlay.setAttribute('aria-hidden','true');
+      emilyCasualOverlay.style.removeProperty('opacity');emilyCasualOverlay.style.removeProperty('transition');
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
       emilyCasualText.replaceChildren();
       // casinoBgm is intentionally left playing; do not call startCasinoMusic()/pause().
@@ -4977,7 +4978,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(casinoGalleryHint)casinoGalleryHint.classList.toggle('hidden',active);
       if(active){
         stopCasinoMusic();
-        if(casinoElevatorState!=='confirm'){casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm')}
+        if(!['confirm','dialogue'].includes(casinoElevatorState)){casinoElevatorState='idle';casinoElevatorButton.textContent='エレベーターに乗る。';casinoElevatorButton.classList.remove('confirm')}
       }else{
         stopElevatorGlitch();
         if(casinoElevatorVideo.classList.contains('open'))closeElevatorMovie();
@@ -5003,10 +5004,30 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const p=casinoElevatorMovie.play();
       if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
     }
+    function startCasinoElevatorDialogue(){
+      if(casinoElevatorState!=='confirm'||!emilyCasualOverlay)return;
+      casinoElevatorState='dialogue';
+      emilyCasualOverlay.style.transition='opacity .75s ease';
+      emilyCasualOverlay.style.opacity='0';
+      emilyCasualText.replaceChildren();
+      emilyCasualNext.classList.add('hidden');
+      emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
+      emilyCasualOverlay.classList.remove('hidden');
+      emilyCasualOverlay.setAttribute('aria-hidden','false');
+      requestAnimationFrame(()=>{emilyCasualOverlay.style.opacity='1'});
+      setTimeout(()=>{
+        if(casinoElevatorState!=='dialogue')return;
+        emilyCasualSay('ふふ、あのエレベーターに乗るのね。\n地下にしか行けないみたいだけど……それでもいいの？',()=>{
+          emilyCasualSay('ちょうど私も地下へ行くところなの。\nよかったら、私も一緒に乗っていいかしら？',()=>{
+            closeEmilyCasualDialogue();playCasinoElevatorMovie();
+          });
+        });
+      },760);
+    }
     casinoElevatorButton.addEventListener('click',()=>{
       if(!isCasinoElevatorSlide()||!hasJokerForElevator())return;
-      if(casinoElevatorState==='confirm')playCasinoElevatorMovie();
-      else if(casinoElevatorState!=='glitch'&&casinoElevatorState!=='video')runCasinoElevatorGlitch();
+      if(casinoElevatorState==='confirm')startCasinoElevatorDialogue();
+      else if(!['glitch','video','dialogue'].includes(casinoElevatorState))runCasinoElevatorGlitch();
     });
     casinoElevatorVideoClose.addEventListener('click',closeElevatorMovie);
     casinoElevatorMovie.addEventListener('ended',closeElevatorMovie);
