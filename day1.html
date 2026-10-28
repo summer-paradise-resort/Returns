@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- build: 2026-10-28 horse-frame-wave-stop-hedgehog-stable v7 -->
+<!-- build: 2026-10-28 horse-frame-wave-stop-hedgehog-stable v8 -->
 <html lang="ja" data-resort-day="1">
 <head>
 <script>
@@ -1905,7 +1905,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
       <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="auto"></audio>
       <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
-        <button id="casinoElevatorVideoClose" class="casino-elevator-video-close" type="button" aria-label="動画を閉じる">×</button>
+        <button id="casinoElevatorVideoClose" class="casino-elevator-video-close hidden" type="button" aria-label="動画を閉じる">×</button>
         <video id="casinoElevatorMovie" src="casino.elevator.mp4" preload="metadata" playsinline></video>
         <div id="casinoElevatorVideoError" class="casino-elevator-video-error hidden">動画を読み込めませんでした。</div>
       </div>
@@ -5060,6 +5060,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
       casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
       casinoElevatorVideoError.classList.add('hidden');
+      casinoElevatorVideoClose.classList.add('hidden');
       casinoElevatorState='idle';
       updateCasinoElevatorAccess();
     }
@@ -5090,12 +5091,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function playCasinoElevatorMovie(){
       casinoElevatorState='video';stopCasinoMusic();casinoElevatorVideoError.classList.add('hidden');
+      casinoElevatorVideoClose.classList.add('hidden');
       casinoElevatorAftermathRunning=false;
       casinoElevatorMovie.src=CASINO_ELEVATOR_MOVIE;
       casinoElevatorVideo.classList.add('open');casinoElevatorVideo.setAttribute('aria-hidden','false');
       try{casinoElevatorMovie.currentTime=0}catch{}
       const p=casinoElevatorMovie.play();
-      if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
+      if(p&&p.catch)p.catch(()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden');casinoElevatorVideoClose.classList.remove('hidden')});
     }
     async function finishCasinoElevatorMovie(){
       if(casinoElevatorAftermathRunning)return;
@@ -5116,7 +5118,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear 0s';
         blackHorseScene.style.opacity='1';
         await horseFade(900);
-        await window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});
+        // 暗転中に所持品同期の通信を待つと、黒画面のまま止まることがある。
+        // ライフ処理は開始しておき、画面の文章は通信完了を待たずに表示する。
+        try{const penalty=window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('casino elevator life sync',error))}catch(error){console.warn('casino elevator life sync',error)}
         blackHorseText.textContent='気がつくと、ホテルの部屋にいた。\n地下へ向かったはずなのに、どうやって戻ってきたのか思い出せない。';
         void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
         await horseFade(900);
@@ -5155,8 +5159,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(!['glitch','video','dialogue'].includes(casinoElevatorState))runCasinoElevatorGlitch();
     });
     casinoElevatorVideoClose.addEventListener('click',closeElevatorMovie);
+    casinoElevatorMovie.addEventListener('playing',()=>casinoElevatorVideoClose.classList.add('hidden'));
     casinoElevatorMovie.addEventListener('ended',()=>void finishCasinoElevatorMovie());
-    casinoElevatorMovie.addEventListener('error',()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden')});
+    casinoElevatorMovie.addEventListener('error',()=>{casinoElevatorVideoError.textContent='動画を読み込めませんでした。casino.elevator.mp4 をご確認ください。';casinoElevatorVideoError.classList.remove('hidden');casinoElevatorVideoClose.classList.remove('hidden')});
     window.__sprLeaveCasinoGalleryElevator=()=>{
       stopElevatorGlitch();
       if(casinoElevatorVideo.classList.contains('open')){try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true')}
@@ -10173,9 +10178,21 @@ window.addEventListener('message',e=>{
   lighthouseAftermathScene.style.cssText='position:fixed;inset:0;z-index:2147483501;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:max(24px,env(safe-area-inset-top)) 3vw max(24px,env(safe-area-inset-bottom));overflow:auto;background:#000;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .85s ease,visibility 0s linear .85s';
   const lighthouseAftermathText=document.createElement('div');
   lighthouseAftermathText.style.cssText='width:min(33em,calc(100vw - 64px));max-width:100%;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;line-break:strict;white-space:pre-line;overflow-wrap:break-word;text-align:center;color:#fff;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .8s ease';
-  lighthouseAftermathScene.append(lighthouseAftermathText);document.body.append(lighthouseAftermathScene);
+  const lighthouseAftermathHint=document.createElement('div');
+  lighthouseAftermathHint.textContent='タップして次の文章';
+  lighthouseAftermathHint.style.cssText='position:absolute;left:0;right:0;bottom:max(22px,env(safe-area-inset-bottom));text-align:center;font:11px Georgia,"Yu Mincho",serif;letter-spacing:.16em;color:rgba(255,255,255,.66);opacity:0;transition:opacity .5s ease;pointer-events:none';
+  lighthouseAftermathScene.append(lighthouseAftermathText,lighthouseAftermathHint);document.body.append(lighthouseAftermathScene);
   const lighthouseAftermathWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   function waitForLighthouseAftermathTap(){return new Promise(resolve=>lighthouseAftermathScene.addEventListener('click',resolve,{once:true}))}
+  async function showLighthouseAftermathPage(text,hint='タップして次の文章'){
+    lighthouseAftermathText.style.opacity='0';lighthouseAftermathHint.style.opacity='0';
+    await lighthouseAftermathWait(450);
+    lighthouseAftermathText.textContent=text;lighthouseAftermathHint.textContent=hint;
+    void lighthouseAftermathText.offsetWidth;
+    lighthouseAftermathText.style.opacity='1';lighthouseAftermathHint.style.opacity='1';
+    await lighthouseAftermathWait(500);
+    await waitForLighthouseAftermathTap();
+  }
   async function playLighthouseAftermath(){
     if(lighthouseAftermathRunning)return;
     lighthouseAftermathRunning=true;
@@ -10186,19 +10203,17 @@ window.addEventListener('message',e=>{
       lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear 0s';lighthouseAftermathScene.style.opacity='1';
       await lighthouseAftermathWait(900);
       closeExploreEventVideo({resumeBgm:false});
-      await window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡',{ignoreProtection:true});
-      lighthouseAftermathText.textContent='気がつくと、ホテルの部屋にいた。\n灯台で望遠鏡を覗いていたはずなのに、どうしてここにいるのか思い出せない。';
-      void lighthouseAftermathText.offsetWidth;lighthouseAftermathText.style.opacity='1';
-      await lighthouseAftermathWait(900);
-      await waitForLighthouseAftermathTap();
-      lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
+      try{const penalty=window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('lighthouse anomaly life sync',error))}catch(error){console.warn('lighthouse anomaly life sync',error)}
+      await showLighthouseAftermathPage('気がつくと、ホテルの部屋にいた。');
+      await showLighthouseAftermathPage('灯台で望遠鏡を覗いていたはずなのに、\nどうしてここにいるのか思い出せない。','タップして探索に戻る');
+      lighthouseAftermathText.style.opacity='0';lighthouseAftermathHint.style.opacity='0';await lighthouseAftermathWait(900);
       lighthouseAftermathScene.style.opacity='0';await lighthouseAftermathWait(900);
     }catch(error){
       console.error('lighthouse evening anomaly aftermath:',error);
     }finally{
       lighthouseAftermathScene.style.visibility='hidden';lighthouseAftermathScene.style.pointerEvents='none';lighthouseAftermathScene.setAttribute('aria-hidden','true');
       lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear .85s';
-      closeExploreEventVideo();lighthouseAftermathRunning=false;
+      lighthouseAftermathText.style.opacity='0';lighthouseAftermathHint.style.opacity='0';closeExploreEventVideo();lighthouseAftermathRunning=false;
     }
   }
   function finishExploreEventVideo(){
