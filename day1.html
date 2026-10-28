@@ -4714,8 +4714,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
-      // 小鹿の草むら効果音中は、定期同期による波BGMの再開も止める。
-      if(window.__sprFawnGrassSoundActive){pauseExploreMusic();return;}
+      // 小鹿の草むら効果音中と、海鳥が名前を呼ぶ間は、1秒ごとのBGM同期でも再開しない。
+      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
       const open=Boolean(view?.classList.contains('open'));
       const period=currentTokyoPeriod();
@@ -10407,7 +10407,7 @@ window.addEventListener('message',e=>{
  @keyframes otterWhiskerTwitch{0%,62%,68%,100%{transform:rotate(0deg)}63%,65.5%{transform:rotate(-.9deg)}64.3%,67%{transform:rotate(.5deg)}}
  @keyframes otterWhiskerTwitchRight{0%,62%,68%,100%{transform:rotate(0deg)}63%,65.5%{transform:rotate(.9deg)}64.3%,67%{transform:rotate(-.5deg)}}
  #driftingOtterFrame.otter-active .otter-float,#driftingOtterFrame.otter-active .otter-blink{animation-play-state:running}
- @keyframes otterWholeFloat{0%,100%{transform:translateY(-.65%) rotate(-.12deg) scale(1.04)}50%{transform:translateY(.65%) rotate(.12deg) scale(1.04)}}
+ @keyframes otterWholeFloat{0%,100%{transform:translateY(-1.25%) rotate(-.45deg) scale(1.04)}25%{transform:translateY(.15%) rotate(.2deg) scale(1.04)}50%{transform:translateY(1.25%) rotate(.45deg) scale(1.04)}75%{transform:translateY(.15%) rotate(-.2deg) scale(1.04)}}
  @keyframes otterEyeBlink{0%,44%,48%,100%{opacity:0}45%,47%{opacity:1}}
  @media(prefers-reduced-motion:reduce){#driftingOtterFrame .otter-float{animation:none;transform:scale(1.04)}#driftingOtterFrame .otter-blink{animation:none;opacity:0}}
  `;document.head.append(otterMotion);
@@ -10472,7 +10472,21 @@ window.addEventListener('message',e=>{
  otterChoiceBox.style.cssText='display:none;width:min(620px,94vw);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:clamp(8px,2vh,18px)';
  anomalyScene.append(otterChoiceBox);
  function resetOtterChoices(){otterChoiceBox.style.display='none';otterChoiceBox.replaceChildren();}
- function waitForOtterChoice(){
+  // ラッコの画像は、泳ぐを選び衝突の文章を読んだ後まで出さない。
+  function waitForOtterSwimChoice(){
+    resetOtterChoices();
+    return new Promise(resolve=>{
+      const add=(label,value)=>{
+        const button=document.createElement('button');button.type='button';button.textContent=label;
+        button.style.cssText='min-height:50px;padding:12px 16px;border:1px solid #c9aa68;background:rgba(5,14,27,.92);color:#f5e6bf;font:600 15px/1.6 "Yu Mincho","Hiragino Mincho ProN",serif;cursor:pointer';
+        button.onclick=()=>{resetOtterChoices();resolve(value)};
+        otterChoiceBox.append(button);
+      };
+      add('泳ぐ','swim');add('岸へ戻る','shore');
+      otterChoiceBox.style.display='grid';
+    });
+  }
+  function waitForOtterChoice(){
    resetOtterChoices();
    return new Promise(resolve=>{
      const add=(label,value)=>{
@@ -10745,6 +10759,7 @@ window.addEventListener('message',e=>{
  const fawnGrassRustleAudio=new Audio('fawn_grass_rustle.mp3');
  fawnGrassRustleAudio.preload='auto';fawnGrassRustleAudio.playsInline=true;fawnGrassRustleAudio.loop=false;
  const seabirdWingAudio=new Audio('anomaly_seabird_wingbeat.mp3');seabirdWingAudio.preload='auto';
+ const otterCryAudio=new Audio('anomaly_drifting_otter_cry.mp3');otterCryAudio.preload='auto';otterCryAudio.playsInline=true;
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
  const anomalyPrefix='spr-anomaly-animal:device:';
@@ -10778,31 +10793,77 @@ window.addEventListener('message',e=>{
      if(seabirdWingAudio.ended)finish();
    });
  }
+ function resumeSeabirdBgm(){
+   // 羽ばたきが始まった瞬間にBGMを戻す。二重再開はせず、♪OFFなら再生しない。
+   if(!window.__sprSeabirdBgmSuppressed)return;
+   window.__sprSeabirdBgmSuppressed=false;
+   window.__sprResumeExploreBgmAfterGimmick?.();
+ }
+ function startSeabirdWings(){
+   // 完了待ちは再生開始前に登録し、短い効果音でも終了を取り逃さない。
+   const finished=waitForSeabirdWings();
+   try{
+     seabirdWingAudio.pause();seabirdWingAudio.currentTime=0;
+     seabirdWingAudio.muted=false;seabirdWingAudio.volume=.9;
+     const playing=seabirdWingAudio.play();
+     if(playing?.then){
+       playing.then(()=>resumeSeabirdBgm(),error=>{console.warn('seabird wings playback',error);resumeSeabirdBgm()});
+     }else resumeSeabirdBgm();
+   }catch(error){console.warn('seabird wings playback',error);resumeSeabirdBgm()}
+   return finished;
+ }
  async function encounterSeabird(){
+   // 初めの沈黙と名前の呼びかけの間、探索BGMを確実に止める。
+   window.__sprSeabirdBgmSuppressed=true;
+   window.__sprPauseExploreBgmForGimmick?.();
    markAnimal('seabird');
    primeAnimalSound(seabirdWingAudio);
-   await runAnomalyScene([
-     {speaker:'？？？',text:`「${guestName()}」`,hold:1900},
-     {text:'',sound:seabirdWingAudio,volume:.9,run:waitForSeabirdWings,hold:200},
-     {text:'周囲を見渡すが、誰もいない。',hold:2600}
-   ],{background:'#000000'});
+   try{
+     await runAnomalyScene([
+       {text:'………………。',hold:1600},
+       {speaker:'？？？',text:`「${guestName()}」`,hold:1900},
+       {text:'',run:startSeabirdWings,hold:200},
+       {text:'周囲を見渡すが、誰もいない。',hold:2600}
+     ],{background:'#000000'});
+   }finally{
+     resumeSeabirdBgm();
+   }
  }
  let otterEventRunning=false;
  async function encounterOtter(){
    if(otterEventRunning)return;
    otterEventRunning=true;
    try{
-     markAnimal('drifting-otter');close();resetAnimalSceneControls();
+     close();resetAnimalSceneControls();hideOtterAnimation();
      smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';
      anomalyScene.classList.remove('spr-smoke-lizard-scene');
      anomalySceneText.classList.remove('spr-smoke-lizard-text','spr-anomaly-fit-lines');
-     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:#000;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
-     anomalyScene.setAttribute('aria-hidden','false');anomalySceneText.textContent='';anomalySceneText.style.opacity='0';
-     otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';otterFrame.setAttribute('aria-hidden','false');
-     showOtterAnimation('anomaly_drifting_otter.jpg?v=whiskers-1');
-     const baseLoaded=otterBaseImage.complete?Promise.resolve():new Promise(resolve=>{otterBaseImage.addEventListener('load',resolve,{once:true});otterBaseImage.addEventListener('error',resolve,{once:true});});
-     await wait(60);anomalyScene.style.opacity='1';
-     await Promise.race([baseLoaded,wait(4500)]);await wait(900);
+     // 最初は夕方の砂浜だけ。ラッコの画像・鳴き声は表示／再生しない。
+     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(10px,2vh,18px);padding:3vh 2vw;box-sizing:border-box;overflow:auto;background:linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.78)),url("summer_paradise_beach_evening.jpg") center/cover no-repeat;color:#fff;opacity:0;visibility:visible;transition:opacity .9s ease;pointer-events:auto';
+     anomalyScene.setAttribute('aria-hidden','false');
+     setAnomalyNarrativeText('冷たすぎない海の水が気持ちいい。少し先まで泳いでみようかな。');
+     anomalySceneText.style.opacity='0';
+     await wait(60);anomalyScene.style.opacity='1';await wait(950);
+     anomalySceneText.style.opacity='1';
+     const direction=await waitForOtterSwimChoice();
+     if(direction!=='swim')return; // 岸へ戻る場合は、遭遇済みにしない。
+     // 画像は泳ぐ選択後にだけ準備し、衝突の文章までは一切見せない。
+     const otterAsset='anomaly_drifting_otter.jpg?v=whiskers-1';
+     const preloadOtter=new Image();preloadOtter.src=otterAsset;
+     // NEXTのタップでラッコを表示し、同じユーザー操作で鳴き声を再生する。
+     smokeLizardReturnButton.addEventListener('click',()=>{
+       markAnimal('drifting-otter');
+       otterFrame.style.opacity='0';otterFrame.style.transform='scale(.985)';
+       otterFrame.setAttribute('aria-hidden','false');
+       showOtterAnimation(otterAsset);
+       anomalyScene.style.background='#000';
+       requestAnimationFrame(()=>{
+         otterFrame.style.opacity='1';otterFrame.style.transform='scale(1)';
+       });
+       playAnimalSound(otterCryAudio,.85);
+     },{once:true});
+     await showManualAnimalLine('先まで泳いだ。海の中を覗き込もうとした時、不意に何かがぶつかった。');
+     await wait(950);
      setAnomalyNarrativeText('ラッコは古びた乗船チケットを胸に抱え、こちらの手元を見つめている。');anomalySceneText.style.opacity='1';
      const choice=await waitForOtterChoice();
      if(choice!=='give')return;
@@ -10815,6 +10876,7 @@ window.addEventListener('message',e=>{
      }
      await showManualAnimalLine('漂流ラッコは次元バックを受け取り、代わりにボロボロの乗船チケットを差し出した。\n券面には “LUCA BALSA” と “BOARDING TIME 22:00–23:59” が記されている。','探索に戻る');
    }finally{
+     otterCryAudio.pause();
      try{await closeAnimatedAnimalScene(otterFrame);}finally{hideOtterAnimation();resetOtterChoices();otterEventRunning=false;}
    }
  }
