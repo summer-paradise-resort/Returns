@@ -11330,8 +11330,61 @@ window.addEventListener('message',e=>{
      }
    }
  }
- async function encounterGiant(){markAnimal('giant-shadow');await runAnomalyScene(['竿が大きくしなり、釣り糸が海の奥へ引かれていく。','やがて糸が切れ、遠くの波間で巨大な岩陰のような何かが動いた。'],{background:'linear-gradient(rgba(0,0,0,.68),rgba(0,0,0,.86)),url("summer_paradise_beach_night.jpg") center/cover no-repeat'});}
- async function encounterSmokeLizard(){
+ const giantShadowReefImage='anomaly_giant_shadow_reef_night.png';
+ const giantShadowReelAudioFile='anomaly_giant_shadow_reel_pull.mp3';
+ let giantShadowEventRunning=false;
+ async function encounterGiant(){
+   if(giantShadowEventRunning)return;
+   giantShadowEventRunning=true;markAnimal('giant-shadow');
+   const frame=document.createElement('div');
+   frame.style.cssText='display:block;flex:0 0 auto;width:min(94vw,820px,calc(47dvh * 1.7777778));max-height:47dvh;aspect-ratio:16/9;box-sizing:border-box;overflow:hidden;border:1px solid rgba(181,202,255,.27);background:#02070c;box-shadow:0 0 32px rgba(72,112,173,.16);opacity:0;transition:opacity .65s ease';
+   const image=document.createElement('img');
+   image.src=giantShadowReefImage;image.alt='月明かりのビーチと、海に点在する岩礁';image.draggable=false;image.decoding='async';
+   image.style.cssText='display:block;width:100%;height:100%;object-fit:cover';
+   frame.append(image);anomalyScene.insertBefore(frame,anomalySceneText);
+   const reelAudio=new Audio(giantShadowReelAudioFile);reelAudio.preload='auto';
+   const playReelAudio=()=>new Promise(resolve=>{
+     let done=false;
+     const finish=()=>{if(done)return;done=true;clearTimeout(fallback);reelAudio.removeEventListener('ended',finish);reelAudio.removeEventListener('error',finish);resolve()};
+     const fallback=setTimeout(finish,15000);
+     reelAudio.addEventListener('ended',finish,{once:true});reelAudio.addEventListener('error',finish,{once:true});
+     try{reelAudio.currentTime=0;reelAudio.volume=1;const playing=reelAudio.play();if(playing?.catch)playing.catch(finish)}catch{finish()}
+   });
+   try{
+     resetAnimalSceneControls();smokeLizardStage.style.display='none';fawnStage.style.display='none';fawnCloseupStage.style.display='none';otterBeachIntroImage.style.display='none';
+     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:clamp(14px,2.5vh,22px);box-sizing:border-box;padding:max(22px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;background:#000;color:#fff;opacity:0;visibility:visible;pointer-events:auto;transition:opacity .85s ease';
+     anomalyScene.setAttribute('aria-hidden','false');
+     anomalySceneText.style.cssText='position:relative;flex:0 0 auto;width:min(40em,calc(100vw - 32px));max-width:100%;margin:0;white-space:normal;text-align:left;font:clamp(15px,3.8vw,21px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.025em;line-break:strict;overflow-wrap:break-word;word-break:normal;word-break:auto-phrase;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .55s ease';
+     smokeLizardReturnButton.textContent='NEXT　›';smokeLizardReturnButton.style.display='none';smokeLizardReturnButton.style.opacity='0';smokeLizardReturnButton.style.margin='0 auto';
+     anomalyScene.style.opacity='1';await wait(700);
+     frame.style.opacity='1';
+     await Promise.race([image.decode?.().catch(()=>{})??Promise.resolve(),wait(4500)]);
+     setAnomalyNarrativeText('釣りざおを思い切り振りかぶった。岩礁の上を通り越して海の中へ沈んでいく。');
+     anomalySceneText.style.opacity='1';
+     smokeLizardReturnButton.style.display='inline-flex';await wait(40);
+     let reelFinished=Promise.resolve();
+     const nextTapped=new Promise(resolve=>smokeLizardReturnButton.addEventListener('click',()=>{reelFinished=playReelAudio();resolve()},{once:true}));
+     smokeLizardReturnButton.style.opacity='1';
+     await nextTapped;
+     smokeLizardReturnButton.style.opacity='0';anomalySceneText.style.opacity='0';await wait(260);smokeLizardReturnButton.style.display='none';
+     setAnomalyNarrativeText('？！すごい勢いで引っ張られている！！！');anomalySceneText.style.opacity='1';
+     await reelFinished;
+     anomalySceneText.style.opacity='0';await wait(260);
+     setAnomalyNarrativeText('ほどなくして糸が切れた。サメでもかかったのだろう、か───');anomalySceneText.style.opacity='1';
+     await wait(2200);
+     frame.style.opacity='0';anomalySceneText.style.opacity='0';await wait(700);frame.style.display='none';
+     anomalyScene.style.justifyContent='center';anomalyScene.style.gap='0';anomalyScene.style.padding='28px';anomalyScene.style.background='#000';
+     anomalySceneText.style.width='min(33em,calc(100vw - 64px))';anomalySceneText.style.textAlign='center';anomalySceneText.style.whiteSpace='pre-line';anomalySceneText.style.margin='0';
+     anomalySceneText.textContent='───ちがう。\n\nちがう、サメじゃない。違う。';
+     void anomalySceneText.offsetWidth;anomalySceneText.style.opacity='1';await wait(3200);
+   }catch(error){console.error('giant shadow fishing event:',error)}
+   finally{
+     reelAudio.pause();try{reelAudio.currentTime=0}catch{}
+     resetAnimalSceneControls();frame.remove();anomalySceneText.textContent='';anomalySceneText.style.cssText='width:min(33em,calc(100vw - 64px));max-width:100%;flex:0 0 auto;white-space:pre-line;text-align:left;font:clamp(15px,3.8vw,23px)/1.85 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .55s ease;margin-top:clamp(8px,2vh,20px)';
+     anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
+     anomalyScene.setAttribute('aria-hidden','true');giantShadowEventRunning=false;
+   }
+ } async function encounterSmokeLizard(){
    loadAnimalStageImages(smokeLizardStage);
    markAnimal('smoke-lizard');
    anomalyScene.classList.add('spr-smoke-lizard-scene');
