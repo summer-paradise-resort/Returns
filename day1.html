@@ -8306,7 +8306,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const pending=roomServiceHorrorPending;if(!pending||pending.dialogueStarted)return;
       pending.dialogueStarted=true;
       const revealChoices=()=>{if(roomServiceHorrorPending!==pending)return;pending.stage='choice';updateRoomDoorServicePanel()};
-      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('失礼します、ルームサービスをお届けに参りました。',revealChoices,'スタッフ');
+      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('失礼します、ルームサービスをお届けに参りました。',revealChoices,'STAFF');
       else revealChoices();
     }
     async function findRoomServiceReceipt(orders){
@@ -8420,7 +8420,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(String(roomServiceHorrorPending?.eventId||'')===resolution.event_id)roomServiceHorrorPending=null;
       roomServiceHorrorLocalChoice='idle';updateRoomDoorServicePanel();void trackRoomPhonePresence();
       if(resolution.choice==='declined'){
-        if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
+        if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'STAFF');
         return true;
       }
       if(resolution.outcome==='empty'){
@@ -8431,7 +8431,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const prizeText='おめでとうございます！お客様は本日のラッキーステイに選ばれました！10000000チップの贈呈です。ぜひ、カジノでお楽しみくださいね！';
         const awarded=await window.__sprAwardCasinoChipsOnce?.(10000000,resolution.event_id);
         if(!awarded&&localStorage.getItem(`spr-casino-award:${playerStorageId}:${resolution.event_id}`)!=='1')console.warn('room service lucky stay chip award could not be confirmed');
-        showRoomServiceHorrorResult(prizeText,'スタッフ');return true;
+        showRoomServiceHorrorResult(prizeText,'STAFF');return true;
       }
       if(resolution.outcome==='video'){
         if(resolution.video_file==='room_service_ng_03.mp4')markRoomServiceHorrorGimmickSeen('03');
@@ -10225,6 +10225,39 @@ window.addEventListener('message',e=>{
     return DAY1_EXPLORE_VIDEO_EVENTS.find(event=>event.spot===spotKey&&event.period===period&&event.action===actionKey&&event.drinks.includes(drink.name))||null;
   }
   let activeExploreVideoEvent=null;
+  const day1ExploreIntroGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+  const day1ExploreStaffIntroConfig={
+    beach:{
+      countKey:`spr-day1-beach-explore-count:${day1ExploreIntroGuest}`,
+      seenKey:`spr-day1-beach-staff-intro-seen:${day1ExploreIntroGuest}`,
+      lines:[
+        '島でのご滞在はいかがでしょうか。少しはおくつろぎいただけていますか？',
+        'よろしければ、私からひとつおすすめを。明日、本場スペインで修業を積んだシェフが戻ってまいります。情熱の国の料理をお楽しみになったあとは、お部屋のクローゼットにご用意しているバスローブを羽織って、潮風にあたりながら涼むのも素敵ですよ。'
+      ]
+    },
+    mermaids_cove:{
+      countKey:`spr-day1-cove-explore-count:${day1ExploreIntroGuest}`,
+      seenKey:`spr-day1-cove-staff-intro-seen:${day1ExploreIntroGuest}`,
+      lines:[
+        '人魚の入り江はいかがでしたか？この辺りは静かで、昔のことを思い出すお客様も多いんですよ。',
+        'ここだけの話ですが、今は亡き出資者のアーサー・グレイ様は、デミグラスオムライスをたいそう気に入っておられたそうです。亡くなられた後も、ときおり彼の名前で同じ注文が入る――そんな噂を聞いたことがあります。厨房では今でも、それを「いつもの一皿」として用意するのだとか。'
+      ]
+    }
+  };
+  let pendingDay1ExploreStaffIntro='';
+  function recordDay1Explore(spotKey){
+    const config=day1ExploreStaffIntroConfig[spotKey];
+    if(document.documentElement.dataset.resortDay!=='1'||!config||localStorage.getItem(config.seenKey)==='1')return;
+    const count=Math.min(3,(Number(localStorage.getItem(config.countKey))||0)+1);
+    localStorage.setItem(config.countKey,String(count));
+    if(count>=3){localStorage.setItem(config.seenKey,'1');pendingDay1ExploreStaffIntro=spotKey;}
+  }
+  function showPendingDay1ExploreStaffIntro(){
+    const spotKey=pendingDay1ExploreStaffIntro;
+    if(!spotKey)return;
+    pendingDay1ExploreStaffIntro='';
+    window.__sprShowStaffDialogueSequence?.(day1ExploreStaffIntroConfig[spotKey].lines,null,'STAFF');
+  }
   let exploreVideoStartupTimer=null;
   function clearExploreVideoStartupTimer(){
     if(exploreVideoStartupTimer!==null){clearTimeout(exploreVideoStartupTimer);exploreVideoStartupTimer=null;}
@@ -10240,6 +10273,7 @@ window.addEventListener('message',e=>{
     activeExploreVideoEvent=null;
     window.__sprExploreVideoPlaying=!resumeBgm;
     if(resumeBgm)window.__sprResumeExploreBgmAfterGimmick?.();
+    if(resumeBgm)showPendingDay1ExploreStaffIntro();
   }
   // iPhoneの標準フルスクリーン動画プレイヤーではなく、闘牛場と同じページ内再生に統一。
   // 音声付き再生がSafariにブロックされた場合は、専用ボタンでユーザー操作から再開する。
@@ -10442,20 +10476,29 @@ window.addEventListener('message',e=>{
       camera:'撮った写真を確認する。波打ち際に、自分と同じ服を着た人が立っている。顔までは写っていない。',
       telescope:'沖を覗く。遠くに人影が見える。こちらに背を向けているはずなのに、なぜか目が合った気がした。',
       fishing:'糸が沈む。魚とは違う重さが、ゆっくりとこちらへ近づいてくる。途中でふっと軽くなった。',
-      snorkel:'ダイビングをされる際は、どうぞお気をつけください。\n水中で名前を呼ばれても、返事はしないでください。'
     },
     lighthouse:{
       camera:'海を撮影した。写真の中央に、海面からこちらを見上げる人影が写っている。肉眼では何も見えない。',
       telescope:'沖を覗く。波の間に人影が見える。望遠鏡を外すと何もいない。もう一度覗くと、さっきより近い。',
       fishing:'糸が真下へ強く引かれる。巻き上げるたび、水面の下の影もゆっくり浮かんでくる。糸を離すと、影だけが残った。',
-      snorkel:'灯台から海への飛び込みは禁止されています。\n海面から手を振られても、応じる必要はありません。'
     },
     mermaids_cove:{
       camera:'水面を撮る。写真には、自分の足元まで水が来ている。実際の水際は、ずっと向こうにある。',
       telescope:'入り江の奥を覗く。岩陰から人の顔のようなものが見える。望遠鏡を外しても、同じ場所からこちらを見ている。',
       fishing:'何かが掛かる。引き上げる直前、糸の先から小さく笑う声がした。手を止めると、声も止まった。',
-      snorkel:'水中でスタッフを見かけても近づかないでください。\n我々は海に入りませんので。'
     }
+  };
+  const poisonDiveStaffLines={
+    sunset:[
+      'お客様、足元がふらついていらっしゃいます。夕方の海でも危険ですので、今はお入りにならないでください。',
+      'かなりお酒が回っているようです。酔いが醒めるまで、ダイビングはお控えください。どうぞ岸へお戻りください。',
+      '波は穏やかですが、まっすぐ歩けていません。今のご様子では海へご案内できません。今日はここから眺めるだけになさってください。'
+    ],
+    night:[
+      'お客様、夜の海は足元が見えません。そのご様子でのダイビングは危険です。今夜はお止めください。',
+      '手すりにつかまってください。酔いがひどいようです。海へ降りるのはおやめになって、こちらへお戻りください。',
+      '灯台の光が揺れて見えているのでしょうか。お客様の足元も定まっていません。今夜は海に入らず、お部屋へお戻りください。'
+    ]
   };
   let selectedSpot='';
   function explorePeriod(){
@@ -10794,6 +10837,7 @@ window.addEventListener('message',e=>{
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
     const actionKey=btn.dataset.exploreAction;
     btn.dataset.selectedSpot=selectedSpot;
+    recordDay1Explore(selectedSpot);
 
     const lighthouseEvent=matchingLighthouseEveningAnomaly(selectedSpot,actionKey);
     if(lighthouseEvent){
@@ -10802,7 +10846,18 @@ window.addEventListener('message',e=>{
       return;
     }
 
-    // DAY3–6の夜、通常ドリンクを飲んだ場合だけ灯台から一度だけ飛び降りられる。
+    // 毒状態だけの夕方・夜は、酔いがひどいためSTAFFがダイビングを止める。
+    const period=explorePeriod();
+    if(explorePoisoned()&&actionKey==='snorkel'&&!window.__sprHasAnyHorrorDrink?.()&&(period==='sunset'||period==='night')){
+      clearActionMessage();
+      const lines=poisonDiveStaffLines[period];
+      const line=lines[Math.floor(Math.random()*lines.length)];
+      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue(line,showPendingDay1ExploreStaffIntro,'STAFF');
+      else{showPoisonMessage(actionKey);showPendingDay1ExploreStaffIntro();}
+      return;
+    }
+
+    // DAY3〜6の夜、ライトハウスキーパーを飲み、NG効果がない場合だけ灯台イベントへ進む。
     if(eligibleLighthouseDive(selectedSpot,actionKey)){
       startLighthouseDiveEvent();
       return;
@@ -10811,14 +10866,8 @@ window.addEventListener('message',e=>{
     // 毒杯を引いた後は、翌朝7:00まで探索文が100%異常な内容へ切り替わる。
     if(explorePoisoned()){
       clearActionMessage();
-      const line=poisonMessages?.[selectedSpot]?.[actionKey]||'何かが、いつもと違って見える。';
-      // ダイビングのみ、スタッフに声をかけられる形式。
-      // 灯台だけはスタッフ会話ではなく、特殊な注意表示として出す。
-      if(actionKey==='snorkel'&&selectedSpot!=='lighthouse'&&typeof window.__sprShowStaffDialogue==='function'){
-        window.__sprShowStaffDialogue(line);
-      }else{
-        showPoisonMessage(actionKey);
-      }
+      showPoisonMessage(actionKey);
+      showPendingDay1ExploreStaffIntro();
       return;
     }
 
@@ -10843,6 +10892,7 @@ window.addEventListener('message',e=>{
       return;
     }
     showFallback(actionKey);
+    showPendingDay1ExploreStaffIntro();
   }));
   // 今後、探索ギミックで動画が追加された場合も自動でBGMを一時停止する。
   // 動画終了後は、探索画面を開いている間だけ同じ位置からBGMを再開する。
@@ -12127,22 +12177,35 @@ window.addEventListener('message',e=>{
    '潮騒が止むと、何か大切な声を聞き逃したような気持ちになるんです。',
    '灯台の光より、波の向こうの暗がりの方が美しく思えることがあるんです。おかしな話ですね。'
  ];
- function staffEvent(){if(day>=6&&day<=7&&Math.random()<.45&&!document.getElementById('storyEventModal')?.offsetParent)open('スタッフの声',staff[Math.floor(Math.random()*staff.length)])}
+ function staffEvent(){if(day>=6&&day<=7&&Math.random()<.45&&!document.getElementById('storyEventModal')?.offsetParent)open('STAFF',staff[Math.floor(Math.random()*staff.length)])}
  let seaWatcherActive=false;
  async function seaWatchingInterruption(){
    const cut=document.createElement('div');
-   cut.style.cssText='position:fixed;inset:0;z-index:2147483500;background:#000;color:#fff;overflow:hidden;pointer-events:auto;opacity:1';
+   cut.style.cssText='position:fixed;inset:0;z-index:2147483500;overflow:hidden;pointer-events:none;opacity:1';
    cut.setAttribute('role','presentation');
    const textWall=document.createElement('div');
-   textWall.style.cssText='position:absolute;inset:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));align-content:space-around;justify-items:center;gap:4px 10px;padding:4px 0;font:clamp(14px,3.3vw,24px)/1.2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.03em;overflow:hidden';
-   for(let i=0;i<220;i++){const t=document.createElement('span');t.textContent='海はみている';t.style.whiteSpace='nowrap';textWall.append(t)}
+   textWall.style.cssText='position:absolute;inset:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));grid-auto-rows:minmax(20px,auto);align-content:start;align-items:start;justify-items:center;gap:0 4px;padding:0;font:clamp(14px,3.3vw,24px)/1.2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.02em;color:#050505;overflow:hidden';
    cut.append(textWall);document.body.append(cut);
-   // 切断演出は必ず無音。再生中の音源のみ後で復帰させる。
+   const width=Math.max(90,window.innerWidth),height=Math.max(1,window.innerHeight);
+   const fontSize=Math.max(14,Math.min(24,width*.033));
+   const columns=Math.max(1,Math.floor(width/90));
+   const rows=Math.ceil(height/(fontSize*1.2));
    const playing=[...document.querySelectorAll('audio,video')].filter(a=>!a.paused&&!a.ended);
-   for(const audio of playing){try{audio.pause()}catch{}}
    try{
-     await wait(1150);textWall.style.display='none';
-     await wait(2000); // 黒画面・無音を2秒維持
+     // 画面を暗くせず、見えている探索画面の上に「海は見ている。」を行ごとに増やす。
+     for(let row=0;row<rows;row++){
+       for(let col=0;col<columns;col++){
+         const t=document.createElement('span');t.textContent='海は見ている。';t.style.cssText='display:block;white-space:nowrap;color:#050505';textWall.append(t);
+       }
+       await wait(55);
+     }
+     // 文字で画面を覆い切ってから、短く暗転して元の画面へ戻す。
+     const blackout=document.createElement('div');
+     blackout.style.cssText='position:fixed;inset:0;z-index:1;background:#000;opacity:0;transition:opacity .55s ease;pointer-events:none';
+     cut.append(blackout);void blackout.offsetWidth;blackout.style.opacity='1';
+     for(const audio of playing){try{audio.pause()}catch{}}
+     await wait(760);
+     blackout.style.opacity='0';await wait(560);
    }finally{
      cut.remove();
      for(const audio of playing){
@@ -12156,15 +12219,15 @@ window.addEventListener('message',e=>{
    seaWatcherActive=true;
    const beginning=day===6?'海の方をご覧ですか。あの水平線を見ていると、いつまでも目が離せなくなるんですよ。':'よくお越しくださいました。今夜も海が、あなたを待っていたような気がいたします。';
    const continuation='……失礼いたしました。何のお話でしたでしょうか。ああ、そうでした。今夜の海は、とても美しいですね。';
-   window.__sprShowStaffDialogue?.(beginning,()=>{seaWatcherActive=false},'スタッフ');
-   // スタッフが話している最中に、不意に文字の壁が現れて2秒間無音暗転する。
+   window.__sprShowStaffDialogue?.(beginning,()=>{seaWatcherActive=false},'STAFF');
+   // セリフの途中に文字が画面を覆い、埋まりきったあとで短く暗転する。
    void (async()=>{
      try{
        await wait(2200);
        if(!seaWatcherActive||!document.getElementById('cafeStaffOverlay')?.classList.contains('show'))return;
        await seaWatchingInterruption();
        if(document.getElementById('exploreView')?.classList.contains('open')){
-         window.__sprShowStaffDialogue?.(continuation,()=>{seaWatcherActive=false},'スタッフ');
+         window.__sprShowStaffDialogue?.(continuation,()=>{seaWatcherActive=false},'STAFF');
        }
      }finally{
        if(!document.getElementById('cafeStaffOverlay')?.classList.contains('show'))seaWatcherActive=false;
@@ -12275,6 +12338,7 @@ window.addEventListener('message',e=>{
        triggerSeaWatcher();return;
      }
      // 探索操作に対応する異変動物を判定する。
+     const poisonedDive=action==='snorkel'&&!!window.__sprIsHernandoPoisoned?.();
      const kind=anomalyActionKind(spot,action,explorePeriod());
      if(kind){
        e.preventDefault();e.stopImmediatePropagation();
@@ -12282,7 +12346,7 @@ window.addEventListener('message',e=>{
        void runAnomalyAction(kind);
        return;
      }
-     if(day>=6&&day<=7)setTimeout(staffEvent,160);
+     if(day>=6&&day<=7&&!poisonedDive)setTimeout(staffEvent,160);
    }
    if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(addLighthouseButton,260);
    if(day===7&&coveButton){
