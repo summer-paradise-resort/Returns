@@ -10296,14 +10296,16 @@ window.addEventListener('message',e=>{
     if(Number(document.documentElement.dataset.resortDay||1)!==3||(!adminDayTest&&localStorage.getItem(seaBottleSeenKey)==='1'))return;
     const overlay=document.createElement('div');
     overlay.className='mystery-modal';
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147482950;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,251,241,.62);color:#24394e;backdrop-filter:blur(2px) brightness(1.08);-webkit-backdrop-filter:blur(2px) brightness(1.08);overflow:auto';
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','シーボトルの手紙');
-    const dialog=document.createElement('div');dialog.className='mystery-dialog';dialog.style.maxWidth='720px';dialog.style.textAlign='left';
+    const dialog=document.createElement('div');dialog.className='mystery-dialog';dialog.style.cssText='max-width:720px;width:100%;max-height:90dvh;overflow:hidden;text-align:left;padding:clamp(22px,4vh,34px) clamp(20px,5vw,38px);background:#fffdf7;color:#24394e;border:1px solid #c7a45d;box-shadow:0 16px 48px rgba(13,39,67,.18)';
     const title=document.createElement('div');title.className='mystery-kicker';title.textContent='SEA BOTTLE';title.style.textAlign='center';
-    const text=document.createElement('p');text.style.maxHeight='62dvh';text.style.overflowY='auto';text.style.margin='8px 0 18px';
+    const text=document.createElement('p');text.style.cssText='max-height:58dvh;overflow-y:auto;margin:8px 0 14px;color:#24394e;font-size:clamp(14px,3.8vw,17px);line-height:2.05;white-space:pre-wrap';
     const choices=document.createElement('div');choices.className='mystery-choices';
-    const next=document.createElement('button');next.type='button';next.textContent='NEXT　›';
+    choices.style.cssText='display:grid;gap:10px;margin-top:12px';
+    const next=document.createElement('button');next.type='button';next.textContent='NEXT　›';next.style.cssText='min-height:46px;background:#f6f0e5;border:1px solid #ae9662;color:#0d2743;font:13px "Yu Mincho",serif;padding:11px';
     const pages=[
-      `ログインすると、シーボトルが流れ着いている。\n\n――${seaBottleDateLabel()}\n\nこれを読んでいる諸君へ。七日目を迎えた。……いや、正確には、どうにか七日目まで生き延びた、と書くべきだろう。何人が残ったのかは記さない。諸君がこれを読んでいる時点では、まだその結果は決まっていないはずだからな。\n\n私たちはリゾートを出た。あれほど眩しかった建物も、今では見る影もない。灯りは消え、窓は割れ、潮風に晒された建物だけが並んでいる。人の気配もない。波の音だけが、まるで何事もなかったように響いている。楽園などと呼べる場所ではない。……もっとも、最初からそんなものは存在していなかったのかもしれないが。\n\nそれでも私たちは船に乗った。七日間を生き延び、ようやく島から脱出できる。誰もがそう思っていた。私もだ。だが、間違いだった。船は島を離れたように見えた。けれど、どれほど進んでも陸地は遠ざからず、やがて海は私たちの行く手を閉ざした。私たちは、乗る場所を間違えた。船を間違え、時刻を間違え、行先を間違えたのだ。`,
+      `シーボトルが流れ着いている。\n\n――${seaBottleDateLabel()}\n\nこれを読んでいる諸君へ。七日目を迎えた。……いや、正確には、どうにか七日目まで生き延びた、と書くべきだろう。何人が残ったのかは記さない。諸君がこれを読んでいる時点では、まだその結果は決まっていないはずだからな。\n\n私たちはリゾートを出た。あれほど眩しかった建物も、今では見る影もない。灯りは消え、窓は割れ、潮風に晒された建物だけが並んでいる。人の気配もない。波の音だけが、まるで何事もなかったように響いている。楽園などと呼べる場所ではない。……もっとも、最初からそんなものは存在していなかったのかもしれないが。\n\nそれでも私たちは船に乗った。七日間を生き延び、ようやく島から脱出できる。誰もがそう思っていた。私もだ。だが、間違いだった。船は島を離れたように見えた。けれど、どれほど進んでも陸地は遠ざからず、やがて海は私たちの行く手を閉ざした。私たちは、乗る場所を間違えた。船を間違え、時刻を間違え、行先を間違えたのだ。`,
       `諸君、あの船には乗るな。まず行先を照らせ。正しい乗り場を見つけろ。正しい舟を選べ。そして、正しい時刻を逃すな。\n\n未来が間違っていたのなら、過去から計算をやり直せばいい。壊れた回路なら、原因を探し、正しい接続に組み直せばいい。私にはもう、それを確かめる時間が残されていない。この先を、諸君らに託す。\n\nルカ・バルサー`
     ];
     let page=0;
