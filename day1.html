@@ -1402,9 +1402,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           </div>
         </div>
         <div id="roomServiceNgScreen" class="room-service-ng-screen" role="dialog" aria-modal="true" aria-label="NGギミック動画" aria-hidden="true">
-          <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng.mp4" preload="metadata" playsinline webkit-playsinline></video>
+          <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng_01.mp4" preload="metadata" playsinline webkit-playsinline></video>
           <button id="roomServiceNgClose" class="room-service-ng-close" type="button" aria-label="動画を閉じる">×</button>
-          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng.mp4 を確認してください。</div>
+          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4、room_service_ng_03.mp4 を確認してください。</div>
         </div>
         <div id="villaPoolExperience" class="villa-pool-experience" role="dialog" aria-modal="true" aria-label="ロイヤルヴィラのプール" aria-hidden="true">
           <div class="villa-pool-water">
@@ -8294,9 +8294,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{roomServiceNgVideo.pause();roomServiceNgVideo.currentTime=0}catch{}
       roomServiceNgScreen.classList.remove('open');roomServiceNgScreen.setAttribute('aria-hidden','true');
     }
-    function showRoomServiceNgVideo(){
+    const ROOM_SERVICE_NG_VIDEO_FILES=['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'];
+    function roomServiceNgVideoForEvent(eventId){
+      const key=String(eventId||'room-service-ng');let hash=0;
+      for(let i=0;i<key.length;i++)hash=((hash<<5)-hash+key.charCodeAt(i))|0;
+      return ROOM_SERVICE_NG_VIDEO_FILES[(hash>>>0)%ROOM_SERVICE_NG_VIDEO_FILES.length];
+    }
+    function showRoomServiceNgVideo(eventId){
       if(!roomServiceNgScreen||!roomServiceNgVideo)return;
-      roomServiceNgFallback?.classList.add('hidden');roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
+      const videoFile=roomServiceNgVideoForEvent(eventId);
+      roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=videoFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
       try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
     }
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
@@ -8337,7 +8344,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           localStorage.setItem(appliedKey,'1');
         }finally{roomServiceHorrorNgApplying.delete(resolution.event_id)}
       }
-      showRoomServiceNgVideo();return true;
+      showRoomServiceNgVideo(resolution.event_id);return true;
     }
     async function resolveRoomServiceHorror(choice){
       const pending=roomServiceHorrorPending;if(!pending||roomServiceHorrorResolving||!['accepted','declined'].includes(choice))return false;
