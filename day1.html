@@ -489,10 +489,11 @@
     .bar-period-card small{display:block;color:var(--gold);font:10px Georgia,serif;letter-spacing:.12em;margin-bottom:8px}
     .bar-period-card p{font-size:12px;line-height:1.85;color:#4c5a67;margin:0}
     .bar-menu-title{text-align:center;margin:24px 0 13px;font:13px Georgia,serif;letter-spacing:.22em;color:var(--gold)}
-    .bar-menu-pages{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y pinch-zoom;overscroll-behavior-x:contain}
+    .bar-menu-pages{display:flex;align-items:flex-start;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 5vw 12px;margin:0 -18px 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y pinch-zoom;overscroll-behavior-x:contain}
     .bar-menu-pages::-webkit-scrollbar{display:none}
-    .bar-menu-page{flex:0 0 min(82vw,520px);margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
-    .bar-menu-page img{width:100%;height:auto;display:block}
+    .bar-menu-page{display:block;flex:0 0 min(82vw,520px);min-width:min(82vw,520px);height:auto;max-height:none;margin:0;scroll-snap-align:center;border:1px solid #e1d4bd;background:#f7f1e7}
+    .bar-menu-page .bar-menu-zoom-trigger{display:block;width:100%;height:auto!important;min-height:0;max-height:none;line-height:0;overflow:visible}
+    .bar-menu-page img{display:block;width:100%!important;height:auto!important;min-height:0;max-height:none!important;aspect-ratio:auto;object-fit:contain}
     .bar-menu-hint{text-align:center;font-size:10px;letter-spacing:.08em;color:#fff;margin:-8px 0 22px;text-shadow:0 2px 8px rgba(0,0,0,.45)}
     .bar-drink-list{display:grid;gap:9px}
     .bar-drink-item{width:100%;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid #e7dfd1;background:#fff;color:var(--navy);padding:12px 11px;min-height:68px}
@@ -1370,6 +1371,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="auto" loop playsinline></audio>
         <audio id="roomPhonePromo" src="room_phone_01.mp3" preload="auto" playsinline></audio>
         <audio id="roomPhoneTeaEcho" src="room_phone_02.mp3" preload="auto" playsinline></audio>
+        <audio id="roomPhoneTeaBgm" src="room_phone_02_bgm.mp3" preload="auto" playsinline></audio>
         <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
         <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="auto" playsinline></audio>
         <audio id="roomDoorOpenAudio" src="room_door_open.mp3" preload="auto" playsinline></audio>
@@ -1824,7 +1826,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_01.jpg" aria-label="ドリンクメニュー 1〜10を拡大表示"><img data-deferred-src="seaside_bar_drink_menu_01.jpg" alt="シーサイドバー ドリンクメニュー 1〜10" loading="lazy" decoding="async"></button></figure>
           <figure class="bar-menu-page"><button class="bar-menu-zoom-trigger" type="button" data-menu-zoom="seaside_bar_drink_menu_02.jpg" aria-label="ドリンクメニュー 11〜20を拡大表示"><img data-deferred-src="seaside_bar_drink_menu_02.jpg" alt="シーサイドバー ドリンクメニュー 11〜20" loading="lazy" decoding="async"></button></figure>
         </div>
-        <div class="bar-menu-hint">左右にスワイプしてメニュー表をご覧いただけます。<br><strong>メニュー表をタップすると拡大表示できます。</strong></div>
         <div id="barDrinkList" class="bar-drink-list"></div>
         <div class="bar-order-confirm-wrap"><div id="barSelection" class="bar-selection">ドリンクをお選びください。</div><button id="barOrderConfirm" class="bar-order-confirm" type="button" disabled>このドリンクを注文する</button><div id="barOrderResult" class="bar-order-result hidden" aria-live="polite"></div></div>
       </div>
@@ -1883,7 +1884,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <button id="casinoSeriousEmilyChallenge" class="casino-menu-card casino-emily-rematch hidden" type="button"><strong>ULTRA SPECIAL TABLEに挑む</strong><span>5,000万CHIP以上と、今夜の「アンコール」を持って、再びウルトラスペシャルテーブルへ。</span><small>ULTRA SPECIAL TABLE　›</small></button>
         </div>
         <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
-        <div class="casino-note">BGMは画面右上の♪からON / OFFを切り替えられます。BGMが設定されている場所で再生されます。</div>
       </div>
 
 
@@ -1897,7 +1897,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         </div>
         <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
         <div class="casino-gallery-actions">
-          <div id="casinoGalleryHint" class="casino-gallery-hint">左右にスワイプして館内をご覧いただけます。</div>
           <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
           <span id="casinoEmilyTalkSpacer" class="casino-emily-talk-spacer hidden" aria-hidden="true"></span>
         </div>
@@ -2072,11 +2071,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       afternoonTeaTicket2:{label:'アフタヌーンティーチケット（2名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに2名様でご利用いただけます。',max:Infinity},
       afternoonTeaTicket4:{label:'アフタヌーンティーチケット（4名様用）',detail:'The Pearl Terrace / Marine Bloom Cafe のアフタヌーンティーに4名様でご利用いただけます。',max:Infinity},
       extraDrinkTicket:{label:'BARドリンクチケット',detail:'バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
-      jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:4,image:'casino.joker.PNG'},
+        jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:1,image:'casino.joker.PNG'},
       dimensionalBag:{label:'次元バック',detail:'協力狩りでお馴染みの次元バック。ただ、ここではあまり役に立たなさそう……',max:Infinity},
       freshAcorn:{label:'新鮮なドングリ',detail:'島で採れた、つやのある新鮮なドングリ。',max:Infinity},
       antidote:{label:'酔い覚まし',detail:'毒のように強すぎるお酒には、これが一番効きます。',max:Infinity},
-      lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。タップすると券面を確認できます。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
+      lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
@@ -2201,10 +2200,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{
         const saved=JSON.parse(localStorage.getItem(belongingsKey)||'{}');
         if(!saved||typeof saved!=='object'||Array.isArray(saved))return {};
+        let normalized=false;
+        Object.entries(belongingsCatalog).forEach(([key,item])=>{
+          if(!Object.prototype.hasOwnProperty.call(saved,key)||!Number.isFinite(Number(item?.max)))return;
+          const quantity=Math.max(0,Math.min(Number(item.max),Math.floor(Number(saved[key])||0)));
+          if(Number(saved[key])!==quantity){saved[key]=quantity;normalized=true}
+        });
         if(Object.prototype.hasOwnProperty.call(saved,retiredInventoryItemKey)){
           delete saved[retiredInventoryItemKey];
-          localStorage.setItem(belongingsKey,JSON.stringify(saved));
+          normalized=true;
         }
+        if(normalized)localStorage.setItem(belongingsKey,JSON.stringify(saved));
         return saved;
       }catch{return {}}
     }
@@ -2214,7 +2220,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     window.__sprGetBelongingCount=belongingCount;window.__sprGetCoasterCounts=coasterCounts;window.__sprGetPlayerId=()=>sprPlayerId();window.__sprGetGuestName=()=>storedGuestName;window.__sprRemainingLives=remainingLives;
     window.__sprConsumeStoryItem=async key=>{try{const next=await remoteInventoryAdjust(key,-1);if(next===null)return false;const items=loadBelongings();items[key]=next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item consume',e);return false}};
-    window.__sprGrantStoryItem=async key=>{try{const next=await remoteInventoryAdjust(key,1);if(next===null)return false;const items=loadBelongings();items[key]=next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item grant',e);return false}};
+    window.__sprGrantStoryItem=async key=>{try{if(key==='jokerCard'&&await authoritativeInventoryCount('jokerCard')>=1)return false;const next=await remoteInventoryAdjust(key,1);if(next===null)return false;const items=loadBelongings();items[key]=Number.isFinite(Number(belongingsCatalog[key]?.max))?Math.min(Number(belongingsCatalog[key].max),next):next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item grant',e);return false}};
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     function remainingLives(){
       const belongings=loadBelongings();
@@ -2226,6 +2232,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const belongings=loadBelongings();
       let qty=Math.max(0,Math.floor(Number(quantity)||0));
       if(key==='lifeHearts')qty=Math.min(3,qty);
+      if(Number.isFinite(Number(belongingsCatalog[key]?.max)))qty=Math.min(Number(belongingsCatalog[key].max),qty);
       belongings[key]=qty;
       if(sync)saveBelongings(belongings);else localStorage.setItem(belongingsKey,JSON.stringify(belongings));
       if(typeof renderRoomBelongings==='function')renderRoomBelongings();
@@ -2282,14 +2289,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function sprPlayerId(){return (await ensureStoredPlayerId())||''}
     async function persistInventorySnapshot(items){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
-      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>{let quantity=Math.max(0,Math.floor(Number(v)||0));if(item_key==='lifeHearts')quantity=Math.min(3,quantity);return {player_id:playerId,item_key,quantity,updated_at:new Date().toISOString()}});
+      const rows=Object.entries(items||{}).filter(([,v])=>Number.isFinite(Number(v))).map(([item_key,v])=>{let quantity=Math.max(0,Math.floor(Number(v)||0));if(item_key==='lifeHearts')quantity=Math.min(3,quantity);if(Number.isFinite(Number(belongingsCatalog[item_key]?.max)))quantity=Math.min(Number(belongingsCatalog[item_key].max),quantity);return {player_id:playerId,item_key,quantity,updated_at:new Date().toISOString()}});
       if(!rows.length)return;
       const {error}=await window.supabaseClientSpecial.from('spr_player_inventory').upsert(rows,{onConflict:'player_id,item_key'});if(error)throw error;
     }
     async function remoteInventoryAdjust(itemKey,delta){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return null;
       const {data,error}=await window.supabaseClientSpecial.rpc('spr_inventory_adjust',{p_player_id:playerId,p_item_key:itemKey,p_delta:delta});
-      if(error)throw error;return Math.max(0,Number(data)||0);
+      if(error)throw error;let quantity=Math.max(0,Number(data)||0);if(Number.isFinite(Number(belongingsCatalog[itemKey]?.max)))quantity=Math.min(Number(belongingsCatalog[itemKey].max),quantity);return quantity;
     }
     // ライフ残数は毎15秒のポーリングではなく、所持品を開く時・被攻撃時・再接続時に確認。
     // 通信が重なっても同時に問い合わせず、後着イベントはもう一度照合して取り逃しを防ぐ。
@@ -2542,7 +2549,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             if(key==='mysteryBoxTicket'&&staleForReset){belongings.mysteryBoxTicket=0;inventoryBootstrap.mysteryBoxTicket=0;return}
             if(key==='mysteryKnife'&&staleForReset){belongings.mysteryKnife=0;inventoryBootstrap.mysteryKnife=0;return}
             if((key==='villaStayTicket'||key.startsWith('mysteryPostcard'))&&staleForReset){belongings[key]=0;inventoryBootstrap[key]=0;return}
-            let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);belongings[key]=qty;
+            let qty=Math.max(0,Number(r.quantity)||0);if(key==='lifeHearts')qty=Math.min(3,qty);if(Number.isFinite(Number(belongingsCatalog[key]?.max)))qty=Math.min(Number(belongingsCatalog[key].max),qty);belongings[key]=qty;
           });
         }else if(Object.values(localBelongings).some(v=>Number(v)>0)){
           belongings={...localBelongings};await persistInventorySnapshot(belongings);
@@ -4128,6 +4135,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function randomEmilyJokerLine(){return emilyJokerLines[Math.floor(Math.random()*emilyJokerLines.length)]}
     async function tryGrantRandomJoker(){
       // 既存仕様の45%抽選を維持。ヒントは必ず出し、JOKERは追加報酬として独立抽選する。
+      if(await authoritativeInventoryCount('jokerCard')>=1)return false;
       if(Math.random()>=0.45)return false;
       try{
         const playerId=await sprPlayerId();
@@ -4135,7 +4143,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_joker',{p_player_id:playerId});
           if(error)throw error;
           if(data===true){
-            const b=loadBelongings();b.jokerCard=Math.min(4,Math.max(0,Number(b.jokerCard||0))+1);saveBelongings(b);
+            const b=loadBelongings();b.jokerCard=Math.min(1,Math.max(0,Number(b.jokerCard||0))+1);saveBelongings(b);
             if(typeof renderRoomBelongings==='function')renderRoomBelongings();
             return true;
           }
@@ -4143,8 +4151,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
       }catch(e){console.warn('joker claim sync',e)}
       const b=loadBelongings(),current=Math.max(0,Number(b.jokerCard||0));
-      if(current>=4)return false;
-      b.jokerCard=current+1;saveBelongings(b);if(typeof renderRoomBelongings==='function')renderRoomBelongings();return true;
+      if(current>=1)return false;
+      b.jokerCard=Math.min(1,current+1);saveBelongings(b);if(typeof renderRoomBelongings==='function')renderRoomBelongings();return true;
     }
     async function grantSpecialLossReward(){
       const hintNo=await claimNextEmilyHintNumber();
@@ -5461,7 +5469,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const roomBelongingsSheet=document.getElementById('roomBelongingsSheet'), roomBelongingsList=document.getElementById('roomBelongingsList');
     const roomServiceCartList=document.getElementById('roomServiceCartList'), roomServiceOrder=document.getElementById('roomServiceOrder');
     const roomContextAction=document.getElementById('roomContextAction'), roomExploreResult=document.getElementById('roomExploreResult');
-    const roomPhoneRing=document.getElementById('roomPhoneRing'), roomPhoneWave=document.getElementById('roomPhoneWave'), roomPhonePromo=document.getElementById('roomPhonePromo'), roomPhoneTeaEcho=document.getElementById('roomPhoneTeaEcho'), roomPhoneFinish=document.getElementById('roomPhoneFinish'), roomPhoneCallPanel=document.getElementById('roomPhoneCallPanel'), roomPhoneCallStatus=document.getElementById('roomPhoneCallStatus');
+    const roomPhoneRing=document.getElementById('roomPhoneRing'), roomPhoneWave=document.getElementById('roomPhoneWave'), roomPhonePromo=document.getElementById('roomPhonePromo'), roomPhoneTeaEcho=document.getElementById('roomPhoneTeaEcho'), roomPhoneTeaBgm=document.getElementById('roomPhoneTeaBgm'), roomPhoneFinish=document.getElementById('roomPhoneFinish'), roomPhoneCallPanel=document.getElementById('roomPhoneCallPanel'), roomPhoneCallStatus=document.getElementById('roomPhoneCallStatus');
     const roomPhoneAnswer=document.getElementById('roomPhoneAnswer'), roomPhoneDecline=document.getElementById('roomPhoneDecline');
     const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
@@ -6391,14 +6399,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // iPhone / iPad Safari対策として、最初のユーザー操作時にミュート再生で待機。
     function primeRoomPhoneCallAudio(){
       if(!roomPhoneMasterAudioOn()||!roomPhoneWave||!roomPhoneFinish)return Promise.resolve(false);
-      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused&&!roomPhonePromo?.paused&&!roomPhoneTeaEcho?.paused)return Promise.resolve(true);
+      if(roomPhoneCallAudioPrimed&&!roomPhoneWave.paused&&!roomPhoneFinish.paused&&!roomPhonePromo?.paused&&!roomPhoneTeaEcho?.paused&&!roomPhoneTeaBgm?.paused)return Promise.resolve(true);
       if(roomPhoneCallAudioPrimePromise)return roomPhoneCallAudioPrimePromise;
       const primeOne=(audio)=>{
         audio.preload='auto';audio.loop=true;audio.volume=1;audio.muted=true;
         try{audio.currentTime=0}catch{}
         return Promise.resolve(audio.play());
       };
-      roomPhoneCallAudioPrimePromise=Promise.all([primeOne(roomPhoneWave),primeOne(roomPhoneFinish),...(roomPhonePromo?[primeOne(roomPhonePromo)]:[]),...(roomPhoneTeaEcho?[primeOne(roomPhoneTeaEcho)]:[])]).then(()=>{
+      roomPhoneCallAudioPrimePromise=Promise.all([primeOne(roomPhoneWave),primeOne(roomPhoneFinish),...(roomPhonePromo?[primeOne(roomPhonePromo)]:[]),...(roomPhoneTeaEcho?[primeOne(roomPhoneTeaEcho)]:[]),...(roomPhoneTeaBgm?[primeOne(roomPhoneTeaBgm)]:[])]).then(()=>{
         roomPhoneCallAudioPrimed=true;roomPhoneCallAudioPrimePromise=null;return true;
       }).catch(e=>{
         roomPhoneCallAudioPrimed=false;roomPhoneCallAudioPrimePromise=null;
@@ -6407,7 +6415,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return roomPhoneCallAudioPrimePromise;
     }
     function silenceRoomPhoneCallAudio(){
-      [roomPhoneWave,roomPhonePromo,roomPhoneTeaEcho,roomPhoneFinish].forEach(audio=>{
+      [roomPhoneWave,roomPhonePromo,roomPhoneTeaEcho,roomPhoneTeaBgm,roomPhoneFinish].forEach(audio=>{
         if(!audio)return;
         sprCancelGuardedAudioStart(audio);
         try{audio.pause();audio.currentTime=0;audio.muted=true}catch{}
@@ -6444,6 +6452,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(roomPhoneWave){sprCancelGuardedAudioStart(roomPhoneWave);try{roomPhoneWave.pause();roomPhoneWave.currentTime=0;roomPhoneWave.muted=true}catch{}}
       if(roomPhonePromo){sprCancelGuardedAudioStart(roomPhonePromo);roomPhonePromo.onended=null;try{roomPhonePromo.pause();roomPhonePromo.currentTime=0;roomPhonePromo.muted=true}catch{}}
       if(roomPhoneTeaEcho){sprCancelGuardedAudioStart(roomPhoneTeaEcho);roomPhoneTeaEcho.onended=null;try{roomPhoneTeaEcho.pause();roomPhoneTeaEcho.currentTime=0;roomPhoneTeaEcho.muted=true}catch{}}
+      if(roomPhoneTeaBgm){sprCancelGuardedAudioStart(roomPhoneTeaBgm);try{roomPhoneTeaBgm.pause();roomPhoneTeaBgm.currentTime=0;roomPhoneTeaBgm.muted=true}catch{}}
       roomPhoneLastMessage='……';updateRoomPhoneUi();
       if(!roomPhoneMasterAudioOn()||!roomPhoneFinish){completeRoomPhoneAudioSequence(eventId);return}
       try{
@@ -6478,6 +6487,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const selection=teaEcho?'tea-echo':roomPhoneConversationAudio(row);
         if(selection==='tea-echo'){
           let started=false;
+          if(roomPhoneMasterAudioOn()&&roomPhoneTeaBgm){
+            try{void sprStartAudioClean(roomPhoneTeaBgm,{volume:.28,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).catch(error=>console.warn('room_phone_02_bgm.mp3 playback',error))}
+            catch(error){console.warn('room_phone_02_bgm.mp3 playback',error)}
+          }
           if(roomPhoneMasterAudioOn()&&roomPhoneTeaEcho){
             try{started=await sprStartAudioClean(roomPhoneTeaEcho,{volume:1,loop:false,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}
             catch(error){console.warn('room_phone_02.mp3 playback',error)}
@@ -6864,7 +6877,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function testRoomPhoneSound(){
       const status=document.getElementById('adminMasterStatus');
       if(!roomPhoneMasterAudioOn()){
-        if(status)status.textContent='着信音テスト：先に右上の♪をONにしてください。';
+        if(status)status.textContent='着信音テストを開始できませんでした。';
         return;
       }
       if(!roomPhoneRing){if(status)status.textContent='着信音テスト失敗：audio要素がありません。';return}
@@ -7594,7 +7607,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{hernandoBullringVideo.currentTime=0;hernandoBullringVideo.muted=false}catch{}
       const p=hernandoBullringVideo.play();
       if(p&&p.catch)p.catch(()=>{
-        hernandoVideoFallbackText.textContent='画面をタップして動画を再生してください。';
+        hernandoVideoFallbackText.textContent='';
         hernandoVideoFallback.classList.add('show');
       });
     }
@@ -9173,17 +9186,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const jokerGrantStatus=document.createElement('p');
       jokerGrantStatus.className='admin-test-state';
       jokerGrantStatus.setAttribute('aria-live','polite');
-      jokerGrantStatus.textContent=`現在の所持数：${window.__sprGetBelongingCount?.('jokerCard')||0}枚（上限4枚）`;
+      jokerGrantStatus.textContent=`現在の所持数：${window.__sprGetBelongingCount?.('jokerCard')||0}枚（上限1枚）`;
       let jokerGrantBusy=false;
       jokerGrant.addEventListener('click',async()=>{
         if(!IS_ADMIN||jokerGrantBusy)return;
         const current=Math.max(0,Number(window.__sprGetBelongingCount?.('jokerCard')||0));
-        if(current>=4){jokerGrantStatus.textContent='JOKER CARDは上限の4枚を所持しています。';return}
+        if(current>=1){jokerGrantStatus.textContent='JOKER CARDはすでに所持しています。';return}
         jokerGrantBusy=true;jokerGrant.disabled=true;
         try{
           const granted=await window.__sprGrantStoryItem?.('jokerCard');
           const quantity=Math.max(0,Number(window.__sprGetBelongingCount?.('jokerCard')||0));
-          jokerGrantStatus.textContent=granted?`JOKER CARDを1枚付与しました。現在 ${quantity}枚です。`:'付与できませんでした。通信状態をご確認ください。';
+          jokerGrantStatus.textContent=granted?`JOKER CARDを付与しました。現在 ${quantity}枚です。`:'付与できませんでした。すでに所持している可能性があります。';
         }catch(error){
           console.warn('admin joker card grant',error);
           jokerGrantStatus.textContent='付与できませんでした。通信状態をご確認ください。';
@@ -9479,7 +9492,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ10杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
-&lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;div id=&quot;coasterZoom&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
@@ -9668,7 +9681,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 &lt;section class=&quot;cafe-ticket-panel&quot;&gt;&lt;h3&gt;CAFE DRINK TICKET&lt;/h3&gt;
 &lt;p&gt;CAFEドリンクチケットを使用すると、ドリンクのみ10杯をご注文いただけます。ご利用は1日1回です。&lt;/p&gt;
 &lt;button id=&quot;useCafeDrinkTicket&quot; type=&quot;button&quot;&gt;CAFEドリンクチケットを使用する&lt;/button&gt;&lt;p id=&quot;cafeDrinkTicketStatus&quot;&gt;&lt;/p&gt;&lt;/section&gt;
-&lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;small&gt;タップすると拡大できます。&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div id=&quot;coaster14Modal&quot; class=&quot;c14&quot;&gt;&lt;div class=&quot;c14box&quot;&gt;&lt;button id=&quot;coaster14Close&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;h3&gt;COASTER COLLECTION&lt;/h3&gt;&lt;div id=&quot;coaster14Grid&quot; class=&quot;c14grid&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;div id=&quot;coasterZoom&quot; class=&quot;cz&quot;&gt;&lt;button id=&quot;coasterZoomClose&quot; class=&quot;x&quot;&gt;×&lt;/button&gt;&lt;img id=&quot;coasterZoomImage&quot;&gt;&lt;/div&gt;
 &lt;/main&gt;&lt;script&gt;
 (()=&gt;{
@@ -10252,7 +10265,7 @@ window.addEventListener('message',e=>{
         if(!exploreEventVideoScreen?.classList.contains('open'))return;
         if(error?.name==='AbortError')return;
         if(error?.name==='NotAllowedError'){
-          if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent='画面内で映像を再生します。「動画を再生する」を押してください。';
+          if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent='';
           if(exploreEventVideoRetry)exploreEventVideoRetry.textContent='動画を再生する';
         }else{
           if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent='動画を再生できませんでした。もう一度お試しください。';
