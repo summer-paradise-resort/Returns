@@ -9100,7 +9100,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     document.querySelectorAll('[data-gallery]').forEach(gallery=>{
       const name=gallery.dataset.gallery, track=gallery.querySelector('.track'), slides=[...track.children], dotsWrap=document.querySelector(`[data-dots="${name}"]`);let index=0,startX=0,startY=0,swipeEligible=false;
       const dots=slides.map((_,i)=>{const dot=document.createElement('button');dot.type='button';dot.className='dot'+(i===0?' active':'');dot.setAttribute('aria-label',`写真${i+1}`);dot.addEventListener('click',()=>show(i));dotsWrap.append(dot);return dot;});
-      function show(next){index=(next+slides.length)%slides.length;track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));}
+      function show(next){index=(next+slides.length)%slides.length;gallery.dataset.activeIndex=String(index);track.style.transform=`translateX(-${index*100}%)`;dots.forEach((dot,i)=>dot.classList.toggle('active',i===index));window.__sprLoadDeferredViewAssets?.(slides[index]);}
+      gallery.dataset.activeIndex='0';
       gallery.addEventListener('touchstart',e=>{
         swipeEligible=e.touches.length===1;
         if(!swipeEligible)return;
@@ -10542,8 +10543,21 @@ window.addEventListener('message',e=>{
     deferredImages.push(...root.querySelectorAll('img[data-deferred-src]'));
     deferredImages.forEach(img=>{
       if(!insideActivePanel(img))return;
+      // Carousel photos stay deferred until their slide is selected.
+      const gallery=img.closest('[data-gallery]');
+      if(gallery){
+        const slides=[...gallery.querySelectorAll('.track > .slide')];
+        const activeIndex=Number(gallery.dataset.activeIndex||0);
+        if(slides.indexOf(img.closest('.slide'))!==activeIndex)return;
+      }
       const src=img.dataset.deferredSrc;delete img.dataset.deferredSrc;
-      if(src){img.loading='lazy';img.decoding='async';img.src=src}
+      if(src){
+        const isMenuImage=!!img.closest('.bar-menu-pages');
+        img.loading=(isMenuImage||gallery)?'eager':'lazy';
+        img.decoding='async';
+        if(isMenuImage||gallery)img.fetchPriority='high';
+        img.src=src;
+      }
     });
     root.querySelectorAll('[data-deferred-css-background]').forEach(el=>{
       if(!insideActivePanel(el))return;
