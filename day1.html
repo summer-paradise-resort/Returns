@@ -8728,8 +8728,34 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function renderRoomServiceHistory(){
       roomServiceHistory.replaceChildren();const orders=roomServiceOrders();
-      if(!orders.length){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty)}
+      const waterEventKey=`spr-day6-thirsty-staff:${playerStorageId}:day6`;
+      const waterEventActive=localStorage.getItem(waterEventKey)==='history';
+      if(waterEventActive){
+        for(let i=0;i<30;i++){
+          const item=document.createElement('div');item.className='service-history-item';
+          item.textContent='ミネラルウォーター × 99';roomServiceHistory.append(item);
+        }
+      }
+      if(!orders.length&&!waterEventActive){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty)}
       else orders.slice(-5).reverse().forEach(order=>{const item=document.createElement('div');item.className='service-history-item';const lines=order.items.map(v=>`${v.name} × ${v.qty}`).join(' ／ ');item.innerHTML=`<strong>${order.time}</strong><br>${lines}<br><small>注文番号 ${order.id}</small>`;roomServiceHistory.append(item)});
+    }
+    function roomEventPeriod(){
+      const override=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+      if(['day','sunset','night'].includes(override))return override;
+      const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+      return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
+    }
+    function showDay6WaterRoomEvent(){
+      const waterEventKey=`spr-day6-thirsty-staff:${playerStorageId}:day6`;
+      if(Number(document.documentElement.dataset.resortDay||1)!==6||roomEventPeriod()!=='night'||localStorage.getItem(waterEventKey)!=='encountered')return;
+      localStorage.setItem(waterEventKey,'history');
+      const overlay=document.createElement('div');overlay.className='mystery-modal';
+      overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','客室の異変');
+      overlay.style.cssText='position:fixed;inset:0;z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(4,14,24,.78);color:#fff;backdrop-filter:blur(3px)';
+      const card=document.createElement('div');card.style.cssText='width:min(620px,100%);padding:34px 22px;background:rgba(8,27,42,.94);border:1px solid #c7a45d;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)';
+      const message=document.createElement('p');message.textContent='部屋の至る所が水で濡れている…';message.style.cssText='margin:0;color:#fff;font:clamp(17px,4.5vw,22px)/1.9 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.04em';
+      const close=document.createElement('button');close.type='button';close.textContent='CLOSE　×';close.style.cssText='display:block;margin:26px 0 0 auto;min-height:44px;padding:10px 18px;border:1px solid #ae9662;background:transparent;color:#f4e5bc;font:12px Georgia,serif;letter-spacing:.12em';
+      close.addEventListener('click',()=>overlay.remove());card.append(message,close);overlay.append(card);document.body.append(overlay);close.focus({preventScroll:true});
     }
     function updateCollectionButton(){const btn=document.getElementById('roomCollectionOpen');if(btn)btn.classList.toggle('hidden',loadCoasterInventory().length===0)}
     function renderRoomCollection(){
@@ -9096,6 +9122,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       document.getElementById('chatSheetTitle').textContent=`${room}号室の会話`;
       document.getElementById('fallbackRoomName').textContent=`${room}号室　／　${roomTypes[room]}`;
       roomEntry.classList.add('hidden');roomLounge.classList.remove('hidden');roomView.classList.add('room-active');
+      showDay6WaterRoomEvent();
       updateRoomOccupancyUi();setRoomOccupancyExpanded(false);
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
@@ -10346,6 +10373,24 @@ window.addEventListener('message',e=>{
     localStorage.setItem(config.countKey,String(count));
     if(count>=3){localStorage.setItem(config.seenKey,'1');pendingDay1ExploreStaffIntro=spotKey;}
   }
+  const day6ThirstyGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+  const day6ThirstyStateKey=`spr-day6-thirsty-staff:${day6ThirstyGuest}:day6`;
+  const day6ThirstyCountKey=`spr-day6-thirsty-beach-count:${day6ThirstyGuest}:day6`;
+  function encounterDay6ThirstyStaff(spotKey){
+    if(Number(document.documentElement.dataset.resortDay||1)!==6||spotKey!=='beach'||explorePeriod()!=='day'||localStorage.getItem(day6ThirstyStateKey))return false;
+    const count=Math.min(3,(Number(localStorage.getItem(day6ThirstyCountKey))||0)+1);
+    localStorage.setItem(day6ThirstyCountKey,String(count));
+    if(count<3)return false;
+    localStorage.setItem(day6ThirstyStateKey,'encountered');
+    clearActionMessage();
+    window.__sprShowStaffDialogueSequence?.([
+      '……お水を、一本いただけませんか。',
+      '何本飲んでも、喉の渇きが止まらないんです。',
+      'さっきから、ずっと水の音が聞こえていて……。',
+      '……お客様のお部屋にも、水はありますよね？'
+    ],null,'STAFF');
+    return true;
+  }
   function showPendingDay1ExploreStaffIntro(){
     const spotKey=pendingDay1ExploreStaffIntro;
     if(!spotKey)return;
@@ -10953,6 +10998,7 @@ window.addEventListener('message',e=>{
     const actionKey=btn.dataset.exploreAction;
     btn.dataset.selectedSpot=selectedSpot;
     recordDay1Explore(selectedSpot);
+    if(encounterDay6ThirstyStaff(selectedSpot))return;
 
     const lighthouseEvent=matchingLighthouseEveningAnomaly(selectedSpot,actionKey);
     if(lighthouseEvent){
