@@ -1404,7 +1404,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div id="roomServiceNgScreen" class="room-service-ng-screen" role="dialog" aria-modal="true" aria-label="NGギミック動画" aria-hidden="true">
           <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng_01.mp4" preload="metadata" playsinline webkit-playsinline></video>
           <button id="roomServiceNgClose" class="room-service-ng-close" type="button" aria-label="動画を閉じる">×</button>
-          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4 を確認してください。</div>
+          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4、room_service_ng_03.mp4 を確認してください。</div>
         </div>
         <div id="villaPoolExperience" class="villa-pool-experience" role="dialog" aria-modal="true" aria-label="ロイヤルヴィラのプール" aria-hidden="true">
           <div class="villa-pool-water">
@@ -2415,6 +2415,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
       else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
       else if(flagKey===barNgEffectFlagKey()){if(value&&typeof value==='object')localStorage.setItem(barNgEffectStorageKey,JSON.stringify(value));else localStorage.removeItem(barNgEffectStorageKey)}
+      else if(flagKey.startsWith('room-service-horror-gimmick:')){const gimmick=flagKey.slice('room-service-horror-gimmick:'.length),key=`spr-room-service-horror-gimmick:${playerStorageId}:${gimmick}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
       else if(flagKey.startsWith('room-service-horror:')){const token=flagKey.slice('room-service-horror:'.length),key=`spr-room-service-horror:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
       else if(flagKey.startsWith('room-phone-done:')){const token=flagKey.slice('room-phone-done:'.length),key=`spr-room-phone-done:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
     }
@@ -2440,7 +2441,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const cafeDate=cafeServiceDate(),cafePid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-order:${cafePid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-order:${dayScope}:${cafeDate}`]=true;
       const pid=encodeURIComponent(storedGuestName||'guest');if(localStorage.getItem(`spr-cafe-drink-ticket-used:${pid}:${dayScope}:${cafeDate}`)==='1')out[`cafe-drink-ticket-used:${dayScope}:${cafeDate}`]=true;
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`,phonePrefix=`spr-room-phone-done:${playerStorageId}:`;
-      Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}else if(k.startsWith(horrorPrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(horrorPrefix.length);out[`room-service-horror:${token}`]=true}else if(k.startsWith(phonePrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(phonePrefix.length);out[`room-phone-done:${token}`]=true}});
+      const horrorGimmickPrefix=`spr-room-service-horror-gimmick:${playerStorageId}:`;
+      Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}else if(k.startsWith(horrorGimmickPrefix)&&localStorage.getItem(k)==='1'){const gimmick=k.slice(horrorGimmickPrefix.length);out[`room-service-horror-gimmick:${gimmick}`]=true}else if(k.startsWith(horrorPrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(horrorPrefix.length);out[`room-service-horror:${token}`]=true}else if(k.startsWith(phonePrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(phonePrefix.length);out[`room-phone-done:${token}`]=true}});
       return out;
     }
 
@@ -2552,7 +2554,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -4640,6 +4642,23 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       tryTriggerSeriousEmily();
       previousCasinoChips=casinoChips;
     }
+    const casinoChipAwardInFlight=new Set();
+    window.__sprAwardCasinoChipsOnce=async(amount,awardId)=>{
+      const value=Math.max(0,Math.round(Number(amount)||0)),id=String(awardId||'');
+      if(!value||!id)return false;
+      const key=`spr-casino-award:${playerStorageId}:${id}`;
+      if(localStorage.getItem(key)==='1'||casinoChipAwardInFlight.has(key))return false;
+      casinoChipAwardInFlight.add(key);
+      try{
+        await refreshCasinoChipsFromSupabase();
+        if(localStorage.getItem(key)==='1')return false;
+        casinoChips=Math.max(0,Math.round(Number(casinoChips)||0))+value;
+        previousCasinoChips=casinoChips;localStorage.setItem(key,'1');localStorage.setItem(casinoChipKey,String(casinoChips));
+        syncCasinoBalances();renderPrizeCounter();
+        if(casinoLevel==='blackjack')updateCasinoHud();if(casinoLevel==='hilo')updateHiloHud();
+        await queueCasinoChipSync(casinoChips);return true;
+      }finally{casinoChipAwardInFlight.delete(key)}
+    };
     const adminEventReset=document.getElementById('adminEventReset');
     const adminSeriousReset=document.getElementById('adminSeriousReset');
     async function resetEmilyTest(chips,serious=false){
@@ -8103,8 +8122,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function dueRoomServiceOrdersHere(){return activeRoom?roomServiceDueOrders().filter(order=>String(order.room)===String(activeRoom)):[]}
     // DAY1 は不穏・NGドリンクを注文できても、ギミックは発生させない。
     // Day2以降の同じ処理には影響させないため、DAY番号で明示的に制御する。
-    function roomServiceHorrorEnabled(){return Number(document.documentElement.dataset.resortDay||1)>=2}
-    function roomServiceHorrorTimeEligible(){const hour=japanClockParts().hour;return roomServiceHorrorEnabled()&&(hour>=20||hour<3)}
+    function roomServiceHorrorEnabled(){const day=roomPhoneResortDay();return day>=2&&day<=6}
+    function roomServiceHorrorTimeEligible(){const hour=japanClockParts().hour;return roomServiceHorrorEnabled()&&(hour>=20||hour<7)}
     function roomServiceHorrorCategory(name){
       if(!roomServiceHorrorEnabled())return '';
       if(ROOM_SERVICE_NG_DRINKS.has(name))return'ng';
@@ -8113,14 +8132,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function activeRoomServiceHorrorDrink(){
       if(!roomServiceHorrorEnabled())return null;
-      const ng=activeNgDrinkEffect();if(ng)return {...ng,horrorCategory:'ng'};
-      const ominous=activeOminousDrinkEffect();return ominous?{...ominous,horrorCategory:'ominous'}:null;
+      const drink=window.getCurrentBarDrinkEffect?.();
+      if(!drink||drink.period!=='night'||Date.now()>=Number(drink.expiresAt||0))return null;
+      return {...drink,horrorCategory:roomServiceHorrorCategory(drink.name)||'regular'};
     }
     function roomServiceHorrorToken(){return `day${roomPhoneResortDay()}:night`}
     function roomServiceHorrorDoneKey(token=roomServiceHorrorToken()){return `spr-room-service-horror:${playerStorageId}:${token}`}
     function roomServiceHorrorEventKey(token=roomServiceHorrorToken()){return `spr-room-service-horror-event:${playerStorageId}:${token}`}
     function roomServiceHorrorKnownEventId(){return String(localStorage.getItem(roomServiceHorrorEventKey())||'')}
     function roomServiceHorrorAlreadyDone(){return localStorage.getItem(roomServiceHorrorDoneKey())==='1'}
+    const ROOM_SERVICE_HORROR_GIMMICKS=['01','02','lucky','03'];
+    function roomServiceHorrorSeenGimmicks(){return ROOM_SERVICE_HORROR_GIMMICKS.filter(id=>localStorage.getItem(`spr-room-service-horror-gimmick:${playerStorageId}:${id}`)==='1')}
+    function roomServiceHorrorAvailableGimmicks(){return ROOM_SERVICE_HORROR_GIMMICKS.filter(id=>!roomServiceHorrorSeenGimmicks().includes(id))}
+    function markRoomServiceHorrorGimmickSeen(id){if(!ROOM_SERVICE_HORROR_GIMMICKS.includes(id))return;const key=`spr-room-service-horror-gimmick:${playerStorageId}:${id}`;if(localStorage.getItem(key)==='1')return;localStorage.setItem(key,'1');setRemoteFlag(`room-service-horror-gimmick:${id}`,true).catch(error=>console.warn('room service gimmick flag sync',error))}
     function markRoomServiceHorrorDone(eventId=''){
       const token=roomServiceHorrorToken();localStorage.setItem(roomServiceHorrorDoneKey(token),'1');
       if(eventId)localStorage.setItem(roomServiceHorrorEventKey(token),String(eventId));
@@ -8134,13 +8158,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const resortDay=Math.max(1,Math.min(7,Number(raw?.resort_day||raw?.resortDay)||0));
       const category=String(raw?.horror_category||raw?.category||'').trim();
       const outcome=String(raw?.outcome||'').trim();
-      if(!eventId||!room||!serviceDate||!resortDay||!['ng','ominous'].includes(category)||!['hit','empty'].includes(outcome))return null;
+      const videoFile=String(raw?.video_file||raw?.videoFile||'');
+      if(!eventId||!room||!serviceDate||!resortDay||!['ng','ominous','regular'].includes(category)||!['hit','empty','lucky','video'].includes(outcome))return null;
+      if((category==='regular'&&outcome==='hit')||(category!=='regular'&&['lucky','video'].includes(outcome)))return null;
+      if(videoFile&&!['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'].includes(videoFile))return null;
       return {
         event_id:eventId,
         room_no:room,
         service_date:serviceDate,
         resort_day:resortDay,
         horror_category:category,
+        video_file:videoFile,
         drink_name:String(raw?.drink_name||raw?.drinkName||''),
         outcome,
         started_at:String(raw?.started_at||raw?.startedAt||new Date().toISOString()),
@@ -8167,11 +8195,25 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       catch(error){console.warn(`room service horror ${event}`,error);return false}
     }
     function createRoomServiceHorrorEvent(record){
-      const chance=record?.horrorCategory==='ng'?.5:.1;
+      const category=['ng','ominous'].includes(record?.horrorCategory)?record.horrorCategory:'regular';
+      let outcome='empty',videoFile='';
+      const available=roomServiceHorrorAvailableGimmicks();
+      if(!available.length){outcome='empty'}
+      else if(category==='ng'||category==='ominous'){
+        if(roomServiceHorrorRandomHit(category==='ng'?.5:.1)){
+          const eligibleVideos=['01','02'].filter(id=>available.includes(id));
+          if(eligibleVideos.length){const chosen=eligibleVideos[Math.floor(roomServiceHorrorRandomValue()*eligibleVideos.length)];outcome='hit';videoFile=`room_service_ng_${chosen}.mp4`}
+        }
+      }else{
+        const roll=roomServiceHorrorRandomValue();
+        if(roll<.6)outcome='empty';
+        else if(roll<.7){if(available.includes('lucky'))outcome='lucky'}
+        else if(available.includes('03')){outcome='video';videoFile='room_service_ng_03.mp4'}
+      }
       return {
         event_id:sprSafeUuid(),room_no:String(activeRoom||''),service_date:cafeServiceDate(),resort_day:roomPhoneResortDay(),
-        horror_category:String(record?.horrorCategory||''),drink_name:String(record?.name||''),
-        outcome:roomServiceHorrorRandomHit(chance)?'hit':'empty',started_at:new Date().toISOString(),
+        horror_category:category,drink_name:String(record?.name||''),video_file:videoFile,
+        outcome,started_at:new Date().toISOString(),
         origin_player_id:String(storedPlayerId||''),origin_name:String(activeGuest||storedGuestName||'ゲスト')
       };
     }
@@ -8277,14 +8319,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         console.warn('room service receipt sync',error);roomDoorServiceStatus.textContent='受け取りを同期できませんでした。もう一度お試しください。';return false;
       }finally{roomServiceRealReceivePending=false;roomDoorReceive.disabled=false}
     }
-    function roomServiceHorrorRandomHit(probability){
+    function roomServiceHorrorRandomValue(){
       let value=Math.random();
       try{const values=new Uint32Array(1);crypto.getRandomValues(values);value=values[0]/4294967296}catch{}
-      return value<probability;
+      return value;
     }
-    function showRoomServiceHorrorResult(text){
+    function roomServiceHorrorRandomHit(probability){return roomServiceHorrorRandomValue()<probability}
+    function showRoomServiceHorrorResult(text,speaker='ROOM SERVICE'){
       if(typeof window.__sprShowStaffDialogue==='function'){
-        window.__sprShowStaffDialogue(String(text||''),null,'ROOM SERVICE');
+        window.__sprShowStaffDialogue(String(text||''),null,speaker);
         return;
       }
       setExploreMessage(String(text||''));
@@ -8301,12 +8344,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       for(let i=0;i<key.length;i++)hash=((hash<<5)-hash+key.charCodeAt(i))|0;
       return ROOM_SERVICE_NG_VIDEO_FILES[(hash>>>0)%ROOM_SERVICE_NG_VIDEO_FILES.length];
     }
-    function showRoomServiceNgVideo(eventId){
+    function showRoomServiceNgVideo(eventId,videoFile=''){
       if(!roomServiceNgScreen||!roomServiceNgVideo)return;
-      const videoFile=roomServiceNgVideoForEvent(eventId);
-      roomServiceNgCurrentEventId=String(eventId||'');roomServiceNgCurrentVideoFile=videoFile;
-      roomServiceNgClose?.classList.toggle('hidden',videoFile==='room_service_ng_01.mp4');
-      roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=videoFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
+      const selectedFile=['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'].includes(videoFile)?videoFile:roomServiceNgVideoForEvent(eventId);
+      roomServiceNgCurrentEventId=String(eventId||'');roomServiceNgCurrentVideoFile=selectedFile;
+      roomServiceNgClose?.classList.toggle('hidden',['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(selectedFile));
+      roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=selectedFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
       try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
     }
     async function showRoomServiceNgAftermath(){
@@ -8325,13 +8368,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function finishRoomServiceNgVideo(){
       const videoFile=roomServiceNgCurrentVideoFile,eventId=roomServiceNgCurrentEventId;
       closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');
-      if(videoFile!=='room_service_ng_01.mp4')return;
+      if(!['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(videoFile))return;
       const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
       if(localStorage.getItem(appliedKey)!=='1'){
         await window.sprApplyNgGimmick?.('未注文のルームサービス',{ignoreProtection:true});
         localStorage.setItem(appliedKey,'1');
       }
-      await showRoomServiceNgAftermath();
+      if(videoFile==='room_service_ng_01.mp4')await showRoomServiceNgAftermath();
     }
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
     roomServiceNgVideo?.addEventListener('ended',()=>{void finishRoomServiceNgVideo()});
@@ -8362,16 +8405,26 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('………………………。',null,'スタッフ');
         return true;
       }
-      if(resolution.outcome!=='hit'){showRoomServiceHorrorResult('扉を開いた。外に誰もいない。');return true}
-      const selectedVideo=roomServiceNgVideoForEvent(resolution.event_id),appliedKey=roomServiceHorrorNgAppliedKey(resolution.event_id);
-      if(selectedVideo!=='room_service_ng_01.mp4'&&localStorage.getItem(appliedKey)!=='1'&&!roomServiceHorrorNgApplying.has(resolution.event_id)){
-        roomServiceHorrorNgApplying.add(resolution.event_id);
-        try{
-          if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
-          localStorage.setItem(appliedKey,'1');
-        }finally{roomServiceHorrorNgApplying.delete(resolution.event_id)}
+      if(resolution.outcome==='empty'){
+        showRoomServiceHorrorResult('扉を開いた。外に誰もいない。');return true;
       }
-      showRoomServiceNgVideo(resolution.event_id);return true;
+      if(resolution.outcome==='lucky'){
+        markRoomServiceHorrorGimmickSeen('lucky');
+        const prizeText='おめでとうございます！お客様は本日のラッキーステイに選ばれました！10000000チップの贈呈です。ぜひ、カジノでお楽しみくださいね！';
+        const awarded=await window.__sprAwardCasinoChipsOnce?.(10000000,resolution.event_id);
+        if(!awarded&&localStorage.getItem(`spr-casino-award:${playerStorageId}:${resolution.event_id}`)!=='1')console.warn('room service lucky stay chip award could not be confirmed');
+        showRoomServiceHorrorResult(prizeText,'スタッフ');return true;
+      }
+      if(resolution.outcome==='video'){
+        if(resolution.video_file==='room_service_ng_03.mp4')markRoomServiceHorrorGimmickSeen('03');
+        showRoomServiceNgVideo(resolution.event_id,resolution.video_file||'room_service_ng_03.mp4');return true;
+      }
+      if(resolution.outcome==='hit'){
+        if(resolution.video_file==='room_service_ng_01.mp4')markRoomServiceHorrorGimmickSeen('01');
+        else if(resolution.video_file==='room_service_ng_02.mp4')markRoomServiceHorrorGimmickSeen('02');
+        showRoomServiceNgVideo(resolution.event_id,resolution.video_file||roomServiceNgVideoForEvent(resolution.event_id));return true;
+      }
+      return true;
     }
     async function resolveRoomServiceHorror(choice){
       const pending=roomServiceHorrorPending;if(!pending||roomServiceHorrorResolving||!['accepted','declined'].includes(choice))return false;
@@ -9339,6 +9392,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           if(hernandoSeenResetError)console.warn('hernando intro/visit reset',hernandoSeenResetError);
           const {error:roomServiceHorrorResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-service-horror:%');
           if(roomServiceHorrorResetError)console.warn('room service horror reset',roomServiceHorrorResetError);
+          const {error:roomServiceGimmickResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-service-horror-gimmick:%');
+          if(roomServiceGimmickResetError)console.warn('room service unique gimmick reset',roomServiceGimmickResetError);
           const {error:roomPhoneDoneResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-phone-done:%');
           if(roomPhoneDoneResetError)console.warn('room phone daily reset',roomPhoneDoneResetError);
           // 追加した1日1食制限とDAY7一度きりの脱出状態も本番用リセットで初期化。
