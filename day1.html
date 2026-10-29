@@ -227,12 +227,11 @@
     .casino-elevator-glitch.open{display:block;animation:elevatorGlitchFlash .12s steps(2,end) infinite}
     .casino-elevator-glitch::before{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12),rgba(255,255,255,0) 48%),linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,0) 28%,rgba(255,255,255,.08) 58%,rgba(255,255,255,0) 100%);mix-blend-mode:screen;opacity:.9;animation:elevatorPulse .18s steps(2,end) infinite}
     .casino-elevator-glitch::after{content:"";position:absolute;inset:-10%;z-index:4;background:linear-gradient(90deg,transparent 0 8%,rgba(0,210,255,.24) 8% 10%,transparent 10% 40%,rgba(255,0,76,.22) 40% 46%,transparent 46% 100%);mix-blend-mode:screen;animation:elevatorSlice .18s steps(2,end) infinite}
-    .casino-elevator-noise,.casino-elevator-scanlines,.casino-elevator-alert{position:absolute;inset:0;pointer-events:none}
+    .casino-elevator-noise,.casino-elevator-scanlines{position:absolute;inset:0;pointer-events:none}
     .casino-elevator-noise{background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.92) 0 1px,rgba(0,0,0,.92) 1px 2px,rgba(255,255,255,.7) 2px 3px,rgba(0,0,0,.86) 3px 4px),repeating-linear-gradient(90deg,rgba(255,255,255,.26) 0 2px,rgba(0,0,0,.26) 2px 4px,rgba(255,255,255,.18) 4px 6px,rgba(0,0,0,.24) 6px 8px);background-size:100% 5px,11px 100%;opacity:.34;mix-blend-mode:screen;filter:contrast(1.8) saturate(0) blur(.15px)}
     .casino-elevator-noise.a{z-index:2;animation:elevatorNoiseA .07s steps(2,end) infinite}
     .casino-elevator-noise.b{z-index:3;opacity:.52;mix-blend-mode:difference;animation:elevatorNoiseB .11s steps(2,end) infinite}
     .casino-elevator-scanlines{z-index:5;background:repeating-linear-gradient(180deg,rgba(255,255,255,.08) 0 1px,rgba(0,0,0,0) 1px 3px);opacity:.48;animation:elevatorScan .16s linear infinite}
-    .casino-elevator-alert{z-index:6;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 18px 24px;color:rgba(255,255,255,.82);font:12px Georgia,serif;letter-spacing:.24em;text-shadow:0 2px 8px rgba(0,0,0,.9);opacity:.86}
     @keyframes elevatorNoiseA{0%{transform:translate(0,0) scale(1.12)}25%{transform:translate(-1.5%,-1%) scale(1.16)}50%{transform:translate(1.2%,1%) scale(1.1)}75%{transform:translate(-1%,1.5%) scale(1.14)}100%{transform:translate(1.4%,-1.2%) scale(1.13)}}
     @keyframes elevatorNoiseB{0%{transform:translate(0,0) scale(1.08)}25%{transform:translate(2%,-1%) scale(1.1)}50%{transform:translate(-2%,1%) scale(1.13)}75%{transform:translate(1.5%,2%) scale(1.09)}100%{transform:translate(-1.5%,-1.5%) scale(1.12)}}
     @keyframes elevatorScan{from{transform:translateY(-18px)}to{transform:translateY(18px)}}
@@ -1901,7 +1900,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <span id="casinoEmilyTalkSpacer" class="casino-emily-talk-spacer hidden" aria-hidden="true"></span>
         </div>
       </div>
-      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
+      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div></div>
       <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="none"></audio>
       <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
         <button id="casinoElevatorVideoClose" class="casino-elevator-video-close hidden" type="button" aria-label="動画を閉じる">×</button>
@@ -4319,6 +4318,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const sunsetTerraceTicketCount=document.getElementById('sunsetTerraceTicketCount');
     let selectedSunsetFood=null,selectedSunsetDrink=null;
     let pendingTerraceTicket=null,terraceOrderBusy=false;
+    const sunsetTerraceMermaidSeenKey=`spr-sunset-terrace-mermaid-seen:${playerStorageId}`;
+    let pendingTerraceMermaidEligible=false,sunsetTerraceMermaidVideoPending=false;
     function showSunsetTerraceTicket(){
       if(!sunsetTerraceTicketModal)return;
       if(sunsetTerraceTicketCount)sunsetTerraceTicketCount.textContent=`現在の所持枚数：${belongingCount('mysteryBoxTicket')}枚`;
@@ -4346,6 +4347,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       sunsetTerraceFoodPreview?.setAttribute('aria-hidden','true');
       if(sunsetTerraceFoodImage)sunsetTerraceFoodImage.removeAttribute('src');
       sunsetTerraceFoodReturn?.blur();
+      const shouldPlayMermaid=pendingTerraceMermaidEligible&&localStorage.getItem(sunsetTerraceMermaidSeenKey)!=='1';
+      pendingTerraceMermaidEligible=false;
+      if(shouldPlayMermaid&&typeof window.__sprPlaySunsetTerraceMermaid==='function'){
+        const started=window.__sprPlaySunsetTerraceMermaid(()=>{
+          sunsetTerraceMermaidVideoPending=false;
+          showPendingTerraceTicket();
+        });
+        if(started){
+          localStorage.setItem(sunsetTerraceMermaidSeenKey,'1');
+          sunsetTerraceMermaidVideoPending=true;
+          return;
+        }
+      }
       showPendingTerraceTicket();
     }
     function showSunsetTerraceFoodPreview(mealName,drinkName,imageFilename){
@@ -4486,6 +4500,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
       const drinkName=selectedSunsetDrink.dataset.drink;
+      const barDrink=window.getCurrentBarDrinkEffect?.();
+      const currentHour=tokyoHour();
+      const resortDay=Number(document.documentElement.dataset.resortDay||1);
+      pendingTerraceMermaidEligible=resortDay>=1&&resortDay<=6&&currentHour>=16&&currentHour<20&&
+        barDrink?.name==='サンセットパラダイス'&&barDrink.period==='sunset'&&
+        Date.now()<Number(barDrink.expiresAt||0)&&localStorage.getItem(sunsetTerraceMermaidSeenKey)!=='1';
       // Nighttime Encore (20:00–06:59 JST) is what unlocks repeatable serious-Emily challenges.
       // Store the old date marker as before, but only the separate night marker grants access.
       if(drinkName==='アンコール'){
@@ -4504,7 +4524,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const gift=await awardSunsetMysteryTicket();
         pendingTerraceTicket=gift.newTicket?gift:null;
         sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。${gift.newTicket?'ミステリーボックス・チケットを1枚プレゼントいたします。':'本日のミステリーボックス・チケットはお渡し済みです。'}`;
-        if(gift.newTicket&&sunsetTerraceFoodPreview?.classList.contains('hidden'))showPendingTerraceTicket();
+        if(gift.newTicket&&sunsetTerraceFoodPreview?.classList.contains('hidden')&&!sunsetTerraceMermaidVideoPending)showPendingTerraceTicket();
       }catch(e){
         console.warn('Sunset Terrace gift award failed (meal order retained)',e);
         sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。チケット付与を確認できませんでした。通信状態をご確認ください。`;
@@ -4926,6 +4946,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         catch(e){console.warn('Sunset Terrace BGM start',e)}
       }
     }
+    window.__sprSyncSunsetTerraceMusic=syncSunsetTerraceMusic;
     function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
     function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const terraceBgm=document.getElementById('sunsetTerraceBgm');if(terraceBgm){sprCancelGuardedAudioStart(terraceBgm);terraceBgm.pause()}const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
     function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
@@ -10265,15 +10286,20 @@ window.addEventListener('message',e=>{
   function closeExploreEventVideo({resumeBgm=true}={}){
     clearExploreVideoStartupTimer();
     if(!exploreEventVideoScreen)return;
+    const event=activeExploreVideoEvent;
     // 画面を先に閉じてからソースを解除（解除時のerrorイベントを表示しない）。
     exploreEventVideoScreen.classList.remove('open');
     exploreEventVideoScreen.setAttribute('aria-hidden','true');
     try{exploreEventVideo.pause();exploreEventVideo.removeAttribute('src');exploreEventVideo.load()}catch{}
     exploreEventVideoError?.classList.add('hidden');
     activeExploreVideoEvent=null;
-    window.__sprExploreVideoPlaying=!resumeBgm;
-    if(resumeBgm)window.__sprResumeExploreBgmAfterGimmick?.();
-    if(resumeBgm)showPendingDay1ExploreStaffIntro();
+    const terraceAudio=event?.audioOwner==='sunset-terrace';
+    window.__sprExploreVideoPlaying=terraceAudio?false:!resumeBgm;
+    if(resumeBgm){
+      if(terraceAudio)window.__sprSyncSunsetTerraceMusic?.();
+      else{window.__sprResumeExploreBgmAfterGimmick?.();showPendingDay1ExploreStaffIntro();}
+    }
+    if(typeof event?.afterClose==='function')setTimeout(event.afterClose,0);
   }
   // iPhoneの標準フルスクリーン動画プレイヤーではなく、闘牛場と同じページ内再生に統一。
   // 音声付き再生がSafariにブロックされた場合は、専用ボタンでユーザー操作から再開する。
@@ -10318,19 +10344,29 @@ window.addEventListener('message',e=>{
     }
   }
   function openExploreEventVideo(event){
-    if(!exploreEventVideoScreen||!exploreEventVideo||!event)return;
+    if(!exploreEventVideoScreen||!exploreEventVideo||!event)return false;
     clearActionMessage();
     activeExploreVideoEvent=event;
     exploreEventVideoScreen.setAttribute('aria-label',event.label);
     exploreEventVideo.setAttribute('aria-label',event.label);
-    if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent=`動画を読み込めませんでした。Supabase Storage の videos / ${event.filename} を確認してください。`;
+    if(exploreEventVideoErrorText)exploreEventVideoErrorText.textContent=`動画を読み込めませんでした。GitHub PagesのHTMLと同じ場所に ${event.filename} があるか確認してください。`;
     if(exploreEventVideoRetry)exploreEventVideoRetry.textContent='もう一度再生';
     window.__sprExploreVideoPlaying=true;
-    window.__sprPauseExploreBgmForGimmick?.();
+    if(event.audioOwner==='sunset-terrace'){
+      const terraceAudio=document.getElementById('sunsetTerraceBgm');
+      if(terraceAudio){try{terraceAudio.pause()}catch{}}
+    }else window.__sprPauseExploreBgmForGimmick?.();
     exploreEventVideoScreen.classList.add('open');
     exploreEventVideoScreen.setAttribute('aria-hidden','false');
     startExploreEventVideoPlayback();
+    return true;
   }
+  window.__sprPlaySunsetTerraceMermaid=afterClose=>openExploreEventVideo({
+    filename:'sunset_terrace_mermaid.mp4',
+    label:'サンセットテラスに現れた人魚の映像',
+    audioOwner:'sunset-terrace',
+    afterClose:typeof afterClose==='function'?afterClose:null
+  });
   let lighthouseAftermathRunning=false;
   const lighthouseAftermathScene=document.createElement('div');
   lighthouseAftermathScene.setAttribute('role','dialog');lighthouseAftermathScene.setAttribute('aria-modal','true');lighthouseAftermathScene.setAttribute('aria-hidden','true');
@@ -10394,7 +10430,7 @@ window.addEventListener('message',e=>{
   exploreEventVideo?.addEventListener('error',()=>{
     clearExploreVideoStartupTimer();
     if(!exploreEventVideoScreen?.classList.contains('open'))return;
-    if(exploreEventVideoErrorText&&activeExploreVideoEvent)exploreEventVideoErrorText.textContent=`動画を読み込めませんでした。Supabase Storage の videos / ${activeExploreVideoEvent.filename} を確認してください。`;
+    if(exploreEventVideoErrorText&&activeExploreVideoEvent)exploreEventVideoErrorText.textContent=`動画を読み込めませんでした。GitHub PagesのHTMLと同じ場所に ${activeExploreVideoEvent.filename} があるか確認してください。`;
     if(exploreEventVideoRetry)exploreEventVideoRetry.textContent='もう一度再生';
     exploreEventVideoError?.classList.remove('hidden');
   });
