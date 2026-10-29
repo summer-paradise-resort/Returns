@@ -379,7 +379,7 @@
     .service-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18)}
     .service-item strong{display:block;font-size:13px;font-weight:500;letter-spacing:.04em}
     .service-item small{display:block;margin-top:4px;color:var(--sheet-muted);font-size:10px;line-height:1.6}
-    .service-qty{display:grid;grid-template-columns:36px 28px 36px;align-items:center;text-align:center;gap:2px}
+    .service-qty{display:grid;grid-template-columns:36px 34px 36px;align-items:center;text-align:center;gap:2px}
     .service-qty button{width:36px;height:36px;border:1px solid rgba(130,110,76,.3);background:transparent;color:var(--sheet-fg);font-size:18px}
     .service-qty span{font:13px Arial,sans-serif}
     .service-cart{margin-top:16px;padding:14px;background:rgba(168,123,47,.08);border:1px solid rgba(168,123,47,.3)}
@@ -1792,7 +1792,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <button id="hernandoDialogueNext" class="hernando-dialogue-next" type="button">NEXT　›</button>
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
-        <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
+        <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">ならない</button>
         <button id="hernandoBullKnife" class="hernando-dialogue-choice hidden" type="button">エルナンドを刺す</button>
       </div>
       <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
@@ -3428,7 +3428,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(id!=='night')endDate=serviceDate;
       const orderOpen=now.hour>=11||now.hour<5;
       const dayExpiresAt=new Date(`${addDaysToDateKey(serviceDate,1)}T07:00:00+09:00`).getTime();
-      return{id,label,hours,serviceDate,token:`${resortDayToken()}:${serviceDate}:${id}`,expiresAt:new Date(`${endDate}T${endTime}+09:00`).getTime(),dayExpiresAt,orderOpen};
+      const realExpiresAt=new Date(`${endDate}T${endTime}+09:00`).getTime();
+      // 管理者の時間帯テストでは、実時刻が指定時間帯の終了後でも、
+      // テスト中に注文したドリンクが即時失効しないよう、指定時間帯の残り時間を現在時刻に加算する。
+      const adminHoursRemaining={day:4,sunset:2,night:9}[adminPeriod];
+      const expiresAt=adminHoursRemaining===undefined?realExpiresAt:Date.now()+adminHoursRemaining*60*60*1000;
+      return{id,label,hours,serviceDate,token:`${resortDayToken()}:${serviceDate}:${id}`,expiresAt,dayExpiresAt,orderOpen};
     }
     function loadBarDrinkState(){try{const v=JSON.parse(localStorage.getItem(barDrinkStorageKey)||'{}');return v&&typeof v==='object'?v:{}}catch{return {}}}
     function saveBarDrinkState(state){localStorage.setItem(barDrinkStorageKey,JSON.stringify(state))}
@@ -3834,6 +3839,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const emilyCasualText=document.getElementById('casinoEmilyDialogueText');
     const emilyCasualNext=document.getElementById('casinoEmilyDialogueNext');
     const emilyCasualChoices=document.getElementById('casinoEmilyDialogueChoices');
+    window.__sprPlayKnifeStab=()=>{try{const audio=new Audio('knife_stab.mp3');audio.preload='auto';audio.volume=.9;const play=audio.play();if(play?.catch)play.catch(()=>{})}catch{}};
     let emilyCasualTypingTimer=null,emilyCasualTyping=false,emilyCasualSpans=[],emilyCasualNextAction=null;
     function stopEmilyCasualTyping(){
       if(emilyCasualTypingTimer!==null)clearTimeout(emilyCasualTypingTimer);
@@ -3917,10 +3923,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function emilyCasualUseKnife(){
       emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
+      let used=false;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        used=true;
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
       }catch(e){console.warn('Emily knife',e)}
+      if(used)window.__sprPlayKnifeStab?.();
       // ナイフ使用に関する台詞は一旦表示せず、会話を閉じる。
       closeEmilyCasualDialogue();
     }
@@ -6661,6 +6670,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         row.append(dot,name);fragment.append(row);
       });
       roomOccupancyNames.replaceChildren(fragment);
+      if(roomBelongingsSheet?.classList.contains('open'))renderRoomBelongings();
     }
     roomOccupancyButton?.addEventListener('click',event=>{event.stopPropagation();setRoomOccupancyExpanded(roomOccupancyButton.getAttribute('aria-expanded')!=='true')});
     document.addEventListener('click',event=>{if(roomOccupancyNames&&!roomOccupancyNames.classList.contains('hidden')&&!event.target.closest('.room-identity'))setRoomOccupancyExpanded(false)});
@@ -7724,6 +7734,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoBullKnife.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        window.__sprPlayKnifeStab?.();
         setRemoteFlag('hernando-knife-event-seen',true).catch(e=>console.warn('hernando knife flag',e));
         setHernandoDialogueLines([
           '──おい。……今、何をした？',
@@ -8717,8 +8728,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function renderRoomServiceHistory(){
       roomServiceHistory.replaceChildren();const orders=roomServiceOrders();
-      if(!orders.length){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty);return}
-      orders.slice(-5).reverse().forEach(order=>{const item=document.createElement('div');item.className='service-history-item';const lines=order.items.map(v=>`${v.name} × ${v.qty}`).join(' ／ ');item.innerHTML=`<strong>${order.time}</strong><br>${lines}<br><small>注文番号 ${order.id}</small>`;roomServiceHistory.append(item)});
+      if(!orders.length){const empty=document.createElement('div');empty.className='service-history-item';empty.textContent='まだ注文はありません。';roomServiceHistory.append(empty)}
+      else orders.slice(-5).reverse().forEach(order=>{const item=document.createElement('div');item.className='service-history-item';const lines=order.items.map(v=>`${v.name} × ${v.qty}`).join(' ／ ');item.innerHTML=`<strong>${order.time}</strong><br>${lines}<br><small>注文番号 ${order.id}</small>`;roomServiceHistory.append(item)});
     }
     function updateCollectionButton(){const btn=document.getElementById('roomCollectionOpen');if(btn)btn.classList.toggle('hidden',loadCoasterInventory().length===0)}
     function renderRoomCollection(){
@@ -8903,10 +8914,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     if(buyMysteryDraw)buyMysteryDraw.addEventListener('click',()=>openMysteryBoxPrompt(false));
     if(useMysteryFreeTicket)useMysteryFreeTicket.addEventListener('click',()=>openMysteryBoxPrompt(true));
 
+    function mysteryRoomKnifeTargets(){
+      if(!activeRoom||!roomView.classList.contains('room-active'))return [];
+      const candidates=roomPhonePresenceMembers().filter(m=>String(m?.player_id||'')&&String(m.player_id)!==String(storedPlayerId||'')&&String(m.room_no||'')===String(activeRoom));
+      return [...new Map(candidates.map(m=>[String(m.player_id),m])).values()];
+    }
     function openMysteryKnifePrompt(){
       if(!activeRoom||!roomView.classList.contains('room-active'))return;
-      const candidates=roomPhonePresenceMembers().filter(m=>String(m?.player_id||'')&&String(m.player_id)!==String(storedPlayerId||'')&&String(m.room_no||'')===String(activeRoom));
-      const unique=[...new Map(candidates.map(m=>[String(m.player_id),m])).values()];
+      const unique=mysteryRoomKnifeTargets();
       const actions=unique.map(m=>({label:String(m.display_name||'ゲスト')+' を選ぶ',run:()=>mysteryChooseRoomTarget(m)}));
       actions.push({label:'やめる',run:mysteryClose,cancel:true});
       mysteryShow('誰を刺しますか？',unique.length?'現在、同じROOMに滞在している相手を選んでください。\nナイフは1本消費します。':'現在、同じROOMに刺せる相手がいません。\n他のプレイヤーが入室するまでお待ちください。',actions,'†');
@@ -8930,6 +8945,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(error)throw error;
         if(!data?.success)throw new Error(data?.message||'ナイフを使用できませんでした。');
         setLocalInventoryQuantity('mysteryKnife',Number(data.knife_remaining),{sync:false});
+        window.__sprPlayKnifeStab?.();
         if(roomPhonePresenceChannel)void roomPhonePresenceChannel.send({type:'broadcast',event:'mystery-knife-strike',payload:{target_id:target,room_no:room}}).catch(e=>console.warn('knife broadcast',e));
         mysteryShow('ナイフを使用した',`${String(member.display_name||'ゲスト')}の♥️が1つ減りました。\nあなたの♥️は変わりません。`,[{label:'閉じる',run:mysteryClose}],'†');
         renderRoomBelongings();
@@ -8978,7 +8994,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
         if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='lucaBalsaDepartureTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          const knifeTargets=key==='mysteryKnife'?mysteryRoomKnifeTargets():[];
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?(knifeTargets.length===1?`${String(knifeTargets[0].display_name||'ゲスト')}を刺す`:knifeTargets.length?'誰かを刺す':'使用する'):key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          if(key==='mysteryKnife')action.classList.toggle('hidden',knifeTargets.length===0);
           action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
@@ -9047,7 +9065,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     document.querySelectorAll('[data-service-item]').forEach(item=>{
       const name=item.dataset.serviceItem;roomServiceCart[name]=0;
       item.querySelector('[data-service-minus]').addEventListener('click',()=>{roomServiceCart[name]=Math.max(0,(roomServiceCart[name]||0)-1);renderRoomServiceCart()});
-      item.querySelector('[data-service-plus]').addEventListener('click',()=>{roomServiceCart[name]=Math.min(9,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
+      item.querySelector('[data-service-plus]').addEventListener('click',()=>{const limit=ROOM_SERVICE_DRINK_NAMES.has(name)?99:9;roomServiceCart[name]=Math.min(limit,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
     });
     roomServiceOrder.addEventListener('click',async()=>{
       if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));
@@ -9316,6 +9334,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       let safe=manualDay;
       if(autoDayEnabled){const derived=deriveAutoDay(autoState);if(derived) safe=derived}
       safe=Math.max(1,Math.min(7,safe));
+      if(!localStorage.getItem('spr-game-start-at')){
+        const inferredStart=autoState.enabled
+          ? autoState.createdAt-Math.max(0,autoState.day-1)*DAY_MS
+          : manualMarker?.created_at
+            ? new Date(manualMarker.created_at).getTime()-Math.max(0,manualDay-1)*DAY_MS
+            : Date.now()-Math.max(0,safe-1)*DAY_MS;
+        localStorage.setItem('spr-game-start-at',String(inferredStart));
+      }
       localStorage.setItem('spr-current-resort-day',String(safe));
       setDayUI(safe);renderAutoDayButton();scheduleAutoDayCheck();
       if(autoDayEnabled&&(publishAdvance||safe>manualDay))void publishDerivedDayIfNeeded(manualMarker,safe);
@@ -10246,6 +10272,51 @@ window.addEventListener('message',e=>{
     return DAY1_EXPLORE_VIDEO_EVENTS.find(event=>event.spot===spotKey&&event.period===period&&event.action===actionKey&&event.drinks.includes(drink.name))||null;
   }
   let activeExploreVideoEvent=null;
+  // DAY3ログイン時に一度だけ表示する、シーボトルに入ったルカの手紙。
+  const seaBottleGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+  const seaBottleSeenKey=`spr-sea-bottle-letter-seen:${seaBottleGuest}`;
+  function seaBottleDateLabel(){
+    let startAt=Number(localStorage.getItem('spr-game-start-at'))||0;
+    if(!startAt){
+      // 管理人プレビューでは開始日時がまだ保存されていない場合があるため、DAY3から逆算する。
+      const day=Math.max(1,Number(document.documentElement.dataset.resortDay)||1);
+      const now=new Date();
+      const tokyoNow=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Tokyo'}));
+      if(tokyoNow.getHours()<7)tokyoNow.setDate(tokyoNow.getDate()-1);
+      tokyoNow.setHours(7,0,0,0);
+      startAt=tokyoNow.getTime()-Math.max(0,day-1)*86400000;
+    }
+    const dateParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(startAt));
+    const parts=Object.fromEntries(dateParts.map(part=>[part.type,part.value]));
+    const date=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)+7));
+    return `${date.getUTCFullYear()}年${date.getUTCMonth()+1}月${date.getUTCDate()}日`;
+  }
+  function showSeaBottleLetter(){
+    const adminDayTest=window.__sprIsAdminMode===true;
+    if(Number(document.documentElement.dataset.resortDay||1)!==3||(!adminDayTest&&localStorage.getItem(seaBottleSeenKey)==='1'))return;
+    const overlay=document.createElement('div');
+    overlay.className='mystery-modal';
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','シーボトルの手紙');
+    const dialog=document.createElement('div');dialog.className='mystery-dialog';dialog.style.maxWidth='720px';dialog.style.textAlign='left';
+    const title=document.createElement('div');title.className='mystery-kicker';title.textContent='SEA BOTTLE';title.style.textAlign='center';
+    const text=document.createElement('p');text.style.maxHeight='62dvh';text.style.overflowY='auto';text.style.margin='8px 0 18px';
+    const choices=document.createElement('div');choices.className='mystery-choices';
+    const next=document.createElement('button');next.type='button';next.textContent='NEXT　›';
+    const pages=[
+      `ログインすると、シーボトルが流れ着いている。\n\n――${seaBottleDateLabel()}\n\nこれを読んでいる諸君へ。七日目を迎えた。……いや、正確には、どうにか七日目まで生き延びた、と書くべきだろう。何人が残ったのかは記さない。諸君がこれを読んでいる時点では、まだその結果は決まっていないはずだからな。\n\n私たちはリゾートを出た。あれほど眩しかった建物も、今では見る影もない。灯りは消え、窓は割れ、潮風に晒された建物だけが並んでいる。人の気配もない。波の音だけが、まるで何事もなかったように響いている。楽園などと呼べる場所ではない。……もっとも、最初からそんなものは存在していなかったのかもしれないが。\n\nそれでも私たちは船に乗った。七日間を生き延び、ようやく島から脱出できる。誰もがそう思っていた。私もだ。だが、間違いだった。船は島を離れたように見えた。けれど、どれほど進んでも陸地は遠ざからず、やがて海は私たちの行く手を閉ざした。私たちは、乗る場所を間違えた。船を間違え、時刻を間違え、行先を間違えたのだ。`,
+      `諸君、あの船には乗るな。まず行先を照らせ。正しい乗り場を見つけろ。正しい舟を選べ。そして、正しい時刻を逃すな。\n\n未来が間違っていたのなら、過去から計算をやり直せばいい。壊れた回路なら、原因を探し、正しい接続に組み直せばいい。私にはもう、それを確かめる時間が残されていない。この先を、諸君らに託す。\n\nルカ・バルサー`
+    ];
+    let page=0;
+    next.addEventListener('click',()=>{
+      if(page===0){page=1;text.textContent=pages[page];text.scrollTop=0;next.textContent='CLOSE　×';return;}
+      overlay.remove();
+    });
+    text.textContent=pages[0];choices.append(next);dialog.append(title,text,choices);overlay.append(dialog);
+    document.body.append(overlay);
+    if(!adminDayTest)localStorage.setItem(seaBottleSeenKey,'1');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(showSeaBottleLetter,900),{once:true});
+  else setTimeout(showSeaBottleLetter,900);
   const day1ExploreIntroGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
   const day1ExploreStaffIntroConfig={
     beach:{
@@ -10561,43 +10632,49 @@ window.addEventListener('message',e=>{
   const diveWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const makeDiveButton=(label,onClick)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.style.cssText='min-height:50px;padding:12px 18px;border:1px solid #c9aa68;background:rgba(5,14,27,.94);color:#f5e6bf;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;cursor:pointer';button.addEventListener('click',onClick);return button};
   function showDiveOverlay(){lighthouseDiveOverlay.style.display='flex';lighthouseDiveOverlay.style.opacity='0';void lighthouseDiveOverlay.offsetWidth;lighthouseDiveOverlay.style.opacity='1'}
-  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprResumeExploreBgmAfterGimmick?.()}
+  async function transitionDiveScene(update){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);update();void lighthouseDiveOverlay.offsetWidth;lighthouseDiveOverlay.style.opacity='1';await diveWait(820)}
+  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprExploreVideoPlaying=false;window.__sprResumeExploreBgmAfterGimmick?.()}
   function diveBlackPage(text,buttons=[]){diveStoryImage.style.display='none';diveStoryText.textContent=text;diveStoryButtons.replaceChildren(...buttons);}
   async function playLighthouseLeap(){
     localStorage.setItem(lighthouseDiveSeenKey,'1');
-    diveBlackPage('');showDiveOverlay();
+    await transitionDiveScene(()=>{diveBlackPage('');diveStoryImage.style.opacity='0';diveStoryImage.style.display='none'});
     underwaterBubblesAudio.pause();try{underwaterBubblesAudio.currentTime=0}catch{}underwaterBubblesAudio.volume=0;const bubblesPromise=underwaterBubblesAudio.play();if(bubblesPromise?.catch)bubblesPromise.catch(()=>{});
     const diveAudio=exploreWaterEntryAudio;diveAudio.preload='auto';diveAudio.playsInline=true;diveAudio.volume=1;
     let revealed=false;
-    const revealWreck=()=>{if(revealed)return;revealed=true;clearTimeout(fallbackTimer);diveStoryImage.style.opacity='0';diveStoryImage.src='sunken_ship_yellow_sail.jpg';diveStoryImage.alt='黄色い帆が巻きついた沈没船';diveStoryImage.style.display='block';requestAnimationFrame(()=>{diveStoryImage.style.opacity='1';underwaterBubblesAudio.volume=.78});diveStoryText.textContent='沈没船だ。黄色い帆が、破れながら巻きついている。';diveStoryButtons.replaceChildren(makeDiveButton('海から上がる。',()=>{playExploreOneShot(exploreWaterExitAudio,1);hideDiveOverlay()}))};
+    const revealWreck=()=>{if(revealed)return;revealed=true;clearTimeout(fallbackTimer);void transitionDiveScene(()=>{diveStoryImage.style.opacity='0';diveStoryImage.src='sunken_ship_yellow_sail.jpg';diveStoryImage.alt='黄色い帆が巻きついた沈没船';diveStoryImage.style.display='block';diveStoryText.textContent='沈没船だ。黄色い帆が、破れながら巻きついている。';diveStoryButtons.replaceChildren(makeDiveButton('海から上がる。',()=>{playExploreOneShot(exploreWaterExitAudio,1);hideDiveOverlay()}));requestAnimationFrame(()=>{diveStoryImage.style.opacity='1';underwaterBubblesAudio.volume=.78})})};
     const fallbackTimer=setTimeout(revealWreck,9000);
     diveAudio.addEventListener('ended',()=>setTimeout(revealWreck,400),{once:true});
     diveAudio.addEventListener('error',()=>setTimeout(revealWreck,2600),{once:true});
     try{diveAudio.pause();diveAudio.currentTime=0;const p=diveAudio.play();if(p?.catch)p.catch(()=>setTimeout(revealWreck,2600))}catch{setTimeout(revealWreck,2600)}
   }
   async function startLighthouseDiveEvent(){
-    clearActionMessage();window.__sprPauseExploreBgmForGimmick?.();
-    diveStoryImage.style.display='none';diveBlackPage('いつもいるスタッフがいない。',[makeDiveButton('NEXT　›',async()=>{
-      diveStoryImage.src='lighthouse_top_night.jpg';diveStoryImage.alt='灯台の上から見下ろす夜の海';diveStoryImage.style.opacity='0';diveStoryImage.style.display='block';requestAnimationFrame(()=>{diveStoryImage.style.opacity='1'});
-      diveStoryText.textContent='海が、すごく下に見える。';
-      diveStoryButtons.replaceChildren(makeDiveButton('飛び降りる',async()=>{
-        diveStoryButtons.replaceChildren();
-        diveStoryImage.style.display='none';diveStoryText.textContent='';
-        const glitch=document.getElementById('casinoElevatorGlitch'),glitchSound=document.getElementById('casinoElevatorGlitchSound');
-        lighthouseDiveOverlay.style.background='transparent';
-        if(glitch){glitch.classList.add('open');glitch.setAttribute('aria-hidden','false')}
-        if(glitchSound){try{glitchSound.currentTime=0;glitchSound.volume=.85;const p=glitchSound.play();if(p?.catch)p.catch(()=>{})}catch{}}
-        await diveWait(900);
-        if(glitch){glitch.classList.remove('open');glitch.setAttribute('aria-hidden','true')}
-        if(glitchSound){glitchSound.pause();try{glitchSound.currentTime=0}catch{}}
-        lighthouseDiveOverlay.style.background='#02070c';
-        diveStoryImage.style.display='none';diveStoryText.textContent='本当に飛び降りますか？';
-        diveStoryButtons.replaceChildren(
-          makeDiveButton('飛び降りる',()=>playLighthouseLeap()),
-          makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})
-        );
-      }));
-    })]);showDiveOverlay();
+    clearActionMessage();window.__sprPauseExploreBgmForGimmick?.();window.__sprExploreVideoPlaying=true;
+    const nextButton=makeDiveButton('NEXT　›',async()=>{
+      await transitionDiveScene(()=>{
+        diveStoryImage.src='lighthouse_top_night.jpg';diveStoryImage.alt='灯台の上から見下ろす夜の海';diveStoryImage.style.opacity='0';diveStoryImage.style.display='block';
+        diveStoryText.textContent='海が、すごく下に見える。';
+        diveStoryButtons.replaceChildren(makeDiveButton('飛び降りる',async()=>{
+          await transitionDiveScene(()=>{diveStoryButtons.replaceChildren();diveStoryImage.style.display='none';diveStoryText.textContent=''});
+          const glitch=document.getElementById('casinoElevatorGlitch'),glitchSound=document.getElementById('casinoElevatorGlitchSound');
+          const oldGlitchZ=glitch?.style.zIndex;
+          if(glitch){glitch.style.zIndex='2147483001';glitch.classList.add('open');glitch.setAttribute('aria-hidden','false')}
+          if(glitchSound){try{glitchSound.currentTime=0;glitchSound.volume=.85;const p=glitchSound.play();if(p?.catch)p.catch(()=>{})}catch{}}
+          await diveWait(1300);
+          if(glitch){glitch.classList.remove('open');glitch.setAttribute('aria-hidden','true');glitch.style.zIndex=oldGlitchZ||''}
+          if(glitchSound){glitchSound.pause();try{glitchSound.currentTime=0}catch{}}
+          await transitionDiveScene(()=>{
+            diveStoryImage.style.display='none';diveStoryText.textContent='本当に飛び降りますか？';
+            diveStoryButtons.replaceChildren(
+              makeDiveButton('飛び降りる',()=>playLighthouseLeap()),
+              makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})
+            );
+          });
+        }));
+        requestAnimationFrame(()=>{diveStoryImage.style.opacity='1'});
+      });
+    });
+    nextButton.style.cssText+=';min-height:38px;padding:7px 14px;width:min(190px,70vw);font-size:13px;justify-self:center';
+    diveStoryImage.style.display='none';diveBlackPage('いつもいるスタッフがいない。',[nextButton]);showDiveOverlay();
   }
   const lighthouseDiveSeenKey=`spr-lighthouse-dive-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}:day3-6`;
   function eligibleLighthouseDive(spotKey,actionKey){
