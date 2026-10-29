@@ -1367,19 +1367,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜110：デラックスオーシャン<br>201〜205：ファミリー<br>301〜310：オーシャンラグーン<br>401〜405：スイート<br>特別ヴィラ：暗証番号をお持ちのお客様</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
-        <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="auto" loop playsinline></audio>
-        <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="auto" loop playsinline></audio>
-        <audio id="roomPhonePromo" src="room_phone_01.mp3" preload="auto" playsinline></audio>
-        <audio id="roomPhoneTeaEcho" src="room_phone_02.mp3" preload="auto" playsinline></audio>
-        <audio id="roomPhoneTeaBgm" src="room_phone_02_bgm.mp3" preload="auto" playsinline></audio>
-        <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="auto" playsinline></audio>
-        <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="auto" playsinline></audio>
-        <audio id="roomDoorOpenAudio" src="room_door_open.mp3" preload="auto" playsinline></audio>
-        <audio id="villaPoolInAudio" src="pool_in.mp3" preload="auto" playsinline></audio>
-        <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="auto" playsinline></audio>
-        <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="auto" playsinline></audio>
-        <audio id="villaDarkroomBgm" src="villa_darkroom_bgm.mp3" preload="auto" loop playsinline></audio>
-        <audio id="villaDarkroomEffect" preload="auto" loop playsinline></audio>
+        <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="none" loop playsinline></audio>
+        <audio id="roomPhoneWave" src="room_phone_wave.mp3" preload="none" loop playsinline></audio>
+        <audio id="roomPhonePromo" src="room_phone_01.mp3" preload="none" playsinline></audio>
+        <audio id="roomPhoneTeaEcho" src="room_phone_02.mp3" preload="none" playsinline></audio>
+        <audio id="roomPhoneTeaBgm" src="room_phone_02_bgm.mp3" preload="none" playsinline></audio>
+        <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="none" playsinline></audio>
+        <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="none" playsinline></audio>
+        <audio id="roomDoorOpenAudio" src="room_door_open.mp3" preload="none" playsinline></audio>
+        <audio id="villaPoolInAudio" src="pool_in.mp3" preload="none" playsinline></audio>
+        <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="none" playsinline></audio>
+        <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="none" playsinline></audio>
+        <audio id="villaDarkroomBgm" src="villa_darkroom_bgm.mp3" preload="none" loop playsinline></audio>
+        <audio id="villaDarkroomEffect" preload="none" loop playsinline></audio>
         <div id="roomServiceFoodGallery" class="room-service-food-gallery hidden" role="dialog" aria-modal="true" aria-label="届いたお食事" aria-hidden="true">
           <div class="room-service-food-stage">
             <div class="room-service-food-kicker">ROOM SERVICE — DELIVERED</div>
@@ -1602,7 +1602,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="slide"><img id="exploreBeachGalleryImage" data-deferred-src="summer_paradise_beach.jpg" alt="海辺" loading="lazy" decoding="async"></div><div class="slide"><img id="exploreLighthouseGalleryImage" data-deferred-src="lighthouse.jpg" alt="灯台" loading="lazy" decoding="async"></div><div class="slide"><img id="exploreCoveGalleryImage" data-deferred-src="mermaids_cove.jpg" alt="マーメイドの入り江" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="explore"></div>
     <div class="info"><h2>EXPLORE THE ISLAND</h2><div class="jp">島を探索する</div><div class="meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE</div><p>海辺の小径を歩き、灯台から島を眺め、入り江へ。心に留まった景色から、今日の散策を始めてみてください。</p><div class="panel explore-destination-panel"><h3>行き先を選ぶ</h3><div class="explore-choice-grid"><button class="explore-choice-btn" type="button" data-explore-spot="beach">ビーチに行く<small>BEACH</small></button><button class="explore-choice-btn" type="button" data-explore-spot="lighthouse">灯台に行く<small>LIGHTHOUSE</small></button><button class="explore-choice-btn" type="button" data-explore-spot="mermaids_cove">人魚の入り江に行く<small>MERMAID'S COVE</small></button></div></div></div>
-    <audio id="exploreBgm" src="explore_bgm.mp3" loop preload="auto"></audio>
+    <audio id="exploreBgm" src="explore_bgm.mp3" loop preload="none"></audio>
 
     <section id="exploreLocationPage" class="explore-location-page hidden" aria-hidden="true">
       <div id="exploreLocationBg" class="explore-location-bg"></div>
@@ -1647,7 +1647,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
   <!-- Sunset Terrace is a separate screen, preserving the parent restaurant gallery underneath. -->
   <section class="subview" id="sunsetTerraceView" aria-hidden="true" style="--terrace-photo:none">
-    <audio id="sunsetTerraceBgm" src="sunset_terrace_bgm.mp3" preload="auto" loop></audio>
+    <audio id="sunsetTerraceBgm" src="sunset_terrace_bgm.mp3" preload="none" loop></audio>
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">SUNSET TERRACE</div><div></div></div>
     <div class="sunset-terrace-content">
       <p class="terrace-kicker">DINNER BY THE SEA</p>
@@ -1784,7 +1784,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <section id="hernandoEncounter" class="hernando-encounter" aria-hidden="true" aria-label="エルナンドの闘牛場">
     <img id="hernandoArenaBgBlur" class="hernando-arena-blur" data-deferred-src="hernandos_bullring01.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async">
     <img id="hernandoArenaBg" class="hernando-arena-loop" data-deferred-src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場" loading="lazy" decoding="async">
-    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="auto" loop playsinline webkit-playsinline></audio>
+    <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="none" loop playsinline webkit-playsinline></audio>
     <div class="hernando-encounter-shade"></div>
     <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
     <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
@@ -1814,8 +1814,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="bar-order-panel"><div class="bar-order-kicker">SEASIDE BAR DRINK MENU</div><p>20種類のオリジナルドリンクからお選びいただけます。昼・夕・夜、それぞれお一人様1杯までご注文いただけます。</p><button id="barOrderOpen" class="bar-order-open" type="button">ドリンクを注文する　›</button><div id="barOrderStatusMini" class="bar-order-status-mini"></div></div>
       <div class="panel"><h3>営業時間</h3><p>11:00〜翌5:00</p></div>
     </div>
-    <audio id="seasideBarBgm" src="seasidebar.bgm.mp3" loop preload="auto"></audio>
-    <audio id="seasideKanpaiSfx" src="seaside.kanpai.mp3" preload="auto" playsinline></audio>
+    <audio id="seasideBarBgm" src="seasidebar.bgm.mp3" loop preload="none"></audio>
+    <audio id="seasideKanpaiSfx" src="seaside.kanpai.mp3" preload="none" playsinline></audio>
     <section id="barOrderSheet" class="bar-order-sheet" aria-hidden="true" aria-label="シーサイドバー ドリンク注文">
       <div class="bar-order-head"><button id="barOrderClose" class="bar-order-close" type="button" aria-label="ドリンクメニューを閉じる">←</button><div class="bar-order-head-title">SEASIDE BAR / DRINK ORDER</div><div></div></div>
       <div class="bar-order-content">
@@ -1844,7 +1844,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     </div>
   </div>
   <div id="specialOverlay" class="special-overlay" aria-hidden="true">
-    <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="auto"></audio>
+    <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="none"></audio>
     <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">UNKNOWN</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
   </div>
   <section id="specialTableScreen" class="special-table-screen hidden" aria-hidden="true"><div class="special-table-inner"><div id="specialTableName" class="special-speaker">SPECIAL TABLE</div><h2>ALL-IN GAME</h2><p id="specialTableRule" class="rule">ゲームをお選びください。</p><div id="specialGameChoice" class="special-choice"><button type="button" data-special-game="blackjack">BLACKJACK<br><small>ONE ROUND</small></button><button type="button" data-special-game="hilo">HIGH &amp; LOW<br><small>FIRST TO TWO WINS</small></button></div><div id="specialPlayArea"></div></div></section>
@@ -1865,7 +1865,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     <div class="info"><h2>CASINO BLUE SHELL</h2><div class="jp">カジノ・ブルーシェル</div><div class="meta">A PLACE FOR THE LUCKY　/　AND THE CURIOUS</div><p>波音のそばに佇む、海辺のカジノ。ゲームテーブルや景品交換所で、思い思いの時間をお過ごしください。</p><div class="casino-card"><div class="casino-mark">CASINO BLUE SHELL</div><h3>WELCOME</h3><p>館内ではゲーム用チップを使用してお楽しみいただけます。</p><button id="casinoEnter" class="casino-enter" type="button">カジノに向かう　›</button></div></div>
 
     <section id="casinoGame" class="casino-game hidden" aria-hidden="true">
-      <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="auto"></audio>
+      <audio id="casinoBgm" src="casino_bgm.mp3" loop preload="none"></audio>
       <div class="casino-game-head">
         <button id="casinoExit" class="casino-exit" type="button" aria-label="ひとつ前へ戻る">←</button>
         <div class="casino-game-title"><strong id="casinoHeaderTitle">CASINO BLUE SHELL</strong><small id="casinoHeaderSub">CASINO FLOOR</small></div>
@@ -1902,7 +1902,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         </div>
       </div>
       <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
-      <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="auto"></audio>
+      <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="none"></audio>
       <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
         <button id="casinoElevatorVideoClose" class="casino-elevator-video-close hidden" type="button" aria-label="動画を閉じる">×</button>
         <video id="casinoElevatorMovie" src="casino.elevator.mp4" preload="metadata" playsinline></video>
@@ -9464,7 +9464,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 })();
 </script>
 <div id="integratedCafeShell" aria-hidden="true">
-  <audio id="integratedCafeBgm" src="cafe_bgm.mp3" preload="auto" loop></audio>
+  <audio id="integratedCafeBgm" src="cafe_bgm.mp3" preload="none" loop></audio>
   <iframe loading="lazy" id="integratedCafeHome" title="CAFE" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;CAFE | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:#0d2743;background:#fff url(&quot;cafe_floor.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:#0d2743}.title{text-align:center;font:12px Georgia,serif;letter-spacing:.18em;color:#a87b2f}.wrap{max-width:760px;margin:auto;padding:42px 18px 80px;min-height:calc(100vh - 66px);background:rgba(255,255,255,.20);backdrop-filter:blur(1px)}.lead{text-align:center;line-height:2;color:#24394e;font-size:13px;text-shadow:0 1px 8px rgba(255,255,255,.95)}.venues{display:grid;gap:14px;margin-top:25px}.venue{border:1px solid rgba(168,123,47,.38);background:rgba(255,252,245,.90);padding:26px 22px;text-align:center;color:#0d2743;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;box-shadow:0 8px 24px rgba(13,39,67,.08)}.venue strong{display:block;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:21px;font-weight:400;letter-spacing:.12em}.venue small{display:block;margin-top:9px;color:#a87b2f;font-family:Georgia,&quot;Times New Roman&quot;,serif;font-size:10px;letter-spacing:.20em}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;button class=&quot;back&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;exit&#x27;},&#x27;*&#x27;)&quot;&gt;← BACK&lt;/button&gt;&lt;div class=&quot;title&quot;&gt;CAFE&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/header&gt;&lt;main class=&quot;wrap&quot;&gt;&lt;h1 style=&quot;text-align:center;font-weight:400;letter-spacing:.12em&quot;&gt;CAFE&lt;/h1&gt;&lt;p class=&quot;lead&quot;&gt;ご利用になるカフェをお選びください。&lt;br&gt;営業時間　10:00〜翌3:00&lt;br&gt;各カフェは別ページでご案内します。&lt;/p&gt;&lt;div class=&quot;venues&quot;&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;pearl&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;The Pearl Terrace&lt;/strong&gt;&lt;small&gt;THE PEARL TERRACE&lt;/small&gt;&lt;/button&gt;&lt;button class=&quot;venue&quot; onclick=&quot;parent.postMessage({type:&#x27;spr-cafe&#x27;,action:&#x27;marine&#x27;},&#x27;*&#x27;)&quot;&gt;&lt;strong&gt;Marine Bloom Cafe&lt;/strong&gt;&lt;small&gt;MARINE BLOOM CAFE&lt;/small&gt;&lt;/button&gt;&lt;/div&gt;&lt;/main&gt;&lt;/body&gt;&lt;/html&gt;"></iframe>
   <iframe loading="lazy" id="integratedCafePearl" title="The Pearl Terrace" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;ja&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1,viewport-fit=cover&quot;&gt;&lt;meta name=&quot;theme-color&quot; content=&quot;#0d2743&quot;&gt;&lt;title&gt;The Pearl Terrace | Summer Paradise Resort&lt;/title&gt;&lt;style&gt;:root{--navy:#0d2743;--gold:#a87b2f;--cream:#fbf8f1}*{box-sizing:border-box}body{margin:0;font-family:&quot;Hiragino Mincho ProN&quot;,&quot;Yu Mincho&quot;,serif;color:var(--navy);background:linear-gradient(rgba(255,255,255,.68),rgba(255,255,255,.68)),url(&quot;the_pearl_terrace_i.jpg&quot;) center/cover fixed no-repeat}header{height:66px;display:grid;grid-template-columns:60px 1fr 60px;align-items:center;border-bottom:1px solid #eee8dc;position:sticky;top:0;background:#fff;z-index:3}.back{border:0;background:none;color:var(--navy)}.title{text-align:center;font:11px Georgia,serif;letter-spacing:.14em;color:var(--gold)}main{max-width:720px;margin:auto;padding:28px 18px 60px;background:rgba(255,255,255,.36);backdrop-filter:blur(1px);min-height:calc(100vh - 66px)}h1{text-align:center;font-weight:400;letter-spacing:.1em}.sub{text-align:center;color:var(--gold);font:10px Georgia,serif;letter-spacing:.18em}h2{margin-top:30px;font-size:15px;font-weight:500;letter-spacing:.1em;border-bottom:1px solid #e7dfd1;padding-bottom:9px}.grid{display:grid;gap:8px}.item{border:1px solid #e7dfd1;background:#fff;padding:13px;text-align:left;color:var(--navy)}.item.selected{border-color:var(--gold);background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}.item small{display:block;color:#8a7656;margin-top:4px}.order{width:100%;min-height:50px;margin-top:24px;border:0;background:var(--navy);color:#fff;letter-spacing:.1em}.order:disabled{opacity:.35}.status{margin-top:13px;padding:13px;background:var(--cream);border:1px solid #e1d4bd;text-align:center;font-size:12px;line-height:1.9}.modal{position:fixed;inset:0;background:rgba(5,18,32,.62);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}.modal.show{display:flex}.modal-card{position:relative;width:min(92vw,430px);max-height:88vh;overflow:auto;background:#fffdf8;border:1px solid #d8c39c;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:28px 20px 24px;text-align:center}.modal-close{position:absolute;right:10px;top:8px;width:36px;height:36px;border:0;background:transparent;color:#0d2743;font-size:28px;line-height:1}.modal img{display:block;width:min(100%,330px);height:auto;margin:8px auto 12px}.modal-label{font-family:Georgia,&quot;Times New Roman&quot;,serif;color:#a87b2f;letter-spacing:.14em;font-size:11px}.staff{display:none;margin:0 0 16px;padding:15px 16px;background:#fbf8f1;border:1px solid #e1d4bd;text-align:left;line-height:1.9;font-size:13px}.staff.show{display:block}.staff-name{display:block;color:#a87b2f;font-size:11px;letter-spacing:.12em;margin-bottom:5px}.staff{display:none!important}.staff-dialogue{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}.staff-dialogue.show{opacity:1;visibility:visible}.staff-dialogue-box{width:min(720px,94vw);padding:24px 26px 22px;background:rgba(255,255,255,.93);border-top:1px solid rgba(168,123,47,.48);box-shadow:0 14px 48px rgba(13,39,67,.14);position:relative}.staff-dialogue-name{font:11px Georgia,serif;letter-spacing:.24em;color:#a87b2f;margin-bottom:12px}.staff-dialogue-text{font-size:14px;line-height:2.05;letter-spacing:.045em;color:#24394e}.staff-dialogue-next{display:block;margin:15px 0 0 auto;border:0;background:transparent;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em}.staff-dialogue-box::before{content:&quot;&quot;;position:absolute;left:0;top:0;width:46px;height:1px;background:#a87b2f}@media(max-width:520px){.staff-dialogue{padding:0 12px max(7vh,28px)}.staff-dialogue-box{padding:21px 20px 18px}.staff-dialogue-text{font-size:13px}}&lt;/style&gt;&lt;style&gt;
 .cafe-ticket-panel{max-width:680px;margin:24px auto;padding:22px 18px;background:rgba(255,255,255,.82);text-align:center;border:1px solid rgba(13,39,67,.18)}
