@@ -1404,7 +1404,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div id="roomServiceNgScreen" class="room-service-ng-screen" role="dialog" aria-modal="true" aria-label="NGギミック動画" aria-hidden="true">
           <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng_01.mp4" preload="metadata" playsinline webkit-playsinline></video>
           <button id="roomServiceNgClose" class="room-service-ng-close" type="button" aria-label="動画を閉じる">×</button>
-          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4、room_service_ng_03.mp4 を確認してください。</div>
+          <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4 を確認してください。</div>
         </div>
         <div id="villaPoolExperience" class="villa-pool-experience" role="dialog" aria-modal="true" aria-label="ロイヤルヴィラのプール" aria-hidden="true">
           <div class="villa-pool-water">
@@ -8294,7 +8294,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{roomServiceNgVideo.pause();roomServiceNgVideo.currentTime=0}catch{}
       roomServiceNgScreen.classList.remove('open');roomServiceNgScreen.setAttribute('aria-hidden','true');
     }
-    const ROOM_SERVICE_NG_VIDEO_FILES=['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'];
+    const ROOM_SERVICE_NG_VIDEO_FILES=['room_service_ng_01.mp4','room_service_ng_02.mp4'];
+    let roomServiceNgCurrentEventId='',roomServiceNgCurrentVideoFile='';
     function roomServiceNgVideoForEvent(eventId){
       const key=String(eventId||'room-service-ng');let hash=0;
       for(let i=0;i<key.length;i++)hash=((hash<<5)-hash+key.charCodeAt(i))|0;
@@ -8303,11 +8304,37 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function showRoomServiceNgVideo(eventId){
       if(!roomServiceNgScreen||!roomServiceNgVideo)return;
       const videoFile=roomServiceNgVideoForEvent(eventId);
+      roomServiceNgCurrentEventId=String(eventId||'');roomServiceNgCurrentVideoFile=videoFile;
+      roomServiceNgClose?.classList.toggle('hidden',videoFile==='room_service_ng_01.mp4');
       roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=videoFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
       try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
     }
+    async function showRoomServiceNgAftermath(){
+      const overlay=document.createElement('div');
+      overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','気がつくと部屋のベッドにいた');
+      overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:28px;background:#000;color:#fff;opacity:1;transition:opacity 1s ease';
+      document.body.append(overlay);
+      await new Promise(resolve=>setTimeout(resolve,500));
+      const message=document.createElement('div');
+      message.textContent='気がつくと部屋のベッドにいた。\n何があったのか、思い出せない。';
+      message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
+      overlay.append(message);requestAnimationFrame(()=>{message.style.opacity='1'});
+      await new Promise(resolve=>setTimeout(resolve,3000));
+      overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,1050));overlay.remove();
+    }
+    async function finishRoomServiceNgVideo(){
+      const videoFile=roomServiceNgCurrentVideoFile,eventId=roomServiceNgCurrentEventId;
+      closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');
+      if(videoFile!=='room_service_ng_01.mp4')return;
+      const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
+      if(localStorage.getItem(appliedKey)!=='1'){
+        await window.sprApplyNgGimmick?.('未注文のルームサービス',{ignoreProtection:true});
+        localStorage.setItem(appliedKey,'1');
+      }
+      await showRoomServiceNgAftermath();
+    }
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
-    roomServiceNgVideo?.addEventListener('ended',closeRoomServiceNgVideo);
+    roomServiceNgVideo?.addEventListener('ended',()=>{void finishRoomServiceNgVideo()});
     roomServiceNgVideo?.addEventListener('error',()=>roomServiceNgFallback?.classList.remove('hidden'));
     function normalizeRoomServiceHorrorResolution(payload){
       const event=normalizeRoomServiceHorrorEvent(payload);if(!event)return null;
@@ -8336,8 +8363,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         return true;
       }
       if(resolution.outcome!=='hit'){showRoomServiceHorrorResult('扉を開いた。外に誰もいない。');return true}
-      const appliedKey=roomServiceHorrorNgAppliedKey(resolution.event_id);
-      if(localStorage.getItem(appliedKey)!=='1'&&!roomServiceHorrorNgApplying.has(resolution.event_id)){
+      const selectedVideo=roomServiceNgVideoForEvent(resolution.event_id),appliedKey=roomServiceHorrorNgAppliedKey(resolution.event_id);
+      if(selectedVideo!=='room_service_ng_01.mp4'&&localStorage.getItem(appliedKey)!=='1'&&!roomServiceHorrorNgApplying.has(resolution.event_id)){
         roomServiceHorrorNgApplying.add(resolution.event_id);
         try{
           if(typeof window.sprApplyNgGimmick==='function')await window.sprApplyNgGimmick('未注文のルームサービス');
@@ -10035,9 +10062,13 @@ window.addEventListener('message',e=>{
   const actionMessageClose=document.getElementById('exploreActionMessageClose');
   const choiceButtons=[...exploreView.querySelectorAll('[data-explore-spot]')];
   const exploreWaterEntryAudio=new Audio('pool_in.mp3');
+  const exploreWaterExitAudio=new Audio('pool_out.mp3');
+  const underwaterBubblesAudio=new Audio('underwater_bubbles.mp3');
   const exploreCameraAudio=new Audio('explore_camera_shutter.mp3');
   const exploreFishingAudio=new Audio('explore_fishing_cast.mp3');
   exploreWaterEntryAudio.preload='auto';exploreWaterEntryAudio.playsInline=true;
+  exploreWaterExitAudio.preload='auto';exploreWaterExitAudio.playsInline=true;
+  underwaterBubblesAudio.preload='auto';underwaterBubblesAudio.playsInline=true;underwaterBubblesAudio.loop=true;underwaterBubblesAudio.volume=0;
   exploreCameraAudio.preload='auto';exploreCameraAudio.playsInline=true;
   exploreFishingAudio.preload='auto';exploreFishingAudio.playsInline=true;
   function playExploreOneShot(audio,volume=1){
@@ -10359,6 +10390,69 @@ window.addEventListener('message',e=>{
     const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hourCycle:'h23'}).format(new Date()));
     return hour>=7&&hour<16?'day':hour>=16&&hour<20?'sunset':'night';
   }
+  const lighthouseDiveOverlay=document.createElement('div');
+  lighthouseDiveOverlay.id='lighthouseDiveEvent';
+  lighthouseDiveOverlay.setAttribute('role','dialog');
+  lighthouseDiveOverlay.setAttribute('aria-modal','true');
+  lighthouseDiveOverlay.style.cssText='position:fixed;inset:0;z-index:2147483000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,28px);padding:max(24px,env(safe-area-inset-top)) 5vw max(24px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:auto;background:#02070c;color:#fff;opacity:0;transition:opacity .8s ease';
+  document.body.append(lighthouseDiveOverlay);
+  const diveStoryText=document.createElement('div');
+  diveStoryText.style.cssText='width:min(780px,100%);white-space:pre-line;text-align:center;color:#fff;text-shadow:0 2px 12px #000;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em';
+  const diveStoryImage=document.createElement('img');
+  diveStoryImage.alt='灯台の上から見下ろす夜の海';
+  diveStoryImage.draggable=false;
+  diveStoryImage.style.cssText='display:block;width:min(94vw,900px);height:auto;max-height:52vh;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(201,170,104,.48);background:#020a12;opacity:0;transition:opacity 1.2s ease';
+  const diveStoryButtons=document.createElement('div');
+  diveStoryButtons.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;width:min(620px,94vw)';
+  lighthouseDiveOverlay.append(diveStoryImage,diveStoryText,diveStoryButtons);
+  const diveWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const makeDiveButton=(label,onClick)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.style.cssText='min-height:50px;padding:12px 18px;border:1px solid #c9aa68;background:rgba(5,14,27,.94);color:#f5e6bf;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;cursor:pointer';button.addEventListener('click',onClick);return button};
+  function showDiveOverlay(){lighthouseDiveOverlay.style.display='flex';lighthouseDiveOverlay.style.opacity='0';void lighthouseDiveOverlay.offsetWidth;lighthouseDiveOverlay.style.opacity='1'}
+  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprResumeExploreBgmAfterGimmick?.()}
+  function diveBlackPage(text,buttons=[]){diveStoryImage.style.display='none';diveStoryText.textContent=text;diveStoryButtons.replaceChildren(...buttons);}
+  async function playLighthouseLeap(){
+    localStorage.setItem(lighthouseDiveSeenKey,'1');
+    diveBlackPage('');showDiveOverlay();
+    underwaterBubblesAudio.pause();try{underwaterBubblesAudio.currentTime=0}catch{}underwaterBubblesAudio.volume=0;const bubblesPromise=underwaterBubblesAudio.play();if(bubblesPromise?.catch)bubblesPromise.catch(()=>{});
+    const diveAudio=exploreWaterEntryAudio;diveAudio.preload='auto';diveAudio.playsInline=true;diveAudio.volume=1;
+    let revealed=false;
+    const revealWreck=()=>{if(revealed)return;revealed=true;clearTimeout(fallbackTimer);diveStoryImage.style.opacity='0';diveStoryImage.src='sunken_ship_yellow_sail.jpg';diveStoryImage.alt='黄色い帆が巻きついた沈没船';diveStoryImage.style.display='block';requestAnimationFrame(()=>{diveStoryImage.style.opacity='1';underwaterBubblesAudio.volume=.78});diveStoryText.textContent='沈没船だ。黄色い帆が、破れながら巻きついている。';diveStoryButtons.replaceChildren(makeDiveButton('海から上がる。',()=>{playExploreOneShot(exploreWaterExitAudio,1);hideDiveOverlay()}))};
+    const fallbackTimer=setTimeout(revealWreck,9000);
+    diveAudio.addEventListener('ended',()=>setTimeout(revealWreck,400),{once:true});
+    diveAudio.addEventListener('error',()=>setTimeout(revealWreck,2600),{once:true});
+    try{diveAudio.pause();diveAudio.currentTime=0;const p=diveAudio.play();if(p?.catch)p.catch(()=>setTimeout(revealWreck,2600))}catch{setTimeout(revealWreck,2600)}
+  }
+  async function startLighthouseDiveEvent(){
+    clearActionMessage();window.__sprPauseExploreBgmForGimmick?.();
+    diveStoryImage.style.display='none';diveBlackPage('いつもいるスタッフがいない。',[makeDiveButton('NEXT　›',async()=>{
+      diveStoryImage.src='lighthouse_top_night.jpg';diveStoryImage.alt='灯台の上から見下ろす夜の海';diveStoryImage.style.opacity='0';diveStoryImage.style.display='block';requestAnimationFrame(()=>{diveStoryImage.style.opacity='1'});
+      diveStoryText.textContent='海が、すごく下に見える。';
+      diveStoryButtons.replaceChildren(makeDiveButton('飛び降りる',async()=>{
+        diveStoryButtons.replaceChildren();
+        diveStoryImage.style.display='none';diveStoryText.textContent='';
+        const glitch=document.getElementById('casinoElevatorGlitch'),glitchSound=document.getElementById('casinoElevatorGlitchSound');
+        lighthouseDiveOverlay.style.background='transparent';
+        if(glitch){glitch.classList.add('open');glitch.setAttribute('aria-hidden','false')}
+        if(glitchSound){try{glitchSound.currentTime=0;glitchSound.volume=.85;const p=glitchSound.play();if(p?.catch)p.catch(()=>{})}catch{}}
+        await diveWait(900);
+        if(glitch){glitch.classList.remove('open');glitch.setAttribute('aria-hidden','true')}
+        if(glitchSound){glitchSound.pause();try{glitchSound.currentTime=0}catch{}}
+        lighthouseDiveOverlay.style.background='#02070c';
+        diveStoryImage.style.display='none';diveStoryText.textContent='本当に飛び降りますか？';
+        diveStoryButtons.replaceChildren(
+          makeDiveButton('飛び降りる',()=>playLighthouseLeap()),
+          makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})
+        );
+      }),makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})]);
+    })]);showDiveOverlay();
+  }
+  const lighthouseDiveSeenKey=`spr-lighthouse-dive-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}:day3-6`;
+  function eligibleLighthouseDive(spotKey,actionKey){
+    const day=Number(document.documentElement.dataset.resortDay||1);
+    if(day<3||day>6||spotKey!=='lighthouse'||actionKey!=='snorkel'||explorePeriod()!=='night'||localStorage.getItem(lighthouseDiveSeenKey)==='1')return false;
+    const drink=window.getCurrentBarDrinkEffect?.();
+    return !!drink&&drink.period==='night'&&Number(drink.resortDay||day)===day&&drink.effectKey!=='room-service:ominous'&&drink.effectKey!=='room-service:ng';
+  }
   function setSubviewImageSource(img,filename){
     if(!img||!filename)return;
     const owner=img.closest('.subview');
@@ -10618,6 +10712,12 @@ window.addEventListener('message',e=>{
     if(lighthouseEvent){
       clearActionMessage();
       openExploreEventVideo(lighthouseEvent);
+      return;
+    }
+
+    // DAY3–6の夜、通常ドリンクを飲んだ場合だけ灯台から一度だけ飛び降りられる。
+    if(eligibleLighthouseDive(selectedSpot,actionKey)){
+      startLighthouseDiveEvent();
       return;
     }
 
