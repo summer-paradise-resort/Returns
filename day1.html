@@ -10512,7 +10512,7 @@ window.addEventListener('message',e=>{
           makeDiveButton('飛び降りる',()=>playLighthouseLeap()),
           makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})
         );
-      }),makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})]);
+      }));
     })]);showDiveOverlay();
   }
   const lighthouseDiveSeenKey=`spr-lighthouse-dive-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}:day3-6`;
