@@ -3418,7 +3418,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function dateKeyFromParts({year,month,day}){return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`}
     function addDaysToDateKey(key,days){const [y,m,d]=key.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1,d+days));return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`}
     function barPeriodInfo(){
-      const now=japanClockParts();let id,label,hours,serviceDate=dateKeyFromParts(now),endDate=serviceDate,endTime;
+      const now=japanClockParts();
+      const adminPeriod=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+      const adminHour={day:12,sunset:18,night:22}[adminPeriod];
+      if(adminHour!==undefined)now.hour=adminHour;
+      let id,label,hours,serviceDate=dateKeyFromParts(now),endDate=serviceDate,endTime;
       if(now.hour>=7&&now.hour<16){id='day';label='昼';hours='7:00〜15:59';endTime='16:00:00'}
       else if(now.hour>=16&&now.hour<20){id='sunset';label='夕';hours='16:00〜19:59';endTime='20:00:00'}
       else{ id='night';label='夜';hours='20:00〜6:59';if(now.hour<7)serviceDate=addDaysToDateKey(serviceDate,-1);endDate=addDaysToDateKey(serviceDate,1);endTime='07:00:00'}
@@ -7294,6 +7298,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     window.__sprHasBothDrinkKinds=()=>!!activeNgDrinkEffect()&&!!activeOminousDrinkEffect();
     window.__sprHasAnyHorrorDrink=()=>!!activeNgDrinkEffect()||!!activeOminousDrinkEffect();
+    window.__sprHasNgDrinkEffect=()=>!!activeNgDrinkEffect();
     window.__sprGetActiveHorrorDrink=activeRoomServiceHorrorDrink;
     window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'酔いは、もう残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'酔い覚ましを飲んだ。強すぎる酒の酔いが、少しずつ引いていく。'}};
 
@@ -10520,7 +10525,7 @@ window.addEventListener('message',e=>{
     const day=Number(document.documentElement.dataset.resortDay||1);
     if(day<3||day>6||spotKey!=='lighthouse'||actionKey!=='snorkel'||explorePeriod()!=='night'||localStorage.getItem(lighthouseDiveSeenKey)==='1')return false;
     const drink=window.getCurrentBarDrinkEffect?.();
-    return !!drink&&drink.period==='night'&&Number(drink.resortDay||day)===day&&drink.effectKey!=='room-service:ominous'&&drink.effectKey!=='room-service:ng';
+    return !!drink&&drink.name==='ライトハウスキーパー'&&drink.effectKey==='explore:night:lighthouse'&&drink.period==='night'&&Number(drink.resortDay||day)===day&&!window.__sprHasNgDrinkEffect?.();
   }
   function setSubviewImageSource(img,filename){
     if(!img||!filename)return;
