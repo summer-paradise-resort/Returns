@@ -2438,6 +2438,41 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     window.sprRemainingLives=remainingLives;
     window.sprCanUseFinalEscapeChoice=()=>remainingLives()>0;
     window.sprApplyNgGimmick=applyNgGimmick;
+    let ngDrinkMorningPenaltyRunning=false;
+    async function showNgDrinkMorningBlackout(onApplied){
+      const scene=document.createElement('div');
+      scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');scene.setAttribute('aria-label','翌朝の体調');
+      scene.style.cssText='position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;background:#000;color:#fff;opacity:0;transition:opacity .75s ease';
+      const message=document.createElement('div');
+      message.textContent='なんだか、体が重い。\n飲みすぎたせいだろうか。';
+      message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(17px,4.5vw,23px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
+      scene.append(message);document.body.append(scene);void scene.offsetWidth;scene.style.opacity='1';
+      await new Promise(resolve=>setTimeout(resolve,780));requestAnimationFrame(()=>{message.style.opacity='1'});
+      await new Promise(resolve=>setTimeout(resolve,1750));
+      const result=await applyNgGimmick('NGドリンクを全て飲んだ翌朝');
+      await onApplied?.();
+      message.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,250));
+      scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,800));scene.remove();
+      if(result?.protected)await showPendingMermaidGuardNotice();
+      return result;
+    }
+    window.__sprProcessNgDrinkMorningPenalty=async function(currentDay=resortDayNumber()){
+      if(ngDrinkMorningPenaltyRunning)return false;
+      const day=Math.max(1,Math.min(7,Number(currentDay)||resortDayNumber())),drankDay=day-1;
+      if(drankDay<1)return false;
+      const consumed=readNgDrinksConsumed(drankDay);
+      if([...DAILY_NG_DRINK_NAMES].some(name=>!consumed.has(name)))return false;
+      const flagKey=ngDrinkPenaltyFlagKey(drankDay),localKey=ngDrinkPenaltyLocalKey(drankDay);
+      if(localStorage.getItem(localKey)==='1'||windowSprFlagCache[flagKey]===true)return false;
+      ngDrinkMorningPenaltyRunning=true;
+      try{
+        const result=await showNgDrinkMorningBlackout(async()=>{
+          localStorage.setItem(localKey,'1');
+          try{await setRemoteFlag(flagKey,true)}catch(error){console.warn('NG drink morning penalty sync',error)}
+        });
+        return result;
+      }finally{ngDrinkMorningPenaltyRunning=false}
+    };
     window.sprMarkFinalEscapeSuccess=async function(metadata={}){
       if(!window.sprCanUseFinalEscapeChoice())return false;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
@@ -2507,6 +2542,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(flagKey.startsWith('closet-search:')){const room=flagKey.split(':')[1];localStorage.setItem(`spr-closet-search-${storedGuestName||'guest'}-${room}`,String(value||0))}
       else if(flagKey.startsWith('closet-door:')){const room=flagKey.split(':')[1];if(bool(value))localStorage.setItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`,'1');else localStorage.removeItem(`spr-closet-door-${storedGuestName||'guest'}-${room}`)}
       else if(flagKey===barNgEffectFlagKey()){if(value&&typeof value==='object')localStorage.setItem(barNgEffectStorageKey,JSON.stringify(value));else localStorage.removeItem(barNgEffectStorageKey)}
+      else if(flagKey.startsWith('ng-drinks-consumed:')){const dayToken=flagKey.slice('ng-drinks-consumed:'.length),key=`spr-ng-drinks-consumed:${playerStorageId}:${dayToken}`,names=Array.isArray(value)?value.filter(name=>typeof name==='string'):[];if(names.length)localStorage.setItem(key,JSON.stringify(names));else localStorage.removeItem(key)}
+      else if(flagKey.startsWith('ng-drink-penalty:')){const dayToken=flagKey.slice('ng-drink-penalty:'.length),key=`spr-ng-drink-penalty:${playerStorageId}:${dayToken}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
       else if(flagKey.startsWith('room-service-horror-gimmick:')){const gimmick=flagKey.slice('room-service-horror-gimmick:'.length),key=`spr-room-service-horror-gimmick:${playerStorageId}:${gimmick}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
       else if(flagKey.startsWith('room-service-horror:')){const token=flagKey.slice('room-service-horror:'.length),key=`spr-room-service-horror:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
       else if(flagKey.startsWith('room-phone-done:')){const token=flagKey.slice('room-phone-done:'.length),key=`spr-room-phone-done:${playerStorageId}:${token}`;if(bool(value))localStorage.setItem(key,'1');else localStorage.removeItem(key)}
@@ -2536,6 +2573,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const searchPrefix=`spr-closet-search-${storedGuestName||'guest'}-`,doorPrefix=`spr-closet-door-${storedGuestName||'guest'}-`,horrorPrefix=`spr-room-service-horror:${playerStorageId}:`,phonePrefix=`spr-room-phone-done:${playerStorageId}:`;
       const horrorGimmickPrefix=`spr-room-service-horror-gimmick:${playerStorageId}:`;
       Object.keys(localStorage).forEach(k=>{if(k.startsWith(searchPrefix)){const room=k.slice(searchPrefix.length);out[`closet-search:${room}`]=Math.max(0,Number(localStorage.getItem(k))||0)}else if(k.startsWith(doorPrefix)&&localStorage.getItem(k)==='1'){const room=k.slice(doorPrefix.length);out[`closet-door:${room}`]=true}else if(k.startsWith(horrorGimmickPrefix)&&localStorage.getItem(k)==='1'){const gimmick=k.slice(horrorGimmickPrefix.length);out[`room-service-horror-gimmick:${gimmick}`]=true}else if(k.startsWith(horrorPrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(horrorPrefix.length);out[`room-service-horror:${token}`]=true}else if(k.startsWith(phonePrefix)&&localStorage.getItem(k)==='1'){const token=k.slice(phonePrefix.length);out[`room-phone-done:${token}`]=true}});
+      const ngDrinkPrefix=`spr-ng-drinks-consumed:${playerStorageId}:`,ngPenaltyPrefix=`spr-ng-drink-penalty:${playerStorageId}:`;
+      Object.keys(localStorage).forEach(k=>{if(k.startsWith(ngDrinkPrefix)){try{const names=JSON.parse(localStorage.getItem(k)||'[]');if(Array.isArray(names)&&names.length)out[`ng-drinks-consumed:${k.slice(ngDrinkPrefix.length)}`]=names}catch{}}else if(k.startsWith(ngPenaltyPrefix)&&localStorage.getItem(k)==='1')out[`ng-drink-penalty:${k.slice(ngPenaltyPrefix.length)}`]=true});
       return out;
     }
 
@@ -2647,7 +2686,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-first-conversation-done'||r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-first-conversation-done'||r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('ng-drinks-consumed:')||String(r.flag_key||'').startsWith('ng-drink-penalty:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -3502,6 +3541,25 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       {no:19,name:'マーメイドララバイ',ingredients:'ピーチリキュール × ミルク × ブルーキュラソー',effectKey:'room-service:ominous'},
       {no:20,name:'トワイライトタイド',ingredients:'ホワイトラム × ピーチリキュール × トニックウォーター',effectKey:'room-service:ng'}
     ];
+    const DAILY_NG_DRINK_NAMES=new Set(barDrinks.filter(drink=>drink.effectKey==='room-service:ng').map(drink=>drink.name));
+    function ngDrinksConsumedFlagKey(day){return `ng-drinks-consumed:day${Math.max(1,Math.min(7,Number(day)||1))}`}
+    function ngDrinksConsumedLocalKey(day){return `spr-ng-drinks-consumed:${playerStorageId}:day${Math.max(1,Math.min(7,Number(day)||1))}`}
+    function ngDrinkPenaltyFlagKey(day){return `ng-drink-penalty:day${Math.max(1,Math.min(7,Number(day)||1))}`}
+    function ngDrinkPenaltyLocalKey(day){return `spr-ng-drink-penalty:${playerStorageId}:day${Math.max(1,Math.min(7,Number(day)||1))}`}
+    function readNgDrinksConsumed(day){
+      const parse=value=>{if(Array.isArray(value))return value;if(typeof value==='string'){try{const parsed=JSON.parse(value);return Array.isArray(parsed)?parsed:[]}catch{}}return []};
+      const local=parse(localStorage.getItem(ngDrinksConsumedLocalKey(day))||'[]');
+      const remote=parse(windowSprFlagCache[ngDrinksConsumedFlagKey(day)]);
+      return new Set([...local,...remote].filter(name=>DAILY_NG_DRINK_NAMES.has(name)));
+    }
+    async function recordNgDrinkConsumed(record){
+      if(record?.effectKey!=='room-service:ng'||!DAILY_NG_DRINK_NAMES.has(String(record?.name||'')))return false;
+      const day=Math.max(1,Math.min(7,Number(record.resortDay)||resortDayNumber()));
+      const names=[...new Set([...readNgDrinksConsumed(day),String(record.name)])].filter(name=>DAILY_NG_DRINK_NAMES.has(name));
+      localStorage.setItem(ngDrinksConsumedLocalKey(day),JSON.stringify(names));
+      await setRemoteFlag(ngDrinksConsumedFlagKey(day),names);
+      return names.length===DAILY_NG_DRINK_NAMES.size;
+    }
     const barDrinkStorageKey=`spr-bar-drinks:${playerStorageId}`;
     const barNgEffectStorageKey=`spr-bar-ng-effect:${playerStorageId}`;
     function barNgEffectFlagKey(){return `bar-ng-effect:${resortDayToken()}`}
@@ -3695,6 +3753,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(record.effectKey==='room-service:ng'){
         const ngEffect={...record,expiresAt:info.dayExpiresAt,dayExpiresAt:info.dayExpiresAt};localStorage.setItem(barNgEffectStorageKey,JSON.stringify(ngEffect));
         void setRemoteFlag(barNgEffectFlagKey(),ngEffect).catch(e=>console.warn('NG drink effect sync',e));
+        try{await recordNgDrinkConsumed(record)}catch(e){console.warn('NG drink daily record sync',e)}
       }
       barOrderResult.textContent=`${drink.name} を飲んだ。美味しい！`; barOrderResult.classList.remove('hidden');selectedBarDrink='';renderBarOrderState();
     });
@@ -9461,7 +9520,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       galleries[name]=show;
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')){mysteryClose();return}if(sunsetTerraceFoodPreview&&!sunsetTerraceFoodPreview.classList.contains('hidden')){closeSunsetTerraceFoodPreview();return}if(roomServiceFoodGallery&&!roomServiceFoodGallery.classList.contains('hidden')){advanceRoomServiceFoodGallery();return}if(belongingPreview?.classList.contains('open')){closeBelongingPreview();return}if(barOrderSheet.classList.contains('open')){closeBarOrder();return}if(!casinoGame.classList.contains('hidden')){casinoExit.click();return}if(roomBelongingsSheet.classList.contains('open')){closeRoomBelongings();return}if(roomServiceSheet.classList.contains('open')){closeRoomService();return}if(chatSheet.classList.contains('open')){closeChatSheet();return}const open=views.find(view=>view.classList.contains('open'));if(open===roomView&&roomView.classList.contains('room-active'))leaveActiveRoom();else if(open)closeView(open);}});
-    setTimeout(()=>hydratePersistentState(),0);
+    setTimeout(()=>{window.__sprInitialHydrationPromise=hydratePersistentState()},0);
     // 復帰時は既存のhydratePersistentStateでlifeHeartsを含む所持品を最新化。
     // ここで別のライフRPCを重ねると通信増になるため追加しない。
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)hydratePersistentState()});
@@ -9712,7 +9771,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   });
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-first-conversation-done'];delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')).forEach(k=>delete windowSprFlagCache[k]);}}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-first-conversation-done'];delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')||k.startsWith('ng-drinks-consumed:')||k.startsWith('ng-drink-penalty:')).forEach(k=>delete windowSprFlagCache[k]);}}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
@@ -9774,6 +9833,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           if(roomServiceGimmickResetError)console.warn('room service unique gimmick reset',roomServiceGimmickResetError);
           const {error:roomPhoneDoneResetError}=await c.from('spr_player_flags').delete().like('flag_key','room-phone-done:%');
           if(roomPhoneDoneResetError)console.warn('room phone daily reset',roomPhoneDoneResetError);
+          const {error:ngDrinkCompletionResetError}=await c.from('spr_player_flags').delete().like('flag_key','ng-drinks-consumed:%');
+          if(ngDrinkCompletionResetError)console.warn('NG drink daily reset',ngDrinkCompletionResetError);
+          const {error:ngDrinkPenaltyResetError}=await c.from('spr_player_flags').delete().like('flag_key','ng-drink-penalty:%');
+          if(ngDrinkPenaltyResetError)console.warn('NG drink penalty reset',ngDrinkPenaltyResetError);
           // 追加した1日1食制限とDAY7一度きりの脱出状態も本番用リセットで初期化。
           const {error:terraceMealResetError}=await c.from('spr_player_flags').delete().like('flag_key','sunset-meal-used:%');
           if(terraceMealResetError)console.warn('sunset meal limit reset',terraceMealResetError);
@@ -9814,7 +9877,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   }
   async function startRuntime(){
     if(await enforceLatestResetSession())return;
-    await syncCurrentDay(true);
+    if(!window.__sprInitialHydrationPromise)window.__sprInitialHydrationPromise=hydratePersistentState();
+    await window.__sprInitialHydrationPromise;
+    const syncedDay=await syncCurrentDay(true);
+    if(!adminPreviewDay&&syncedDay===THIS_DAY)await window.__sprProcessNgDrinkMorningPenalty?.(syncedDay);
     const c=client();if(c)c.channel('admin-world-runtime').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},onShared).subscribe();
     // Realtime publication is not enabled/reliable on every Supabase project or device.
     // Keep DAY changes shared by polling the authoritative announcement markers.
