@@ -457,6 +457,8 @@
     .room-phone-call-panel{grid-column:1/-1;padding:14px 13px;border:1px solid rgba(240,216,157,.72);background:rgba(5,18,31,.90);backdrop-filter:blur(9px);text-align:center;color:#fff}
     .room-phone-call-panel.hidden{display:none!important}
     .room-phone-call-status{font-size:12px;line-height:1.8;letter-spacing:.08em;color:#f1dfb3;margin-bottom:10px;white-space:pre-line;max-height:min(40dvh,330px);overflow-y:auto;overscroll-behavior:contain}
+    .room-phone-call-panel.promo-display{position:fixed;z-index:10021;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:min(88vw,560px);min-height:112px;padding:24px 22px;border:1px solid rgba(168,123,47,.4);background:rgba(255,255,255,.96);box-shadow:0 14px 48px rgba(13,39,67,.16);backdrop-filter:blur(3px);color:#24394e}
+    .room-phone-call-panel.promo-display .room-phone-call-status{margin:0;max-height:none;overflow:visible;color:#24394e!important;font-size:15px;line-height:1.9;letter-spacing:.045em}
     .room-phone-call-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .room-phone-call-actions button{min-height:46px;border:1px solid rgba(255,255,255,.42);font-size:13px;letter-spacing:.1em}
     .room-phone-answer{background:#f6f0e5;color:#0d2743}
@@ -6932,9 +6934,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const showFallback=!hasVisual&&Boolean(activeRoom)&&active;
       roomPhoneCallPanel.classList.toggle('hidden',!showMain);
       roomPhoneCallPanel.classList.toggle('resolved',roomPhoneCallState!=='ringing');
+      const promoDisplay=ROOM_PHONE_01_SENTENCES.includes(roomPhoneLastMessage);
+      roomPhoneCallPanel.classList.toggle('promo-display',promoDisplay);
       if(roomPhoneFallbackPanel){
         roomPhoneFallbackPanel.classList.toggle('hidden',!showFallback);
         roomPhoneFallbackPanel.classList.toggle('resolved',roomPhoneCallState!=='ringing');
+        roomPhoneFallbackPanel.classList.toggle('promo-display',promoDisplay);
       }
       const message=roomPhoneCallState==='ringing'?'電話が鳴っている。':roomPhoneLastMessage;
       if(message){
@@ -8129,7 +8134,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       await Promise.all([loadRoomSharedData(room),loadRoomPhoneEvent(room),refreshHernandoRoomEntrance(room)]);
       if(!window.supabaseClientSpecial||activeRoom!==room)return;
       roomRealtimeChannel=window.supabaseClientSpecial.channel(`spr-room-${room}-${Math.random().toString(36).slice(2)}`)
-        .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_messages',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;const sharedOrder=parseRoomServiceOrderMessage(payload.new);if(sharedOrder){trackNewRoomServiceDeliveryOrder(sharedOrder);evaluateRoomServiceDeliveries();return}const receipt=parseRoomServiceReceiptMessage(payload.new);if(receipt){applyRoomServiceReceipt(receipt,{announce:true});return}const msg=roomSharedMessage(payload.new);roomMessageCache.push(msg);roomMessageCache=roomMessageCache.slice(-100);renderChat();if(!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();showChatToast(msg)}})
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_messages',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;const sharedOrder=parseRoomServiceOrderMessage(payload.new);if(sharedOrder){trackNewRoomServiceDeliveryOrder(sharedOrder);evaluateRoomServiceDeliveries();return}const receipt=parseRoomServiceReceiptMessage(payload.new);if(receipt){applyRoomServiceReceipt(receipt,{announce:true});return}const msg=roomSharedMessage(payload.new);roomMessageCache.push(msg);roomMessageCache=roomMessageCache.slice(-100);renderChat();if(!chatSheet.classList.contains('open')){unreadCount+=1;updateUnread();if(msg.name!=='Arthur Grey')showChatToast(msg)}})
         .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_service_orders',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;roomServiceCache.push(roomSharedOrder(payload.new));roomServiceCache=roomServiceCache.slice(-20);renderRoomServiceHistory();trackNewRoomServiceDeliveryOrder(payload.new);evaluateRoomServiceDeliveries()})
         .on('postgres_changes',{event:'INSERT',schema:'public',table:'spr_room_phone_events',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;applyRoomPhoneEvent(payload.new,{announce:false})})
         .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_room_phone_events',filter:`room_no=eq.${room}`},payload=>{if(activeRoom!==room)return;applyRoomPhoneEvent(payload.new,{announce:String(payload.new?.status||'')==='answered'})})
@@ -8750,6 +8755,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(roomDoorOpenAudio){try{roomDoorOpenAudio.currentTime=0;roomDoorOpenAudio.muted=false;roomDoorOpenAudio.volume=1;const play=roomDoorOpenAudio.play();if(play?.catch)play.catch(error=>console.warn('room door open sound play',error));return true}catch{}}
       return false;
     }
+    window.__sprPlayRoomDoorOpenSound=playRoomDoorOpenSound;
     function playRoomDoorCloseSound(){
       if(!roomPhoneMasterAudioOn())return false;
       const ctx=ensureRoomServiceDoorbellContext();
@@ -12749,6 +12755,7 @@ window.addEventListener('message',e=>{
    if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
    const list=document.getElementById('roomOccupancyNames');
    if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
+   window.__sprPlayRoomDoorOpenSound?.();
    openArthurArrivalNotice();
    setTimeout(()=>{if(arthurArrived&&arthurRoom===String(window.__sprActiveRoom))window.__sprSendArthurChat?.(arthurRoom,'How did you get to this resort?')},900);
  }
