@@ -790,7 +790,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 .hernando-dialogue-text{min-height:58px;font-size:15px;line-height:2;letter-spacing:.05em}
 .hernando-dialogue-char{display:inline;opacity:0;filter:blur(1.4px);transition:opacity .18s ease,filter .22s ease;will-change:opacity,filter}
 .hernando-dialogue-char.in{opacity:1;filter:blur(0)}
-.hernando-dialogue-next{width:100%;min-height:44px;margin-top:12px;border:1px solid rgba(227,194,125,.48);background:rgba(125,31,27,.86);color:#fff;font:11px Georgia,serif;letter-spacing:.18em}
+.hernando-dialogue-next{display:block;width:max-content;min-width:0;min-height:38px;margin:12px 0 0 auto;padding:8px 4px;border:0;background:transparent;box-shadow:none;color:#a87b2f;font:11px Georgia,serif;letter-spacing:.15em;text-align:right;cursor:pointer}
 .hernando-dialogue-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
 .hernando-dialogue-choice{min-height:48px;padding:10px 8px;border:1px solid rgba(227,194,125,.48);background:rgba(12,14,16,.9);color:#fff;font:11px Georgia,serif;letter-spacing:.08em;line-height:1.6}
 .hernando-dialogue-choice:first-child{background:rgba(125,31,27,.9);border-color:rgba(190,78,67,.82)}
@@ -1772,7 +1772,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="hernando-dialogue-name">エルナンド</div>
       <div id="hernandoDialogueText" class="hernando-dialogue-text"></div>
       <div class="spr-dialogue-controls">
-      <button id="hernandoDialogueNext" class="hernando-dialogue-next" type="button">NEXT　›</button>
+      <button id="hernandoDialogueNext" class="hernando-dialogue-next spr-text-next" type="button">NEXT</button>
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
         <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
@@ -3863,11 +3863,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const btn=document.getElementById('casinoEmilyTalk');
       const photo=document.getElementById('casinoGalleryStage');
       const screen=document.getElementById('casinoGalleryScreen');
-      if(!btn||!photo||!screen||btn.classList.contains('hidden'))return;
+      if(!btn||!photo||!screen||btn.classList.contains('hidden')||document.body.classList.contains('spr-emily-knife-scene'))return;
       // Place the talk button directly BELOW the photograph, which is visually shifted
       // up by existing gallery CSS. The photograph itself is never resized or moved.
       const r=photo.getBoundingClientRect(),g=screen.getBoundingClientRect();
-      if(r.width<1||g.width<1)return;
+      if(r.width<1||g.width<1||btn.getBoundingClientRect().height<1)return;
       const left=Math.max(10,r.left-g.left+12);
       btn.style.left=`${left}px`;
       btn.style.width=`${Math.max(160,Math.min(g.width-left-10,r.width-24))}px`;
@@ -3941,6 +3941,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       stopEmilyCasualTyping();emilyCasualSpans=[];emilyCasualNextAction=null;
       emilyCasualOverlay.classList.add('hidden');
       document.body.classList.remove('spr-emily-knife-scene');
+      requestAnimationFrame(positionEmilyTalkButton);
       emilyCasualOverlay.setAttribute('aria-hidden','true');
       emilyCasualOverlay.style.removeProperty('opacity');emilyCasualOverlay.style.removeProperty('transition');
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
@@ -7468,10 +7469,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoDialogueTypeToken++;
       hernandoDialogueTyping=false;
       hernandoDialogueText.textContent=hernandoDialogueCurrentText;
-      if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();
+      
     }
     function showHernandoDialogueLine(line){
       const text=String(line||'');
+      if(hernandoDialogueMode==='knifeEvent'&&hernandoDialogueIndex===2)playHernandoArenaBgm();
       hernandoDialogueCurrentText=text;
       // 基本はエルナンド名を表示。人魚の護り貝の獲得通知だけはシステム文として名前を消す。
       if(hernandoDialogueName){
@@ -7497,7 +7499,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const chars=[...text];
       const spans=chars.map(ch=>{const span=document.createElement('span');span.className='hernando-dialogue-char';span.textContent=ch;hernandoDialogueText.appendChild(span);return span});
       const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();return}
+      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
       (async()=>{
         await new Promise(r=>setTimeout(r,140));
         if(token!==hernandoDialogueTypeToken)return;
@@ -7509,7 +7511,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
         if(token===hernandoDialogueTypeToken){
           hernandoDialogueTyping=false;
-          if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();
+          
         }
       })();
     }
@@ -7519,7 +7521,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!hernandoDialogueLines.length){hernandoDialogue.classList.add('hidden');return}
       hernandoDialogue.classList.remove('hidden');
       showHernandoDialogueLine(hernandoDialogueLines[0]);
-      hernandoDialogueNext.textContent='NEXT　›';
+      hernandoDialogueNext.textContent='NEXT';
     }
     function hernandoUniformChoice(){
       const options=['right','center','left'];
@@ -7769,15 +7771,24 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setHernandoDialogueLines([HERNANDO_POST_LIMIT_LINES[index]],'postLimitTalk','postLimitReturn');
     });
     hernandoBullKnife?.addEventListener('click',async()=>{
-      if(!confirm('ナイフを1本消費して、エルナンドを刺しますか？'))return;
+      if(hernandoBullKnife.disabled)return;
       hernandoBullKnife.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
-        await playKnifeStabSound();
+        hernandoDialogueTypeToken++;hernandoDialogueTyping=false;
+        hernandoDialogue.classList.add('hidden');
+        hernandoDialogueChoices.classList.add('hidden');
+        cancelHernandoArenaBgmFade(true);
         if(hernandoArenaBgm){sprCancelGuardedAudioStart(hernandoArenaBgm);hernandoArenaBgm.pause()}
+        void playKnifeStabSound();
         setRemoteFlag('hernando-knife-event-seen',true).catch(e=>console.warn('hernando knife flag',e));
+        await new Promise(resolve=>setTimeout(resolve,2000));
         setHernandoDialogueLines([
-          '悪いな。刃が届いたと思ったか？先に傷を負ったのは君だ。'
+          '悪いな。',
+          '刃が届いたと思ったか？先に傷を負ったのは君の方だ。',
+          '俺をただのマタドールと見くびったな？',
+          '地下闘技場で幾度も人と向き合い、勝ち残ってきた。',
+          'この間合いは、身体が覚えている。'
         ],'knifeEvent','knifeBlackout');
       }catch(e){alert('使用できませんでした：'+String(e.message||e))}
       finally{hernandoBullKnife.disabled=false}
@@ -12751,7 +12762,7 @@ window.addEventListener('message',e=>{
 body.spr-emily-knife-scene #casinoEmilyTalk,
 body.spr-emily-knife-scene #casinoEmilyKnife{display:none!important}
 button.spr-text-next{
-width:auto!important;min-width:0!important;max-width:100%!important;
+width:max-content!important;min-width:0!important;max-width:100%!important;
 min-height:38px!important;height:auto!important;padding:8px 4px!important;
 margin-left:auto!important;margin-right:0!important;
 border:0!important;border-radius:0!important;background:transparent!important;
