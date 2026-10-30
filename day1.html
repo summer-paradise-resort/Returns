@@ -10291,12 +10291,74 @@ window.addEventListener('message',e=>{
     }catch(error){console.error('Luca Balsa ticket fishing event:',error);overlay.remove()}
     finally{lucaTicketFishingRunning=false}
   }
+  // DAY3–6: normal BAR drink, daytime fishing, once per player name and cloth.
+  const clothFishingDrinks=new Set([
+    'サンセットパラダイス','マーメイドキス','パールラグーン','ライトハウスキーパー',
+    'サマーパラダイス','セイレーンズソング','シェルブリーズ','ラグーンブリーズ',
+    'ミッドナイトランタン','ビーコンライト','ゴールデンホライズン','ガーディアンフレア'
+  ]);
+  const clothFishingPlaces={
+    beach:{key:'fishing-cloth:white',image:'beach_day_fishing_white_cloth.jpg',text:'白い布が釣れた。'},
+    mermaids_cove:{key:'fishing-cloth:pink',image:'mermaids_cove_day_fishing_pink_cloth.jpg',text:'ピンク色の布が釣れた。'}
+  };
+  let clothFishingRunning=false;
+  function clothFishingEventFor(actionButton){
+    const day=Number(document.documentElement.dataset.resortDay||1);
+    if(day<3||day>6||explorePeriod()!=='day'||actionButton?.dataset.exploreAction!=='fishing')return null;
+    if(window.__sprHasNgDrinkEffect?.())return null;
+    const drink=window.getCurrentBarDrinkEffect?.();
+    if(!drink||drink.period!=='day'||!clothFishingDrinks.has(drink.name)||
+      ['room-service:ng','room-service:ominous'].includes(drink.effectKey)||
+      Date.now()>=Number(drink.expiresAt||0)||Number(drink.resortDay||day)!==day)return null;
+    const config=clothFishingPlaces[document.getElementById('exploreLocationBg')?.dataset.spot];
+    return config&&!window.__sprNamedEvents.seen(config.key)?config:null;
+  }
+  async function showClothFishingEvent(config){
+    if(clothFishingRunning)return;
+    clothFishingRunning=true;
+    let overlay=null;
+    try{
+      // Server compare-and-set also blocks simultaneous attempts on other devices.
+      if(!await window.__sprNamedEvents.claim(config.key))return;
+      clearActionMessage();
+      overlay=document.createElement('div');overlay.id='clothFishingScene';
+      overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',config.text);
+      overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom));box-sizing:border-box;background:#000;color:#fff;opacity:0;transition:opacity .75s ease';
+      const content=document.createElement('div');
+      content.style.cssText='display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;max-height:100%;opacity:0;transition:opacity .75s ease';
+      const image=document.createElement('img');image.src=config.image;image.alt=config.text;image.draggable=false;
+      image.style.cssText='display:block;width:100%;height:auto;max-height:68dvh;object-fit:contain;object-position:center';
+      overlay.append(content);document.body.append(overlay);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      overlay.style.opacity='1';await new Promise(resolve=>setTimeout(resolve,780));
+      await playExploreAudioToEnd(lucaTicketReelAudio);
+      await playExploreAudioToEnd(exploreWaterExitAudio);
+      const caption=document.createElement('div');caption.textContent=config.text;
+      caption.style.cssText='width:100%;text-align:center;font:clamp(16px,4vw,22px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em';
+      const close=document.createElement('button');close.type='button';close.textContent='CLOSE';
+      close.style.cssText='min-width:92px;min-height:44px;padding:10px 22px;border:1px solid rgba(230,204,142,.72);background:rgba(5,21,36,.9);color:#f0d89d;font:11px Georgia,serif;letter-spacing:.16em';
+      content.append(image,caption,close);
+      await Promise.race([image.decode?.().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,4000))]);
+      const closed=new Promise(resolve=>close.addEventListener('click',resolve,{once:true}));
+      content.style.opacity='1';close.focus({preventScroll:true});await closed;
+      overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,780));
+    }catch(error){console.error('Cloth fishing event:',error)}
+    finally{overlay?.remove();clothFishingRunning=false}
+  }
+
   // カメラ音・釣り音・ダイビング音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
   document.addEventListener('click',event=>{
     const cameraButton=event.target.closest?.('[data-explore-action="camera"]');
     if(cameraButton&&exploreView.contains(cameraButton))playExploreOneShot(exploreCameraAudio,.9);
     const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
     if(fishingButton&&exploreView.contains(fishingButton)){
+      if(clothFishingRunning){event.preventDefault();event.stopImmediatePropagation();return}
+      const clothEvent=clothFishingEventFor(fishingButton);
+      if(clothEvent){
+        event.preventDefault();event.stopImmediatePropagation();
+        primeLucaTicketEventAudio(lucaTicketReelAudio);primeLucaTicketEventAudio(exploreWaterExitAudio);
+        void showClothFishingEvent(clothEvent);return;
+      }
       if(lucaTicketFishingEligible(fishingButton)){
         event.preventDefault();event.stopImmediatePropagation();
         primeLucaTicketEventAudio(lucaTicketReelAudio);primeLucaTicketEventAudio(exploreWaterExitAudio);
