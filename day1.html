@@ -7234,24 +7234,36 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');scene.setAttribute('aria-label','バスルームの花びら');
       scene.style.cssText='position:fixed;inset:0;z-index:2147483646;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:max(20px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom));background:#000;color:#fff;opacity:0;transition:opacity .55s ease;cursor:pointer';
       const image=document.createElement('img');
-      image.alt='花びらの浮かぶ浴槽';image.src='bathroom_flower_petals.jpg';
-      image.style.cssText='display:block;width:100%;max-height:72dvh;object-fit:contain;opacity:0;transition:opacity .8s ease';
+      image.alt='花びらの浮かぶ浴槽';
+      image.style.cssText='display:block;width:100%;max-height:72dvh;object-fit:contain;visibility:hidden;opacity:0;transition:opacity .8s ease';
       const caption=document.createElement('div');
       caption.style.cssText='width:min(90vw,720px);min-height:2em;text-align:center;font:clamp(16px,4.3vw,22px)/1.9 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .45s ease';
       caption.textContent='疲れた、お湯に浸かってさっぱりしよう。';
-      scene.append(image,caption);document.body.append(scene);
-      let stage='bath',drainFallback=null,drainAudio=null,closed=false;
-      const revealOnePetal=()=>{
+      scene.style.pointerEvents='none';scene.append(image,caption);document.body.append(scene);
+      let stage='bath',drainFallback=null,drainAudio=null,closed=false,imageFadeStartedAt=0;
+      const loadPetalImage=async(src)=>{
+        image.style.visibility='hidden';image.style.opacity='0';image.src=src;
+        if(typeof image.decode==='function'){try{await image.decode()}catch{}}
+        else if(!image.complete)await new Promise(resolve=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',resolve,{once:true})});
+        if(closed)return;
+        await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
+        image.style.visibility='visible';await new Promise(requestAnimationFrame);image.style.opacity='1';
+      };
+      const revealOnePetal=async()=>{
         if(closed||stage!=='draining')return;
         clearTimeout(drainFallback);if(drainAudio){drainAudio.onended=null;drainAudio.onerror=null}
-        stage='one-petal';image.src='bathroom_one_petal.jpg';image.alt='花びらが一枚だけ残った浴槽';
-        requestAnimationFrame(()=>{image.style.opacity='1';caption.style.opacity='1'});
-        caption.textContent='花びらが一枚だけ残っている。';
+        stage='one-petal';scene.style.pointerEvents='none';
+        const remainingFade=Math.max(0,850-(performance.now()-imageFadeStartedAt));if(remainingFade)await wait(remainingFade);
+        if(closed)return;
+        image.alt='花びらが一枚だけ残った浴槽';caption.style.opacity='0';
+        await loadPetalImage('bathroom_one_petal.jpg');
+        if(closed)return;
+        caption.textContent='花びらが一枚だけ残っている。';await new Promise(requestAnimationFrame);caption.style.opacity='1';scene.style.pointerEvents='auto';
       };
       const advance=()=>{
         if(stage==='bath'){
           stage='draining';caption.textContent='浸かり終わったあと、お湯を抜いた。';
-          caption.style.opacity='1';image.style.opacity='0';
+          caption.style.opacity='1';imageFadeStartedAt=performance.now();image.style.opacity='0';
           drainAudio=new Audio('bathroom_drain.mp3');drainAudio.preload='auto';drainAudio.playsInline=true;
           drainAudio.onended=revealOnePetal;drainAudio.onerror=revealOnePetal;
           drainFallback=setTimeout(revealOnePetal,10000);
@@ -7266,7 +7278,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
       };
       scene.addEventListener('click',advance);
-      requestAnimationFrame(()=>{scene.style.opacity='1';image.style.opacity='1';caption.style.opacity='1'});
+      void (async()=>{
+        await loadPetalImage('bathroom_flower_petals.jpg');if(closed)return;
+        scene.style.pointerEvents='auto';scene.style.opacity='1';caption.style.opacity='1';
+      })();
     }
     const hernandoSecretSequence=document.getElementById('hernandoSecretSequence');
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
@@ -11320,9 +11335,13 @@ window.addEventListener('message',e=>{
   }));
   locationBack?.addEventListener('click',closeLocation);
   exploreView.querySelector('[data-back]')?.addEventListener('click',closeLocation);
-  actionMessageClose?.addEventListener('click',clearActionMessage);
+  actionMessageClose?.addEventListener('click',()=>{
+    clearActionMessage();
+    window.__sprShowQueuedDay67StaffAfterExploreResult?.();
+  });
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
     const actionKey=btn.dataset.exploreAction;
+    window.__sprCancelQueuedDay67StaffAfterExploreResult?.();
     btn.dataset.selectedSpot=selectedSpot;
     recordDay1Explore(selectedSpot);
 
@@ -11355,6 +11374,7 @@ window.addEventListener('message',e=>{
       clearActionMessage();
       showPoisonMessage(actionKey);
       showPendingDay1ExploreStaffIntro();
+      window.__sprQueueDay67StaffAfterExploreResult?.();
       return;
     }
 
@@ -11380,6 +11400,7 @@ window.addEventListener('message',e=>{
     }
     showFallback(actionKey);
     showPendingDay1ExploreStaffIntro();
+    window.__sprQueueDay67StaffAfterExploreResult?.();
   }));
   // 今後、探索ギミックで動画が追加された場合も自動でBGMを一時停止する。
   // 動画終了後は、探索画面を開いている間だけ同じ位置からBGMを再開する。
@@ -12754,28 +12775,43 @@ window.addEventListener('message',e=>{
    '潮騒が止むと、何か大切な声を聞き逃したような気持ちになるんです。',
    '灯台の光より、波の向こうの暗がりの方が美しく思えることがあるんです。おかしな話ですね。'
  ];
- function staffEvent(){if(day>=6&&day<=7&&Math.random()<.45&&!document.getElementById('storyEventModal')?.offsetParent)open('STAFF',staff[Math.floor(Math.random()*staff.length)])}
+ function staffEvent(){
+   if(day<6||day>7||Math.random()>=.45)return;
+   if(document.getElementById('storyEventModal')?.offsetParent||document.getElementById('cafeStaffOverlay')?.classList.contains('show'))return;
+   window.__sprShowStaffDialogue?.(staff[Math.floor(Math.random()*staff.length)],null,'STAFF');
+ }
+ let staffAfterExploreResultPending=false;
+ window.__sprQueueDay67StaffAfterExploreResult=()=>{staffAfterExploreResultPending=day>=6&&day<=7};
+ window.__sprCancelQueuedDay67StaffAfterExploreResult=()=>{staffAfterExploreResultPending=false};
+ window.__sprShowQueuedDay67StaffAfterExploreResult=()=>{
+   if(!staffAfterExploreResultPending)return;
+   staffAfterExploreResultPending=false;staffEvent();
+ };
  let seaWatcherActive=false;
  async function seaWatchingInterruption(){
    const cut=document.createElement('div');
    cut.style.cssText='position:fixed;inset:0;z-index:2147483500;overflow:hidden;pointer-events:none;opacity:1';
    cut.setAttribute('role','presentation');
    const textWall=document.createElement('div');
-   textWall.style.cssText='position:absolute;inset:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));grid-auto-rows:minmax(20px,auto);align-content:start;align-items:start;justify-items:center;gap:0 4px;padding:0;font:clamp(14px,3.3vw,24px)/1.2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.02em;color:#050505;overflow:hidden';
-   cut.append(textWall);document.body.append(cut);
+   textWall.style.cssText='position:absolute;inset:0;display:block;box-sizing:border-box;padding:0 2px;overflow:hidden;white-space:normal;word-break:break-all;font:clamp(14px,3.3vw,24px)/1.22 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.02em;color:#050505';
+   const flowStyle=document.createElement('style');
+   flowStyle.textContent='@keyframes seaWatcherGlyphFlow{0%{opacity:0;transform:translate3d(0,-.42em,0);filter:blur(3px)}100%{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}}';
+   cut.append(flowStyle,textWall);document.body.append(cut);
    const width=Math.max(90,window.innerWidth),height=Math.max(1,window.innerHeight);
    const fontSize=Math.max(14,Math.min(24,width*.033));
-   const columns=Math.max(1,Math.floor(width/90));
-   const rows=Math.ceil(height/(fontSize*1.2));
+   const columns=Math.ceil(width/(fontSize*.94));
+   const rows=Math.ceil(height/(fontSize*1.22));
+   const glyphCount=columns*rows,flowStepMs=2.4;
    const playing=[...document.querySelectorAll('audio,video')].filter(a=>!a.paused&&!a.ended);
    try{
-     // 画面を暗くせず、見えている探索画面の上に「海は見ている。」を行ごとに増やす。
-     for(let row=0;row<rows;row++){
-       for(let col=0;col<columns;col++){
-         const t=document.createElement('span');t.textContent='海は見ている。';t.style.cssText='display:block;white-space:nowrap;color:#050505';textWall.append(t);
-       }
-       await wait(55);
+     // 「海は見ている。」を一文字ずつ時間差で流し、探索画面全体を覆う。
+     const phrase='海は見ている。';
+     for(let i=0;i<glyphCount;i++){
+       const glyph=document.createElement('span');glyph.textContent=phrase[i%phrase.length];
+       glyph.style.cssText=`display:inline-block;color:#050505;animation:seaWatcherGlyphFlow .48s ease-out ${(i*flowStepMs).toFixed(1)}ms both`;
+       textWall.append(glyph);
      }
+     await wait(Math.ceil(glyphCount*flowStepMs)+520);
      // 文字で画面を覆い切ってから、短く暗転して元の画面へ戻す。
      const blackout=document.createElement('div');
      blackout.style.cssText='position:fixed;inset:0;z-index:1;background:#000;opacity:0;transition:opacity .55s ease;pointer-events:none';
@@ -12932,7 +12968,6 @@ window.addEventListener('message',e=>{
        void runAnomalyAction(kind);
        return;
      }
-     if(day>=6&&day<=7&&!poisonedDive)setTimeout(staffEvent,160);
    }
    if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(()=>void openFinalLighthouse(),260);
    if(day===7&&coveButton){
