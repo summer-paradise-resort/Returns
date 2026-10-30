@@ -2096,7 +2096,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
-      mysteryLetter:{label:'封蝋の手紙',detail:'ミステリーボックスから届いた、謎めいた手紙。',max:Infinity},
       mysteryPostcard01:{label:'ポストカード・名前を呼ぶ海鳥',detail:'異変動物ポストカード No.01',max:Infinity,image:'postcard_seabird.png'},
       mysteryPostcard02:{label:'ポストカード・漂流ラッコ',detail:'異変動物ポストカード No.02',max:Infinity,image:'postcard_otter.png'},
       mysteryPostcard03:{label:'ポストカード・巨大な何か',detail:'異変動物ポストカード No.03',max:Infinity,image:'postcard_giant_eye.png'},
@@ -9034,10 +9033,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key)});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -12175,7 +12174,8 @@ window.addEventListener('message',e=>{
  const blackHorseTelescopeOverlay=document.createElement('img');
  blackHorseTelescopeOverlay.id='blackHorseTelescopeOverlay';blackHorseTelescopeOverlay.alt='';
  blackHorseTelescopeOverlay.setAttribute('aria-hidden','true');blackHorseTelescopeOverlay.draggable=false;
- blackHorseTelescopeOverlay.style.cssText='position:absolute;inset:0;z-index:2;display:none;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none';
+ // Preserve the telescope artwork proportions; crop overflow instead of flattening the circle.
+ blackHorseTelescopeOverlay.style.cssText='position:absolute;inset:0;z-index:2;display:none;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;pointer-events:none;user-select:none';
  blackHorseTelescopeOverlay.onload=()=>{blackHorseTelescopeOverlay.style.display='block'};
  blackHorseTelescopeOverlay.onerror=()=>{blackHorseTelescopeOverlay.style.display='none'};
  blackHorseTelescopeOverlay.src=blackHorseTelescopeOverlayFile;
