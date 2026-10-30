@@ -1379,6 +1379,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <audio id="roomPhoneFinish" src="room_phone_finish.mp3" preload="none" playsinline></audio>
         <audio id="roomServiceDoorbell" src="doorbell.mp3" preload="none" playsinline></audio>
         <audio id="roomDoorOpenAudio" src="room_door_open.mp3" preload="none" playsinline></audio>
+        <audio id="roomDoorCloseAudio" src="room_door_close.mp3" preload="none" playsinline></audio>
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="none" playsinline></audio>
         <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="none" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="none" playsinline></audio>
@@ -5760,7 +5761,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const roomPhoneAnswer=document.getElementById('roomPhoneAnswer'), roomPhoneDecline=document.getElementById('roomPhoneDecline');
     const roomPhoneFallbackPanel=document.getElementById('roomPhoneFallbackPanel'), roomPhoneFallbackStatus=document.getElementById('roomPhoneFallbackStatus');
     const roomServiceResult=document.getElementById('roomServiceResult'), roomServiceHistory=document.getElementById('roomServiceHistory');
-    const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'),roomDoorOpenAudio=document.getElementById('roomDoorOpenAudio'),roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
+    const roomServiceDoorbell=document.getElementById('roomServiceDoorbell'),roomDoorOpenAudio=document.getElementById('roomDoorOpenAudio'),roomDoorCloseAudio=document.getElementById('roomDoorCloseAudio'),roomDeliveryBadge=document.getElementById('roomDeliveryBadge');
     const roomServiceFoodGallery=document.getElementById('roomServiceFoodGallery'),roomServiceFoodImage=document.getElementById('roomServiceFoodImage'),roomServiceFoodName=document.getElementById('roomServiceFoodName'),roomServiceFoodCount=document.getElementById('roomServiceFoodCount'),roomServiceFoodDrinks=document.getElementById('roomServiceFoodDrinks'),roomServiceFoodClose=document.getElementById('roomServiceFoodClose'),roomServiceFoodError=document.getElementById('roomServiceFoodError');
     const roomServiceCartHint=document.getElementById('roomServiceCartHint');
     const roomServiceDeliveryNotice=document.getElementById('roomServiceDeliveryNotice'), roomServiceDeliveryText=document.getElementById('roomServiceDeliveryText'), roomServiceDeliveryClose=document.getElementById('roomServiceDeliveryClose');
@@ -6155,9 +6156,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return `name:${String(member?.display_name||'ゲスト').trim()||'ゲスト'}`;
     }
     function showRoomDepartureNotice(name,personKey=''){
+      if(!activeRoom||!roomView.classList.contains('room-active'))return false;
       const display=String(name||'ゲスト').trim()||'ゲスト',key=personKey||`name:${display}`;
       const last=Number(roomPresenceRecentDepartures.get(key)||0);if(Date.now()-last<2500)return false;
-      roomPresenceRecentDepartures.set(key,Date.now());showRoomActivityNotice(`${display}が部屋を出ました。`);return true;
+      roomPresenceRecentDepartures.set(key,Date.now());playRoomDoorCloseSound();showRoomActivityNotice(`${display}が部屋を出ました。`);return true;
     }
     function announceRoomPresenceJoin(payload,roomAtStart){
       if(!roomPresenceAnnounceReady||activeRoom!==roomAtStart)return;
@@ -8107,6 +8109,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const roomServiceHorrorResolutionByEvent=new Map(),roomServiceHorrorNgApplying=new Set();
     let roomServiceDoorbellContext=null,roomServiceDoorbellBuffer=null,roomServiceDoorbellLoadPromise=null;
     let roomDoorOpenBuffer=null,roomDoorOpenLoadPromise=null;
+    let roomDoorCloseBuffer=null,roomDoorCloseLoadPromise=null;
     let roomServiceDoorbellKeepAliveOsc=null,roomServiceDoorbellKeepAliveGain=null;
     const roomServiceArrivalEventIds=new Set();
     const villaPoolSharedAudioBuffers=new Map();
@@ -8648,11 +8651,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomDoorOpenLoadPromise=fetch(url,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`room_door_open.mp3 HTTP ${response.status}`);return response.arrayBuffer()}).then(data=>ctx.decodeAudioData(data.slice(0))).then(buffer=>{roomDoorOpenBuffer=buffer;roomDoorOpenLoadPromise=null;return buffer}).catch(error=>{roomDoorOpenLoadPromise=null;console.warn('room door open sound load',error);throw error});
       return roomDoorOpenLoadPromise;
     }
+    function loadRoomDoorCloseBuffer(){
+      if(roomDoorCloseBuffer)return Promise.resolve(roomDoorCloseBuffer);
+      if(roomDoorCloseLoadPromise)return roomDoorCloseLoadPromise;
+      const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return Promise.reject(new Error('Web Audio unavailable'));
+      const url=roomDoorCloseAudio?.currentSrc||roomDoorCloseAudio?.src||new URL('room_door_close.mp3',window.location.href).href;
+      roomDoorCloseLoadPromise=fetch(url,{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`room_door_close.mp3 HTTP ${response.status}`);return response.arrayBuffer()}).then(data=>ctx.decodeAudioData(data.slice(0))).then(buffer=>{roomDoorCloseBuffer=buffer;roomDoorCloseLoadPromise=null;return buffer}).catch(error=>{roomDoorCloseLoadPromise=null;console.warn('room door close sound load',error);throw error});
+      return roomDoorCloseLoadPromise;
+    }
     function primeRoomServiceDoorbellAudio(){
       const ctx=ensureRoomServiceDoorbellContext();if(!ctx)return;
-      try{const resume=ctx.state==='running'?Promise.resolve():ctx.resume();Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomServiceDoorbellKeepAlive();loadRoomServiceDoorbellBuffer().catch(()=>{});loadRoomDoorOpenBuffer().catch(()=>{})}}).catch(()=>{})}catch{}
+      try{const resume=ctx.state==='running'?Promise.resolve():ctx.resume();Promise.resolve(resume).then(()=>{if(ctx.state==='running'){startRoomServiceDoorbellKeepAlive();loadRoomServiceDoorbellBuffer().catch(()=>{});loadRoomDoorOpenBuffer().catch(()=>{});loadRoomDoorCloseBuffer().catch(()=>{})}}).catch(()=>{})}catch{}
       if(roomServiceDoorbell){try{roomServiceDoorbell.preload='auto';roomServiceDoorbell.load()}catch{}}
       if(roomDoorOpenAudio){try{roomDoorOpenAudio.preload='auto';roomDoorOpenAudio.load()}catch{}}
+      if(roomDoorCloseAudio){try{roomDoorCloseAudio.preload='auto';roomDoorCloseAudio.load()}catch{}}
     }
     function playRoomDoorOpenSound(){
       if(!roomPhoneMasterAudioOn())return false;
@@ -8662,6 +8674,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       if(ctx&&ctx.state==='running'&&!roomDoorOpenBuffer)loadRoomDoorOpenBuffer().catch(()=>{});
       if(roomDoorOpenAudio){try{roomDoorOpenAudio.currentTime=0;roomDoorOpenAudio.muted=false;roomDoorOpenAudio.volume=1;const play=roomDoorOpenAudio.play();if(play?.catch)play.catch(error=>console.warn('room door open sound play',error));return true}catch{}}
+      return false;
+    }
+    function playRoomDoorCloseSound(){
+      if(!roomPhoneMasterAudioOn())return false;
+      const ctx=ensureRoomServiceDoorbellContext();
+      if(ctx&&ctx.state==='running'&&roomDoorCloseBuffer){
+        try{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=roomDoorCloseBuffer;gain.gain.value=1;source.connect(gain);gain.connect(ctx.destination);source.start(0);return true}catch{}
+      }
+      if(ctx&&ctx.state==='running'&&!roomDoorCloseBuffer)loadRoomDoorCloseBuffer().catch(()=>{});
+      if(roomDoorCloseAudio){try{roomDoorCloseAudio.currentTime=0;roomDoorCloseAudio.muted=false;roomDoorCloseAudio.volume=1;const play=roomDoorCloseAudio.play();if(play?.catch)play.catch(error=>console.warn('room door close sound play',error));return true}catch{}}
       return false;
     }
     function loadVillaPoolSharedAudioBuffers(){
@@ -9293,16 +9315,33 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     let roomLeaveInProgress=false;
     async function leaveActiveRoom(){
-      if(roomLeaveInProgress||!activeRoom)return;roomLeaveInProgress=true;
+      if(roomLeaveInProgress)return;
+      roomLeaveInProgress=true;
+      const departingRoom=activeRoom;
+      const safely=(label,run)=>{try{const result=run();if(result?.catch)result.catch(error=>console.warn(label,error))}catch(error){console.warn(label,error)}};
       try{
-        window.__sprArthurOnRoomLeave?.(activeRoom);
-        // 明示的な退出はPresence切断より先に共有し、同室者へすぐ表示する。
-        await Promise.race([broadcastRoomMemberLeft(activeRoom),new Promise(resolve=>setTimeout(resolve,400))]);
-        void syncMysteryRoomPresence('');
-        if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();
-        closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();
-        roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';window.__sprActiveRoom='';window.__sprRoomEntryTime=0;updateRoomOccupancyUi();roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
-        roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView);
+        // 先にトップへ戻す。通信や個別ギミックの終了失敗で退出を妨げない。
+        roomView.classList.remove('open','room-active');roomView.setAttribute('aria-hidden','true');
+        document.body.style.overflow=document.querySelector('.subview.open')?'hidden':'';
+        if(departingRoom){
+          safely('Arthur room leave',()=>window.__sprArthurOnRoomLeave?.(departingRoom));
+          safely('room departure broadcast',()=>broadcastRoomMemberLeft(departingRoom));
+        }
+        activeRoom='';window.__sprActiveRoom='';window.__sprRoomEntryTime=0;
+        safely('room presence leave',()=>syncMysteryRoomPresence(''));
+        const cleanup=[
+          ()=>{if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose()},
+          ()=>closeVillaPoolExperience(true),stopRoomServiceHorrorStay,stopRoomPhoneStay,stopRoomSync,
+          closeChatSheet,closeRoomService,closeRoomBelongings,closeRoomServiceDeliveryNotice,closeRoomServiceNgVideo
+        ];
+        cleanup.forEach((run,index)=>safely('room leave cleanup '+index,run));
+        roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');
+        roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');
+        roomEntry.classList.remove('hidden');roomPin.value='';
+        safely('room occupancy refresh',updateRoomOccupancyUi);
+        safely('room delivery badge',updateRoomServiceDeliveryBadge);
+        safely('room delivery schedule',scheduleRoomServiceDeliveryCheck);
+        safely('room view close',()=>closeView(roomView));
       }finally{roomLeaveInProgress=false}
     }
     document.getElementById('leaveRoom').addEventListener('click',leaveActiveRoom);
