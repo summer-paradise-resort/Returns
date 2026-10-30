@@ -1648,10 +1648,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="terrace-menu-card">
         <h3 class="terrace-menu-label">DRINK MENU<span>ドリンク ・ 全5品</span></h3>
         <div class="terrace-options" id="sunsetTerraceDrinks" role="group" aria-label="サンセットテラスのドリンク">
-          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="サンセット・ロゼ" aria-pressed="false"><strong>サンセット・ロゼ</strong><small>ロゼワインと赤い果実の華やかな香りを楽しめるフルーティーな一杯</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="薔薇色の約束" aria-pressed="false"><strong>薔薇色の約束</strong><small>ロゼワインと赤い果実の華やかな香りを楽しめるフルーティーな一杯</small></button>
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="アンコール" aria-pressed="false"><strong>アンコール</strong><small>深みのある香りとやわらかな余韻を楽しめる赤ワイン</small></button>
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="パール・スパークル" aria-pressed="false"><strong>パール・スパークル</strong><small>白ぶどうとソーダの爽やかなノンアルコールカクテル</small></button>
-          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="トロピカル・アイスティー" aria-pressed="false"><strong>トロピカル・アイスティー</strong><small>マンゴーとジャスミンがやさしく香る南国風アイスティー</small></button>
+          <button type="button" class="terrace-option sunset-terrace-drink" data-drink="楽園の午睡" aria-pressed="false"><strong>楽園の午睡</strong><small>マンゴーとジャスミンがやさしく香る南国風アイスティー</small></button>
           <button type="button" class="terrace-option sunset-terrace-drink" data-drink="スターライト・ココ" aria-pressed="false"><strong>スターライト・ココ</strong><small>ココナッツミルクとバニラがやさしく広がるデザートドリンク（ノンアルコール）</small></button>
         </div>
       </div>
@@ -1670,7 +1670,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <h3 id="sunsetTerraceFoodName" class="terrace-food-name"></h3>
           <p id="sunsetTerraceFoodDrink" class="terrace-food-drink"></p>
         </div>
-        <button id="sunsetTerraceFoodReturn" type="button" class="terrace-food-return">メニューに戻る</button>
+        <button id="sunsetTerraceFoodReturn" type="button" class="terrace-food-return">ごちそうさまでした。</button>
       </div>
     </div>
     <div id="sunsetTerraceTicketModal" class="terrace-ticket-modal hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="sunsetTerraceTicketTitle">
@@ -4530,11 +4530,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function showPendingTerraceTicket(){
       const gift=pendingTerraceTicket;pendingTerraceTicket=null;
       if(!gift)return;
-      if(gift.first&&typeof window.__sprShowStaffDialogueSequence==='function'){
+      const introSeen=localStorage.getItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`)==='1'||windowSprFlagCache['sunset-mystery-intro-seen']===true;
+      if(gift.first&&!introSeen&&typeof window.__sprShowStaffDialogueSequence==='function'){
         window.__sprShowStaffDialogueSequence([
           'サンセットテラスへようこそ。お食事をお楽しみいただいたお客様へ、当テラスから小さな贈り物がございます。',
           'こちらは「ミステリーボックス・チケット」でございます。お食事のご利用につき、一日一枚お渡ししております。中身は開けてからのお楽しみ。どうぞ旅の記念にお持ちくださいませ。'
-        ],showSunsetTerraceTicket);
+        ],()=>{
+          localStorage.setItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`,'1');
+          windowSprFlagCache['sunset-mystery-intro-seen']=true;
+          setRemoteFlag('sunset-mystery-intro-seen',true).catch(e=>console.warn('mystery ticket staff sync',e));
+          showSunsetTerraceTicket();
+        });
       }else showSunsetTerraceTicket();
     }
     let pendingSunsetMermaid=false,sunsetMermaidRunning=false;
@@ -4555,7 +4561,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const play=()=>{retry.style.display='none';back.style.display='none';video.play().catch(()=>{retry.style.display='block';back.style.display='block'})};
         retry.onclick=play;video.onerror=()=>{retry.style.display='block';back.style.display='block'};
         requestAnimationFrame(()=>overlay.style.opacity='1');play();await finished;
-        overlay.style.opacity='0';await new Promise(r=>setTimeout(r,850));video.pause();overlay.remove();
+        const completed=video.ended;
+        video.style.transition='opacity .8s ease';video.style.opacity='0';
+        retry.style.display='none';back.style.display='none';
+        await new Promise(r=>setTimeout(r,850));video.pause();video.remove();
+        if(completed){
+          const afterglow=document.createElement('p');
+          afterglow.textContent='美しい歌声の余韻が、辺り一面に吸い込まれて消えていった。';
+          afterglow.style.cssText='width:min(34em,86vw);margin:0;color:#fff;text-align:center;font:clamp(16px,4vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;opacity:0;transition:opacity .8s ease';
+          overlay.append(afterglow);
+          await new Promise(requestAnimationFrame);afterglow.style.opacity='1';
+          await new Promise(r=>setTimeout(r,850));
+          await new Promise(resolve=>overlay.addEventListener('click',resolve,{once:true}));
+          afterglow.style.opacity='0';await new Promise(r=>setTimeout(r,850));
+        }
+        overlay.style.opacity='0';await new Promise(r=>setTimeout(r,850));overlay.remove();
         if(document.getElementById('sunsetTerraceView')?.classList.contains('open'))syncSunsetTerraceMusic();
       }finally{sunsetMermaidRunning=false}
     }
@@ -4675,10 +4695,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setRemoteFlag(flagKey,true).catch(e=>console.warn('mystery ticket date sync',e));
       const introKey=`spr-sunset-mystery-intro-seen:${playerStorageId}`;
       const first=localStorage.getItem(introKey)!=='1'&&windowSprFlagCache['sunset-mystery-intro-seen']!==true;
-      if(first){
-        localStorage.setItem(introKey,'1');
-        setRemoteFlag('sunset-mystery-intro-seen',true).catch(e=>console.warn('mystery ticket staff sync',e));
-      }
       return {newTicket:true,first};
     }
     if(sunsetTerraceOrder)sunsetTerraceOrder.addEventListener('click',async()=>{
