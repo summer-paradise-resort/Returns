@@ -1275,6 +1275,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 .spr-dialogue-controls > button.spr-dialogue-typing{visibility:hidden!important;pointer-events:none!important}
 .spr-dialogue-controls .spr-pending-choices{visibility:hidden!important;pointer-events:none!important}
 </style>
+<style>
+.special-overlay.invitation-mode{background:#000;z-index:2147483000}
+.special-overlay.invitation-mode .special-speaker{color:#fff}
+.special-overlay.invitation-mode .special-line{color:#fff;border:0;background:none}
+</style>
 </head>
 <body>
   <header>
@@ -3126,6 +3131,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       specialStake=Number(row.stake||0);
       const st=row.public_state||{};
       seriousEmilyMode=st.game==='hilo-serious'||st.table_name==='ROYAL TABLE'||st.table_name==='ULTRA SPECIAL TABLE';
+      if(st.phase==='invitation'){if(!specialInvitationDecisionPending)await triggerEmilyInvitation();return}
       if(specialTableName)specialTableName.textContent=st.table_name||'SPECIAL TABLE';
       specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
@@ -3790,7 +3796,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const sleep=ms=>new Promise(r=>setTimeout(r,ms));
     function tokyoHour(){return Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Tokyo',hour:'2-digit',hour12:false}).format(new Date()))%24}
     function randomOpener(){const a=[...emilyOpeners];const h=tokyoHour();if(h>=20||h<7)a.push(emilyNightOpener);return a[Math.floor(Math.random()*a.length)]}
-    async function specialSay(speaker,line,delay=1550){
+    async function specialSay(speaker,line,delay=1550,tapToAdvance=false){
       specialSpeaker.textContent=speaker;specialLine.textContent='';
       const chars=[...line];
       const spans=chars.map(ch=>{const span=document.createElement('span');span.className='slide-char';span.textContent=ch;specialLine.appendChild(span);return span});
@@ -3800,7 +3806,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const ch=chars[i];let wait=48;if(ch==='、')wait=170;else if(ch==='。'||ch==='？'||ch==='！')wait=300;else if(ch==='…')wait=190;else if(ch==='―'||ch==='─')wait=70;
         await sleep(wait);
       }
-      await sleep(Math.max(1900,delay));
+      if(tapToAdvance){
+        await new Promise(resolve=>{
+          const advance=event=>{if(event.target.closest('button'))return;event.stopPropagation();specialOverlay.removeEventListener('click',advance);resolve()};
+          specialOverlay.addEventListener('click',advance);
+        });
+      }else await sleep(Math.max(1900,delay));
     }
     const emilyMetFlagKey=`spr-emily-met:${playerStorageId}`;
     const EMILY_TALK_GALLERY_INDEX=5;
@@ -3920,7 +3931,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     window.addEventListener('resize',()=>requestAnimationFrame(positionEmilyTalkButton));
     window.addEventListener('orientationchange',()=>requestAnimationFrame(positionEmilyTalkButton));
+    let specialInvitationDecisionPending=false,specialInvitationAccepted=false;
     async function triggerEmilyInvitation(){
+      specialInvitationAccepted=false;
       if(!activeSpecialSessionId){
         const startsAt=new Date(Date.now()+3*60*1000).toISOString();
         const reservedId=await createSpecialSession(startsAt,'invitation',specialTableDisplayName());
@@ -3929,27 +3942,33 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         writeSpecialPresenceMarker({sessionId:reservedId,stake:specialStake,hiddenAt:0,createdAt:Date.now()});startSpecialHeartbeat();
       }
       localStorage.setItem(emilyMetFlagKey,'1');setRemoteFlag('emily-met',true).catch(e=>console.warn('Emily meet sync',e));syncEmilyTalkButton();
-      if(seriousEmilyMode){
-        specialBgm.pause();specialBgm.currentTime=0;
-        const accepted=await royalEmilyInvitationChoice();
-        closeEmilyCasualDialogue();
-        if(accepted)await acceptAllIn();else await declineAllIn();
-        return;
-      }
-      if(!specialOverlay)return; casinoBgm.pause(); specialBgm.pause(); specialBgm.currentTime=0; specialBgm.volume=.42; specialBgm.muted=true; playAudio(specialBgm,.42);
-      specialOverlay.classList.add('open');specialOverlay.setAttribute('aria-hidden','false');
-      specialActions.innerHTML=''; // 台詞が終わるまでは選択肢を表示しない
+      if(!specialOverlay)return;
+      specialInvitationDecisionPending=true;
+      casinoBgm.pause();specialBgm.pause();
+      specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
+      specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
       await sleep(1800);
-      if(!seriousEmilyMode){
-        await specialSay('UNKNOWN',randomOpener(),2100);
-        await specialSay('UNKNOWN','───ねえ。もう少しだけ、大きな賭けをしてみない？',2100);
-        await specialSay('UNKNOWN','どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',2100);
-        await specialSay('運のみぞ知る','あなたが今、手にしているもの。全部。',1900);
-      }
-      specialActions.innerHTML='<button id="acceptAllIn" type="button">オールイン勝負を受ける</button><button id="declineAllIn" type="button">受けない</button>';
-      void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-      document.getElementById('acceptAllIn').onclick=acceptAllIn;document.getElementById('declineAllIn').onclick=declineAllIn;
+      const lines=seriousEmilyMode?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
+        randomOpener(),
+        '───ねえ。もう少しだけ、大きな賭けをしてみない？',
+        'どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',
+        'あなたが今、手にしているもの。全部。'
+      ];
+      for(const line of lines)await specialSay('運のみぞ知る',line,0,true);
+      const accepted=await new Promise(resolve=>{
+        let decided=false;
+        for(const [label,value] of [['オールインを受ける',true],['受けない',false]]){
+          const button=document.createElement('button');button.type='button';button.textContent=label;
+          button.addEventListener('click',event=>{event.stopPropagation();if(decided)return;decided=true;specialActions.querySelectorAll('button').forEach(b=>b.disabled=true);resolve(value)});
+          specialActions.append(button);
+        }
+      });
+      specialInvitationDecisionPending=false;
+      specialInvitationAccepted=accepted;
+      try{if(accepted)await acceptAllIn();else await declineAllIn()}
+      finally{specialOverlay.classList.remove('invitation-mode')}
     }
+
     // 再会話はエルナンドと同じ「名前＋文字が浮かぶ＋NEXT」形式。
     // カジノ写真とBGMには一切手を加えない（スペシャル勝負の導入は従来どおり）。
     const emilyCasualOverlay=document.getElementById('casinoEmilyConversation');
@@ -4033,7 +4052,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualOverlay.classList.remove('hidden');emilyCasualOverlay.setAttribute('aria-hidden','false');
       for(const line of lines){
         if(statePatch)await pushSpecialState({...statePatch,phase:'emily-dialogue',emily_line:line,message:'運のみぞ知るが語りかけている。'},publishStatus);
-        await new Promise(resolve=>emilyCasualSay(line,resolve,{speaker}));
+        await new Promise(resolve=>emilyCasualSay(line,resolve,{speaker,showNext:false}));
       }
       closeEmilyCasualDialogue();emilyCasualOverlay.classList.remove('royal-emily-dialogue-center');
     }
@@ -4064,6 +4083,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     emilyCasualNext.addEventListener('click',emilyCasualNextClick);
     emilyCasualOverlay.addEventListener('click',event=>{
       if(event.target.closest('button'))return;
+      if(emilyCasualOverlay.classList.contains('royal-emily-dialogue-center')){
+        if(revealEmilyCasualLine())return;
+        const advance=emilyCasualNextAction;
+        emilyCasualNextAction=null;
+        advance?.();
+        return;
+      }
       revealEmilyCasualLine();
     });
     function emilyCasualAfterGreeting(){
@@ -4249,8 +4275,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       startSpecialHilo();
     }
     async function acceptAllIn(){
+      if(specialInvitationDecisionPending||!specialInvitationAccepted)return;
+      specialInvitationAccepted=false;
       specialActions.innerHTML='';
-      if(seriousEmilyMode)await royalEmilySaySequence(seriousEmilyAcceptLines[Math.floor(Math.random()*seriousEmilyAcceptLines.length)]);
+      if(seriousEmilyMode){for(const line of seriousEmilyAcceptLines[Math.floor(Math.random()*seriousEmilyAcceptLines.length)])await specialSay('運のみぞ知る',line,0,true);}
       else{await specialSay('運のみぞ知る','───これで後には退けなくなったわね。',1500);await specialSay('運のみぞ知る','せっかくみんなが集まってくれるのよ。',1500);await specialSay('運のみぞ知る',emilyTaunts[Math.floor(Math.random()*emilyTaunts.length)],1800)}
       const startsAt=new Date(Date.now()+60000).toISOString();specialStartsAt=new Date(startsAt).getTime();specialStake=casinoChips;specialSelectedGame=null;
       const tableName=specialTableDisplayName();if(specialTableName)specialTableName.textContent=tableName;
@@ -4282,7 +4310,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function declineAllIn(){
       specialActions.innerHTML='';
-      if(seriousEmilyMode)await royalEmilySaySequence(seriousEmilyDeclineLines);
+      if(seriousEmilyMode){for(const line of seriousEmilyDeclineLines)await specialSay('運のみぞ知る',line,0,true);}
       else await specialSay('運のみぞ知る','───そう。では、幸運が逃げてしまわないうちに。',1700);
       const id=String(activeSpecialSessionId||'');
       if(id&&window.supabaseClientSpecial){try{const {data:row}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state').eq('id',id).maybeSingle();await window.supabaseClientSpecial.from('special_table_sessions').update({status:'finished',public_state:{...(row?.public_state||{}),phase:'declined',finished:true,message:'挑戦者は辞退しました。'}}).eq('id',id).in('status',['countdown','open','playing'])}catch(e){console.warn('special reservation release',e)}}
