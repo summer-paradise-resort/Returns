@@ -3922,6 +3922,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        await playKnifeStabSound();
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
       }catch(e){console.warn('Emily knife',e)}
       emilyCasualSay('あら………？',()=>emilyCasualSay(
@@ -7731,6 +7732,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoBullKnife.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        await playKnifeStabSound();
         setRemoteFlag('hernando-knife-event-seen',true).catch(e=>console.warn('hernando knife flag',e));
         setHernandoDialogueLines([
           '悪いな。先に傷を負ったのは君だ。俺をただのマタドールと見くびったな？地下闘技場で幾度も人と向き合い、勝ち残ってきた。この間合いは、身体が覚えている。'
@@ -8908,17 +8910,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     if(buyMysteryDraw)buyMysteryDraw.addEventListener('click',()=>openMysteryBoxPrompt(false));
     if(useMysteryFreeTicket)useMysteryFreeTicket.addEventListener('click',()=>openMysteryBoxPrompt(true));
 
-    const roomKnifeStabAudio=new Audio('room_knife_stab.mp3');
-    roomKnifeStabAudio.preload='auto';roomKnifeStabAudio.playsInline=true;
+    const knifeStabAudio=new Audio('knife_stab.mp3');
+    knifeStabAudio.preload='auto';knifeStabAudio.playsInline=true;
     let roomKnifeSequenceActive=false;
-    function playRoomKnifeStabSound(){
+    function playKnifeStabSound(){
       return new Promise(resolve=>{
         let finished=false;
         let fallback;
-        const finish=()=>{if(finished)return;finished=true;clearTimeout(fallback);roomKnifeStabAudio.onended=null;roomKnifeStabAudio.onerror=null;resolve()};
-        fallback=setTimeout(()=>{try{roomKnifeStabAudio.pause()}catch{}finish()},7000);
-        roomKnifeStabAudio.onended=finish;roomKnifeStabAudio.onerror=finish;
-        try{roomKnifeStabAudio.currentTime=0;const play=roomKnifeStabAudio.play();if(play?.catch)play.catch(finish)}catch{finish()}
+        const finish=()=>{if(finished)return;finished=true;clearTimeout(fallback);knifeStabAudio.onended=null;knifeStabAudio.onerror=null;resolve()};
+        fallback=setTimeout(()=>{try{knifeStabAudio.pause()}catch{}finish()},7000);
+        knifeStabAudio.onended=finish;knifeStabAudio.onerror=finish;
+        try{knifeStabAudio.currentTime=0;const play=knifeStabAudio.play();if(play?.catch)play.catch(finish)}catch{finish()}
       });
     }
     function showRoomKnifePages(pages,{blackoutFirst=false}={}){
@@ -8948,7 +8950,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function showIncomingRoomKnifeScene(payload){
       if(roomKnifeSequenceActive)return;roomKnifeSequenceActive=true;
       try{
-        await playRoomKnifeStabSound();
+        await playKnifeStabSound();
         const attacker=String(payload?.attacker_name||'ゲスト');
         await showRoomKnifePages([
           `${attacker}に刺された。自分の左胸にナイフの柄が見える。`,
