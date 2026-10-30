@@ -2076,7 +2076,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       freshAcorn:{label:'新鮮なドングリ',detail:'島で採れた、つやのある新鮮なドングリ。',max:Infinity},
       antidote:{label:'酔い覚まし',detail:'毒のように強すぎるお酒には、これが一番効きます。',max:Infinity},
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
-      mermaidGuardShell:{label:'人魚の護り貝',detail:'綺麗な貝のお護り',max:Infinity},
+      mermaidGuardShell:{label:'人魚の護り貝',detail:'人魚の唄声を閉じ込めたと言われる、美しい貝。',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'使用時に1本消費。ROOMに滞在中の相手の♥を1つ減らす／NPC特殊イベントに使用できます。',max:Infinity},
@@ -2333,8 +2333,30 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setLocalInventoryQuantity('mermaidGuardShell',Math.max(0,current-1));
       return true;
     }
-    async function applyNgGimmick(source='NGギミック',options={}){
-      if(!options?.ignoreProtection&&await consumeMermaidGuardShell()){
+    let pendingMermaidGuardNotices=0,mermaidGuardNoticeRunning=false;
+    function queueMermaidGuardNotice(){pendingMermaidGuardNotices++;}
+    async function showPendingMermaidGuardNotice(){
+      if(mermaidGuardNoticeRunning||pendingMermaidGuardNotices<=0)return;
+      mermaidGuardNoticeRunning=true;
+      try{
+        while(pendingMermaidGuardNotices>0){
+          pendingMermaidGuardNotices--;
+          await new Promise(resolve=>{
+            const overlay=document.createElement('div');overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','人魚の護り貝');
+            overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.84);color:#fff;opacity:0;transition:opacity .35s ease';
+            const panel=document.createElement('div');panel.style.cssText='display:flex;flex-direction:column;align-items:center;gap:28px;text-align:center;font:clamp(18px,4.6vw,26px)/1.8 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.06em';
+            const message=document.createElement('div');message.textContent='人魚の護り貝が割れている…。';
+            const close=document.createElement('button');close.type='button';close.textContent='CLOSE';close.style.cssText='min-width:112px;padding:11px 24px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:transparent;color:#fff;font:600 12px/1.2 system-ui,sans-serif;letter-spacing:.16em;cursor:pointer';
+            const finish=()=>{close.removeEventListener('click',finish);overlay.removeEventListener('click',outside);overlay.style.opacity='0';setTimeout(()=>{overlay.remove();resolve()},360)};
+            const outside=e=>{if(e.target===overlay)finish()};close.addEventListener('click',finish);overlay.addEventListener('click',outside);panel.append(message,close);overlay.append(panel);document.body.append(overlay);requestAnimationFrame(()=>{overlay.style.opacity='1'});close.focus();
+          });
+        }
+      }finally{mermaidGuardNoticeRunning=false}
+    }
+    window.sprShowPendingMermaidGuardNotice=showPendingMermaidGuardNotice;
+    async function applyNgGimmick(source='NGギミック'){
+      if(await consumeMermaidGuardShell()){
+        queueMermaidGuardNotice();
         const result={source,protected:true,lives:remainingLives(),shells:belongingCount('mermaidGuardShell')};
         window.dispatchEvent(new CustomEvent('spr:ng-result',{detail:result}));
         return result;
@@ -5162,7 +5184,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       scene.append(text);document.body.append(scene);
       void scene.offsetWidth;scene.style.opacity='1';
       await new Promise(resolve=>setTimeout(resolve,850));
-      try{onBlackout?.()}catch(error){console.warn('casino elevator life sync',error)}
+      try{await onBlackout?.()}catch(error){console.warn('casino elevator life sync',error)}
       text.style.opacity='1';
       await new Promise(resolve=>setTimeout(resolve,800));
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
@@ -5177,17 +5199,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       stopElevatorGlitchSound();
       casinoElevatorVideoError.classList.add('hidden');
       try{
-        await showCasinoElevatorAftermath(()=>{
+        await showCasinoElevatorAftermath(async()=>{
           // 黒いレイヤーが映像を覆ってから、映像とカジノ画面を隠す。
           try{casinoElevatorMovie.pause();casinoElevatorMovie.currentTime=0}catch{}
           casinoElevatorVideo.classList.remove('open');casinoElevatorVideo.setAttribute('aria-hidden','true');
           // 所持品同期は独白表示を待たせず、暗転中に開始する。
-          try{const penalty=window.sprApplyNgGimmick?.('カジノのエレベーター',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('casino elevator life sync',error))}catch(error){console.warn('casino elevator life sync',error)}
+          try{await window.sprApplyNgGimmick?.('カジノのエレベーター')}catch(error){console.warn('casino elevator life sync',error)}
         });
       }catch(error){
         console.error('casino elevator aftermath:',error);
       }finally{
-        casinoElevatorAftermathRunning=false;casinoElevatorState='idle';updateCasinoElevatorAccess();
+        casinoElevatorAftermathRunning=false;casinoElevatorState='idle';updateCasinoElevatorAccess();await showPendingMermaidGuardNotice();
       }
     }
     function startCasinoElevatorDialogue(){
@@ -6807,8 +6829,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'room-member-left'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomMemberLeft(payload)})
         .on('broadcast',{event:'mystery-knife-strike'},({payload})=>{
           if(String(payload?.target_id||'')!==String(storedPlayerId||'')||String(payload?.room_no||'')!==String(activeRoom||''))return;
-          void refreshLifeHeartsOnDemand('knife-strike');
-          void showIncomingRoomKnifeScene(payload);
+          void receiveRoomKnifeStrike(payload);
         })
         .on('broadcast',{event:'room-service-horror-start'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorStart==='function')applyRoomServiceHorrorStart(payload)})
         .on('broadcast',{event:'room-service-horror-resolve'},({payload})=>{if(activeRoom!==roomAtStart)return;if(typeof applyRoomServiceHorrorResolution==='function')void applyRoomServiceHorrorResolution(payload)})
@@ -7650,7 +7671,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       document.body.append(scene);void scene.offsetWidth;scene.style.opacity='1';
       await new Promise(resolve=>setTimeout(resolve,680));
       closeHernandoArena(false);
-      try{await window.sprApplyNgGimmick?.('エルナンドの反撃',{ignoreProtection:true})}catch(error){console.warn('Hernando knife life sync',error)}
+      try{await window.sprApplyNgGimmick?.('エルナンドの反撃')}catch(error){console.warn('Hernando knife life sync',error)}
       const message=document.createElement('div');
       message.textContent='気がつくと部屋のベッドに横たわっていた。\n何かあったのか、思い出せない。';
       message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
@@ -7659,7 +7680,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
       const returned=window.__sprReturnToLastRoom?.();
       if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
-      scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,680));scene.remove();
+      scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,680));scene.remove();await showPendingMermaidGuardNotice();
     }
     function showHernandoArena(){
       clearHernandoDescentTimers();
@@ -8465,10 +8486,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(videoFile))return;
       const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
       if(localStorage.getItem(appliedKey)!=='1'){
-        await window.sprApplyNgGimmick?.('未注文のルームサービス',{ignoreProtection:true});
+        await window.sprApplyNgGimmick?.('未注文のルームサービス');
         localStorage.setItem(appliedKey,'1');
       }
       if(videoFile==='room_service_ng_01.mp4')await showRoomServiceNgAftermath();
+      await showPendingMermaidGuardNotice();
     }
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
     roomServiceNgVideo?.addEventListener('ended',()=>{void finishRoomServiceNgVideo()});
@@ -8994,6 +9016,22 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(blackoutFirst){void scene.offsetWidth;scene.style.opacity='1';setTimeout(showPage,660)}else showPage();
         scene.addEventListener('click',advance);
       });
+    }
+    async function receiveRoomKnifeStrike(payload){
+      let shellProtected=false;
+      try{
+        await refreshLifeHeartsOnDemand('knife-strike');
+        shellProtected=await consumeMermaidGuardShell();
+        if(shellProtected){
+          queueMermaidGuardNotice();
+          const restored=await remoteInventoryAdjust('lifeHearts',1);
+          if(restored!==null)setLocalInventoryQuantity('lifeHearts',restored,{sync:false});
+          else setLocalInventoryQuantity('lifeHearts',Math.min(3,remainingLives()+1));
+          renderRoomBelongings();
+        }
+      }catch(error){console.warn('room knife shell protection',error)}
+      await showIncomingRoomKnifeScene(payload);
+      if(shellProtected)await showPendingMermaidGuardNotice();
     }
     async function showIncomingRoomKnifeScene(payload){
       if(roomKnifeSequenceActive)return;roomKnifeSequenceActive=true;
@@ -10501,7 +10539,7 @@ window.addEventListener('message',e=>{
       lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear 0s';lighthouseAftermathScene.style.opacity='1';
       await lighthouseAftermathWait(900);
       closeExploreEventVideo({resumeBgm:false});
-      try{const penalty=window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡',{ignoreProtection:true});if(penalty?.catch)penalty.catch(error=>console.warn('lighthouse anomaly life sync',error))}catch(error){console.warn('lighthouse anomaly life sync',error)}
+      try{await window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡')}catch(error){console.warn('lighthouse anomaly life sync',error)}
       await showLighthouseAftermathPage('気がつくと、ホテルの部屋にいた。');
       await showLighthouseAftermathPage('灯台で望遠鏡を覗いていたはずなのに、\nどうしてここにいるのか思い出せない。');
       lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
@@ -10513,7 +10551,7 @@ window.addEventListener('message',e=>{
     }finally{
       lighthouseAftermathScene.style.visibility='hidden';lighthouseAftermathScene.style.pointerEvents='none';lighthouseAftermathScene.setAttribute('aria-hidden','true');
       lighthouseAftermathScene.style.transition='opacity .85s ease,visibility 0s linear .85s';
-      lighthouseAftermathText.style.opacity='0';closeExploreEventVideo();lighthouseAftermathRunning=false;
+      lighthouseAftermathText.style.opacity='0';closeExploreEventVideo();lighthouseAftermathRunning=false;await window.sprShowPendingMermaidGuardNotice?.();
     }
   }
   function finishExploreEventVideo(){
@@ -12251,7 +12289,7 @@ window.addEventListener('message',e=>{
      await horseFade(850);
      // 先に完了済みを記録し、再アクセスやイベント重複による二重減少を防ぐ。
      markAnimal('black-horse');setAnimalStage('black-horse',3);
-     await window.sprApplyNgGimmick?.('波渡の黒馬',{ignoreProtection:true});
+     await window.sprApplyNgGimmick?.('波渡の黒馬');
      // ホテルの部屋の台詞が始まる前に、波音を消して無音にする。
      await horseFadeOutExploreWave(4200);
      horseSetCenteredMonologue(true);
@@ -12265,6 +12303,7 @@ window.addEventListener('message',e=>{
      }
      await horseFade(650);
      await horseEnd();
+     await window.sprShowPendingMermaidGuardNotice?.();
    }catch(error){
      console.error('black horse story:',error);
      await horseEnd();
