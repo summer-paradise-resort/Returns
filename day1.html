@@ -1838,7 +1838,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <div id="specialOverlay" class="special-overlay" aria-hidden="true">
     <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="none"></audio>
     <audio id="royalTableBgm" src="royal_table_bgm.mp3" loop preload="none" playsinline></audio>
-    <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">UNKNOWN</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
+    <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">運のみぞ知る</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
   </div>
   <section id="specialTableScreen" class="special-table-screen hidden" aria-hidden="true"><div class="special-table-inner"><div id="specialTableName" class="special-speaker">SPECIAL TABLE</div><h2>ALL-IN GAME</h2><p id="specialTableRule" class="rule">ゲームをお選びください。</p><div id="specialGameChoice" class="special-choice"><button type="button" data-special-game="blackjack">BLACKJACK<br><small>ONE ROUND</small></button><button type="button" data-special-game="hilo">HIGH &amp; LOW<br><small>FIRST TO TWO WINS</small></button></div><div id="specialPlayArea"></div></div></section>
   <div id="specialCommentOverlay" class="special-comment-overlay" aria-hidden="true"><div class="special-comment-lane"></div><div class="special-comment-lane"></div><div class="special-comment-lane"></div></div>
@@ -3126,6 +3126,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return !!((identity.id&&pid&&identity.id===pid)||(!pid&&identity.name&&cname===identity.name));
     }
     async function restoreOwnSpecialSession(row){
+      if(specialInvitationStarting||specialInvitationDecisionPending)return;
       activeSpecialSessionId=row.id;
       specialStartsAt=new Date(row.starts_at||row.public_state?.starts_at||Date.now()).getTime();
       specialStake=Number(row.stake||0);
@@ -3933,22 +3934,26 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     window.addEventListener('orientationchange',()=>requestAnimationFrame(positionEmilyTalkButton));
     let specialInvitationDecisionPending=false,specialInvitationAccepted=false;
     async function triggerEmilyInvitation(){
+      if(specialInvitationDecisionPending)return;
+      const royalInvitation=seriousEmilyMode;
+      specialInvitationDecisionPending=true;
       specialInvitationAccepted=false;
       if(!activeSpecialSessionId){
         const startsAt=new Date(Date.now()+3*60*1000).toISOString();
         const reservedId=await createSpecialSession(startsAt,'invitation',specialTableDisplayName());
-        if(!reservedId){seriousEmilyMode=false;syncSeriousEmilyChallenge();return}
+        if(!reservedId){specialInvitationDecisionPending=false;seriousEmilyMode=false;syncSeriousEmilyChallenge();return}
         activeSpecialSessionId=reservedId;specialStake=casinoChips;specialStartsAt=new Date(startsAt).getTime();
         writeSpecialPresenceMarker({sessionId:reservedId,stake:specialStake,hiddenAt:0,createdAt:Date.now()});startSpecialHeartbeat();
       }
       localStorage.setItem(emilyMetFlagKey,'1');setRemoteFlag('emily-met',true).catch(e=>console.warn('Emily meet sync',e));syncEmilyTalkButton();
-      if(!specialOverlay)return;
-      specialInvitationDecisionPending=true;
+      if(!specialOverlay){specialInvitationDecisionPending=false;return}
+      seriousEmilyMode=royalInvitation;
+      specialSpeaker.textContent='運のみぞ知る';
       casinoBgm.pause();specialBgm.pause();
       specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
       await sleep(1800);
-      const lines=seriousEmilyMode?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
+      const lines=royalInvitation?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
         randomOpener(),
         '───ねえ。もう少しだけ、大きな賭けをしてみない？',
         'どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',
@@ -4918,6 +4923,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let specialInvitationStarting=false;
     function specialTableDisplayName(){return seriousEmilyMode?'ROYAL TABLE':'SPECIAL TABLE'}
     async function triggerNormalEmilyEvent(){
+      if(seriousEmilyRequirementsMet())return startSeriousEmilyChallenge(true);
       if(casinoChips<=140000||localStorage.getItem(specialTable140kOnceKey)==='1')return false;
       if(specialInvitationStarting||seriousEmilySessionBusy()||specialMenuHasLiveTable)return false;
       specialInvitationStarting=true;
