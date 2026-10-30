@@ -2461,6 +2461,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
+      else if(flagKey==='hernando-first-conversation-done'){const k=`spr-hernando-first-conversation-done:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='emily-met'){const k=`spr-emily-met:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
       else if(flagKey==='emily-casual-progress'){
         const k=`spr-emily-casual-progress:${playerStorageId}`;
@@ -2484,6 +2485,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function collectLocalFlags(){
       const out={};
+      if(localStorage.getItem(`spr-hernando-first-conversation-done:${playerStorageId}`)==='1')out['hernando-first-conversation-done']=true;
       if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
       const emilyCasualProgress=normalizeEmilyCasualProgress(localStorage.getItem(`spr-emily-casual-progress:${playerStorageId}`));
@@ -2617,7 +2619,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-first-conversation-done'||r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -7595,7 +7597,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoBullDecline.textContent='闘牛場を出る';
       hernandoBullKnife?.classList.toggle('hidden',belongingCount('mysteryKnife')<1);
     }
+    function hasFinishedHernandoFirstConversation(){
+      return localStorage.getItem(`spr-hernando-first-conversation-done:${playerStorageId}`)==='1'||windowSprFlagCache['hernando-first-conversation-done']===true||windowSprFlagCache['hernando-knife-event-seen']===true;
+    }
+    function markHernandoFirstConversationDone(){
+      localStorage.setItem(`spr-hernando-first-conversation-done:${playerStorageId}`,'1');
+      windowSprFlagCache['hernando-first-conversation-done']=true;
+      setRemoteFlag('hernando-first-conversation-done',true).catch(e=>console.warn('Hernando conversation sync',e));
+    }
     function beginHernandoDialogue(visit){
+      if(hasFinishedHernandoFirstConversation())visit=Math.max(2,Number(visit)||2);
       hernandoDrinkRoundNo=1;hernandoPoisonChoice='';hernandoDrinkGame?.classList.add('hidden');
       const key=visit<=1?1:(visit===2?2:3),script=HERNANDO_DIALOGUE[key];
       hernandoBullAccept.classList.remove('hidden');
@@ -7633,7 +7644,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       closeHernandoArena(false);
       try{await window.sprApplyNgGimmick?.('エルナンドの反撃')}catch(error){console.warn('Hernando knife life sync',error)}
       const message=document.createElement('div');
-      message.textContent='気がつくと部屋のベッドに横たわっていた。\n何かあったのか、思い出せない。';
+      message.textContent='気がつくと部屋のベッドに横たわっていた。\n何があったのか、思い出せない。';
       message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
       scene.append(message);window.sprFitBlackoutLines(message);requestAnimationFrame(()=>{message.style.opacity='1'});
       await new Promise(resolve=>setTimeout(resolve,700));
@@ -7734,6 +7745,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(hernandoDialogueTyping){finishHernandoDialogueLine();return}
       if(hernandoDialogueIndex<hernandoDialogueLines.length-1){hernandoDialogueIndex++;showHernandoDialogueLine(hernandoDialogueLines[hernandoDialogueIndex]);return}
       if(hernandoDialogueAfter==='choice'){
+        if(hernandoDialogueMode==='intro'&&hernandoDialogue.dataset.visitGroup==='1')markHernandoFirstConversationDone();
         hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');
         hernandoBullKnife?.classList.toggle('hidden',belongingCount('mysteryKnife')<1);return;
       }
@@ -7776,6 +7788,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoBullKnife.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
+        markHernandoFirstConversationDone();
         hernandoDialogueTypeToken++;hernandoDialogueTyping=false;
         hernandoDialogue.classList.add('hidden');
         hernandoDialogueChoices.classList.add('hidden');
@@ -9519,7 +9532,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   });
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')).forEach(k=>delete windowSprFlagCache[k]);}}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-first-conversation-done'];delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')).forEach(k=>delete windowSprFlagCache[k]);}}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
