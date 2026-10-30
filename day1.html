@@ -7940,7 +7940,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             return;
           }
           if(!hasClosetFoodKey()){
-            setExploreMessage('パールテラスで「ラボ・デ・トロ」を注文してから、もう一度クローゼットを調べてみよう。');
+            setExploreMessage('クローゼットを調べた。特に変わったところはない。');
             return;
           }
           const count=closetSearchCount()+1;localStorage.setItem(closetSearchKey(),String(count));setRemoteFlag(`closet-search:${activeRoom}`,count).catch(e=>console.warn('closet search sync',e));
@@ -8261,6 +8261,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomServiceFoodGalleryQueue=[];roomServiceFoodGalleryIndex=0;saveRoomServiceFoodGallery();
       roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');
       if(roomServiceFoodImage)roomServiceFoodImage.removeAttribute('src');
+      window.__sprArthurMealGalleryClosed?.();
     }
     roomServiceFoodClose?.addEventListener('click',advanceRoomServiceFoodGallery);
     function normalizeRoomServiceDeliveryOrder(row){
@@ -8300,6 +8301,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         roomServiceDeliveryNotice.classList.remove('hidden');
       }
       showRoomServiceFoodGallery(fresh);
+      window.__sprArthurMealReceived?.(fresh);
       updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();
       return true;
     }
@@ -11482,7 +11484,18 @@ window.addEventListener('message',e=>{
    if(otterBaseImage.complete&&otterBaseImage.naturalWidth>0)otterFrame.classList.add('otter-active');
    if(otterBlinkImage.complete&&otterBlinkImage.naturalWidth>0)otterBlinkImage.style.display='block';
  }
+ let arthurArrivalDismissTimer=null;
+ const arthurArrivalStyle=document.createElement('style');
+ arthurArrivalStyle.textContent=`
+ #storyEventModal.arthur-arrival-only{background:rgba(0,0,0,.2)!important;color:#34404a!important}
+ #storyEventModal.arthur-arrival-only section{width:min(380px,calc(100% - 40px))!important;max-height:none!important;overflow:visible!important;padding:22px 18px!important;border:1px solid #e3e3e3!important;background:#fff!important;color:#34404a!important;box-shadow:0 8px 24px rgba(0,0,0,.12)!important}
+ #storyEventModal.arthur-arrival-only small,#storyEventModal.arthur-arrival-only #storyTitle,#storyEventModal.arthur-arrival-only #storyImage,#storyEventModal.arthur-arrival-only #storyChoices,#storyEventModal.arthur-arrival-only #storyClose{display:none!important}
+ #storyEventModal.arthur-arrival-only #storyBody{margin:0!important;color:#34404a!important;font:15px/1.6 "Yu Mincho","Hiragino Mincho ProN",serif!important;letter-spacing:.02em}
+ `;
+ document.head.append(arthurArrivalStyle);
  function open(t,b,opts=[],image=''){
+   if(arthurArrivalDismissTimer){clearTimeout(arthurArrivalDismissTimer);arthurArrivalDismissTimer=null}
+   modal.classList.remove('arthur-arrival-only');
    title.textContent=t;body.textContent=b;choices.replaceChildren();hideOtterAnimation();
    storyImage.hidden=true;storyImage.style.display='none';storyImage.removeAttribute('src');storyImage.alt='';
    if(image){
@@ -11494,7 +11507,14 @@ window.addEventListener('message',e=>{
    for(const o of opts){const x=document.createElement('button');x.textContent=o.label;x.style.cssText='padding:13px;border:1px solid #c9aa68;background:#fff;color:#10243a;font:14px "Yu Mincho",serif';x.onclick=o.run;choices.append(x);}
    modal.style.display='flex';
  }
- const close=()=>{hideOtterAnimation();modal.style.display='none';};modal.querySelector('#storyClose').onclick=close;
+ const close=()=>{if(arthurArrivalDismissTimer){clearTimeout(arthurArrivalDismissTimer);arthurArrivalDismissTimer=null}modal.classList.remove('arthur-arrival-only');hideOtterAnimation();modal.style.display='none';};modal.querySelector('#storyClose').onclick=close;
+ function openArthurArrivalNotice(){
+   if(arthurArrivalDismissTimer){clearTimeout(arthurArrivalDismissTimer);arthurArrivalDismissTimer=null}
+   title.textContent='';body.textContent='Arthur Greyが入室しました。';choices.replaceChildren();hideOtterAnimation();
+   storyImage.hidden=true;storyImage.style.display='none';storyImage.removeAttribute('src');storyImage.alt='';
+   modal.classList.add('arthur-arrival-only');modal.style.display='flex';
+   arthurArrivalDismissTimer=setTimeout(close,3600);
+ }
 
  // 異変動物のうち、全身画像を出さない場面に使う暗転演出。
  const anomalyScene=document.createElement('div');anomalyScene.id='anomalyAnimalScene';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
@@ -12704,12 +12724,12 @@ window.addEventListener('message',e=>{
    "It's still sleeping beneath us.",
    "Please... don't let it wake."
  ];
- let arthurArrived=false,arthurConversationStarted=false,arthurOrderPlaced=false,arthurRoom='',arthurDay=0;
+ let arthurArrived=false,arthurConversationStarted=false,arthurOrderPlaced=false,arthurMealGalleryPending=false,arthurRoom='',arthurDay=0;
  let arthurChatTimers=[];
  function arthurPlayerKey(){return encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest')}
  function arthurDayKey(kind,targetDay=day){return `spr-arthur-${kind}:${arthurPlayerKey()}:day${targetDay}`}
  function clearArthurChatTimers(){arthurChatTimers.forEach(timer=>clearTimeout(timer));arthurChatTimers=[]}
- function resetArthurRuntimeForDay(){clearArthurChatTimers();arthurArrived=false;arthurConversationStarted=false;arthurOrderPlaced=false;arthurRoom='';window.__sprArthurRoom='';arthurDay=day}
+ function resetArthurRuntimeForDay(){clearArthurChatTimers();arthurArrived=false;arthurConversationStarted=false;arthurOrderPlaced=false;arthurMealGalleryPending=false;arthurRoom='';window.__sprArthurRoom='';arthurDay=day}
  function removeArthurOccupancy(){
    const list=document.getElementById('roomOccupancyNames');
    const row=[...(list?.querySelectorAll('.room-occupancy-person')||[])].find(item=>item.textContent==='Arthur Grey');
@@ -12729,7 +12749,7 @@ window.addEventListener('message',e=>{
    if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
    const list=document.getElementById('roomOccupancyNames');
    if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
-   open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。');
+   openArthurArrivalNotice();
    setTimeout(()=>{if(arthurArrived&&arthurRoom===String(window.__sprActiveRoom))window.__sprSendArthurChat?.(arthurRoom,'How did you get to this resort?')},900);
  }
  setInterval(checkArthur,1500);
@@ -12740,11 +12760,28 @@ window.addEventListener('message',e=>{
    ARTHUR_LINES.forEach((line,index)=>{const timer=setTimeout(()=>{if(arthurArrived&&String(window.__sprActiveRoom)===arthurRoom)window.__sprSendArthurChat?.(arthurRoom,line)},1300+index*2300);arthurChatTimers.push(timer)});
  }
  window.__sprArthurOrderPlaced=(room,items,playerId)=>{
-   if(!arthurArrived||!arthurConversationStarted||String(room)!==arthurRoom||String(window.__sprActiveRoom)!==arthurRoom)return false;
+   if(!arthurArrived||String(room)!==arthurRoom||String(window.__sprActiveRoom)!==arthurRoom)return false;
    const orderedBy=String(localStorage.getItem('spr-player-id')||'');
    if(orderedBy&&String(playerId)!==orderedBy)return false;
    if(!Array.isArray(items)||!items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0))return false;
    arthurOrderPlaced=true;localStorage.setItem(arthurDayKey('ordered'),'1');return true;
+ };
+ window.__sprArthurMealReceived=orders=>{
+   const playerId=String(localStorage.getItem('spr-player-id')||'');
+   if(day<4||day>6||localStorage.getItem(arthurDayKey('ended'))==='1'||!Array.isArray(orders))return;
+   const received=orders.find(order=>String(order?.room||'')===String(arthurRoom||order?.room||'')&&(!playerId||String(order?.playerId||'')===playerId)&&Array.isArray(order?.items)&&order.items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0));
+   if(!received||(!arthurOrderPlaced&&localStorage.getItem(arthurDayKey('ordered'))!=='1'))return;
+   if(!arthurRoom){arthurRoom=String(received.room);window.__sprArthurRoom=arthurRoom}
+   arthurArrived=true;arthurOrderPlaced=true;arthurMealGalleryPending=true;
+ };
+ window.__sprArthurMealGalleryClosed=()=>{
+   if(!arthurMealGalleryPending)return;
+   arthurMealGalleryPending=false;
+   const room=arthurRoom||window.__sprActiveRoom;if(!room||String(window.__sprActiveRoom)!==String(room))return;
+   localStorage.setItem(arthurDayKey('ended'),'1');
+   setTimeout(()=>window.__sprSendArthurChat?.(room,'46 38 125 57'),1200);
+   setTimeout(()=>window.__sprSendArthurChat?.(room,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);
+   setTimeout(()=>{if(String(window.__sprActiveRoom)===String(room))open('Arthur Grey','The room fell silent. Arthur Grey was gone.');removeArthurOccupancy();arthurArrived=false;arthurRoom='';window.__sprArthurRoom=''},5600);
  };
  window.__sprArthurOnRoomLeave=room=>{
    if(!arthurArrived||String(room)!==arthurRoom)return;
@@ -12756,17 +12793,6 @@ window.addEventListener('message',e=>{
    }
  };
  document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';beginArthurConversation(msg)},{capture:true});
- document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{
-   arthurConversationStarted=arthurConversationStarted||localStorage.getItem(arthurDayKey('conversation'))==='1';
-   arthurOrderPlaced=arthurOrderPlaced||localStorage.getItem(arthurDayKey('ordered'))==='1';
-   if(day<4||day>6||!arthurOrderPlaced||!arthurConversationStarted)return;
-   const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/デミグラスオムライス|オムライス/.test(food))return;
-   const room=arthurRoom||window.__sprActiveRoom;if(!room)return;
-   localStorage.setItem(arthurDayKey('ended'),'1');
-   setTimeout(()=>window.__sprSendArthurChat?.(room,'46 38 125 57'),1200);
-   setTimeout(()=>window.__sprSendArthurChat?.(room,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);
-   setTimeout(()=>{if(String(window.__sprActiveRoom)===String(room))open('Arthur Grey','The room fell silent. Arthur Grey was gone.');removeArthurOccupancy();arthurArrived=false;arthurRoom='';window.__sprArthurRoom=''},5600);
- },450));
  // Day6〜7: 海に心を奪われたスタッフ。ビーチの望遠鏡は専用の断絶演出。
  const staff=[
    '波の音を聴いていると、帰る時間が少し惜しくなりませんか。私どもも、つい時を忘れてしまうんです。',
