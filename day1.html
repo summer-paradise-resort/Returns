@@ -829,7 +829,7 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 /* EMILY CASUAL CONVERSATION — move only the button; preserve the gallery photograph's
    original 16:9 size, transform, position and grid layout exactly. */
-#casinoEmilyTalk:not(.hidden){
+#casinoEmilyTalk:not(.hidden),#casinoEmilyKnife:not(.hidden){
   /* Absolute positioning never affects the gallery's 16:9 image or its grid. */
   position:absolute;z-index:9;transform:none;
   box-shadow:0 6px 16px rgba(0,0,0,.35);
@@ -1272,6 +1272,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 .spr-dialogue-controls > *{grid-area:1 / 1;align-self:end}
 .spr-dialogue-controls > button.hidden{display:block!important;visibility:hidden!important;pointer-events:none!important}
 .spr-dialogue-controls:has(> div:not(.hidden)) > button.hidden{display:none!important}
+.spr-dialogue-controls > button.spr-dialogue-typing{visibility:hidden!important;pointer-events:none!important}
 .spr-dialogue-controls .spr-pending-choices{visibility:hidden!important;pointer-events:none!important}
 </style>
 </head>
@@ -1885,10 +1886,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div id="casinoGalleryDots" class="casino-gallery-dots" aria-label="館内写真一覧"></div>
         <div class="casino-gallery-actions">
           <button id="casinoEmilyTalk" class="casino-emily-talk hidden" type="button">運のみぞ知ると話す</button>
+          <button id="casinoEmilyKnife" class="casino-emily-talk hidden" type="button">運のみぞ知るを刺す</button>
           <span id="casinoEmilyTalkSpacer" class="casino-emily-talk-spacer hidden" aria-hidden="true"></span>
         </div>
       </div>
-      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div><div class="casino-elevator-alert">NO SIGNAL // BLUE SHELL</div></div>
+      <div id="casinoElevatorGlitch" class="casino-elevator-glitch" aria-hidden="true"><div class="casino-elevator-noise a"></div><div class="casino-elevator-noise b"></div><div class="casino-elevator-scanlines"></div></div>
       <audio id="casinoElevatorGlitchSound" src="casino.glitch.mp3" preload="none"></audio>
       <div id="casinoElevatorVideo" class="casino-elevator-video" aria-hidden="true">
         <button id="casinoElevatorVideoClose" class="casino-elevator-video-close hidden" type="button" aria-label="動画を閉じる">×</button>
@@ -3869,13 +3871,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const left=Math.max(10,r.left-g.left+12);
       btn.style.left=`${left}px`;
       btn.style.width=`${Math.max(160,Math.min(g.width-left-10,r.width-24))}px`;
-      btn.style.top=`${Math.max(56,Math.min(g.height-55,r.bottom-g.top+11))}px`;
+      const knife=document.getElementById('casinoEmilyKnife');
+      const hasKnife=knife&&!knife.classList.contains('hidden');
+      const top=Math.max(56,Math.min(g.height-(hasKnife?107:55),r.bottom-g.top+11));
+      btn.style.top=`${top}px`;
+      if(hasKnife){knife.style.left=btn.style.left;knife.style.width=btn.style.width;knife.style.top=`${top+btn.getBoundingClientRect().height+10}px`;}
+
     }
     function syncEmilyTalkButton(){
       const btn=document.getElementById('casinoEmilyTalk');
       const spacer=document.getElementById('casinoEmilyTalkSpacer');
       const hidden=!isEmilyTalkGallerySlide()||!hasSeenFirstEmilyInvitation();
       btn?.classList.toggle('hidden',hidden);
+      const knife=document.getElementById('casinoEmilyKnife');
+      knife?.classList.toggle('hidden',hidden||belongingCount('mysteryKnife')<1);
       spacer?.classList.toggle('hidden',hidden);
       const dialogue=document.getElementById('casinoEmilyConversation');
       if(hidden&&dialogue&&!dialogue.classList.contains('hidden')&&typeof closeEmilyCasualDialogue==='function')closeEmilyCasualDialogue();
@@ -3925,6 +3934,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(emilyCasualTypingTimer!==null)clearTimeout(emilyCasualTypingTimer);
       emilyCasualTypingTimer=null;
       emilyCasualTyping=false;
+      emilyCasualNext.classList.remove('spr-dialogue-typing');emilyCasualNext.disabled=false;
       emilyCasualOnComplete=null;
     }
     function closeEmilyCasualDialogue(){
@@ -3961,6 +3971,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
       emilyCasualNext.textContent='NEXT　›';
       emilyCasualNext.classList.toggle('hidden',!showNext);
+      emilyCasualNext.classList.add('spr-dialogue-typing');emilyCasualNext.disabled=true;
       emilyCasualText.replaceChildren();
       const chars=Array.from(String(line));
       emilyCasualSpans=chars.map(char=>{
@@ -4027,25 +4038,32 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function emilyCasualAfterGreeting(){
       emilyCasualChoiceButtons([
         {label:'CLOSE',click:closeEmilyCasualDialogue},
-        ...(belongingCount('mysteryKnife')>0?[{label:'エミリーを刺す',click:emilyCasualKnifeConfirm}]:[])
+        ...(belongingCount('mysteryKnife')>0?[{label:'運のみぞ知るを刺す',click:emilyCasualKnifeConfirm}]:[])
       ]);
     }
-    function emilyCasualKnifeConfirm(){
-      emilyCasualSay('───まあ……その手に持っているものは、何かしら？',null,{showNext:false});
-      emilyCasualChoiceButtons([
-        {label:'ナイフを使用する',click:()=>void emilyCasualUseKnife()},
-        {label:'やめる',click:emilyCasualAfterGreeting}
-      ]);
-    }
+    let emilyKnifeSequenceActive=false;
+    function emilyCasualKnifeConfirm(){void emilyCasualUseKnife()}
     async function emilyCasualUseKnife(){
+      if(emilyKnifeSequenceActive)return;
+      emilyKnifeSequenceActive=true;
       emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
+      const knifeButton=document.getElementById('casinoEmilyKnife');
+      if(knifeButton)knifeButton.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
-        await playKnifeStabSound();
+        closeEmilyCasualDialogue();
+        syncEmilyTalkButton();
         casinoBgm.pause();
+        void playKnifeStabSound();
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
-      }catch(e){console.warn('Emily knife',e)}
-      emilyCasualSay('あら………？',()=>emilyCasualSay(
+        await new Promise(resolve=>setTimeout(resolve,2000));
+        emilyCasualOverlay.classList.remove('hidden');emilyCasualOverlay.setAttribute('aria-hidden','false');
+      }catch(e){
+        console.warn('Emily knife',e);syncEmilyTalkButton();return;
+      }finally{
+        emilyKnifeSequenceActive=false;if(knifeButton)knifeButton.disabled=false;
+      }
+      emilyCasualSay('………あら？',()=>emilyCasualSay(
         'ナイフを刺された女は、血を流すどころか痛みの感覚すらないようだ。',
         ()=>{
           startCasinoMusic();
@@ -4066,6 +4084,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // NO casinoBgm.pause(), specialBgm.play(), fullscreen specialOverlay.
     }
     document.getElementById('casinoEmilyTalk')?.addEventListener('click',()=>void talkToEmilyAgain());
+    document.getElementById('casinoEmilyKnife')?.addEventListener('click',()=>{
+      if(!isEmilyTalkGallerySlide()||!hasSeenFirstEmilyInvitation())return;
+      if(belongingCount('mysteryKnife')<1){syncEmilyTalkButton();return;}
+      emilyCasualOverlay.classList.remove('hidden');emilyCasualOverlay.setAttribute('aria-hidden','false');
+      emilyCasualKnifeConfirm();
+    });
     async function resolveSpecialPlayerId(){
       // SECURITY CHECKで入力した名前をプレイヤー識別の基準にする。
       // Supabase内部でUUIDが必要なテーブルには、この名前に対応するplayers.idを自動取得／作成して使用する。
@@ -9020,6 +9044,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function mysteryConsumeKnifeForNpc(){return mysteryConsumeInventory('mysteryKnife')}
 
     function renderRoomBelongings(){
+      if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton();
       if(!roomBelongingsList)return;const belongings=loadBelongings();roomBelongingsList.replaceChildren();let hasAny=true;
       const lives=remainingLives();
       const lifeRow=document.createElement('div');lifeRow.className='belongings-item life-row';
