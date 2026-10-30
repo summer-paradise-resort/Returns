@@ -3953,15 +3953,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
-      // 通常のSPECIAL TABLE招待では、会話の開始から専用BGMを流す。
-      // iOS Safariが自動再生を拒否した場合は、招待画面の最初のタップで再試行する。
-      if(!royalInvitation){
-        const started=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-        if(!started&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-          const unlockSpecialInvitationBgm=()=>{void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})};
-          specialOverlay.addEventListener('pointerdown',unlockSpecialInvitationBgm,{once:true});
-        }
-      }
       await sleep(1800);
       const lines=royalInvitation?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
         randomOpener(),
@@ -3972,6 +3963,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       for(let index=0;index<lines.length;index++){
         const speaker=royalInvitation||index===lines.length-1?'運のみぞ知る':'UNKNOWN';
         await specialSay(speaker,lines[index],0,true);
+      }
+      // 通常のSPECIAL TABLE招待は、最後のセリフを見届けた直後に専用BGMを開始する。
+      // iOS Safariが自動再生を拒否した場合は、次の画面タップで再試行する。
+      if(!royalInvitation){
+        const started=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(!started&&localStorage.getItem('spr-bgm-enabled')!=='off'){
+          const unlockSpecialInvitationBgm=()=>{void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})};
+          specialOverlay.addEventListener('pointerdown',unlockSpecialInvitationBgm,{once:true});
+        }
       }
       const accepted=await new Promise(resolve=>{
         let decided=false;
