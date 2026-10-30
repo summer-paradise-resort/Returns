@@ -3948,7 +3948,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       localStorage.setItem(emilyMetFlagKey,'1');setRemoteFlag('emily-met',true).catch(e=>console.warn('Emily meet sync',e));syncEmilyTalkButton();
       if(!specialOverlay){specialInvitationDecisionPending=false;return}
       seriousEmilyMode=royalInvitation;
-      specialSpeaker.textContent='運のみぞ知る';
+      specialSpeaker.textContent=royalInvitation?'運のみぞ知る':'UNKNOWN';
       casinoBgm.pause();specialBgm.pause();
       specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
@@ -3959,7 +3959,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         'どうせ賭けるのなら、失った時に後悔するくらいの方が、楽しいでしょう？',
         'あなたが今、手にしているもの。全部。'
       ];
-      for(const line of lines)await specialSay('運のみぞ知る',line,0,true);
+      for(let index=0;index<lines.length;index++){
+        const speaker=royalInvitation||index===lines.length-1?'運のみぞ知る':'UNKNOWN';
+        await specialSay(speaker,lines[index],0,true);
+      }
       const accepted=await new Promise(resolve=>{
         let decided=false;
         for(const [label,value] of [['オールインを受ける',true],['受けない',false]]){
