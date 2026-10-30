@@ -2050,7 +2050,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // Player display name is the shared identity, not browser/device ID.
     window.__sprNamedEvents=(()=>{
       const name=String(storedGuestName||'').trim(),key=`spr-named-events:${encodeURIComponent(name)}`;
-      let cache={},init=null,notified=false;
+      let cache={},init=null,notified=false,resetScope="",generation=0;
       const legacy=()=>{
         const out={},pid=encodeURIComponent(localStorage.getItem('spr-player-id')||name),n=encodeURIComponent(name);
         for(const file of ['lighthouse_day_telescope.mp4','beach_night_diving.mp4','mermaids_cove_night_diving.mp4'])
@@ -2068,24 +2068,37 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       function remember(id,value=1){cache[id]=Math.max(Number(cache[id])||0,value);localStorage.setItem(key,JSON.stringify(cache))}
       async function refresh(migrate=false){
         if(!name||!window.supabaseClientSpecial)throw Error('閲覧記録の接続を確認できません。');
-        const {data,error}=await window.supabaseClientSpecial.rpc('spr_named_events',{p_name:name,p_legacy:migrate?legacy():{}});
+        const ticket=generation;
+        const {data:markers,error:markerError}=await window.supabaseClientSpecial.from('resort_announcements').select('id,created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1);
+        if(markerError)throw markerError;
+        const marker=markers?.[0];
+        const scope=marker?'reset:'+String(marker.id||marker.created_at)+':':'';
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_named_events',{p_name:name,p_legacy:migrate&&!scope?legacy():{}});
         if(error)throw error;
-        cache=data||{};localStorage.setItem(key,JSON.stringify(cache));return cache;
+        if(ticket!==generation)return cache;
+        resetScope=scope;cache={};
+        for(const [id,value] of Object.entries(data||{})){
+          if(scope){if(id.startsWith(scope))cache[id.slice(scope.length)]=value}
+          else if(!id.startsWith('reset:'))cache[id]=value;
+        }
+        localStorage.setItem(key,JSON.stringify(cache));return cache;
       }
       function ready(){if(!init)init=refresh(true).catch(error=>{init=null;throw error});return init}
       function report(error){console.warn('named event history',error);if(!notified){notified=true;alert('閲覧記録を確認できないため、イベントを開始できません。通信状態と追加SQLの適用を確認してください。')}}
       async function advance(id,expected,next){
         try{
           await ready();
-          const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_named_event',{p_name:name,p_key:id,p_expected:expected,p_next:next});
+          const ticket=generation,scope=resetScope;
+          const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_named_event',{p_name:name,p_key:scope+id,p_expected:expected,p_next:next});
           if(error)throw error;
+          if(ticket!==generation||scope!==resetScope)return false;
           cache[id]=Number(data?.progress)||0;localStorage.setItem(key,JSON.stringify(cache));return data?.claimed===true;
         }catch(error){report(error);return false}
       }
       async function read(id){try{await ready();await refresh();return Number(cache[id])||0}catch(error){report(error);return 3}}
       setTimeout(()=>void ready().catch(error=>console.warn('named history initialization',error)),0);
       window.addEventListener('focus',()=>void refresh().catch(()=>{}));
-      window.addEventListener('spr:world-reset-completed',()=>{cache={};init=null;localStorage.removeItem(key)});
+      window.addEventListener('spr:world-reset-completed',()=>{generation++;cache={};init=null;resetScope='';localStorage.removeItem(key)});
       return {ready,remember,stage:id=>Number(cache[id])||0,seen:id=>Number(cache[id])>0,advance,claim:id=>advance(id,0,1),read};
     })();
 
