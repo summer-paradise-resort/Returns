@@ -673,23 +673,6 @@
     /* TOUCH / SCROLL FIX 2026-10-03:
        Tappable images must not block vertical page scrolling.
        Swipe galleries keep horizontal swipe handling while the browser owns vertical pan. */
-    /* 501専用暗室。写真は一切表示せず、時間帯にかかわらず完全な黒背景にする。 */
-    .room-scene[data-scene="darkroom"],.room-scene[data-scene="darkroom"] figure{background:#000!important}
-    .room-scene[data-scene="darkroom"] .room-photo-area,.room-scene[data-scene="darkroom"] .room-photo-shade{display:none!important}
-    .room-scene[data-scene="darkroom"] .room-overlay-top{background:linear-gradient(180deg,rgba(0,0,0,.82),transparent)}
-    .room-scene[data-scene="darkroom"] .room-overlay-bottom{background:linear-gradient(0deg,#000 10%,rgba(0,0,0,.85) 72%,transparent)}
-    .villa-darkroom-console{position:absolute;z-index:9;top:20%;left:14px;right:14px;bottom:33%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;overflow-y:auto;overscroll-behavior:contain;padding:10px 5px 20px;color:#ddd;text-align:center}
-    .villa-darkroom-console.hidden{display:none!important}
-    .villa-darkroom-caption{font:11px Georgia,serif;letter-spacing:.26em;color:#bca67e}
-    .villa-darkroom-status{min-height:2em;font-size:11px;line-height:1.7;color:#c3c3c3}
-    .villa-darkroom-peer-status{color:#d2b787;font-size:10px;line-height:1.55;min-height:14px;text-align:center;letter-spacing:.03em}
-    .villa-darkroom-command-grid{width:min(420px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-    .villa-darkroom-command-grid.hidden{display:none!important}
-    .villa-darkroom-command-grid button{min-height:38px;padding:7px 3px;border:1px solid rgba(210,187,141,.43);border-radius:4px;background:rgba(24,24,24,.9);color:#f4e6cb;font-size:12px;letter-spacing:.04em}
-    .villa-darkroom-command-grid button[aria-pressed="true"]{background:#725932;border-color:#edcf91;color:#fff}
-    .villa-darkroom-command-grid button[data-darkroom-command="stop"]{grid-column:1/-1;color:#fff;border-color:#9b6969;background:#3a2222}
-    .villa-darkroom-unlock{min-height:35px;padding:7px 17px;border:1px solid rgba(219,198,147,.65);background:#41331d;color:#fff;font-size:11px}
-    @media(max-height:690px){.villa-darkroom-console{top:15%;bottom:39%;gap:5px}.villa-darkroom-command-grid{gap:4px}.villa-darkroom-command-grid button{min-height:34px}}
     .room-scene{touch-action:pan-y}
     .room-photo-area{touch-action:pan-x pinch-zoom}
     .collection-card:not(.missing),.bar-menu-zoom-trigger{touch-action:manipulation}
@@ -1388,8 +1371,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <audio id="villaPoolInAudio" src="pool_in.mp3" preload="none" playsinline></audio>
         <audio id="villaPoolNowAudio" src="pool_now.mp3" preload="none" playsinline></audio>
         <audio id="villaPoolOutAudio" src="pool_out.mp3" preload="none" playsinline></audio>
-        <audio id="villaDarkroomBgm" src="villa_darkroom_bgm.mp3" preload="none" loop playsinline></audio>
-        <audio id="villaDarkroomEffect" preload="none" loop playsinline></audio>
         <div id="roomServiceFoodGallery" class="room-service-food-gallery hidden" role="dialog" aria-modal="true" aria-label="届いたお食事" aria-hidden="true">
           <div class="room-service-food-stage">
             <div class="room-service-food-kicker">ROOM SERVICE — DELIVERED</div>
@@ -1475,30 +1456,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
                 <button id="chatOpenButton" class="room-chat-open" type="button"><span>この客室で話す</span><span id="chatUnread" class="chat-unread hidden">0</span></button>
                 <button id="roomContextAction" class="room-context-action hidden" type="button"></button>
                 <div id="roomExploreResult" class="room-explore-result hidden" aria-live="polite"></div>
-                <button type="button" id="villaDarkroomRoomEnableSound" class="room-context-action hidden" style="grid-column:1/-1">🔊 共有音声を有効にする</button>
                 <button id="roomBelongingsOpen" class="room-belongings-open" type="button"><span>所持品</span></button><button id="roomCollectionOpen" class="room-collection-open hidden" type="button"><span>Collection</span></button>
               </div>
             </div>
           </figure>
-          <section id="villaDarkroomConsole" class="villa-darkroom-console hidden" aria-label="ヴィラの暗室" aria-live="off">
-            <div class="villa-darkroom-caption">ROYAL VILLA — DARK ROOM</div>
-            <div id="villaDarkroomStatus" class="villa-darkroom-status" aria-live="polite">音声の準備ができています。</div>
-            <div id="villaDarkroomPeerStatus" class="villa-darkroom-peer-status" aria-live="polite"></div>
-            <div id="villaDarkroomCommands" class="villa-darkroom-command-grid hidden" aria-label="暗室の音声操作">
-              <button type="button" data-darkroom-command="kiss1">キス1</button>
-              <button type="button" data-darkroom-command="kiss2">キス2</button>
-              <button type="button" data-darkroom-command="kiss3">キス3</button>
-              <button type="button" data-darkroom-command="slow">低速</button>
-              <button type="button" data-darkroom-command="medium">中速</button>
-              <button type="button" data-darkroom-command="fast">高速</button>
-              <button type="button" data-darkroom-command="fast2">高速2</button>
-              <button type="button" data-darkroom-command="fast3">高速3</button>
-              <button type="button" data-darkroom-command="fast4">高速4</button>
-              <button type="button" data-darkroom-command="mayo">マヨ</button>
-              <button type="button" data-darkroom-command="stop">止める</button>
-            </div>
-            <button type="button" id="villaDarkroomEnableSound" class="villa-darkroom-unlock hidden">音声を有効にする</button>
-          </section>
           <p id="roomImageError" class="room-image-error hidden" role="status">画像が見つかりません。写真ファイルもday1.htmlと同じ場所にアップロードしてください。</p>
           <nav id="roomSceneNav" class="room-scene-nav" aria-label="客室内を眺める" aria-hidden="true">
             <button type="button" data-room-scene="room" aria-pressed="true">部屋全体</button>
@@ -1509,7 +1470,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
             <button type="button" data-room-scene="closet" aria-pressed="false">クローゼット</button>
             <button type="button" data-room-scene="bathroom" aria-pressed="false">バスルーム</button>
-            <button type="button" data-room-scene="darkroom" aria-pressed="false">暗室</button>
           </nav>
         </div>
         <div id="roomFallback" class="room-fallback hidden">
@@ -1743,10 +1703,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               <button id="teaPartySend" type="button">送信</button>
             </div>
             <div id="teaTradeConfirmPanel" class="tea-party-box hidden" style="margin-top:14px">
-              <h4 style="margin:0 0 8px">コースター交換の成立記録</h4>
-              <p class="tea-party-note">実際に交換した相手と、双方で「交換を確認」を押すと、当日の交換成立として記録されます。現在のHTMLにはコースターの所有権を移す処理がないため、ここでは所持枚数は増減しません。</p>
+              <h4 style="margin:0 0 8px">コースター交換</h4>
+              <p class="tea-party-note">相手と交換するコースターを選びます。相手が承諾すると、選んだコースターを1枚ずつ交換します。交換できるのは2枚以上ある絵柄の余剰分です。</p>
               <select id="teaTradePartner" style="width:100%;min-height:43px;padding:7px 9px;border:1px solid #d8cfbf;background:#fff;color:#0d2743;font:inherit;font-size:13px"><option value="">交換相手を選択</option></select>
-              <button id="teaTradeConfirm" class="primary-btn" type="button" style="margin-top:9px">交換を確認</button>
+              <label style="display:block;margin-top:10px">渡すコースター<select id="teaTradeGive" style="width:100%;min-height:43px"></select></label><label style="display:block;margin-top:10px">受け取るコースター<select id="teaTradeReceive" style="width:100%;min-height:43px"></select></label><button id="teaTradeConfirm" class="primary-btn" type="button" style="margin-top:9px">交換を申し込む</button><div id="teaTradeRequests"></div>
               <p id="teaTradeStatus" class="tea-party-note" aria-live="polite" style="margin:10px 0 0"></p>
             </div>
             <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会の会話は、参加者だけに表示されます。</div>
@@ -2072,6 +2032,48 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       ? `?pid=${encodeURIComponent(handoffPlayerId)}&guest=${encodeURIComponent(handoffGuestName)}`
       : '';
     const playerStorageId=encodeURIComponent(storedGuestName||'guest');
+    // Player display name is the shared identity, not browser/device ID.
+    window.__sprNamedEvents=(()=>{
+      const name=String(storedGuestName||'').trim(),key=`spr-named-events:${encodeURIComponent(name)}`;
+      let cache={},init=null,notified=false;
+      const legacy=()=>{
+        const out={},pid=encodeURIComponent(localStorage.getItem('spr-player-id')||name),n=encodeURIComponent(name);
+        for(const file of ['lighthouse_day_telescope.mp4','beach_night_diving.mp4','mermaids_cove_night_diving.mp4'])
+          if(localStorage.getItem(`spr-day1-explore-video-seen:${pid}:${file}`)==='1')out['video:'+file]=1;
+        if(localStorage.getItem(`spr-lighthouse-evening-telescope-seen:${n}`)==='1')out['video:lighthouse_evening_telescope_anomaly.mp4']=1;
+        if(localStorage.getItem(`spr-lighthouse-dive-seen:${n}:day3-6`)==='1')out['lighthouse-dive']=1;
+        if(localStorage.getItem(`spr-hernando-intro-seen:${n}`)==='1')out['video:hernandos_bullring.mp4']=1;
+        for(const id of ['seabird','drifting-otter','giant-shadow','smoke-lizard','star-hedgehog','glass-fawn','black-horse']){
+          const prefix=`spr-anomaly-animal:${n}:`;
+          const stage=Math.max(Number(localStorage.getItem(prefix+id+'-stage'))||0,localStorage.getItem(prefix+id)==='1'?(id==='black-horse'?3:1):0);
+          if(stage)out['animal:'+id]=stage;
+        }
+        return out;
+      };
+      function remember(id,value=1){cache[id]=Math.max(Number(cache[id])||0,value);localStorage.setItem(key,JSON.stringify(cache))}
+      async function refresh(migrate=false){
+        if(!name||!window.supabaseClientSpecial)throw Error('閲覧記録の接続を確認できません。');
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_named_events',{p_name:name,p_legacy:migrate?legacy():{}});
+        if(error)throw error;
+        cache=data||{};localStorage.setItem(key,JSON.stringify(cache));return cache;
+      }
+      function ready(){if(!init)init=refresh(true).catch(error=>{init=null;throw error});return init}
+      function report(error){console.warn('named event history',error);if(!notified){notified=true;alert('閲覧記録を確認できないため、イベントを開始できません。通信状態と追加SQLの適用を確認してください。')}}
+      async function advance(id,expected,next){
+        try{
+          await ready();
+          const {data,error}=await window.supabaseClientSpecial.rpc('spr_claim_named_event',{p_name:name,p_key:id,p_expected:expected,p_next:next});
+          if(error)throw error;
+          cache[id]=Number(data?.progress)||0;localStorage.setItem(key,JSON.stringify(cache));return data?.claimed===true;
+        }catch(error){report(error);return false}
+      }
+      async function read(id){try{await ready();await refresh();return Number(cache[id])||0}catch(error){report(error);return 3}}
+      setTimeout(()=>void ready().catch(error=>console.warn('named history initialization',error)),0);
+      window.addEventListener('focus',()=>void refresh().catch(()=>{}));
+      window.addEventListener('spr:world-reset-completed',()=>{cache={};init=null;localStorage.removeItem(key)});
+      return {ready,remember,stage:id=>Number(cache[id])||0,seen:id=>Number(cache[id])>0,advance,claim:id=>advance(id,0,1),read};
+    })();
+
     const belongingsKey=`spr-belongings:${playerStorageId}`;
     const coasterInventoryKey=`spr-cafe-coasters:${playerStorageId}`;
     if(!localStorage.getItem(coasterInventoryKey)&&localStorage.getItem('spr-cafe-coasters'))localStorage.setItem(coasterInventoryKey,localStorage.getItem('spr-cafe-coasters'));
@@ -2533,7 +2535,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           const cards=loadCoasterInventory().filter(x=>x&&pendingSet.has(String(x.client_id||'')));
           const batchIds=new Set(cards.map(x=>String(x.client_id)));
           if(cards.length){
-            const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(cafeCoasterRemoteRows(cards,playerId),{onConflict:'client_id'});
+            const {error}=await window.supabaseClientSpecial.rpc('spr_store_coasters',{p_player_id:playerId,p_cards:cafeCoasterRemoteRows(cards,playerId)});
             if(error)throw error;
           }
           // 送信済みIDのみ削除する。通信中に追加された別のカードは次の周回で送る。
@@ -2548,7 +2550,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const inv=loadCoasterInventory();let changed=false;
       inv.forEach(x=>{if(!x.client_id){x.client_id=sprSafeUuid();changed=true}});if(changed)localStorage.setItem(coasterInventoryKey,JSON.stringify(inv));
       if(inv.length){
-        const {error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').upsert(cafeCoasterRemoteRows(inv,playerId),{onConflict:'client_id'});
+        const {error}=await window.supabaseClientSpecial.rpc('spr_store_coasters',{p_player_id:playerId,p_cards:cafeCoasterRemoteRows(inv,playerId)});
         if(error)throw error;
         const syncedIds=new Set(inv.map(x=>String(x.client_id)));
         updatePendingCafeCoasterIds(loadPendingCafeCoasterIds().filter(id=>!syncedIds.has(id)));
@@ -2613,25 +2615,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         else if(Object.keys(localBarState).length){barState={...localBarState};for(const rec of Object.values(barState)){if(rec&&rec.serviceDate&&rec.period)await persistBarOrderRemote(rec)}}
         localStorage.setItem(barDrinkStorageKey,JSON.stringify(barState));
 
-        let coasters=[];
-        if((coRes.data||[]).length){
-          coasters=(coRes.data||[]).map(r=>({client_id:r.client_id,venue:r.venue,file:r.file,meal:r.meal,drink:r.drink,at:r.acquired_at}));
-          // データベース読み込み中に取得したカードも消さず、未送信分だけ合流。
-          const serverIds=new Set(coasters.map(x=>String(x.client_id)));
-          const pendingSet=new Set(loadPendingCafeCoasterIds());
-          loadCoasterInventory().forEach(x=>{
-            // DB読み込み中に新規獲得した分は、すでに送信成功していても消さない。
-            const id=String(x?.client_id||'');
-            if(id&&(pendingSet.has(id)||!coastersBeforeHydrationIds.has(id))&&!serverIds.has(id)){coasters.push(x);serverIds.add(id)}
-          });
-        }
-        else if(localCoasters.length||loadCoasterInventory().length){
-          coasters=loadCoasterInventory().map(x=>({...x,client_id:x.client_id||sprSafeUuid()}));
-          localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
-          await bootstrapCafeCoastersSnapshot();
-        }
-        localStorage.setItem(coasterInventoryKey,JSON.stringify(coasters));
-        void syncPendingCafeCoasters();
+        await syncPendingCafeCoasters();
+        await refreshOwnedCoasters();
 
         if(typeof renderPrizeCounter==='function')renderPrizeCounter();if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(typeof renderBarOrderState==='function')renderBarOrderState();if(typeof updateCollectionButton==='function')updateCollectionButton();if(typeof renderRoomCollection==='function'&&activeRoom)renderRoomCollection();if(typeof renderTeaExchange==='function')renderTeaExchange();if(typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();if(typeof startRoomServiceHorrorStay==='function'&&activeRoom)startRoomServiceHorrorStay();
         return true;
@@ -2640,12 +2625,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
 
     let activeTeaPartyId='',teaPartyChannel=null;
-    // 茶会の参加者双方による「コースター交換成立の確認」をチャットログに残す。
-    // 実際のカード所有権移動は既存HTMLに未実装。確認だけでは所持数を増減させない。
-    const teaTradeConfirmPanel=document.getElementById('teaTradeConfirmPanel');
-    const teaTradePartner=document.getElementById('teaTradePartner');
-    const teaTradeConfirm=document.getElementById('teaTradeConfirm');
-    const teaTradeStatus=document.getElementById('teaTradeStatus');
+    const teaTradeConfirmPanel=document.getElementById('teaTradeConfirmPanel'),teaTradePartner=document.getElementById('teaTradePartner'),teaTradeConfirm=document.getElementById('teaTradeConfirm'),teaTradeStatus=document.getElementById('teaTradeStatus');
     let currentTeaPartyMembers=[];
     const TEA_TRADE_CONFIRM_PREFIX='[SPR_COASTER_EXCHANGE_CONFIRM_V1]';
     function teaPhoneEchoFlagKey(){return `tea-phone-echo:${resortDayToken()}:${cafeServiceDate()}`}
@@ -2693,49 +2673,78 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       return agreed;
     }
-    async function refreshTeaTradeStatus(){
-      if(!teaTradeStatus||!teaTradePartner||!activeTeaPartyId)return;
-      const partner=String(teaTradePartner.value||'');
-      if(!partner){teaTradeStatus.textContent='交換を終えた相手を選択してください。';return;}
-      try{
-        const {data,error}=await window.supabaseClientSpecial.from('tea_party_messages')
-          .select('player_id,body,created_at').eq('party_id',activeTeaPartyId).order('created_at');
-        if(error)throw error;
-        const own=teaTradeMarker(partner),theirs=teaTradeMarker(storedPlayerId);
-        const iConfirmed=(data||[]).some(m=>m.player_id===storedPlayerId&&String(m.body||'')===own);
-        const theyConfirmed=(data||[]).some(m=>String(m.player_id)===partner&&String(m.body||'')===theirs);
-        teaTradeStatus.textContent=iConfirmed&&theyConfirmed?'双方が交換成立を確認しました。':iConfirmed?'あなたの確認を記録しました。相手の確認をお待ちください。':theyConfirmed?'相手が交換成立を確認しています。あなたも確認してください。':'交換済みの場合は、双方で成立を確認してください。';
-        if(iConfirmed&&theyConfirmed)void cacheTeaPhoneEcho(activeTeaPartyId,data||[]);
-        if(teaTradeConfirm)teaTradeConfirm.disabled=iConfirmed;
-      }catch(error){console.warn('tea trade confirmation lookup',error);teaTradeStatus.textContent='交換確認の同期に失敗しました。';}
+    let coasterReadGeneration=0,tradeLoading=false,tradeSelectionGeneration=0;
+    const teaTradeGive=document.getElementById('teaTradeGive'),teaTradeReceive=document.getElementById('teaTradeReceive'),teaTradeRequests=document.getElementById('teaTradeRequests');
+    async function refreshOwnedCoasters(){
+      const generation=++coasterReadGeneration,playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
+      const migrationKey=`spr-coaster-owner-migrated:${playerStorageId}`;
+      if(!localStorage.getItem(migrationKey)){await bootstrapCafeCoastersSnapshot();localStorage.setItem(migrationKey,'1')}
+      const {data,error}=await window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at');
+      if(error)throw error;if(generation!==coasterReadGeneration)return;
+      const cards=(data||[]).map(r=>({client_id:r.client_id,venue:r.venue,file:r.file,meal:r.meal,drink:r.drink,at:r.acquired_at}));
+      const ids=new Set(cards.map(r=>String(r.client_id))),pending=new Set(loadPendingCafeCoasterIds());
+      loadCoasterInventory().forEach(r=>{if(pending.has(String(r.client_id))&&!ids.has(String(r.client_id)))cards.push(r)});
+      localStorage.setItem(coasterInventoryKey,JSON.stringify(cards));updateCollectionButton();renderRoomCollection();renderTeaExchange();
     }
     function updateTeaTradeParticipants(members){
-      currentTeaPartyMembers=Array.isArray(members)?members:[];
-      if(!teaTradePartner)return;
-      const previous=teaTradePartner.value;
-      teaTradePartner.replaceChildren(new Option('交換相手を選択',''));
-      currentTeaPartyMembers.filter(m=>String(m.player_id)!==String(storedPlayerId)).forEach(m=>{
-        teaTradePartner.add(new Option(String(m.display_name||'GUEST'),String(m.player_id||'')));
-      });
+      currentTeaPartyMembers=members||[];
+      const previous=teaTradePartner.value;teaTradePartner.replaceChildren(new Option('交換相手を選択',''));
+      currentTeaPartyMembers.filter(m=>String(m.player_id)!==String(storedPlayerId)).forEach(m=>teaTradePartner.add(new Option(m.display_name||'GUEST',String(m.player_id))));
       if([...teaTradePartner.options].some(o=>o.value===previous))teaTradePartner.value=previous;
-      teaTradeConfirmPanel?.classList.toggle('hidden',currentTeaPartyMembers.length<2);
-      if(teaTradeConfirm)teaTradeConfirm.disabled=!teaTradePartner.value;
-      if(teaTradeStatus)teaTradeStatus.textContent='実際にコースターを交換した相手と双方で確認してください。';
+      teaTradeConfirmPanel.classList.toggle('hidden',currentTeaPartyMembers.length<2);teaTradeConfirm.disabled=true;
+      void loadTeaTradeOptions();
     }
-    teaTradePartner?.addEventListener('change',()=>{if(teaTradeConfirm)teaTradeConfirm.disabled=!teaTradePartner.value;void refreshTeaTradeStatus()});
-    teaTradeConfirm?.addEventListener('click',async()=>{
-      const partner=String(teaTradePartner?.value||'');
-      if(!partner||!activeTeaPartyId||partner===String(storedPlayerId)||!currentTeaPartyMembers.some(m=>String(m.player_id)===partner))return;
-      if(!window.confirm('実際にコースターを交換済みですか？　これは成立記録のみで、所持カードの移動は行いません。'))return;
-      teaTradeConfirm.disabled=true;
+    async function loadTeaTradeOptions(){
+      const generation=++tradeSelectionGeneration,party=activeTeaPartyId,partner=teaTradePartner.value;
+      teaTradeConfirm.disabled=true;teaTradeGive.replaceChildren();teaTradeReceive.replaceChildren();
+      if(!party||!partner)return;
       try{
-        const {error}=await window.supabaseClientSpecial.rpc('post_tea_message',{
-          p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_body:teaTradeMarker(partner)
-        });
-        if(error)throw error;
-        await refreshTeaTradeStatus();
-      }catch(error){console.warn('tea coaster trade confirm',error);if(teaTradeStatus)teaTradeStatus.textContent='交換確認を記録できませんでした。';teaTradeConfirm.disabled=false;}
+        await syncPendingCafeCoasters();await refreshOwnedCoasters();
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_options',{p_party_id:party,p_player_id:storedPlayerId,p_partner:partner});if(error)throw error;
+        if(generation!==tradeSelectionGeneration||party!==activeTeaPartyId||partner!==teaTradePartner.value)return;
+        for(const [select,cards] of [[teaTradeGive,data.mine],[teaTradeReceive,data.theirs]]){
+          const files=new Set();for(const c of cards||[]){if(files.has(c.file))continue;files.add(c.file);select.add(new Option(`${sprCoasterLabel(c.file)}（所持${c.qty}枚）`,c.id))}
+          if(!select.options.length)select.add(new Option('交換できるダブりがありません',''));
+        }
+        teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradeReceive.value;
+      }catch(error){teaTradeStatus.textContent='交換用の所持品を確認できません。通信状態と追加SQLを確認してください。';console.warn('coaster options',error)}
+    }
+    async function refreshTeaTradeStatus(){
+      if(tradeLoading||!activeTeaPartyId)return;tradeLoading=true;const party=activeTeaPartyId;
+      try{
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_list',{p_party_id:party,p_player_id:storedPlayerId});if(error)throw error;
+        if(party!==activeTeaPartyId)return;
+        teaTradeRequests.replaceChildren();
+        for(const trade of data||[]){
+          const row=document.createElement('div');row.style.cssText='padding:12px 0;border-top:1px solid #ded5c5;margin-top:10px';
+          const outgoing=String(trade.from_player)===String(storedPlayerId),description=document.createElement('p');
+          description.textContent=`${trade.from_name} → ${trade.to_name}：${sprCoasterLabel(trade.from_file)} と ${sprCoasterLabel(trade.to_file)} ／ ${trade.status==='pending'?'確認待ち':trade.status==='accepted'?'交換完了':trade.status==='cancelled'?'取消済み':'辞退済み'}`;row.append(description);
+          if(trade.status==='pending'){
+            for(const [label,accept] of outgoing?[['取り消す',false]]:[['承諾して交換する',true],['辞退する',false]]){
+              const b=document.createElement('button');b.textContent=label;b.style.cssText='min-height:42px;margin:4px;padding:8px 14px';
+              b.onclick=async()=>{row.querySelectorAll('button').forEach(x=>x.disabled=true);try{
+                await syncPendingCafeCoasters();
+                const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_respond',{p_trade_id:trade.id,p_player_id:storedPlayerId,p_accept:accept});if(error)throw error;
+                await refreshOwnedCoasters();await loadTeaTradeOptions();await refreshTeaTradeStatus();teaTradeStatus.textContent=accept?'コースターを1枚ずつ交換しました。':'交換の申込みを終了しました。';
+              }catch(error){teaTradeStatus.textContent=error.message||'交換できませんでした。';row.querySelectorAll('button').forEach(x=>x.disabled=false)}};row.append(b);
+            }
+          }
+          teaTradeRequests.append(row);
+        }
+        await refreshOwnedCoasters();
+      }catch(error){teaTradeStatus.textContent='交換情報を読み込めません。通信状態と追加SQLを確認してください。';console.warn('trade list',error)}
+      finally{tradeLoading=false}
+    }
+    teaTradePartner.addEventListener('change',()=>{void loadTeaTradeOptions();void refreshTeaTradeStatus()});
+    teaTradeConfirm.addEventListener('click',async()=>{
+      if(!teaTradeGive.value||!teaTradeReceive.value||!teaTradePartner.value)return;teaTradeConfirm.disabled=true;
+      try{
+        const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_offer',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_partner:teaTradePartner.value,p_from_card:teaTradeGive.value,p_to_card:teaTradeReceive.value,p_day:resortDayToken(),p_date:cafeServiceDate()});if(error)throw error;
+        teaTradeStatus.textContent='交換を申し込みました。相手の承諾をお待ちください。';await refreshTeaTradeStatus();
+      }catch(error){teaTradeStatus.textContent=error.message||'交換を申し込めませんでした。'}
+      finally{teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradeReceive.value}
     });
+    setInterval(()=>{if(!document.hidden&&activeTeaPartyId&&!teaPartyChat.classList.contains('hidden'))void refreshTeaTradeStatus()},5000);
 
 
     function refreshTeaSalonStatus(){
@@ -2841,6 +2850,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');
       updateTeaTradeParticipants(members||[]);
+      void refreshTeaTradeStatus();
       teaPartyChatMeta.textContent=`${party.venue||''}　｜　参加者：${(members||[]).map(m=>m.display_name).join('、')}　｜　${(members||[]).length}/${capacity}名`;
       teaPartyCompose.classList.remove('hidden');teaPartyReadOnly.classList.add('hidden');
       const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
@@ -4210,28 +4220,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const emilyHintEventType='emily-loss-hint';
     const emilyHintFallbackKey='spr-emily-loss-hint-sequence';
     async function claimNextEmilyHintNumber(){
-      const c=window.supabaseClientSpecial;
-      const playerId=await resolveSpecialPlayerId().catch(()=>null);
-      if(c&&playerId){
-        try{
-          const {data:resetRows,error:resetError}=await c.from('resort_announcements').select('created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1);
-          if(resetError)throw resetError;
-          const resetAt=resetRows&&resetRows[0]?.created_at?resetRows[0].created_at:null;
-          const insertRow={announcement_type:emilyHintEventType,message:'EMILY LOSS HINT',created_by:playerId,expires_at:'2099-12-31T23:59:59+00:00',metadata:{challenger:storedGuestName,session_id:activeSpecialSessionId||null}};
-          const {data:created,error:insertError}=await c.from('resort_announcements').insert(insertRow).select('id,created_at').single();
-          if(insertError)throw insertError;
-          let q=c.from('resort_announcements').select('id,created_at').eq('announcement_type',emilyHintEventType).order('created_at',{ascending:true});
-          if(resetAt)q=q.gt('created_at',resetAt);
-          const {data:rows,error:listError}=await q;
-          if(listError)throw listError;
-          const idx=(rows||[]).findIndex(r=>String(r.id)===String(created?.id));
-          if(idx>=0)return (idx%4)+1;
-        }catch(e){console.warn('emily hint sequence sync',e)}
-      }
-      const prev=Math.max(0,Number(localStorage.getItem(emilyHintFallbackKey)||0));
-      const next=(prev%4)+1;
-      localStorage.setItem(emilyHintFallbackKey,String(next));
-      return next;
+      return 1+Math.floor(Math.random()*emilyLossHints.length);
     }
     const emilyJokerLines=[
       'あら、そんなに警戒しなくてもいいのよ。今すぐ何かが起きるわけじゃないもの。',
@@ -4269,7 +4258,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return {hintNo,hint,jokerGranted,jokerLine};
     }
     function showSpecialHintReward(reward){
-      const circled=['①','②','③','④'][Math.max(0,Math.min(3,Number(reward?.hintNo||1)-1))];
+      const circled=['①','②','③'][Math.max(0,Math.min(2,Number(reward?.hintNo||1)-1))];
       specialOverlay.classList.add('reward-mode');
       specialActions.innerHTML=`<div class="special-loss-reward"><button id="specialHintRewardClose" class="special-hint-dismiss" type="button" aria-label="ヒントを閉じる">×</button><div class="special-loss-hint-label">HINT ${circled}</div><div class="special-loss-hint">「${reward?.hint||''}」</div></div>`;
       specialOverlay.scrollTop=0;
@@ -4305,7 +4294,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         hiloScreen.querySelector('.casino-return').classList.add('hidden');
       }
     }
-    async function finishSpecial(win){
+    async function finishSpecial(win,score={}){
       const stake=specialStake;if(win){casinoChips=stake*2}else{casinoChips=0}
       casinoSave();syncCasinoBalances();
       if(specialSelectedGame==='blackjack'){actionPanel.classList.add('hidden');betPanel.classList.add('hidden');setCasinoStatus(win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。')}
@@ -4329,7 +4318,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           ['最後の一枚は、今夜あなたを選ばなかった……。','それでも、この勝負を選んだあなたは素敵だったわ。']
         ];
         const resultLines=(win?winLines:loseLines)[Math.floor(Math.random()*(win?winLines.length:loseLines.length))];
-        await royalEmilySaySequence(resultLines,{statePatch:{game:'hilo-serious',challenger:storedGuestName,round:Number(window.__sprRoyalTableRound||7),player_wins:win?4:pw,enemy_wins:win?ew:4,finished:true},publishStatus:'finished'});
+        await royalEmilySaySequence(resultLines,{statePatch:{game:'hilo-serious',challenger:storedGuestName,round:Number(window.__sprRoyalTableRound||7),player_wins:Number(score.playerWins||0),enemy_wins:Number(score.enemyWins||0),finished:true},publishStatus:'finished'});
       }else if(win){
         const victoryLines=[
           ['ふふ……最後まで運を手放さなかったのね。','おめでとう。今くらいは、勝者の気分に浸っていてもいいんじゃないかしら？'],
@@ -4432,7 +4421,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               const ecstatic=royalEmilyEcstatic[Math.floor(Math.random()*royalEmilyEcstatic.length)];
               await royalEmilySaySequence([ecstatic],{speaker:'エミリー',statePatch:revealedState});
             }
-            if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4),850);else setTimeout(play,1100);
+            if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4,{playerWins:pw,enemyWins:ew}),850);else setTimeout(play,1100);
           };
           hiloHigh.onclick=()=>void choose('high');hiloLow.onclick=()=>void choose('low');return;
         }
@@ -4501,12 +4490,35 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         ],showSunsetTerraceTicket);
       }else showSunsetTerraceTicket();
     }
+    let pendingSunsetMermaid=false,sunsetMermaidRunning=false;
+    async function playSunsetMermaid(){
+      if(sunsetMermaidRunning)return;
+      sunsetMermaidRunning=true;
+      try{
+        if(!await window.__sprNamedEvents.claim('video:sunset_terrace_mermaid.mp4'))return;
+        const overlay=document.createElement('div');overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label','夕暮れのサンセットテラス');
+        overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;background:#000;display:grid;place-items:center;opacity:0;transition:opacity .8s ease';
+        const video=document.createElement('video');video.src='sunset_terrace_mermaid.mp4';video.playsInline=true;video.setAttribute('webkit-playsinline','');
+        video.style.cssText='display:block;width:100%;max-height:100dvh;object-fit:contain';
+        const retry=document.createElement('button');retry.textContent='再生する';retry.style.cssText='display:none;position:absolute;bottom:12%;padding:12px 24px';
+        const back=document.createElement('button');back.textContent='戻る';back.style.cssText='display:none;position:absolute;bottom:4%;padding:10px 24px';
+        overlay.append(video,retry,back);document.body.append(overlay);
+        const audio=[...document.querySelectorAll('audio')].filter(a=>!a.paused);audio.forEach(a=>a.pause());
+        const finished=new Promise(resolve=>{video.onended=resolve;back.onclick=resolve});
+        const play=()=>{retry.style.display='none';back.style.display='none';video.play().catch(()=>{retry.style.display='block';back.style.display='block'})};
+        retry.onclick=play;video.onerror=()=>{retry.style.display='block';back.style.display='block'};
+        requestAnimationFrame(()=>overlay.style.opacity='1');play();await finished;
+        overlay.style.opacity='0';await new Promise(r=>setTimeout(r,850));video.pause();overlay.remove();
+        if(document.getElementById('sunsetTerraceView')?.classList.contains('open'))syncSunsetTerraceMusic();
+      }finally{sunsetMermaidRunning=false}
+    }
+
     function closeSunsetTerraceFoodPreview(){
       sunsetTerraceFoodPreview?.classList.add('hidden');
       sunsetTerraceFoodPreview?.setAttribute('aria-hidden','true');
       if(sunsetTerraceFoodImage)sunsetTerraceFoodImage.removeAttribute('src');
       sunsetTerraceFoodReturn?.blur();
-      showPendingTerraceTicket();
+      if(pendingSunsetMermaid){pendingSunsetMermaid=false;void playSunsetMermaid().finally(showPendingTerraceTicket)}else showPendingTerraceTicket();
     }
     function showSunsetTerraceFoodPreview(mealName,drinkName,imageFilename){
       if(!sunsetTerraceFoodPreview||!sunsetTerraceFoodImage||!imageFilename)return;
@@ -4643,6 +4655,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       if(!terraceMealUsed())return;
       terraceOrderBusy=true;sunsetTerraceOrder.disabled=true;
+      const barRecord=window.getCurrentBarDrinkEffect?.();
+      pendingSunsetMermaid=barPeriodInfo().id==='sunset'&&barRecord?.period==='sunset'&&barRecord?.name==='サンセットパラダイス'&&Date.now()<Number(barRecord.expiresAt||0);
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
       const drinkName=selectedSunsetDrink.dataset.drink;
@@ -4664,7 +4678,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const gift=await awardSunsetMysteryTicket();
         pendingTerraceTicket=gift.newTicket?gift:null;
         sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。${gift.newTicket?'ミステリーボックス・チケットを1枚プレゼントいたします。':'本日のミステリーボックス・チケットはお渡し済みです。'}`;
-        if(gift.newTicket&&sunsetTerraceFoodPreview?.classList.contains('hidden'))showPendingTerraceTicket();
+        if(gift.newTicket&&!sunsetMermaidRunning&&sunsetTerraceFoodPreview?.classList.contains('hidden'))showPendingTerraceTicket();
       }catch(e){
         console.warn('Sunset Terrace gift award failed (meal order retained)',e);
         sunsetTerraceOrderStatus.textContent=`「${foodName}」と「${drinkName}」を承りました。チケット付与を確認できませんでした。通信状態をご確認ください。`;
@@ -4983,12 +4997,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         armRoomPhoneAudioMaster();
         startResortMusic();
         if(typeof resumeVillaPoolAudioAfterMasterOn==='function')resumeVillaPoolAudioAfterMasterOn();
-        if(typeof resumeVillaDarkroomAudioAfterMasterOn==='function')resumeVillaDarkroomAudioAfterMasterOn();
         if(roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
       }else{
         pauseResortMusic();
         if(typeof stopVillaPoolAudioForMaster==='function')stopVillaPoolAudioForMaster();
-        if(typeof stopVillaDarkroomAudioForMaster==='function')stopVillaDarkroomAudioForMaster();
         stopRoomPhoneRing();
         disarmRoomPhoneAudioMaster();
       }
@@ -5272,7 +5284,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function updateCasinoElevatorAccess(){
       if(!casinoElevatorButton)return;
-      const active=Number(document.documentElement.dataset.resortDay||1)>=2&&casinoLevel==='gallery'&&isCasinoElevatorSlide()&&hasJokerForElevator();
+      const active=Number(document.documentElement.dataset.resortDay||1)>=2&&casinoLevel==='gallery'&&isCasinoElevatorSlide()&&hasJokerForElevator()&&!window.__sprNamedEvents.seen('video:casino.elevator.mp4');
       casinoElevatorButton.classList.toggle('hidden',!active);
       if(casinoGalleryHint)casinoGalleryHint.classList.toggle('hidden',active);
       if(active){
@@ -5295,7 +5307,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         casinoElevatorState='confirm';casinoElevatorButton.textContent='本当に乗りますか？';casinoElevatorButton.classList.add('confirm');
       },2800);
     }
-    function playCasinoElevatorMovie(){
+    async function playCasinoElevatorMovie(){
+      if(!await window.__sprNamedEvents.claim('video:casino.elevator.mp4')){casinoElevatorState='idle';updateCasinoElevatorAccess();return}
       casinoElevatorState='video';stopCasinoMusic();casinoElevatorVideoError.classList.add('hidden');
       casinoElevatorVideoClose.classList.add('hidden');
       casinoElevatorAftermathRunning=false;
@@ -5660,10 +5673,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const roomServiceNgScreen=document.getElementById('roomServiceNgScreen'), roomServiceNgVideo=document.getElementById('roomServiceNgVideo'), roomServiceNgClose=document.getElementById('roomServiceNgClose'), roomServiceNgFallback=document.getElementById('roomServiceNgFallback');
     const villaPoolExperience=document.getElementById('villaPoolExperience'), villaPoolBubbles=document.getElementById('villaPoolBubbles'), villaPoolChat=document.getElementById('villaPoolChat'), villaPoolChatUnread=document.getElementById('villaPoolChatUnread'), villaPoolExit=document.getElementById('villaPoolExit');
     const villaPoolInAudio=document.getElementById('villaPoolInAudio'), villaPoolNowAudio=document.getElementById('villaPoolNowAudio'), villaPoolOutAudio=document.getElementById('villaPoolOutAudio');
-    const villaDarkroomConsole=document.getElementById('villaDarkroomConsole'),villaDarkroomCommands=document.getElementById('villaDarkroomCommands'),villaDarkroomStatus=document.getElementById('villaDarkroomStatus'),villaDarkroomUnlock=document.getElementById('villaDarkroomEnableSound');
-    const villaDarkroomBgm=document.getElementById('villaDarkroomBgm'),villaDarkroomEffect=document.getElementById('villaDarkroomEffect');
-    const villaDarkroomPeerStatus=document.getElementById('villaDarkroomPeerStatus');
-    const villaDarkroomRoomUnlock=document.getElementById('villaDarkroomRoomEnableSound');
     let roomServiceCart={};
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
@@ -5712,8 +5721,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       phone:['Royal_Villa_Phone.jpg','Royal_Villa_Phone_evening.jpg','Royal_Villa_Phone_Night.jpg'],
       closet:['Royal_Villa_Closet.jpg','Royal_Villa_Closet_evening.jpg','Royal_Villa_Closet_Night.jpg'],
       bathroom:['Royal_Villa_Bathroom.jpg','Royal_Villa_Bathroom_evening.jpg','Royal_Villa_Bathroom_Night.jpg'],
-      // 暗室は写真を使わない。全時間帯とも黒背景をCSSで表示する。
-      darkroom:[null,null,null]
+
     };
     // 写真ごとの表示位置 [左右%, 上下%]。配列の順番は昼・夕・夜。
     // 左右は0で左端、100で右端を優先。画像そのものは変更しない。
@@ -5764,7 +5772,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         phone:[[50,50],[50,50],[50,50]],
         closet:[[50,50],[50,50],[50,50]],
         bathroom:[[50,50],[50,50],[50,50]],
-        darkroom:[[50,50],[50,50],[50,50]]
+
       }
     };
     function roomVisualConfig(room){
@@ -5775,8 +5783,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(room==='501')return{key:'villa',label:'ROYAL VILLA',name:'ロイヤルヴィラ',scenes:villaScenes};
       return null;
     }
-    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム',darkroom:'暗室'};
-    const roomSceneOrder=['room','door','window','pool','desk','phone','closet','bathroom','darkroom'];
+    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
+    const roomSceneOrder=['room','door','window','pool','desk','phone','closet','bathroom'];
     function activeRoomSceneOrder(config=roomVisualConfig(activeRoom)){return config?roomSceneOrder.filter(scene=>Array.isArray(config.scenes?.[scene])):roomSceneOrder}
     const timeNames=['昼','夕暮れ','夜'];
     let selectedRoomScene='room', shownTime=-1;
@@ -5799,300 +5807,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const index=Math.max(0,Math.min(2,Number(roomTimeIndex())||0));
       const image=new Image();image.src=villaPoolUnderwaterImages[index];
     }
-    // VILLA DARK ROOM: 501 only. Only the exact SECURITY CHECK name may send commands.
-    const VILLA_DARKROOM_CONTROLLER='エルナンド・ロメロ';
-    const VILLA_DARKROOM_FILES=Object.freeze({
-      kiss1:'villa_darkroom_kiss_1.mp3',kiss2:'villa_darkroom_kiss_2.mp3',kiss3:'villa_darkroom_kiss_3.mp3',
-      slow:'villa_darkroom_slow.mp3',medium:'villa_darkroom_medium.mp3',
-      fast:'villa_darkroom_fast.mp3',fast2:'villa_darkroom_fast_2.mp3',fast3:'villa_darkroom_fast_3.mp3',fast4:'villa_darkroom_fast_4.mp3',mayo:'villa_darkroom_mayo.mp3'
-    });
-    const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',slow:'低速',medium:'中速',fast:'高速',fast2:'高速2',fast3:'高速3',fast4:'高速4',mayo:'マヨ'});
-    let villaDarkroomAction='bgm',villaDarkroomActionId='',villaDarkroomActionAt=0;
-    let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
-    let villaDarkroomEffectKey='',villaDarkroomEffectRequest=0;
-    let villaDarkroomPendingAckOrigin=null;
-    // Shared command effects use Web Audio instead of starting a new HTML <audio>
-    // from a Supabase callback (which Mobile Safari commonly rejects).
-    let villaDarkroomAudioContext=null,villaDarkroomEffectSource=null,villaDarkroomEffectGain=null;
-    const villaDarkroomAudioBuffers=new Map();
-    function villaDarkroomIsController(){return String(activeGuest||'').trim()===VILLA_DARKROOM_CONTROLLER}
-    function villaDarkroomInVilla(){return activeRoom==='501'&&roomView.classList.contains('room-active')}
-    function villaDarkroomIsHere(){return villaDarkroomInVilla()&&selectedRoomScene==='darkroom'}
-    function villaDarkroomAudioAllowed(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
-    function villaDarkroomStopOne(audio){if(!audio)return;sprCancelGuardedAudioStart(audio);try{audio.pause();audio.muted=false;if(audio.readyState>0)audio.currentTime=0}catch{}}
-    function villaDarkroomStopWebEffect(){
-      if(villaDarkroomEffectSource){try{villaDarkroomEffectSource.stop()}catch{}try{villaDarkroomEffectSource.disconnect()}catch{}villaDarkroomEffectSource=null}
-      if(villaDarkroomEffectGain){try{villaDarkroomEffectGain.disconnect()}catch{}villaDarkroomEffectGain=null}
-    }
-    function villaDarkroomStopEffect(){
-      ++villaDarkroomEffectRequest;
-      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
-      villaDarkroomEffectKey='';villaDarkroomPendingAckOrigin=null;
-    }
-    function villaDarkroomStopLocal(){
-      villaDarkroomStopEffect();villaDarkroomStopOne(villaDarkroomBgm);
-      villaDarkroomUnlock?.classList.add('hidden');
-    }
-    // Called *synchronously inside a user's tap* (501 entry, room navigation,
-    // or the explicit enable-audio button). This unlocks the iOS AudioContext.
-    function primeVillaDarkroomSharedAudio(){
-      const AudioContextCtor=window.AudioContext||window.webkitAudioContext;
-      if(!AudioContextCtor)return false;
-      try{
-        if(!villaDarkroomAudioContext){villaDarkroomAudioContext=new AudioContextCtor();}
-        const ctx=villaDarkroomAudioContext;
-        if(ctx.state!=='running'){
-          const resumed=ctx.resume();
-          if(resumed&&resumed.then)resumed.then(()=>{villaDarkroomUpdateUnlockButtons()}).catch(e=>console.warn('darkroom audio unlock',e));
-        }
-        const blank=ctx.createBuffer(1,1,ctx.sampleRate),source=ctx.createBufferSource();
-        source.buffer=blank;source.connect(ctx.destination);source.start();source.stop(ctx.currentTime+.001);
-        return true;
-      }catch(e){console.warn('darkroom audio prime',e);return false}
-    }
-    function villaDarkroomAudioUnblocked(){return Boolean(villaDarkroomAudioContext&&villaDarkroomAudioContext.state==='running')}
-    function villaDarkroomUpdateUnlockButtons(){
-      const need=villaDarkroomInVilla()&&!villaDarkroomIsController()&&!villaDarkroomAudioUnblocked();
-      villaDarkroomRoomUnlock?.classList.toggle('hidden',!need||villaDarkroomIsHere());
-      if(villaDarkroomIsHere()&&need)villaDarkroomUnlock?.classList.remove('hidden');
-    }
-    async function villaDarkroomBuffer(key){
-      if(villaDarkroomAudioBuffers.has(key))return villaDarkroomAudioBuffers.get(key);
-      const file=VILLA_DARKROOM_FILES[key];
-      const task=(async()=>{
-        const response=await fetch(file,{cache:'default'});
-        if(!response.ok)throw new Error(`HTTP ${response.status}: ${file}`);
-        const content=await response.arrayBuffer();
-        if(!content.byteLength)throw new Error(`Empty audio file: ${file}`);
-        if(!villaDarkroomAudioContext)throw new Error('AudioContext unavailable');
-        return await villaDarkroomAudioContext.decodeAudioData(content);
-      })();
-      villaDarkroomAudioBuffers.set(key,task);
-      try{return await task}catch(e){villaDarkroomAudioBuffers.delete(key);throw e}
-    }
-    function villaDarkroomSetStatus(msg){if(villaDarkroomIsHere()&&villaDarkroomStatus)villaDarkroomStatus.textContent=msg}
-    function villaDarkroomSetPeerStatus(msg){if(villaDarkroomPeerStatus)villaDarkroomPeerStatus.textContent=msg}
-    function villaDarkroomMarkSelected(key=''){
-      villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.darkroomCommand===key)));
-    }
-    function villaDarkroomFileError(key,error){
-      if(!villaDarkroomInVilla()||key!==villaDarkroomEffectKey)return;
-      const file=VILLA_DARKROOM_FILES[key];
-      const reason=error?.message?`（${String(error.message).slice(0,90)}）`:'';
-      villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を再生できません。${file} の名前・配置・形式を確認してください。${reason}`);
-      if(!villaDarkroomIsHere())console.warn('villa darkroom audio missing',file,reason);
-    }
-    villaDarkroomBgm?.addEventListener('error',()=>{
-      if(villaDarkroomIsHere())villaDarkroomSetStatus('暗室BGMを読み込めません。villa_darkroom_bgm.mp3 の名前・配置・形式を確認してください。');
-    });
-    villaDarkroomEffect?.addEventListener('error',()=>villaDarkroomFileError(villaDarkroomEffectKey));
-    async function villaDarkroomStartBgm(){
-      // The ambient track must stay exclusively inside the dark room.
-      if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed()||!villaDarkroomBgm)return;
-      if(!villaDarkroomBgm.paused){try{villaDarkroomBgm.muted=false}catch{}return}
-      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.40,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
-      if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed())return;
-      if(!started){
-        if(villaDarkroomBgm.error){villaDarkroomSetStatus('暗室BGMを再生できません。villa_darkroom_bgm.mp3 を確認してください。')}
-        else villaDarkroomUnlock?.classList.remove('hidden');
-      }
-    }
-    // Return diagnostic status for acknowledgment to the sending roommate.
-    async function villaDarkroomStartEffect(key){
-      if(!VILLA_DARKROOM_FILES[key]||!villaDarkroomInVilla())return 'outside';
-      if(!villaDarkroomAudioAllowed())return 'muted';
-      if(villaDarkroomEffectKey===key&&villaDarkroomEffectSource&&villaDarkroomAudioUnblocked())return 'started';
-      ++villaDarkroomEffectRequest;
-      const request=villaDarkroomEffectRequest;
-      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
-      villaDarkroomEffectKey=key;
-      const file=VILLA_DARKROOM_FILES[key];
-      const ctx=villaDarkroomAudioContext;
-      if(ctx){
-        // Preload/decode even if blocked, so tapping Enable can immediately replay.
-        let decoded;
-        try{decoded=await villaDarkroomBuffer(key)}catch(e){
-          if(request===villaDarkroomEffectRequest&&key===villaDarkroomEffectKey)villaDarkroomFileError(key,e);
-          return 'missing';
-        }
-        if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla()||key!==villaDarkroomEffectKey)return 'superseded';
-        if(!villaDarkroomAudioAllowed())return 'muted';
-        if(ctx.state!=='running'){
-          villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を受信しました。「音声を有効にする」を押してください。`);
-          villaDarkroomUnlock?.classList.remove('hidden');villaDarkroomUpdateUnlockButtons();
-          return 'blocked';
-        }
-        try{
-          const source=ctx.createBufferSource(),gain=ctx.createGain();
-          source.buffer=decoded;source.loop=true;gain.gain.value=.8;
-          source.connect(gain);gain.connect(ctx.destination);
-          villaDarkroomEffectSource=source;villaDarkroomEffectGain=gain;
-          source.start(0);
-          villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);
-          if(villaDarkroomAudioUnblocked())villaDarkroomUnlock?.classList.add('hidden');villaDarkroomUpdateUnlockButtons();
-          return 'started';
-        }catch(e){
-          console.warn('villa darkroom web audio start',e);
-          villaDarkroomSetStatus(`音声が開始できません。「音声を有効にする」を押してください。`);
-          villaDarkroomUnlock?.classList.remove('hidden');
-          return 'blocked';
-        }
-      }
-      // Old browsers without Web Audio can use the existing HTML audio element.
-      if(!villaDarkroomEffect)return 'unsupported';
-      villaDarkroomEffect.src=file;villaDarkroomEffect.loop=true;villaDarkroomEffect.load();
-      const started=await sprStartAudioClean(villaDarkroomEffect,{volume:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-      if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla())return 'superseded';
-      if(started){villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);return 'started'}
-      if(villaDarkroomEffect.error||villaDarkroomEffect.networkState===3){villaDarkroomFileError(key);return 'missing'}
-      villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」の再生がブロックされました。「音声を有効にする」を押してください。`);
-      villaDarkroomUnlock?.classList.remove('hidden');return 'blocked';
-    }
-    async function villaDarkroomSendAck(origin,status){
-      if(!origin?.event_id||!roomPhonePresenceReady||!roomPhonePresenceChannel||villaDarkroomIsController()||!villaDarkroomInVilla())return;
-      try{
-        await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-audio-ack',payload:{room_no:'501',event_id:String(origin.event_id),status,
-          origin_session_key:roomPhonePresenceSessionKey,display_name:String(activeGuest||storedGuestName||'同室者')}});
-      }catch(e){console.warn('villa darkroom ack',e)}
-    }
-    function villaDarkroomReceiveAck(payload){
-      if(!villaDarkroomIsController()||!villaDarkroomIsHere()||String(payload?.room_no)!=='501')return;
-      if(!villaDarkroomActionId||String(payload?.event_id)!==villaDarkroomActionId)return;
-      if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
-      const status=String(payload?.status||'');
-      const result={started:'再生処理を開始しました',stopped:'効果音を停止しました',blocked:'再生許可が必要です',missing:'音源を読み込めません',muted:'♪がOFFです',unsupported:'再生できない端末です',outside:'客室にいません'}[status]||'応答を受信しました';
-      villaDarkroomSetPeerStatus(`同室者端末：${result}`);
-    }
-    async function villaDarkroomApplyAction(key,origin=null){
-      if(!villaDarkroomInVilla())return;
-      if(key==='stop'){
-        villaDarkroomStopEffect();villaDarkroomMarkSelected('stop');
-        villaDarkroomSetStatus('効果音を停止しました。BGMは再生中です。');
-        if(villaDarkroomIsHere())void villaDarkroomStartBgm();
-        if(origin)void villaDarkroomSendAck(origin,'stopped');
-        return;
-      }
-      if(villaDarkroomIsHere())void villaDarkroomStartBgm();
-      if(Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,key)){
-        villaDarkroomMarkSelected(key);
-        villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を読み込み中…`);
-        const state=await villaDarkroomStartEffect(key);
-        if(origin&&state!=='superseded'){
-          villaDarkroomPendingAckOrigin=state==='blocked'?origin:null;
-          void villaDarkroomSendAck(origin,state);
-        }
-      }else{
-        villaDarkroomStopEffect();villaDarkroomMarkSelected();villaDarkroomSetStatus('暗室のBGMを再生中');
-        if(origin)void villaDarkroomSendAck(origin,'stopped');
-      }
-    }
-    function villaDarkroomRender(){
-      const here=villaDarkroomIsHere(),controller=villaDarkroomIsController();
-      villaDarkroomConsole?.classList.toggle('hidden',!here);
-      villaDarkroomCommands?.classList.toggle('hidden',!here||!controller);
-      if(here&&!controller&&!villaDarkroomEffectKey)villaDarkroomSetStatus('暗室のBGMと、同室者からの共有音声を受信します。');
-      if(here&&!controller&&!villaDarkroomAudioUnblocked())villaDarkroomUnlock?.classList.remove('hidden');
-      villaDarkroomUpdateUnlockButtons();
-    }
-    function villaDarkroomApplyShared(payload){
-      if(String(payload?.room_no||'')!=='501'||!villaDarkroomInVilla())return;
-      if(String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;
-      if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
-      const action=String(payload?.action||'');
-      if(action!=='stop'&&action!=='bgm'&&!Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,action))return;
-      const at=Number(payload?.occurred_at||0),id=String(payload?.event_id||'');
-      if(!Number.isFinite(at)||at<=0||at<villaDarkroomLatestRemoteAt)return;
-      if(at===villaDarkroomLatestRemoteAt&&id===villaDarkroomLatestRemoteAction)return;
-      villaDarkroomLatestRemoteAt=at;villaDarkroomLatestRemoteAction=id;
-      // Effects are audible for all occupants of villa 501, even when their
-      // ROOM view is showing a different scene; BGM remains darkroom-only.
-      void villaDarkroomApplyAction(action,payload);
-    }
-    function villaDarkroomSyncPresence(){
-      if(activeRoom!=='501'||villaDarkroomIsController())return;
-      const members=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER&&m?.darkroom_scene==='darkroom');
-      const owner=members.sort((a,b)=>Number(b?.darkroom_action_at||0)-Number(a?.darkroom_action_at||0))[0];
-      if(!owner){
-        if(villaDarkroomEffectKey){villaDarkroomStopEffect();villaDarkroomMarkSelected('');villaDarkroomSetStatus('暗室のBGMを再生中')}
-        return;
-      }
-      villaDarkroomApplyShared({room_no:'501',display_name:VILLA_DARKROOM_CONTROLLER,origin_session_key:owner.presence_session_key,
-        event_id:owner.darkroom_action_id,occurred_at:owner.darkroom_action_at,action:owner.darkroom_action});
-    }
-    async function villaDarkroomPublish(action){
-      if(!villaDarkroomIsController()||activeRoom!=='501')return;
-      villaDarkroomAction=action;
-      villaDarkroomActionAt=Date.now();villaDarkroomActionId=sprSafeUuid();
-      if(roomPhonePresenceReady)void trackRoomPhonePresence();
-      villaDarkroomSetPeerStatus(action==='bgm'?'': '同室者端末からの応答を待っています…');
-      const payload={room_no:'501',action,event_id:villaDarkroomActionId,occurred_at:villaDarkroomActionAt,
-        origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER};
-      if(roomPhonePresenceChannel&&roomPhonePresenceReady){
-        try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-audio',payload})}
-        catch(e){console.warn('villa darkroom sync',e);villaDarkroomSetPeerStatus('同期通信に失敗しました。再試行してください。')}
-      }else{
-        villaDarkroomSetPeerStatus('共有通信に接続中です。接続後に同室者へ反映します。');
-      }
-    }
-    function villaDarkroomOnSceneChanged(previousScene,newScene){
-      if(activeRoom!=='501')return;
-      if(previousScene==='darkroom'&&newScene!=='darkroom'){
-        villaDarkroomStopOne(villaDarkroomBgm);
-        if(villaDarkroomIsController()){villaDarkroomStopEffect();void villaDarkroomPublish('stop')}
-      }
-      if(newScene==='darkroom'&&previousScene!=='darkroom'){
-        villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
-        // Do not silence already shared effects when a roommate enters later.
-        void villaDarkroomStartBgm();
-        if(villaDarkroomIsController())void villaDarkroomPublish('bgm');
-        else villaDarkroomSyncPresence();
-      }
-      villaDarkroomRender();
-    }
-    function stopVillaDarkroomAudioForMaster(){
-      ++villaDarkroomEffectRequest;villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomBgm);villaDarkroomStopOne(villaDarkroomEffect);
-    }
-    async function resumeVillaDarkroomAudioAfterMasterOn(){
-      if(!villaDarkroomInVilla())return;
-      if(villaDarkroomIsHere())void villaDarkroomStartBgm();
-      if(villaDarkroomEffectKey){
-        const key=villaDarkroomEffectKey;villaDarkroomEffectKey='';
-        const status=await villaDarkroomStartEffect(key);
-        if(villaDarkroomPendingAckOrigin&&status!=='superseded'){
-          const origin=villaDarkroomPendingAckOrigin;villaDarkroomPendingAckOrigin=null;
-          void villaDarkroomSendAck(origin,status);
-        }
-      }
-      villaDarkroomUpdateUnlockButtons();
-    }
-    villaDarkroomCommands?.querySelectorAll('button[data-darkroom-command]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(!villaDarkroomIsController()||!villaDarkroomIsHere())return;
-      primeVillaDarkroomSharedAudio();
-      const key=btn.dataset.darkroomCommand;
-      void villaDarkroomApplyAction(key);
-      void villaDarkroomPublish(key);
-    }));
-    function villaDarkroomManualUnlock(){
-      primeVillaDarkroomSharedAudio();
-      if(!villaDarkroomAudioAllowed()){
-        villaDarkroomSetStatus('サイトの♪をONにしてから音声を有効にしてください。');return;
-      }
-      const resume=()=>{
-        villaDarkroomUnlock?.classList.add('hidden');
-        villaDarkroomUpdateUnlockButtons();
-        void resumeVillaDarkroomAudioAfterMasterOn();
-      };
-      if(villaDarkroomAudioContext){
-        villaDarkroomAudioContext.resume().then(resume).catch(e=>{
-          console.warn('villa darkroom unlock',e);
-          villaDarkroomSetStatus('再生許可を取得できませんでした。もう一度押してください。');
-        });
-      }else resume();
-    }
-    villaDarkroomUnlock?.addEventListener('click',villaDarkroomManualUnlock);
-    villaDarkroomRoomUnlock?.addEventListener('click',villaDarkroomManualUnlock);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)villaDarkroomUpdateUnlockButtons()});
-    let villaPoolAudioToken=0;
     function villaPoolAudioMasterOn(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function stopVillaPoolAudioElement(audio,reset=true){
       if(!audio)return;
@@ -6744,10 +6458,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         presence_session_key:String(roomPhonePresenceSessionKey||''),
         phone_event_id:roomPhoneActiveEvent?.id?String(roomPhoneActiveEvent.id):'',
         phone_choice:String(choice||'idle'),
-        darkroom_scene:activeRoom==='501'?selectedRoomScene:'',
-        darkroom_action:villaDarkroomIsController()?villaDarkroomAction:'',
-        darkroom_action_id:villaDarkroomIsController()?villaDarkroomActionId:'',
-        darkroom_action_at:villaDarkroomIsController()?villaDarkroomActionAt:0,
         updated_at:new Date().toISOString()
       };
       if(typeof roomServiceHorrorPresenceFields==='function')Object.assign(payload,roomServiceHorrorPresenceFields());
@@ -6952,7 +6662,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         syncRoomPhoneSoloWait(); // 入退室直後に2分のカウントをリセット／開始する。
         evaluateRoomPhoneDeclineState();
         if(typeof syncRoomServiceHorrorFromPresence==='function')syncRoomServiceHorrorFromPresence();
-        villaDarkroomSyncPresence();
         if(typeof evaluateRoomServiceHorrorDeclineState==='function')evaluateRoomServiceHorrorDeclineState();
         // 最初のPresence同期は既に部屋にいた人の読み込みなので、入室通知は出さない。
         // 同じセッションの電話・NG状態更新がjoinとして再通知されても、演出を繰り返さない。
@@ -6975,8 +6684,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'room-service-order-created'},({payload})=>{if(activeRoom!==roomAtStart)return;applySharedRoomServiceOrder(payload)})
         .on('broadcast',{event:'room-service-delivery-arrived'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomServiceArrival(payload)})
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
-        .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
-        .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
@@ -7880,7 +7587,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       const visit=registerHernandoVisit();beginHernandoDialogue(visit);
     }
-    function playHernandoVideo(){
+    async function playHernandoVideo(){
+      if(!await window.__sprNamedEvents.claim('video:hernandos_bullring.mp4')){showHernandoArena();return}
       clearHernandoDescentTimers();
       hernandoDescent.classList.remove('open');hernandoDescent.setAttribute('aria-hidden','true');
       // 導入動画が終わるまでは闘牛場BGMを再生しない。動画終了後に showHernandoArena() で初めて開始する。
@@ -8110,12 +7818,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomScene.dataset.scene=selectedRoomScene;
       roomPhoto.dataset.assetFile=roomAssetFile||'';
       roomPhoto.dataset.assetFallback='0';
-      if(selectedRoomScene==='darkroom'){
-        roomPhoto.removeAttribute('src');
-        roomPhoto.style.opacity='0';
-      }else{
-        roomPhoto.src=roomAssetSrc(config,roomAssetFile);
-      }
+      roomPhoto.src=roomAssetSrc(config,roomAssetFile);
       const focal=roomScenePositions[config.key][selectedRoomScene][time];
       roomScene.style.setProperty('--scene-x',focal[0]+'%');
       roomScene.style.setProperty('--scene-y',focal[1]+'%');
@@ -8138,7 +7841,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomSceneMenuToggle.textContent=`場所一覧　${sceneIndex+1} / ${availableScenes.length}`;
       roomSceneDots.forEach((dot,index)=>{dot.classList.toggle('hidden',index>=availableScenes.length);dot.classList.toggle('active',index===sceneIndex)});
       roomSceneButtons.forEach(button=>{const available=availableScenes.includes(button.dataset.roomScene);button.classList.toggle('hidden',!available);button.setAttribute('aria-pressed',String(available&&button.dataset.roomScene===selectedRoomScene))});
-      villaDarkroomRender();
       updateRoomContextAction();
     }
     function updateRoomClock(){
@@ -8147,7 +7849,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       clock.textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
       clock.dateTime=now.toISOString();
     }
-    function chooseRoomScene(scene){if(activeRoom==='501')primeVillaDarkroomSharedAudio();const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);villaDarkroomOnSceneChanged(previousScene,scene);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
+    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
@@ -8166,7 +7868,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(Math.abs(diffX)>45&&Math.abs(diffX)>Math.abs(diffY)*1.2)stepRoomScene(diffX<0?1:-1);
     },{passive:true});
     roomPhoto.addEventListener('error',()=>{
-      if(selectedRoomScene==='darkroom')return;
       const config=roomVisualConfig(activeRoom);
       const file=roomPhoto.dataset.assetFile||'';
       if((config?.key==='oceanLagoon'||config?.key==='suite'||config?.key==='villa')&&file&&roomPhoto.dataset.assetFallback!=='1'){
@@ -8665,9 +8366,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       for(let i=0;i<key.length;i++)hash=((hash<<5)-hash+key.charCodeAt(i))|0;
       return ROOM_SERVICE_NG_VIDEO_FILES[(hash>>>0)%ROOM_SERVICE_NG_VIDEO_FILES.length];
     }
-    function showRoomServiceNgVideo(eventId,videoFile=''){
+    async function showRoomServiceNgVideo(eventId,videoFile=''){
       if(!roomServiceNgScreen||!roomServiceNgVideo)return;
       const selectedFile=['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'].includes(videoFile)?videoFile:roomServiceNgVideoForEvent(eventId);
+      if(!await window.__sprNamedEvents.claim('video:'+selectedFile))return;
       roomServiceNgCurrentEventId=String(eventId||'');roomServiceNgCurrentVideoFile=selectedFile;
       roomServiceNgClose?.classList.toggle('hidden',['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(selectedFile));
       roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=selectedFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
@@ -8683,13 +8385,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       message.textContent='気がつくと部屋のベッドにいた。\n何があったのか、思い出せない。';
       message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
       overlay.append(message);requestAnimationFrame(()=>{message.style.opacity='1'});
-      await new Promise(resolve=>setTimeout(resolve,3000));
+      await new Promise(resolve=>setTimeout(resolve,750));
+      await new Promise(resolve=>overlay.addEventListener('click',resolve,{once:true}));
       overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,1050));overlay.remove();
     }
     async function finishRoomServiceNgVideo(){
       const videoFile=roomServiceNgCurrentVideoFile,eventId=roomServiceNgCurrentEventId;
       closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');
-      if(!['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(videoFile))return;
+      if(videoFile!=='room_service_ng_01.mp4')return;
       const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
       if(localStorage.getItem(appliedKey)!=='1'){
         await window.sprApplyNgGimmick?.('未注文のルームサービス');
@@ -9422,7 +9125,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
       // 有効な客室へ入るタップの中で着信音とルームサービスのドアベルを先に解除しておく。
       primeRoomPhoneAudio();primeRoomServiceDoorbellAudio();
-      if(room==='501'){primeVillaPoolSharedAudio();primeVillaDarkroomSharedAudio();}
+      if(room==='501'){primeVillaPoolSharedAudio();}
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       window.__sprActiveRoom=activeRoom;window.__sprRoomEntryTime=Date.now();
       localStorage.setItem(`spr-last-room:${playerStorageId}`,room);
@@ -9436,8 +9139,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       updateRoomOccupancyUi();setRoomOccupancyExpanded(false);
       const hasRoomVisual=Boolean(visualConfig);roomScene.classList.toggle('hidden',!hasRoomVisual);roomFallback.classList.toggle('hidden',hasRoomVisual);
       closeChatSheet();closeRoomService();closeRoomBelongings();Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);unreadCount=0;updateUnread();roomChatToast.classList.remove('show');
-      villaDarkroomStopLocal();villaDarkroomAction='bgm';villaDarkroomActionAt=0;villaDarkroomActionId='';
-      villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
       selectedRoomScene=visualConfig?.doorOnly?'door':'room';shownTime=-1;window.__sprRoomEntryTime=Date.now();updateRoomPhoto(true);startRoomSync(room);startRoomPhoneStay();startRoomServiceHorrorStay();
       restoreRoomServiceFoodGallery(room);
       evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
@@ -9467,8 +9168,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         await Promise.race([broadcastRoomMemberLeft(activeRoom),new Promise(resolve=>setTimeout(resolve,400))]);
         void syncMysteryRoomPresence('');
         if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose();
-        if(activeRoom==='501'&&selectedRoomScene==='darkroom'&&villaDarkroomIsController())void villaDarkroomPublish('stop');
-        villaDarkroomStopLocal();
         closeVillaPoolExperience(true);stopRoomServiceHorrorStay();stopRoomPhoneStay();stopRoomSync();closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomServiceDeliveryNotice();closeRoomServiceNgVideo();
         roomServiceFoodGallery?.classList.add('hidden');roomServiceFoodGallery?.setAttribute('aria-hidden','true');roomView.classList.remove('room-active');activeRoom='';window.__sprActiveRoom='';window.__sprRoomEntryTime=0;updateRoomOccupancyUi();roomView.classList.remove('room-active');activeRoom='';updateRoomOccupancyUi();
         roomLounge.classList.add('hidden');roomScene.classList.add('hidden');roomFallback.classList.add('hidden');roomEntry.classList.remove('hidden');roomPin.value='';updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();closeView(roomView);
@@ -10664,7 +10363,7 @@ window.addEventListener('message',e=>{
   function matchingLighthouseEveningAnomaly(spotKey,actionKey){
     const resortDay=Number(document.documentElement.dataset.resortDay||1);
     if(resortDay<3||resortDay>6||spotKey!=='lighthouse'||actionKey!=='telescope'||explorePeriod()!=='sunset')return null;
-    if(localStorage.getItem(lighthouseEveningAnomalySeenKey)==='1'||!window.__sprHasAnyHorrorDrink?.())return null;
+    if(window.__sprNamedEvents.seen('video:lighthouse_evening_telescope_anomaly.mp4')||!window.__sprHasAnyHorrorDrink?.())return null;
     return {spot:'lighthouse',period:'sunset',action:'telescope',filename:'lighthouse_evening_telescope_anomaly.mp4',label:'夕方の灯台で望遠鏡を覗いたときの映像',aftermath:'lighthouse-telescope',seenKey:lighthouseEveningAnomalySeenKey};
   }
   // 画面上は「ダイビングをする」。snorkelは既存の探索アクションIDとして維持する。
@@ -10679,7 +10378,7 @@ window.addEventListener('message',e=>{
     const playerKey=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
     const seenKey=`spr-day1-explore-video-seen:${playerKey}:${event.filename}`;
     const remoteSeenKey=`day1-explore-video-seen:${event.filename}`;
-    if(localStorage.getItem(seenKey)==='1'||window.__sprGetRemoteFlag?.(remoteSeenKey)===true)return null;
+    if(window.__sprNamedEvents.seen('video:'+event.filename))return null;
     return {...event,seenKey,remoteSeenKey,oncePerPlayer:true};
   }
   let activeExploreVideoEvent=null;
@@ -10775,8 +10474,9 @@ window.addEventListener('message',e=>{
       if(exploreEventVideoScreen?.classList.contains('open'))exploreEventVideoError?.classList.remove('hidden');
     }
   }
-  function openExploreEventVideo(event){
+  async function openExploreEventVideo(event){
     if(!exploreEventVideoScreen||!exploreEventVideo||!event)return;
+    if(!await window.__sprNamedEvents.claim('video:'+event.filename))return;
     clearActionMessage();
     activeExploreVideoEvent=event;
     exploreEventVideoScreen.setAttribute('aria-label',event.label);
@@ -10990,6 +10690,7 @@ window.addEventListener('message',e=>{
   async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprResumeExploreBgmAfterGimmick?.()}
   function diveBlackPage(text,buttons=[]){diveStoryImage.style.display='none';diveStoryText.textContent=text;diveStoryButtons.replaceChildren(...buttons);}
   async function playLighthouseLeap(){
+    if(!await window.__sprNamedEvents.claim('lighthouse-dive')){await hideDiveOverlay();return}
     localStorage.setItem(lighthouseDiveSeenKey,'1');
     diveBlackPage('');showDiveOverlay();
     underwaterBubblesAudio.pause();try{underwaterBubblesAudio.currentTime=0}catch{}underwaterBubblesAudio.volume=0;const bubblesPromise=underwaterBubblesAudio.play();if(bubblesPromise?.catch)bubblesPromise.catch(()=>{});
@@ -11028,7 +10729,7 @@ window.addEventListener('message',e=>{
   const lighthouseDiveSeenKey=`spr-lighthouse-dive-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}:day3-6`;
   function eligibleLighthouseDive(spotKey,actionKey){
     const day=Number(document.documentElement.dataset.resortDay||1);
-    if(day<3||day>6||spotKey!=='lighthouse'||actionKey!=='snorkel'||explorePeriod()!=='night'||localStorage.getItem(lighthouseDiveSeenKey)==='1')return false;
+    if(day<3||day>6||spotKey!=='lighthouse'||actionKey!=='snorkel'||explorePeriod()!=='night'||window.__sprNamedEvents.seen('lighthouse-dive'))return false;
     const drink=window.getCurrentBarDrinkEffect?.();
     return !!drink&&drink.name==='ライトハウスキーパー'&&drink.effectKey==='explore:night:lighthouse'&&drink.period==='night'&&Number(drink.resortDay||day)===day&&!window.__sprHasNgDrinkEffect?.();
   }
@@ -11825,12 +11526,12 @@ window.addEventListener('message',e=>{
  const otterDiveAudio=new Audio('pool_in.mp3');otterDiveAudio.preload='auto';otterDiveAudio.playsInline=true;
  const blackHorseNeighAudio=new Audio('wavewalker_black_horse_neigh.mp3?v=20261018');blackHorseNeighAudio.preload='auto';blackHorseNeighAudio.playsInline=true;
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
- const anomalyPrefix='spr-anomaly-animal:device:';
+ const anomalyPrefix=`spr-anomaly-animal:name:${who}:`;
  const legacyAnimalPrefix=`spr-anomaly-animal:${who}:`;
- const animalSeen=id=>localStorage.getItem(anomalyPrefix+id)==='1'||localStorage.getItem(legacyAnimalPrefix+id)==='1';
+ const animalSeen=id=>window.__sprNamedEvents.stage('animal:'+id)>=(id==='black-horse'?3:1);
  const markAnimal=id=>localStorage.setItem(anomalyPrefix+id,'1');
- const animalStage=id=>Math.max(0,Number(localStorage.getItem(anomalyPrefix+id+'-stage')||localStorage.getItem(legacyAnimalPrefix+id+'-stage'))||0);
- const setAnimalStage=(id,value)=>localStorage.setItem(anomalyPrefix+id+'-stage',String(value));
+ const animalStage=id=>window.__sprNamedEvents.stage('animal:'+id);
+ const setAnimalStage=(id,value)=>{localStorage.setItem(anomalyPrefix+id+'-stage',String(value));window.__sprNamedEvents.remember('animal:'+id,value)};
  // 全ての異変動物は、エルナンドの酔い＋NGまたは不穏ドリンクで遭遇可能。
  const anomalyEligible=()=>day>=2&&day<=6&&poison()&&anyHorrorDrink();
  const smokeLizardEligible=()=>day>=3&&day<=6&&poison()&&anyHorrorDrink();
@@ -11953,7 +11654,8 @@ window.addEventListener('message',e=>{
      await wait(60);anomalyScene.style.opacity='1';await wait(950);
      anomalySceneText.style.opacity='1';
      const direction=await waitForOtterSwimChoice();
-     if(direction!=='swim')return; // 岸へ戻る場合は画像を切り替えず、遭遇済みにしない。
+     if(direction!=='swim')return;
+     if(!await window.__sprNamedEvents.claim('animal:drifting-otter'))return; // 岸へ戻る場合は画像を切り替えず、遭遇済みにしない。
      // イベント画面を表示したまま、写真だけを暗転して差し替える。
      // 画面全体はフェードアウトさせず、探索画面が見える瞬間を作らない。
      anomalySceneText.style.opacity='0';
@@ -12538,7 +12240,8 @@ window.addEventListener('message',e=>{
  async function encounterBlackHorse(){
    if(blackHorseRunning)return;
    blackHorseRunning=true;
-   const stage=animalStage('black-horse');
+   const stage=await window.__sprNamedEvents.read('animal:black-horse');
+   if(stage>=3||!await window.__sprNamedEvents.advance('animal:black-horse',stage,stage+1)){blackHorseRunning=false;return}
    // 同期的に音声をアンロック。iPhoneではこのタップを逃すと遅延mp3を再生できない。
    if(stage===0)armBlackHorseNeigh();
    try{
@@ -12622,6 +12325,7 @@ window.addEventListener('message',e=>{
    return '';
  }
  async function runAnomalyAction(kind){
+   if(!['black-horse','drifting-otter'].includes(kind)&&!await window.__sprNamedEvents.claim('animal:'+kind))return;
    if(kind==='seabird')return encounterSeabird();
    if(kind==='drifting-otter')return encounterOtter();
    if(kind==='giant-shadow')return encounterGiant();
@@ -12751,9 +12455,10 @@ window.addEventListener('message',e=>{
      }
    }
  }
- function triggerSeaWatcher(){
+ async function triggerSeaWatcher(){
    if(seaWatcherActive)return;
    seaWatcherActive=true;
+   if(!await window.__sprNamedEvents.claim('beach-sea-watcher')){seaWatcherActive=false;return}
    const beginning=day===6?'海の方をご覧ですか。あの水平線を見ていると、いつまでも目が離せなくなるんですよ。':'よくお越しくださいました。今夜も海が、あなたを待っていたような気がいたします。';
    const continuation='……失礼いたしました。何のお話でしたでしょうか。ああ、そうでした。今夜の海は、とても美しいですね。';
    window.__sprShowStaffDialogue?.(beginning,()=>{seaWatcherActive=false},'STAFF');
@@ -12778,6 +12483,10 @@ window.addEventListener('message',e=>{
  const escapeLocalState=()=>{const v=localStorage.getItem(escapeKey)||'unused';return escapeValidStates.has(v)?v:'unused'};
  async function getEscapeState(){
    const local=escapeLocalState();
+   const named=await window.__sprNamedEvents.read('day7-escape');
+   if(named===3)return 'failed';
+   if(named===2)return 'success';
+   if(named===1)return local==='station'?'station':'coordinates';
    if(local!=='unused')return local;
    const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
    if(!id||!c)return local;
@@ -12791,6 +12500,8 @@ window.addEventListener('message',e=>{
  }
  async function setEscapeState(value){
    if(!escapeValidStates.has(value))return;
+   if(value==='success'&&!await window.__sprNamedEvents.advance('day7-escape',1,2))return false;
+   if(value==='failed'&&await window.__sprNamedEvents.read('day7-escape')===1&&!await window.__sprNamedEvents.advance('day7-escape',1,3))return false;
    localStorage.setItem(escapeKey,value);
    const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
    if(!id||!c)return;
@@ -12810,28 +12521,39 @@ window.addEventListener('message',e=>{
    }
    open(t,b,opts);
  }
- function addLighthouseButton(){
-   if(day!==7||document.getElementById('day7RiseLighthouse'))return;
-   const actions=document.querySelector('.explore-location-actions');if(!actions)return;
-   const button=document.createElement('button');button.id='day7RiseLighthouse';button.className='explore-location-action';
-   button.innerHTML='灯台に昇る<small>CLIMB THE LIGHTHOUSE</small>';
-   button.onclick=()=>void gate('灯台の灯り','灯台の灯りをどこへ向けて指し示す？',[
-     ['南緯47度09分、西経126度43分',false],
-     ['南緯49度51分、西経128度34分',false],
-     ['南緯46度38分、西経125度57分',true],
-     ['南緯44度27分、西経127度51分',false]
-   ].map(([label,ok])=>({label,run:async()=>{
-     close();if((await getEscapeState())!=='unused')return;
-     await setEscapeState(ok?'coordinates':'failed');
-     if(ok){
-       localStorage.setItem('spr-story:escape-coordinates','1');
-       open('灯りは届いた','正しい座標へ光を向けた。もう一度探索に出ると、乗り場が示される。');
-     }else open('脱出失敗','光は海のどこにも届かなかった。脱出への挑戦は、これで終わりだ。');
-   }})));
-   actions.append(button);
+ let finalLighthouseRunning=false;
+ async function openFinalLighthouse(){
+   if(day!==7||!timeOK()||!eligible()||finalLighthouseRunning)return;
+   if((await getEscapeState())!=='unused')return;
+   finalLighthouseRunning=true;
+   const scene=document.createElement('div');scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');
+   scene.style.cssText='position:fixed;inset:0;z-index:2147483500;background:#000;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;padding:24px 0;box-sizing:border-box;opacity:0;transition:opacity .85s ease';
+   const image=document.createElement('img');image.src='lighthouse_top_night.jpg';image.alt='灯台の上から見下ろす夜の海';image.style.cssText='width:100%;max-height:62dvh;object-fit:contain;opacity:0;transition:opacity .9s ease';
+   const buttons=document.createElement('div');buttons.style.cssText='display:grid;gap:12px;width:min(560px,90vw)';scene.append(image,buttons);document.body.append(scene);
+   const dismiss=async()=>{scene.style.opacity='0';await wait(900);scene.remove();finalLighthouseRunning=false};
+   const button=(label,action)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='padding:13px 18px;min-height:44px;background:#071525;color:#eed7a6;border:1px solid #b99b60;font:inherit';b.onclick=action;return b};
+   const chooseCoordinates=()=>{
+     if(!timeOK()){void dismiss();return}
+     buttons.replaceChildren(...[
+       ['南緯47度09分、西経126度43分',false],['南緯49度51分、西経128度34分',false],
+       ['南緯46度38分、西経125度57分',true],['南緯44度27分、西経127度51分',false]
+     ].map(([label,ok])=>button(label,async()=>{
+       if(!timeOK()||!eligible()||(await getEscapeState())!=='unused')return;
+       buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
+       // A compare-and-set prevents another browser from choosing again.
+       if(!await window.__sprNamedEvents.advance('day7-escape',0,ok?1:3)){await dismiss();return}
+       await setEscapeState(ok?'coordinates':'failed');
+       await dismiss();
+       if(ok)open('灯りは届いた','帰る道を灯りで指し示した。');
+       else open('灯りは届かない','光は暗い海の中へ消えていった。');
+     })));
+   };
+   buttons.append(button('帰る道を灯りで指し示す',chooseCoordinates),button('戻る',dismiss));
+   void scene.offsetWidth;scene.style.opacity='1';await wait(900);image.style.opacity='1';
  }
+
  async function success(){
-   await setEscapeState('success');
+   if(await setEscapeState('success')===false)return;
    localStorage.setItem('spr-story:escape-success','1');
    open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。');
    try{
@@ -12842,25 +12564,16 @@ window.addEventListener('message',e=>{
  function showEscapeBoats(){
    open('乗り場を見つけた','人魚の入り江に、五隻の船が待っている。どの船で生還する？',
      ['TRUE SHORE','BEYOND','HOMEWARD','DAYBREAK','CROSSING'].map(name=>({label:name,run:async()=>{
-       close();if((await getEscapeState())!=='station')return;
+       close();if(!timeOK()||!eligible()||(await getEscapeState())!=='station')return;
        if(name==='TRUE SHORE')await success();
-       else{await setEscapeState('failed');open('脱出失敗','その船は島から離れようとしない。脱出の機会は失われた。')}
+       else{if(await setEscapeState('failed')===false)return;open('脱出失敗','その船は島から離れようとしない。脱出の機会は失われた。')}
      }})));
  }
  async function chooseStation(){
-   if((await getEscapeState())==='station'){
-     if(timeOK()&&eligible())showEscapeBoats();
-     return;
-   }
-   await gate('正しい乗り場はどこ？','',['ビーチに行く','灯台に行く','人魚の入江に行く'].map(x=>({label:x,run:async()=>{
-     close();if((await getEscapeState())!=='coordinates')return;
-     if(x!=='人魚の入江'){
-       await setEscapeState('failed');open('脱出失敗','そこは正しい乗り場ではなかった。もう一度やり直すことはできない。');return;
-     }
-     localStorage.setItem('spr-story:escape-station','1');
-     await setEscapeState('station');
-     showEscapeBoats();
-   }})),'coordinates');
+   if(!timeOK()||!eligible())return;
+   const state=await getEscapeState();
+   if(state==='coordinates'){await setEscapeState('station');showEscapeBoats()}
+   else if(state==='station')showEscapeBoats();
  }
  window.supabaseClientSpecial?.channel('spr-day7-escape-success').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{if(p.new?.announcement_type==='resort-escape-success')open('脱出成功','TRUE SHOREが島を離れた。宿泊者たちは、全員で生還した。')}).subscribe();
  document.addEventListener('click',e=>{
@@ -12885,7 +12598,7 @@ window.addEventListener('message',e=>{
      }
      if(day>=6&&day<=7&&!poisonedDive)setTimeout(staffEvent,160);
    }
-   if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(addLighthouseButton,260);
+   if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(()=>void openFinalLighthouse(),260);
    if(day===7&&coveButton){
      // 古い保存済み座標の有無で判定しない。必ず今回の脱出状態が座標成功であること。
      void getEscapeState().then(state=>{if(state==='coordinates'||state==='station')setTimeout(()=>void chooseStation(),260)});
