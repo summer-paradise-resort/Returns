@@ -1804,6 +1804,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
         <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
+        <button id="hernandoTalkButton" class="hernando-dialogue-choice hidden" type="button">エルナンドと話す</button>
         <button id="hernandoBullKnife" class="hernando-dialogue-choice hidden" type="button">エルナンドを刺す</button>
       </div>
       <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
@@ -2088,6 +2089,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       freshAcorn:{label:'新鮮なドングリ',detail:'島で採れた、つやのある新鮮なドングリ。',max:Infinity},
       antidote:{label:'酔い覚まし',detail:'毒のように強すぎるお酒には、これが一番効きます。',max:Infinity},
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
+      lucaBalsaFishingTicket:{label:'釣り上げた乗船チケット',detail:'水に濡れ、使い込まれた跡のある古いチケット。',image:'worn_boarding_ticket_luca_balsa_used.png',max:1},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'人魚の唄声を閉じ込めたと言われる、美しい貝。',max:Infinity},
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
@@ -2233,6 +2235,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     window.__sprGetBelongingCount=belongingCount;window.__sprGetCoasterCounts=coasterCounts;window.__sprGetPlayerId=()=>sprPlayerId();window.__sprGetGuestName=()=>storedGuestName;window.__sprRemainingLives=remainingLives;
     window.__sprConsumeStoryItem=async key=>{try{const next=await remoteInventoryAdjust(key,-1);if(next===null)return false;const items=loadBelongings();items[key]=next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item consume',e);return false}};
     window.__sprGrantStoryItem=async key=>{try{if(key==='jokerCard'&&await authoritativeInventoryCount('jokerCard')>=1)return false;const next=await remoteInventoryAdjust(key,1);if(next===null)return false;const items=loadBelongings();items[key]=Number.isFinite(Number(belongingsCatalog[key]?.max))?Math.min(Number(belongingsCatalog[key].max),next):next;localStorage.setItem(belongingsKey,JSON.stringify(items));renderRoomBelongings?.();return true}catch(e){console.warn('story item grant',e);return false}};
+    window.__sprGrantLocalStoryItem=(key,amount=1)=>{if(!belongingsCatalog[key])return false;const items=loadBelongings(),max=Number(belongingsCatalog[key]?.max);let next=Math.max(0,Math.floor(Number(items[key])||0)+Math.floor(Number(amount)||0));if(Number.isFinite(max))next=Math.min(max,next);items[key]=next;saveBelongings(items);renderRoomBelongings?.();return next};
     function belongingCount(key){const value=Number(loadBelongings()[key]||0);return Number.isFinite(value)?Math.max(0,Math.floor(value)):0}
     function remainingLives(){
       const belongings=loadBelongings();
@@ -3495,6 +3498,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
     window.getCurrentBarDrinkEffect=currentBarDrink;
+    window.__sprHasRegularBarDrinkForCurrentServiceDay=()=>{
+      const info=barPeriodInfo(),currentDay=resortDayNumber();
+      return Object.values(loadBarDrinkState()).some(record=>Boolean(record&&
+        String(record.serviceDate||'')===info.serviceDate&&
+        Number(record.resortDay||currentDay)===currentDay&&
+        !['room-service:ominous','room-service:ng'].includes(record.effectKey)&&
+        Date.now()<Number(record.dayExpiresAt||record.expiresAt||0)
+      ));
+    };
 
     function buildBarDrinkList(){
       barDrinkList.replaceChildren();
@@ -3752,6 +3764,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       ],
       night:[
         '夜になると、チップの音が少しだけ甘く聞こえるでしょう？　危険なものほど、耳に心地よい音を覚えているの。',
+        '毒になるほどお酒を飲んだ日の夜は、何もかも忘れてしまいなさい。……私の話もよ。ふふ。',
         '夜の海から馬のいななきが聞こえたら、すぐに逃げなさい。好奇心は、ときに命まで賭け金へ変えてしまうものよ。決して、その姿を確かめようと振り返らないこと。',
         '海が眠っているように見える？　いいえ。あのお方は、深いところで夢を見ていらっしゃるだけ。いつか瞼を開かれる、その瞬間を思うと……ふふ、胸が震えるわ。',
       ]
@@ -3761,7 +3774,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       'これ以上お顔を見せられたら、偶然という言葉まで、あなたが私を選んだのだと囁き始めてしまうわ。',
       '……それほど私に賭けてみたいのなら、今夜だけ、私のお部屋で二人きりの勝負をしてみる？',
       '賭けるものは、チップでなくても構わないわ。',
-      'ふふ、冗談よ。\nどこまでが、とは言わないけれど。'
+      'ふふ、冗談よ。',
+      'どこまでが、とは言わないけれど。'
     ];
     function emilyCasualAllDialogueIds(){return Object.entries(emilyCasualDialoguePools).flatMap(([period,lines])=>lines.map((_,index)=>`${period}:${index}`))}
     function normalizeEmilyCasualProgress(value){
@@ -3881,11 +3895,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const emilyCasualText=document.getElementById('casinoEmilyDialogueText');
     const emilyCasualNext=document.getElementById('casinoEmilyDialogueNext');
     const emilyCasualChoices=document.getElementById('casinoEmilyDialogueChoices');
-    let emilyCasualTypingTimer=null,emilyCasualTyping=false,emilyCasualSpans=[],emilyCasualNextAction=null;
+    let emilyCasualTypingTimer=null,emilyCasualTyping=false,emilyCasualSpans=[],emilyCasualNextAction=null,emilyCasualOnComplete=null;
     function stopEmilyCasualTyping(){
       if(emilyCasualTypingTimer!==null)clearTimeout(emilyCasualTypingTimer);
       emilyCasualTypingTimer=null;
       emilyCasualTyping=false;
+      emilyCasualOnComplete=null;
     }
     function closeEmilyCasualDialogue(){
       stopEmilyCasualTyping();emilyCasualSpans=[];emilyCasualNextAction=null;
@@ -3907,10 +3922,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function revealEmilyCasualLine(){
       if(!emilyCasualTyping)return false;
+      const onComplete=emilyCasualOnComplete;
       stopEmilyCasualTyping();emilyCasualSpans.forEach(span=>span.classList.add('in'));
+      onComplete?.();
       return true;
     }
-    function emilyCasualSay(line,nextAction,{showNext=true,speaker='運のみぞ知る'}={}){
+    function emilyCasualSay(line,nextAction,{showNext=true,speaker='運のみぞ知る',onComplete=null}={}){
       stopEmilyCasualTyping();
       if(emilyCasualSpeaker){emilyCasualSpeaker.textContent=speaker;emilyCasualSpeaker.classList.toggle('hidden',!speaker)}
       emilyCasualNextAction=nextAction;
@@ -3924,10 +3941,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         emilyCasualText.appendChild(span);return span;
       });
       emilyCasualTyping=true;
+      emilyCasualOnComplete=typeof onComplete==='function'?onComplete:null;
       let index=0;
       function tick(){
         if(!emilyCasualTyping)return;
-        if(index>=emilyCasualSpans.length){stopEmilyCasualTyping();return;}
+        if(index>=emilyCasualSpans.length){const onComplete=emilyCasualOnComplete;stopEmilyCasualTyping();onComplete?.();return;}
         emilyCasualSpans[index].classList.add('in');
         const char=chars[index++];
         const wait=char==='。'||char==='？'||char==='！'?230:char==='、'||char==='…'?140:45;
@@ -3960,8 +3978,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function emilyCasualRunLines(lines,done,index=0){
       if(index>=lines.length){done?.();return}
       const isLast=index===lines.length-1;
-      emilyCasualSay(lines[index],isLast?null:()=>emilyCasualRunLines(lines,done,index+1),{showNext:!isLast});
-      if(isLast)done?.();
+      emilyCasualSay(lines[index],isLast?null:()=>emilyCasualRunLines(lines,done,index+1),{showNext:!isLast,onComplete:isLast?done:null});
     }
     function emilyCasualNextClick(){
       if(revealEmilyCasualLine())return;
@@ -4903,7 +4920,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const dimensionalBagButton=document.getElementById('buyDimensionalBag'),acornButton=document.getElementById('buyFreshAcorn'),antidoteButton=document.getElementById('buyAntidote'),ultraMysteryButton=document.getElementById('buyUltraMystery');
       if(dimensionalBagButton){dimensionalBagButton.disabled=casinoChips<200;dimensionalBagButton.textContent=casinoChips<200?'チップ不足':'交換する'}
       if(acornButton){acornButton.disabled=casinoChips<500;acornButton.textContent=casinoChips<500?'チップ不足':'交換する'}
-      if(antidoteButton){antidoteButton.disabled=casinoChips<5000;antidoteButton.textContent=casinoChips<5000?'チップ不足':'交換する'}
+      if(antidoteButton){const poisoned=!!window.__sprIsHernandoPoisoned?.();antidoteButton.disabled=casinoChips<5000||!poisoned;antidoteButton.textContent=casinoChips<5000?'チップ不足':poisoned?'酔いを治す':'毒状態で交換できます'}
       if(ultraMysteryButton){ultraMysteryButton.disabled=casinoChips<10000000000;ultraMysteryButton.textContent=casinoChips<10000000000?'チップ不足':'交換する'}
       afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
       [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
@@ -4921,6 +4938,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function buyStoryItem(key,label,price){
       await refreshCasinoChipsFromSupabase();
+      if(key==='antidote'&&!window.__sprIsHernandoPoisoned?.()){renderPrizeCounter('酔いざましは、エルナンドの毒状態の時だけ交換できます。');return}
       if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
       const before=casinoChips;
@@ -4928,11 +4946,22 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const {data,error}=await window.supabaseClientSpecial.from('players').update({chips:before-price,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before).select('chips').maybeSingle();
         if(error)throw error;if(!data){renderPrizeCounter('チップ残高が更新されています。もう一度交換してください。');await refreshCasinoChipsFromSupabase();return}
         casinoChips=Math.max(0,Number(data.chips)||0);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();
-        try{const qty=await remoteInventoryAdjust(key,1);if(qty===null)throw new Error('inventory unavailable');const items=loadBelongings();items[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(items));}
-        catch(error){await window.supabaseClientSpecial.from('players').update({chips:before,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before-price);casinoChips=before;previousCasinoChips=before;localStorage.setItem(casinoChipKey,String(before));syncCasinoBalances();throw error}
+        if(key!=='antidote'){
+          try{const qty=await remoteInventoryAdjust(key,1);if(qty===null)throw new Error('inventory unavailable');const items=loadBelongings();items[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(items));}
+          catch(error){await window.supabaseClientSpecial.from('players').update({chips:before,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before-price);casinoChips=before;previousCasinoChips=before;localStorage.setItem(casinoChipKey,String(before));syncCasinoBalances();throw error}
+        }
+        if(key==='antidote'){
+          const cleared=await window.__sprClearHernandoPoison?.();
+          if(!cleared)throw new Error('poison state could not be cleared');
+          renderPrizeCounter('酔いざましを交換しました。');
+          if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+          mysteryShow('酔いざまし','強すぎるアルコールにはこれがよく効く。\n酔いが治った。',[{label:'閉じる',run:mysteryClose}],'✚');
+          return;
+        }
         renderPrizeCounter(`${label}を1個交換しました。所持 ${belongingCount(key)}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();
       }catch(error){console.warn('story item purchase failed',error);renderPrizeCounter('景品交換を完了できませんでした。残高と所持品をご確認ください。');await hydratePersistentState()}
     }
+    window.__sprRenderPrizeCounter=renderPrizeCounter;
     document.getElementById('buyDimensionalBag')?.addEventListener('click',()=>buyStoryItem('dimensionalBag','次元バック',200));
     document.getElementById('buyFreshAcorn')?.addEventListener('click',()=>buyStoryItem('freshAcorn','新鮮なドングリ',500));
     document.getElementById('buyAntidote')?.addEventListener('click',()=>buyStoryItem('antidote','酔い覚まし',5000));
@@ -7409,7 +7438,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const hernandoArenaBack=document.getElementById('hernandoArenaBack');
     const hernandoDialogue=document.getElementById('hernandoDialogue'),hernandoDialogueText=document.getElementById('hernandoDialogueText'),hernandoDialogueNext=document.getElementById('hernandoDialogueNext');
     const hernandoDialogueName=hernandoDialogue?.querySelector('.hernando-dialogue-name');
-    const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline'),hernandoBullKnife=document.getElementById('hernandoBullKnife');
+    const hernandoDialogueChoices=document.getElementById('hernandoDialogueChoices'),hernandoBullAccept=document.getElementById('hernandoBullAccept'),hernandoBullDecline=document.getElementById('hernandoBullDecline'),hernandoTalkButton=document.getElementById('hernandoTalkButton'),hernandoBullKnife=document.getElementById('hernandoBullKnife');
     const hernandoDrinkGame=document.getElementById('hernandoDrinkGame'),hernandoDrinkRound=document.getElementById('hernandoDrinkRound'),hernandoDrinkButtons=[...document.querySelectorAll('[data-hernando-drink]')];
     // Initial entrance movie is hosted on GitHub Pages (same directory as HTML). After it ends, the arena shows hernandos_bullring01.jpg and loops hernandos_bullring.mp3.
     // Upload the compressed video as hernandos_bullring.mp4 in the same directory as the published HTML.
@@ -7479,13 +7508,32 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       windowSprFlagCache['hernando-poison-until']=until;
       setRemoteFlag('hernando-poison-until',until).catch(e=>console.warn('hernando poison sync',e));
       if(activeRoom)updateRoomPhoto(true);
+      window.__sprRenderPrizeCounter?.();
       return until;
+    }
+    async function clearHernandoPoison(){
+      localStorage.removeItem(hernandoPoisonStorageKey());
+      delete windowSprFlagCache['hernando-poison-until'];
+      await setRemoteFlag('hernando-poison-until',0).catch(()=>{});
+      if(activeRoom)updateRoomPhoto(true);
+      window.__sprRenderPrizeCounter?.();
+      return true;
     }
     window.__sprHasBothDrinkKinds=()=>!!activeNgDrinkEffect()&&!!activeOminousDrinkEffect();
     window.__sprHasAnyHorrorDrink=()=>!!activeNgDrinkEffect()||!!activeOminousDrinkEffect();
     window.__sprHasNgDrinkEffect=()=>!!activeNgDrinkEffect();
     window.__sprGetActiveHorrorDrink=activeRoomServiceHorrorDrink;
-    window.__sprIsHernandoPoisoned=isHernandoPoisoned;window.__sprUseAntidote=async()=>{if(!isHernandoPoisoned())return {ok:false,message:'酔いは、もう残っていない。'};const next=await remoteInventoryAdjust('antidote',-1);if(next===null)return {ok:false,message:'所持品を確認できません。'};const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));localStorage.removeItem(hernandoPoisonStorageKey());delete windowSprFlagCache['hernando-poison-until'];await setRemoteFlag('hernando-poison-until',0).catch(()=>{});if(activeRoom)updateRoomPhoto(true);renderRoomBelongings();return {ok:true,message:'酔い覚ましを飲んだ。強すぎる酒の酔いが、少しずつ引いていく。'}};
+    window.__sprIsHernandoPoisoned=isHernandoPoisoned;
+    window.__sprClearHernandoPoison=clearHernandoPoison;
+    window.__sprRenderPrizeCounter?.();
+    window.__sprUseAntidote=async()=>{
+      if(!isHernandoPoisoned())return {ok:false,message:'酔いは、もう残っていない。'};
+      const next=await remoteInventoryAdjust('antidote',-1);
+      if(next===null)return {ok:false,message:'所持品を確認できません。'};
+      const items=loadBelongings();items.antidote=next;localStorage.setItem(belongingsKey,JSON.stringify(items));
+      await clearHernandoPoison();renderRoomBelongings();
+      return {ok:true,message:'強すぎるアルコールにはこれがよく効く。\n酔いが治った。'};
+    };
 
     function hernandoIntroSeenKey(){return `spr-hernando-intro-seen:${playerStorageId}`}
     function hernandoVisitCountKey(){return `spr-hernando-visit-count:${playerStorageId}`}
@@ -7750,11 +7798,36 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         'まだ終わりじゃない。次を選べ。'
       ],'drinkSafe','drinkNext');
     }
+    const HERNANDO_POST_LIMIT_LINES=[
+      '妙なものを見たいなら、毒だけじゃ足りない。飲む酒と、行く場所も考えろ。',
+      '酔っていては見つからないものもいる。海へ出る前に、何を飲んだか思い出せ。',
+      '灯台の海へ行くなら、夜だ。酒選びを間違えるな。',
+      '奇妙なものすべてに、毒が要るわけじゃない。昼の釣りも試してみろ。',
+      '俺の表情から毒杯を当てようとしてる？　やめておけ。俺は今、夕食のことを考えている。',
+      '毒杯の場所を知りたいなら、俺の目を見ろ。……答えが見つかる前に、目をそらせなくなるかもしれないが。'
+    ];
+    let hernandoLastPostLimitLine=-1;
+    function showHernandoPostLimitChoices(){
+      hernandoDialogueMode='postLimitChoice';
+      hernandoDialogueNext.classList.add('hidden');
+      hernandoDialogueChoices.classList.remove('hidden');
+      hernandoBullAccept.classList.add('hidden');
+      hernandoTalkButton.classList.remove('hidden');
+      hernandoBullDecline.textContent='闘牛場を出る';
+      hernandoBullKnife?.classList.toggle('hidden',belongingCount('mysteryKnife')<1);
+    }
     function beginHernandoDialogue(visit){
       hernandoDrinkRoundNo=1;hernandoPoisonChoice='';hernandoDrinkGame?.classList.add('hidden');
       const key=visit<=1?1:(visit===2?2:3),script=HERNANDO_DIALOGUE[key];
-      setHernandoDialogueLines(script.intro,'intro','choice');
+      hernandoBullAccept.classList.remove('hidden');
+      hernandoBullDecline.textContent='今夜の牡牛にはならない';
+      hernandoTalkButton?.classList.add('hidden');
       hernandoDialogue.dataset.visitGroup=String(key);
+      if(hernandoDailyChallengeCount()>=2){
+        setHernandoDialogueLines(['今夜の勝負はここまでだ。話なら、少しくらい付き合ってやる。'],'postLimitIntro','postLimitChoice');
+        return;
+      }
+      setHernandoDialogueLines(script.intro,'intro','choice');
     }
     function closeHernandoArena(fadeOut=false){
       hernandoDialogueTypeToken++;hernandoDialogueTyping=false;hernandoDialogueCurrentText='';
@@ -7825,7 +7898,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function startHernandoDescent(){
       if(!hernandoArenaTimeAllowed()){setExploreMessage('闘牛場へ続く扉は、夕暮れから夜明け前までしか開かないようだ。');return}
-      if(hernandoDailyChallengeCount()>=2){setExploreMessage('今夜の挑戦は、すでに二度までだ。');return}
       hideHernandoDoorChoice();
       clearHernandoDescentTimers();
       const introSeen=hasSeenHernandoIntro();hernandoEntryWasIntroSeen=introSeen;
@@ -7885,6 +7957,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         hernandoDialogueNext.classList.add('hidden');hernandoDialogueChoices.classList.remove('hidden');
         hernandoBullKnife?.classList.toggle('hidden',belongingCount('mysteryKnife')<1);return;
       }
+      if(hernandoDialogueAfter==='postLimitChoice'){showHernandoPostLimitChoices();return}
+      if(hernandoDialogueAfter==='postLimitReturn'){showHernandoPostLimitChoices();return}
       if(hernandoDialogueAfter==='drinkGame'){showHernandoDrinkRound();return}
       if(hernandoDialogueAfter==='drinkNext'){showHernandoDrinkRound();return}
       if(hernandoDialogueAfter==='arena'){
@@ -7902,9 +7976,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].accept,'accept','drinkGame');
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
+      if(hernandoDialogueMode==='postLimitChoice'){
+        setHernandoDialogueLines(['今日はここまでだな。次に来る時は、また別の話をしてやる。'],'postLimitExit','exit');return;
+      }
       cancelHernandoArenaBgmFade(true);
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
       setHernandoDialogueLines(HERNANDO_DIALOGUE[key].decline,'decline','exit');
+    });
+    if(hernandoTalkButton)hernandoTalkButton.addEventListener('click',()=>{
+      let index=Math.floor(Math.random()*HERNANDO_POST_LIMIT_LINES.length);
+      if(HERNANDO_POST_LIMIT_LINES.length>1&&index===hernandoLastPostLimitLine){
+        index=(index+1+Math.floor(Math.random()*(HERNANDO_POST_LIMIT_LINES.length-1)))%HERNANDO_POST_LIMIT_LINES.length;
+      }
+      hernandoLastPostLimitLine=index;
+      setHernandoDialogueLines([HERNANDO_POST_LIMIT_LINES[index]],'postLimitTalk','postLimitReturn');
     });
     hernandoBullKnife?.addEventListener('click',async()=>{
       if(!confirm('ナイフを1本消費して、エルナンドを刺しますか？'))return;
@@ -8005,9 +8090,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const config=roomVisualConfig(activeRoom);if(!config)return;
       const time=roomTimeIndex();
       updateVillaPoolBackdrop(time);
-      const now=new Date();
-      document.getElementById('roomClock').textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
-      document.getElementById('roomClock').dateTime=now.toISOString();
+      updateRoomClock();
       if(!force&&time===shownTime)return;
       shownTime=time;
       roomLounge.classList.remove('time-day','time-sunset','time-night');
@@ -8051,6 +8134,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       villaDarkroomRender();
       updateRoomContextAction();
     }
+    function updateRoomClock(){
+      const clock=document.getElementById('roomClock');if(!clock)return;
+      const now=new Date();
+      clock.textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
+      clock.dateTime=now.toISOString();
+    }
     function chooseRoomScene(scene){if(activeRoom==='501')primeVillaDarkroomSharedAudio();const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);villaDarkroomOnSceneChanged(previousScene,scene);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
@@ -8083,6 +8172,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     roomPhoto.addEventListener('load',()=>{roomImageError.classList.add('hidden');roomPhoto.style.opacity='1'});
     setInterval(()=>updateRoomPhoto(),30000);
+    updateRoomClock();
+    setInterval(()=>{if(activeRoom&&roomView.classList.contains('room-active'))updateRoomClock()},1000);
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
     let roomMessageCache=[],roomServiceCache=[],roomRealtimeChannel=null;
     function roomMessages(){return roomMessageCache}
@@ -9233,10 +9324,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(item.detail){const detail=document.createElement('small');detail.textContent=item.detail;info.append(detail)}main.append(info);
         const qty=document.createElement('div');qty.className='belongings-count';qty.textContent=`× ${count}`;
         const side=document.createElement('div');side.className='mystery-sheet-side';side.append(qty);
-        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='lucaBalsaDepartureTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
+        if(key==='mysteryBoxTicket'||key==='mysteryKnife'||key==='mysteryLetter'||key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'||key==='antidote'||key.startsWith('mysteryPostcard')){
           const action=document.createElement('button');action.type='button';action.className='mystery-action';
-          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
-          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
+          action.textContent=key==='mysteryBoxTicket'?'カジノで使う':key==='mysteryKnife'?'使用する':key==='antidote'?'使用する':key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket'?'チケットを見る':key.startsWith('mysteryPostcard')?'カードを読む':'手紙を読む';
+          action.addEventListener('click',async()=>{if(key==='mysteryBoxTicket')openMysteryBoxPrompt();else if(key==='mysteryKnife')openMysteryKnifePrompt();else if(key==='antidote'){const result=await window.__sprUseAntidote?.();mysteryShow('酔い覚まし',result?.message||'使用できませんでした。',[{label:'閉じる',run:mysteryClose}],'✚')}else if(key==='lucaBalsaDepartureTicket'||key==='lucaBalsaFishingTicket')openBelongingPreview(item.image,item.label);else if(key.startsWith('mysteryPostcard'))openMysteryPostcard(key);else openMysteryLetter()});
           side.append(action);
         }
         row.append(main,side);roomBelongingsList.append(row)
@@ -10436,12 +10527,76 @@ window.addEventListener('message',e=>{
   function playExploreOneShot(audio,volume=1){
     try{audio.pause();audio.currentTime=0;audio.volume=volume;const playPromise=audio.play();if(playPromise?.catch)playPromise.catch(()=>{})}catch{}
   }
+  function lucaTicketFishingEligible(actionButton){
+    const currentDay=Number(document.documentElement.dataset.resortDay||1);
+    return currentDay>=3&&currentDay<=6&&explorePeriod()==='day'&&
+      document.getElementById('exploreLocationBg')?.dataset.spot==='beach'&&
+      actionButton?.dataset.exploreAction==='fishing'&&!!window.__sprHasAnyHorrorDrink?.()&&
+      Number(window.__sprGetBelongingCount?.('lucaBalsaFishingTicket')||0)<1;
+  }
+  let lucaTicketFishingRunning=false;
+  const lucaTicketReelAudio=new Audio('fishing_reel_winding.mp3');
+  lucaTicketReelAudio.preload='auto';lucaTicketReelAudio.playsInline=true;
+  function playExploreAudioToEnd(audio,maxWait=18000){
+    return new Promise(resolve=>{
+      if(!audio){resolve();return}
+      let done=false;
+      const finish=()=>{if(done)return;done=true;clearTimeout(timer);audio.removeEventListener('ended',finish);audio.removeEventListener('error',finish);resolve()};
+      const timer=setTimeout(finish,maxWait);
+      audio.addEventListener('ended',finish,{once:true});audio.addEventListener('error',finish,{once:true});
+      try{audio.pause();audio.currentTime=0;audio.muted=false;audio.volume=1;const playing=audio.play();if(playing?.catch)playing.catch(finish)}catch{finish()}
+    });
+  }
+  function primeLucaTicketEventAudio(audio){
+    if(!audio)return;
+    const wasMuted=audio.muted;
+    try{audio.pause();audio.currentTime=0;audio.muted=true;const playing=audio.play();if(playing?.then)playing.then(()=>{audio.pause();audio.currentTime=0;audio.muted=wasMuted}).catch(()=>{audio.muted=wasMuted});else audio.muted=wasMuted}catch{audio.muted=wasMuted}
+  }
+  async function showLucaTicketFishingEvent(){
+    if(lucaTicketFishingRunning)return;
+    lucaTicketFishingRunning=true;
+    const itemGrantPromise=Promise.resolve(window.__sprGrantStoryItem?.('lucaBalsaFishingTicket')).catch(()=>false);
+    clearActionMessage();
+    const overlay=document.createElement('div');
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','乗船チケットを釣り上げた');
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));box-sizing:border-box;background:#000;color:#fff;opacity:0;transition:opacity .75s ease,background-color .75s ease';
+    const content=document.createElement('div');
+    content.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,26px);width:min(94vw,820px);max-height:100%;opacity:0;transition:opacity .75s ease';
+    overlay.append(content);document.body.append(overlay);
+    try{
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      overlay.style.opacity='1';await new Promise(resolve=>setTimeout(resolve,780));
+      await playExploreAudioToEnd(lucaTicketReelAudio);
+      await playExploreAudioToEnd(exploreWaterExitAudio);
+      const image=document.createElement('img');image.src='worn_boarding_ticket_luca_balsa_used.png';image.alt='水に濡れ、使い込まれた乗船チケット';image.draggable=false;
+      image.style.cssText='display:block;width:100%;height:auto;max-height:68dvh;object-fit:contain;object-position:center';
+      const caption=document.createElement('div');caption.textContent='チケットが釣れた。';
+      caption.style.cssText='text-align:center;font:clamp(16px,4vw,22px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.08em;color:#fff';
+      const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent='CLOSE';
+      closeButton.style.cssText='min-width:92px;min-height:44px;padding:10px 22px;border:1px solid rgba(230,204,142,.72);background:rgba(5,21,36,.9);color:#f0d89d;font:11px Georgia,serif;letter-spacing:.16em';
+      content.append(image,caption,closeButton);
+      await Promise.race([image.decode?.().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,4000))]);
+      const closed=new Promise(resolve=>closeButton.addEventListener('click',resolve,{once:true}));
+      content.style.opacity='1';overlay.style.backgroundColor='rgba(0,0,0,0)';
+      if(!(await itemGrantPromise))window.__sprGrantLocalStoryItem?.('lucaBalsaFishingTicket',1);
+      closeButton.focus({preventScroll:true});await closed;
+      overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,780));overlay.remove();
+    }catch(error){console.error('Luca Balsa ticket fishing event:',error);overlay.remove()}
+    finally{lucaTicketFishingRunning=false}
+  }
   // カメラ音・釣り音・ダイビング音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
   document.addEventListener('click',event=>{
     const cameraButton=event.target.closest?.('[data-explore-action="camera"]');
     if(cameraButton&&exploreView.contains(cameraButton))playExploreOneShot(exploreCameraAudio,.9);
     const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
-    if(fishingButton&&exploreView.contains(fishingButton))playExploreOneShot(exploreFishingAudio,1);
+    if(fishingButton&&exploreView.contains(fishingButton)){
+      if(lucaTicketFishingEligible(fishingButton)){
+        event.preventDefault();event.stopImmediatePropagation();
+        primeLucaTicketEventAudio(lucaTicketReelAudio);primeLucaTicketEventAudio(exploreWaterExitAudio);
+        void showLucaTicketFishingEvent();return;
+      }
+      playExploreOneShot(exploreFishingAudio,1);
+    }
     const divingButton=event.target.closest?.('[data-explore-action="snorkel"]');
     if(divingButton&&exploreView.contains(divingButton)&&selectedSpot!=='lighthouse')playExploreOneShot(exploreWaterEntryAudio,1);
   },true);
@@ -12087,16 +12242,13 @@ window.addEventListener('message',e=>{
      starHedgehogScenePlaying=false;
    }
  }
- // 漂流ラッコと硝子角の小鹿は、酔いがなく、現在の時間帯に
- // 不穏・NG以外のBARドリンクを飲んでいる場合だけ遭遇できる。
- function eligibleRegularBarDrink(period){
-   const drink=window.getCurrentBarDrinkEffect?.();
-   return !poison()&&!!drink&&drink.period===period&&
-     !['room-service:ominous','room-service:ng'].includes(drink.effectKey)&&
-     Date.now()<Number(drink.expiresAt||0);
+ // 漂流ラッコと硝子角の小鹿は、毒状態ではなく、当日のサービス時間内に
+ // 不穏・NG以外のBARドリンクを飲んでいれば、ドリンクの時間帯・種類を問わず遭遇できる。
+ function eligibleRegularBarDrink(){
+   return !poison()&&!!window.__sprHasRegularBarDrinkForCurrentServiceDay?.();
  }
  function fawnEligible(){
-   return day>=5&&day<=6&&!animalSeen('glass-fawn')&&eligibleRegularBarDrink('night');
+   return day>=5&&day<=6&&!animalSeen('glass-fawn')&&eligibleRegularBarDrink();
  }
  async function encounterFawn(){
    loadAnimalStageImages(fawnStage);loadAnimalStageImages(fawnCloseupStage);
@@ -12440,8 +12592,8 @@ window.addEventListener('message',e=>{
    // 他の動物用の「不穏＋NGドリンク両方」判定より先に個別条件を確認する。
    if(period==='night'&&spot==='lighthouse'&&action==='fishing'&&smokeLizardEligible()&&!animalSeen('smoke-lizard'))return 'smoke-lizard';
    // 漂流ラッコはDay2〜6の夕方、子鹿はDay5〜6の夜。
-   // どちらも酔いなし＋不穏・NG以外の時間帯に合ったドリンクが必要。
-   if(day>=2&&day<=6&&period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter')&&eligibleRegularBarDrink('sunset'))return 'drifting-otter';
+   // どちらも酔いなし＋同じサービス日の不穏・NG以外のBARドリンクが必要。
+   if(day>=2&&day<=6&&period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter')&&eligibleRegularBarDrink())return 'drifting-otter';
    if(period==='night'&&spot==='beach'&&action==='camera'&&fawnEligible())return 'glass-fawn';
    if(!anomalyEligible())return '';
    if(period==='sunset'&&spot==='beach'&&action==='camera'&&!animalSeen('seabird'))return 'seabird';
@@ -12459,9 +12611,20 @@ window.addEventListener('message',e=>{
    if(kind==='black-horse')return encounterBlackHorse();
    if(kind==='glass-fawn')return encounterFawn();
  }
- // Day 4: room apparition after four minutes with an ominous or NG bar drink active.
+ // Day 4: 「ラストゲスト」を飲んだ夜、ROOM滞在4分後にArthur Greyが現れる。
  let arthurArrived=false;
- function checkArthur(){if(day!==4||arthurArrived||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;if(Date.now()-window.__sprRoomEntryTime<240000||!window.__sprGetActiveHorrorDrink?.())return;arthurArrived=true;window.__sprArthurRoom=window.__sprActiveRoom;const label=document.getElementById('roomOccupancyText');if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}const list=document.getElementById('roomOccupancyNames');if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。')}
+ function checkArthur(){
+   if(day!==4||arthurArrived||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;
+   if(Date.now()-window.__sprRoomEntryTime<240000)return;
+   const drink=window.__sprGetActiveHorrorDrink?.();
+   if(drink?.name!=='ラストゲスト')return;
+   arthurArrived=true;window.__sprArthurRoom=window.__sprActiveRoom;
+   const label=document.getElementById('roomOccupancyText');
+   if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
+   const list=document.getElementById('roomOccupancyNames');
+   if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
+   open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。')
+ }
  setInterval(checkArthur,1500);
  const lines=["I paid for paradise. Not for this.","You shouldn't be here.","This was supposed to be paradise.","Don't trust the coordinates.","The sea won't let us leave.","I can still hear it breathing.","We were never meant to leave.","She knew. She knew everything.","It's still sleeping beneath us.","Please... don't let it wake."];
  let sequenceStarted=false;
