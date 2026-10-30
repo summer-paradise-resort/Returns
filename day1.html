@@ -5157,7 +5157,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
       // 小鹿の草むら効果音中と、海鳥が名前を呼ぶ間は、1秒ごとのBGM同期でも再開しない。
-      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed||window.__sprGiantShadowBgmSuppressed){pauseExploreMusic();return;}
+      if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed||window.__sprGiantShadowBgmSuppressed||window.__sprLighthouseDiveBgmSuppressed){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
       const open=Boolean(view?.classList.contains('open'));
       const period=currentTokyoPeriod();
@@ -10995,16 +10995,18 @@ window.addEventListener('message',e=>{
   diveStoryImage.draggable=false;
   diveStoryImage.style.cssText='display:block;width:min(94vw,900px);height:auto;max-height:52vh;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(201,170,104,.48);background:#020a12;opacity:0;transition:opacity 1.2s ease';
   const diveStoryButtons=document.createElement('div');
-  diveStoryButtons.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;width:min(620px,94vw)';
+  diveStoryButtons.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;width:min(620px,94vw);opacity:1;transition:opacity .65s ease';
   lighthouseDiveOverlay.append(diveStoryImage,diveStoryText,diveStoryButtons);
   const diveWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const makeDiveButton=(label,onClick)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.style.cssText='min-height:50px;padding:12px 18px;border:1px solid #c9aa68;background:rgba(5,14,27,.94);color:#f5e6bf;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;cursor:pointer';button.addEventListener('click',onClick);return button};
   function showDiveOverlay(){lighthouseDiveOverlay.style.display='flex';lighthouseDiveOverlay.style.opacity='0';void lighthouseDiveOverlay.offsetWidth;lighthouseDiveOverlay.style.opacity='1'}
-  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprResumeExploreBgmAfterGimmick?.()}
+  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprLighthouseDiveBgmSuppressed=false;window.__sprResumeExploreBgmAfterGimmick?.()}
   function diveBlackPage(text,buttons=[]){diveStoryImage.style.display='none';diveStoryText.textContent=text;diveStoryButtons.replaceChildren(...buttons);}
   async function playLighthouseLeap(){
     if(!await window.__sprNamedEvents.claim('lighthouse-dive')){await hideDiveOverlay();return}
     localStorage.setItem(lighthouseDiveSeenKey,'1');
+    // 実際に飛び込む瞬間までは波音を残し、水中へ移る時点で探索BGMを止める。
+    window.__sprLighthouseDiveBgmSuppressed=true;window.__sprPauseExploreBgmForGimmick?.();
     diveBlackPage('');showDiveOverlay();
     underwaterBubblesAudio.pause();try{underwaterBubblesAudio.currentTime=0}catch{}underwaterBubblesAudio.volume=0;const bubblesPromise=underwaterBubblesAudio.play();if(bubblesPromise?.catch)bubblesPromise.catch(()=>{});
     const diveAudio=exploreWaterEntryAudio;diveAudio.preload='auto';diveAudio.playsInline=true;diveAudio.volume=1;
@@ -11016,20 +11018,28 @@ window.addEventListener('message',e=>{
     try{diveAudio.pause();diveAudio.currentTime=0;const p=diveAudio.play();if(p?.catch)p.catch(()=>setTimeout(revealWreck,2600))}catch{setTimeout(revealWreck,2600)}
   }
   async function startLighthouseDiveEvent(){
-    clearActionMessage();window.__sprPauseExploreBgmForGimmick?.();
-    diveStoryImage.style.display='none';diveBlackPage('いつもいるスタッフがいない。',[makeDiveButton('NEXT　›',async()=>{
+    clearActionMessage();
+    diveStoryText.style.opacity='1';diveStoryButtons.style.opacity='1';diveStoryImage.style.display='none';diveBlackPage('いつもいるスタッフがいない。',[makeDiveButton('NEXT　›',async()=>{
+      // NEXT後はいったん真っ黒な画面を2秒保ち、灯台の上の景色へ切り替える。
+      lighthouseDiveOverlay.style.background='#02070c';diveStoryText.style.transition='opacity .65s ease';diveStoryText.style.opacity='0';diveStoryButtons.style.opacity='0';
+      await diveWait(650);
+      diveStoryImage.style.display='none';diveStoryText.textContent='';diveStoryButtons.replaceChildren();
+      await diveWait(2000);
       diveStoryImage.src='lighthouse_top_night.jpg';diveStoryImage.alt='灯台の上から見下ろす夜の海';diveStoryImage.style.opacity='0';diveStoryImage.style.display='block';requestAnimationFrame(()=>{diveStoryImage.style.opacity='1'});
-      diveStoryText.textContent='海が、すごく下に見える。';
+      diveStoryText.textContent='海が、すごく下に見える。';diveStoryText.style.opacity='0';diveStoryButtons.style.opacity='0';
       diveStoryButtons.replaceChildren(makeDiveButton('飛び降りる',async()=>{
         diveStoryButtons.replaceChildren();
         diveStoryImage.style.display='none';diveStoryText.textContent='';
-        const glitch=document.getElementById('casinoElevatorGlitch'),glitchSound=document.getElementById('casinoElevatorGlitchSound');
+        const glitchSource=document.getElementById('casinoElevatorGlitch'),glitchSound=document.getElementById('casinoElevatorGlitchSound');
+        const glitch=glitchSource?.cloneNode(true)||null;
         lighthouseDiveOverlay.style.background='transparent';
-        if(glitch){glitch.classList.add('open');glitch.setAttribute('aria-hidden','false')}
-        if(glitchSound){try{glitchSound.currentTime=0;glitchSound.volume=.85;const p=glitchSound.play();if(p?.catch)p.catch(()=>{})}catch{}}
-        await diveWait(900);
+        const previousGlitchLoop=glitchSound?.loop||false;
+        if(glitch){glitch.removeAttribute('id');glitch.style.zIndex='2147483001';document.body.append(glitch);glitch.classList.add('open');glitch.setAttribute('aria-hidden','false')}
+        if(glitchSound){try{glitchSound.currentTime=0;glitchSound.volume=.85;glitchSound.loop=true;const p=glitchSound.play();if(p?.catch)p.catch(()=>{})}catch{}}
+        await diveWait(2000);
         if(glitch){glitch.classList.remove('open');glitch.setAttribute('aria-hidden','true')}
-        if(glitchSound){glitchSound.pause();try{glitchSound.currentTime=0}catch{}}
+        if(glitch){glitch.remove()}
+        if(glitchSound){glitchSound.pause();glitchSound.loop=previousGlitchLoop;try{glitchSound.currentTime=0}catch{}}
         lighthouseDiveOverlay.style.background='#02070c';
         diveStoryImage.style.display='none';diveStoryText.textContent='本当に飛び降りますか？';
         diveStoryButtons.replaceChildren(
@@ -11037,6 +11047,7 @@ window.addEventListener('message',e=>{
           makeDiveButton('飛び降りない。',()=>{hideDiveOverlay()})
         );
       }));
+      requestAnimationFrame(()=>{diveStoryText.style.opacity='1';diveStoryButtons.style.opacity='1'});
     })]);showDiveOverlay();
   }
   const lighthouseDiveSeenKey=`spr-lighthouse-dive-seen:${encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest')}:day3-6`;
