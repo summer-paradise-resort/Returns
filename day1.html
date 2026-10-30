@@ -10718,6 +10718,31 @@ window.addEventListener('message',e=>{
   }
   let activeExploreVideoEvent=null;
   const day1ExploreIntroGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+  const day3LighthouseStoryGuest=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
+  const day3LighthouseStoryCountKey=`spr-day3-lighthouse-story-count:${day3LighthouseStoryGuest}`;
+  const day3LighthouseStorySeenKey=`spr-day3-lighthouse-story-seen:${day3LighthouseStoryGuest}`;
+  const day3LighthouseStoryPendingKey=`spr-day3-lighthouse-story-pending:${day3LighthouseStoryGuest}`;
+  const day3LighthouseStoryLines=[
+    `${(localStorage.getItem('spr-guest-name')||'○○').trim()}様、リゾートでのご滞在はいかがでしょうか。`,
+    '灯台にも何度か足を運ばれたようですね。あちらからの眺めはお楽しみいただけましたか？',
+    '……灯台は景色の美しい場所ですが、このリゾートにまつわる古い話も残っております。かつて、ここで失踪事件があったそうでございます。',
+    'その際、出資者であったアーサー・グレイ氏の遺品が見つかったと伝えられております。BARで「ラストゲスト」と呼ばれているカクテルは、その遺品にちなんで名付けられたそうです。',
+    '実は明日が、グレイ氏のお誕生日でございます。スタッフの中にも、献杯として「ラストゲスト」を注文する者がおります。由来がお気になるようでしたら、明日の夜に一杯お試しになってはいかがでしょう。',
+    'ただ、お飲みになったあとは、お部屋から出ないほうがよろしいですよ。うっかり、グレイ氏と同じ目に遭ってしまうかもしれません。',
+    '……なーんて、冗談でございます。はははっ。'
+  ];
+  function recordDay3LighthouseStoryExplore(spotKey){
+    if(Number(document.documentElement.dataset.resortDay||1)!==3||spotKey!=='lighthouse'||localStorage.getItem(day3LighthouseStorySeenKey)==='1'||localStorage.getItem(day3LighthouseStoryPendingKey)==='1')return;
+    const count=Math.min(3,(Number(localStorage.getItem(day3LighthouseStoryCountKey))||0)+1);
+    localStorage.setItem(day3LighthouseStoryCountKey,String(count));
+    if(count>=3)localStorage.setItem(day3LighthouseStoryPendingKey,'1');
+  }
+  function showPendingDay3LighthouseStory(){
+    if(Number(document.documentElement.dataset.resortDay||1)!==3||localStorage.getItem(day3LighthouseStoryPendingKey)!=='1')return;
+    localStorage.removeItem(day3LighthouseStoryPendingKey);
+    localStorage.setItem(day3LighthouseStorySeenKey,'1');
+    window.__sprShowStaffDialogueSequence?.(day3LighthouseStoryLines,null,'STAFF');
+  }
   const day1ExploreStaffIntroConfig={
     beach:{
       countKey:`spr-day1-beach-explore-count:${day1ExploreIntroGuest}`,
@@ -10765,7 +10790,7 @@ window.addEventListener('message',e=>{
     activeExploreVideoEvent=null;
     window.__sprExploreVideoPlaying=!resumeBgm;
     if(resumeBgm)window.__sprResumeExploreBgmAfterGimmick?.();
-    if(resumeBgm)showPendingDay1ExploreStaffIntro();
+    if(resumeBgm){showPendingDay1ExploreStaffIntro();showPendingDay3LighthouseStory()}
   }
   // iPhoneの標準フルスクリーン動画プレイヤーではなく、闘牛場と同じページ内再生に統一。
   // 音声付き再生がSafariにブロックされた場合は、専用ボタンでユーザー操作から再開する。
@@ -11023,7 +11048,7 @@ window.addEventListener('message',e=>{
   const diveWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const makeDiveButton=(label,onClick)=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.style.cssText='min-height:50px;padding:12px 18px;border:1px solid #c9aa68;background:rgba(5,14,27,.94);color:#f5e6bf;font:600 15px/1.5 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em;cursor:pointer';button.addEventListener('click',onClick);return button};
   function showDiveOverlay(){lighthouseDiveOverlay.style.display='flex';lighthouseDiveOverlay.style.opacity='0';void lighthouseDiveOverlay.offsetWidth;lighthouseDiveOverlay.style.opacity='1'}
-  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprLighthouseDiveBgmSuppressed=false;window.__sprResumeExploreBgmAfterGimmick?.()}
+  async function hideDiveOverlay(){lighthouseDiveOverlay.style.opacity='0';await diveWait(820);lighthouseDiveOverlay.style.display='none';diveStoryImage.removeAttribute('src');diveStoryButtons.replaceChildren();diveStoryText.textContent='';exploreWaterEntryAudio.pause();underwaterBubblesAudio.pause();underwaterBubblesAudio.volume=0;try{exploreWaterEntryAudio.currentTime=0;underwaterBubblesAudio.currentTime=0}catch{}window.__sprLighthouseDiveBgmSuppressed=false;window.__sprResumeExploreBgmAfterGimmick?.();showPendingDay3LighthouseStory()}
   function diveBlackPage(text,buttons=[]){diveStoryImage.style.display='none';diveStoryText.textContent=text;diveStoryButtons.replaceChildren(...buttons);}
   async function playLighthouseLeap(){
     if(!await window.__sprNamedEvents.claim('lighthouse-dive')){await hideDiveOverlay();return}
@@ -11345,6 +11370,7 @@ window.addEventListener('message',e=>{
   exploreView.querySelector('[data-back]')?.addEventListener('click',closeLocation);
   actionMessageClose?.addEventListener('click',()=>{
     clearActionMessage();
+    showPendingDay3LighthouseStory();
     window.__sprShowQueuedDay67StaffAfterExploreResult?.();
   });
   exploreView.querySelectorAll('[data-explore-action]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -11352,6 +11378,7 @@ window.addEventListener('message',e=>{
     window.__sprCancelQueuedDay67StaffAfterExploreResult?.();
     btn.dataset.selectedSpot=selectedSpot;
     recordDay1Explore(selectedSpot);
+    recordDay3LighthouseStoryExplore(selectedSpot);
 
     const lighthouseEvent=matchingLighthouseEveningAnomaly(selectedSpot,actionKey);
     if(lighthouseEvent){
@@ -11366,7 +11393,7 @@ window.addEventListener('message',e=>{
       clearActionMessage();
       const lines=poisonDiveStaffLines[period];
       const line=lines[Math.floor(Math.random()*lines.length)];
-      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue(line,showPendingDay1ExploreStaffIntro,'STAFF');
+      if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue(line,()=>{showPendingDay1ExploreStaffIntro();showPendingDay3LighthouseStory()},'STAFF');
       else{showPoisonMessage(actionKey);showPendingDay1ExploreStaffIntro();}
       return;
     }
@@ -11400,7 +11427,7 @@ window.addEventListener('message',e=>{
       const period=explorePeriod();
       const line=fallbackMessages.lighthouse.snorkel[period];
       if(typeof window.__sprShowStaffDialogue==='function'){
-        window.__sprShowStaffDialogue(line);
+        window.__sprShowStaffDialogue(line,showPendingDay3LighthouseStory,'STAFF');
       }else{
         showFallback(actionKey);
       }
