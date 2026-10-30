@@ -2416,6 +2416,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const {error}=await window.supabaseClientSpecial.from('spr_player_flags').upsert({player_id:playerId,flag_key:flagKey,value,updated_at:new Date().toISOString()},{onConflict:'player_id,flag_key'});if(error)throw error;
     }
+    window.__sprGetRemoteFlag=flagKey=>windowSprFlagCache[String(flagKey||'')];
+    window.__sprSetRemoteFlag=(flagKey,value)=>setRemoteFlag(String(flagKey||''),value);
     async function deleteRemoteFlag(flagKey){
       delete windowSprFlagCache[flagKey];
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
@@ -2598,7 +2600,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -4683,7 +4685,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return orderedOn===tokyoDateKey();
     }
     function isCasinoNight(){const h=tokyoHour();return h>=20||h<7}
-    function seriousEmilyRequirementsMet(){return casinoChips>=50000000&&hasEncoreToday()&&isCasinoNight()}
+    function seriousEmilyRequirementsMet(){return Number(document.documentElement.dataset.resortDay||1)>=4&&casinoChips>=50000000&&hasEncoreToday()&&isCasinoNight()}
     function seriousEmilySessionBusy(){
       return specialOverlay?.classList.contains('open')||!specialTableScreen?.classList.contains('hidden')||!!activeSpecialSessionId||document.body.classList.contains('special-table-playing')||specialMenuHasLiveTable||specialInvitationStarting;
     }
@@ -4797,7 +4799,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }finally{specialInvitationStarting=false}
     }
     function recordNormalCasinoResult(won){
-      if(won&&casinoChips>=50000000&&hasEncoreToday()&&isCasinoNight()&&!specialMenuHasLiveTable&&!seriousEmilySessionBusy()&&!specialInvitationStarting){
+      if(won&&Number(document.documentElement.dataset.resortDay||1)>=4&&casinoChips>=50000000&&hasEncoreToday()&&isCasinoNight()&&!specialMenuHasLiveTable&&!seriousEmilySessionBusy()&&!specialInvitationStarting){
         royalTableWinStreak++;
         if(royalTableWinStreak>=3){tryTriggerSeriousEmily();royalTableWinStreak=0}
       }else royalTableWinStreak=0;
@@ -5559,7 +5561,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             localStorage.setItem(`spr-closet-food-key:${resortDayToken()}`,'1');
             setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(err=>console.warn('closet food flag',err));
           }
-          if(venue==='Marine Bloom Cafe'&&meal==='ブルーム・フレンチ'){
+          if(venue==='Marine Bloom Cafe'&&meal==='ブルーム・フレンチ'&&Number(document.documentElement.dataset.resortDay||1)>=2&&Number(document.documentElement.dataset.resortDay||1)<=6){
             localStorage.setItem(`spr-bathroom-food-key:${resortDayToken()}`,'1');
             setRemoteFlag(`bathroom-food-key:${resortDayToken()}`,true).catch(err=>console.warn('bathroom food flag',err));
           }
@@ -8045,12 +8047,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             showHernandoDoorChoice();
             return;
           }
+          if(!hasClosetFoodKey()){
+            setExploreMessage('パールテラスで「ラボ・デ・トロ」を注文してから、もう一度クローゼットを調べてみよう。');
+            return;
+          }
           const count=closetSearchCount()+1;localStorage.setItem(closetSearchKey(),String(count));setRemoteFlag(`closet-search:${activeRoom}`,count).catch(e=>console.warn('closet search sync',e));
           let text='クローゼットを調べた。特に変わったところはない。';
           if(count>=4&&count<=5)text='奥の壁だけ、妙に冷たい。';
           else if(count===6)text='……奥行きが合わない気がする。壁の向こうに、まだ空間があるような。';
           else if(count>=7){
-            // DAY2以降は7回目で発見。カフェで特定料理を食べる条件は不要。
+            // DAY2以降、同じサービス日にラボ・デ・トロを注文した後、7回目の探索で発見。
             localStorage.setItem(closetDoorKey(),'1');
             setRemoteFlag(`closet-door:${activeRoom}`,true).catch(e=>console.warn('closet door sync',e));
             text='クローゼットの奥に隠し扉がある！';
@@ -8062,7 +8068,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         };
       } else if(selectedRoomScene==='bathroom'){
         // ブルーム・フレンチを食べた日の夜だけ、花びらの浴槽イベントを一度再生する。
-        const bloomAvailable=roomTimeIndex()===2&&hasBathroomFoodKey();
+        const bloomDay=Number(document.documentElement.dataset.resortDay||1);
+        const bloomAvailable=bloomDay>=2&&bloomDay<=6&&roomTimeIndex()===2&&hasBathroomFoodKey();
         const state=bloomAvailable?bathroomBloomState():2;
         roomContextAction.textContent=bloomAvailable&&state<2?'バスルームを調べる':'バスルームを調べる';
         roomContextAction.classList.remove('hidden');
@@ -9404,7 +9411,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
       try{primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
-        roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);await shareRoomServiceOrder(data);
+        roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);window.__sprArthurOrderPlaced?.(roomAtOrder,items,String(playerId));await shareRoomServiceOrder(data);
         Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。3分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
       }catch(e){console.warn('room service sync',e);roomServiceResult.textContent='注文を送信できませんでした。もう一度お試しください。';roomServiceResult.classList.remove('hidden')}
     });
@@ -9455,6 +9462,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function leaveActiveRoom(){
       if(roomLeaveInProgress||!activeRoom)return;roomLeaveInProgress=true;
       try{
+        window.__sprArthurOnRoomLeave?.(activeRoom);
         // 明示的な退出はPresence切断より先に共有し、同室者へすぐ表示する。
         await Promise.race([broadcastRoomMemberLeft(activeRoom),new Promise(resolve=>setTimeout(resolve,400))]);
         void syncMysteryRoomPresence('');
@@ -10661,11 +10669,18 @@ window.addEventListener('message',e=>{
   }
   // 画面上は「ダイビングをする」。snorkelは既存の探索アクションIDとして維持する。
   function matchingDay1ExploreVideo(spotKey,actionKey){
-    if(document.documentElement.dataset.resortDay!=='1')return null;
+    const currentDay=Number(document.documentElement.dataset.resortDay||1);
+    if(currentDay<1||currentDay>6)return null;
     const period=explorePeriod();
     const drink=typeof window.getCurrentBarDrinkEffect==='function'?window.getCurrentBarDrinkEffect():null;
     if(!drink||drink.period!==period||Date.now()>=Number(drink.expiresAt||0))return null;
-    return DAY1_EXPLORE_VIDEO_EVENTS.find(event=>event.spot===spotKey&&event.period===period&&event.action===actionKey&&event.drinks.includes(drink.name))||null;
+    const event=DAY1_EXPLORE_VIDEO_EVENTS.find(item=>item.spot===spotKey&&item.period===period&&item.action===actionKey&&item.drinks.includes(drink.name));
+    if(!event)return null;
+    const playerKey=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
+    const seenKey=`spr-day1-explore-video-seen:${playerKey}:${event.filename}`;
+    const remoteSeenKey=`day1-explore-video-seen:${event.filename}`;
+    if(localStorage.getItem(seenKey)==='1'||window.__sprGetRemoteFlag?.(remoteSeenKey)===true)return null;
+    return {...event,seenKey,remoteSeenKey,oncePerPlayer:true};
   }
   let activeExploreVideoEvent=null;
   const day1ExploreIntroGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
@@ -10803,8 +10818,8 @@ window.addEventListener('message',e=>{
       await lighthouseAftermathWait(900);
       closeExploreEventVideo({resumeBgm:false});
       try{await window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡')}catch(error){console.warn('lighthouse anomaly life sync',error)}
-      await showLighthouseAftermathPage('気がつくと、ホテルの部屋にいた。');
-      await showLighthouseAftermathPage('灯台で望遠鏡を覗いていたはずなのに、\nどうしてここにいるのか思い出せない。');
+      await showLighthouseAftermathPage('気がつくと部屋にいた。');
+      await showLighthouseAftermathPage('どうやってここに戻ってきたのか、覚えていない。');
       lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
       const returned=window.__sprReturnToLastRoom?.();
       if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
@@ -10819,6 +10834,10 @@ window.addEventListener('message',e=>{
   }
   function finishExploreEventVideo(){
     const event=activeExploreVideoEvent;
+    if(event?.oncePerPlayer&&event.seenKey){
+      localStorage.setItem(event.seenKey,'1');
+      void Promise.resolve(window.__sprSetRemoteFlag?.(event.remoteSeenKey,true)).catch(error=>console.warn('DAY1 exploration video flag sync',error));
+    }
     if(event?.aftermath==='lighthouse-telescope'){
       if(lighthouseAftermathRunning)return;
       if(localStorage.getItem(event.seenKey)==='1'){closeExploreEventVideo();return}
@@ -11314,8 +11333,8 @@ window.addEventListener('message',e=>{
       return;
     }
 
-    // DAY1: ドリンク・時間帯・探索場所・アクションの4条件が一致したときだけ動画を再生。
-    // その他の組み合わせは既存の探索文章・スタッフ会話のまま。
+    // DAY1〜DAY6: ドリンク・時間帯・探索場所・アクションの4条件が一致したとき動画を再生。
+    // 3種類の映像はプレイヤーごとに各1回。その他の組み合わせは既存の探索文章・スタッフ会話のまま。
     const videoEvent=matchingDay1ExploreVideo(selectedSpot,actionKey);
     if(videoEvent){
       openExploreEventVideo(videoEvent);
@@ -12611,25 +12630,82 @@ window.addEventListener('message',e=>{
    if(kind==='black-horse')return encounterBlackHorse();
    if(kind==='glass-fawn')return encounterFawn();
  }
- // Day 4: 「ラストゲスト」を飲んだ夜、ROOM滞在4分後にArthur Greyが現れる。
- let arthurArrived=false;
+ // DAY4〜6: 夜に「ラストゲスト」を飲み、ROOMに4分滞在するとArthur Greyが入室する。
+ const ARTHUR_LINES=[
+   "I paid for paradise. Not for this.",
+   "You shouldn't be here.",
+   "This was supposed to be paradise.",
+   "Don't trust the coordinates.",
+   "The sea won't let us leave.",
+   "I can still hear it breathing.",
+   "We were never meant to leave.",
+   "She knew. She knew everything.",
+   "It's still sleeping beneath us.",
+   "Please... don't let it wake."
+ ];
+ let arthurArrived=false,arthurConversationStarted=false,arthurOrderPlaced=false,arthurRoom='',arthurDay=0;
+ let arthurChatTimers=[];
+ function arthurPlayerKey(){return encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest')}
+ function arthurDayKey(kind,targetDay=day){return `spr-arthur-${kind}:${arthurPlayerKey()}:day${targetDay}`}
+ function clearArthurChatTimers(){arthurChatTimers.forEach(timer=>clearTimeout(timer));arthurChatTimers=[]}
+ function resetArthurRuntimeForDay(){clearArthurChatTimers();arthurArrived=false;arthurConversationStarted=false;arthurOrderPlaced=false;arthurRoom='';window.__sprArthurRoom='';arthurDay=day}
+ function removeArthurOccupancy(){
+   const list=document.getElementById('roomOccupancyNames');
+   const row=[...(list?.querySelectorAll('.room-occupancy-person')||[])].find(item=>item.textContent==='Arthur Grey');
+   if(!row)return;
+   row.remove();
+   const label=document.getElementById('roomOccupancyText');
+   if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${Math.max(1,n-1)}名が滞在中`}
+ }
  function checkArthur(){
-   if(day!==4||arthurArrived||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;
+   if(day!==arthurDay)resetArthurRuntimeForDay();
+   if(day<4||day>6||arthurArrived||localStorage.getItem(arthurDayKey('ended'))==='1'||localStorage.getItem(arthurDayKey('ordered'))==='1'||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;
    if(Date.now()-window.__sprRoomEntryTime<240000)return;
    const drink=window.__sprGetActiveHorrorDrink?.();
    if(drink?.name!=='ラストゲスト')return;
-   arthurArrived=true;window.__sprArthurRoom=window.__sprActiveRoom;
+   arthurArrived=true;arthurRoom=String(window.__sprActiveRoom);window.__sprArthurRoom=arthurRoom;
    const label=document.getElementById('roomOccupancyText');
    if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
    const list=document.getElementById('roomOccupancyNames');
    if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
-   open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。')
+   open('Arthur Grey が入室しました。','扉の向こうから、ひとつ音がした。扉は閉じたままなのに、滞在中の人数が増えている。');
+   setTimeout(()=>{if(arthurArrived&&arthurRoom===String(window.__sprActiveRoom))window.__sprSendArthurChat?.(arthurRoom,'How did you get to this resort?')},900);
  }
  setInterval(checkArthur,1500);
- const lines=["I paid for paradise. Not for this.","You shouldn't be here.","This was supposed to be paradise.","Don't trust the coordinates.","The sea won't let us leave.","I can still hear it breathing.","We were never meant to leave.","She knew. She knew everything.","It's still sleeping beneath us.","Please... don't let it wake."];
- let sequenceStarted=false;
- document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';if(day!==4||sequenceStarted||!window.__sprArthurRoom||!/(アーサー|グレイ)/i.test(msg))return;sequenceStarted=true;const room=window.__sprArthurRoom;lines.forEach((line,i)=>setTimeout(()=>window.__sprSendArthurChat?.(room,line),1300+i*2300));setTimeout(async()=>{const id=await window.__sprGetPlayerId?.();if(!id||!window.supabaseClientSpecial)return;window.__sprSendArthurChat?.(room,'Room service, please. One demi-glace omelette rice.');const {error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:String(room),player_id:id,display_name:'Arthur Grey',items:[{name:'特製デミグラスオムライス',qty:1}]});if(error)console.warn('Arthur room-service order',error)},25000)},{capture:true});
- document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{if(day!==4||!sequenceStarted)return;const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/オムライス/.test(food))return;const r=window.__sprArthurRoom||window.__sprActiveRoom;setTimeout(()=>window.__sprSendArthurChat?.(r,'46 38 125 57'),1200);setTimeout(()=>window.__sprSendArthurChat?.(r,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);setTimeout(()=>open('Arthur Grey','The room fell silent. Arthur Grey was gone.'),5600)},450));
+ function beginArthurConversation(message){
+   if(!arthurArrived||arthurConversationStarted||day<4||day>6||String(window.__sprActiveRoom)!==arthurRoom)return;
+   if(!/(アーサー|あーさー|グレイ|ぐれい|arthur|gray|grey)/i.test(message))return;
+   arthurConversationStarted=true;localStorage.setItem(arthurDayKey('conversation'),'1');
+   ARTHUR_LINES.forEach((line,index)=>{const timer=setTimeout(()=>{if(arthurArrived&&String(window.__sprActiveRoom)===arthurRoom)window.__sprSendArthurChat?.(arthurRoom,line)},1300+index*2300);arthurChatTimers.push(timer)});
+ }
+ window.__sprArthurOrderPlaced=(room,items,playerId)=>{
+   if(!arthurArrived||!arthurConversationStarted||String(room)!==arthurRoom||String(window.__sprActiveRoom)!==arthurRoom)return false;
+   const orderedBy=String(localStorage.getItem('spr-player-id')||'');
+   if(orderedBy&&String(playerId)!==orderedBy)return false;
+   if(!Array.isArray(items)||!items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0))return false;
+   arthurOrderPlaced=true;localStorage.setItem(arthurDayKey('ordered'),'1');return true;
+ };
+ window.__sprArthurOnRoomLeave=room=>{
+   if(!arthurArrived||String(room)!==arthurRoom)return;
+   clearArthurChatTimers();
+   if(!arthurOrderPlaced){
+     localStorage.setItem(arthurDayKey('ended'),'1');
+     removeArthurOccupancy();
+     arthurArrived=false;arthurConversationStarted=false;arthurRoom='';window.__sprArthurRoom='';
+   }
+ };
+ document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';beginArthurConversation(msg)},{capture:true});
+ document.getElementById('roomDoorReceive')?.addEventListener('click',()=>setTimeout(()=>{
+   arthurConversationStarted=arthurConversationStarted||localStorage.getItem(arthurDayKey('conversation'))==='1';
+   arthurOrderPlaced=arthurOrderPlaced||localStorage.getItem(arthurDayKey('ordered'))==='1';
+   if(day<4||day>6||!arthurOrderPlaced||!arthurConversationStarted)return;
+   const food=document.getElementById('roomServiceFoodName')?.textContent||'';if(!/デミグラスオムライス|オムライス/.test(food))return;
+   const room=arthurRoom||window.__sprActiveRoom;if(!room)return;
+   localStorage.setItem(arthurDayKey('ended'),'1');
+   setTimeout(()=>window.__sprSendArthurChat?.(room,'46 38 125 57'),1200);
+   setTimeout(()=>window.__sprSendArthurChat?.(room,'How did you know what I liked? Thank you. It was delicious. Thank you. Keep going.'),3500);
+   setTimeout(()=>{if(String(window.__sprActiveRoom)===String(room))open('Arthur Grey','The room fell silent. Arthur Grey was gone.');removeArthurOccupancy();arthurArrived=false;arthurRoom='';window.__sprArthurRoom=''},5600);
+ },450));
  // Day6〜7: 海に心を奪われたスタッフ。ビーチの望遠鏡は専用の断絶演出。
  const staff=[
    '波の音を聴いていると、帰る時間が少し惜しくなりませんか。私どもも、つい時を忘れてしまうんです。',
