@@ -1928,7 +1928,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             <div class="prize-item"><div><strong>次元バック</strong><small>協力狩りでお馴染みの次元バック。ただ、ここではあまり役に立たなさそう……</small></div><div class="prize-item-side"><b>200 CHIP</b><span id="dimensionalBagOwned">所持 0</span><button id="buyDimensionalBag" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item"><div><strong>新鮮なドングリ</strong><small>島で採れた、つやのある新鮮なドングリ</small></div><div class="prize-item-side"><b>500 CHIP</b><span id="freshAcornOwned">所持 0</span><button id="buyFreshAcorn" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item">
-              <div><strong>BARドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。使用は1日1回まで。</small></div>
+              <div><strong>BARドリンクチケット</strong><small>SEASIDE BAR &amp; LOUNGE<br>バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。</small></div>
               <div class="prize-item-side"><b>5,000 CHIP</b><span id="extraDrinkTicketOwned">所持 0</span><button id="buyExtraDrinkTicket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>酔い覚まし</strong><small>毒のように強すぎるお酒には、これが一番効きます。</small></div><div class="prize-item-side"><b>5,000 CHIP</b><span id="antidoteOwned">所持 0</span><button id="buyAntidote" class="prize-exchange" type="button">交換する</button></div></div>
@@ -2483,7 +2483,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
       else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
       else if(flagKey==='hernando-first-conversation-done'){const k=`spr-hernando-first-conversation-done:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
-      else if(flagKey.startsWith('bar-extra-ticket-used:')){const k=`spr-${flagKey}:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='emily-met'){const k=`spr-emily-met:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
       else if(flagKey==='emily-casual-progress'){
         const k=`spr-emily-casual-progress:${playerStorageId}`;
@@ -2507,7 +2506,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function collectLocalFlags(){
       const out={};
-      for(const k of Object.keys(localStorage)){if(k.startsWith('spr-bar-extra-ticket-used:')&&k.endsWith(':'+playerStorageId)&&localStorage.getItem(k)==='1')out[k.slice(4,-(playerStorageId.length+1))]=true}
       if(localStorage.getItem(`spr-hernando-first-conversation-done:${playerStorageId}`)==='1')out['hernando-first-conversation-done']=true;
       if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
@@ -2642,7 +2640,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         windowSprFlagCache={};
         if((flagRes.data||[]).length){(flagRes.data||[]).forEach(r=>{
           const flagUpdatedAt=r.updated_at?new Date(r.updated_at).getTime():0;
-          if((r.flag_key==='hernando-first-conversation-done'||r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-extra-ticket-used:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
+          if((r.flag_key==='hernando-first-conversation-done'||r.flag_key==='hernando-intro-seen'||r.flag_key==='hernando-visit-count'||r.flag_key==='hernando-poison-until'||r.flag_key==='sunset-mystery-intro-seen'||r.flag_key==='emily-met'||r.flag_key==='emily-casual-progress'||r.flag_key==='emily-knife-event-seen'||r.flag_key==='hernando-knife-event-seen'||String(r.flag_key||'').startsWith('sunset-mystery-awarded:')||String(r.flag_key||'').startsWith('room-service-horror:')||String(r.flag_key||'').startsWith('room-service-horror-gimmick:')||String(r.flag_key||'').startsWith('room-phone-done:')||String(r.flag_key||'').startsWith('bar-ng-effect:')||String(r.flag_key||'').startsWith('day1-explore-video-seen:')||String(r.flag_key||'').startsWith('sunset-meal-used:')||r.flag_key==='day7-escape-attempt-state')&&latestWorldResetAt&&flagUpdatedAt<=latestWorldResetAt){applyRemoteFlagToLocal(r.flag_key,false);return}
           windowSprFlagCache[r.flag_key]=r.value;applyRemoteFlagToLocal(r.flag_key,r.value)
         })}
         else{
@@ -3565,14 +3563,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       barDrinks.forEach(drink=>{const button=document.createElement('button');button.type='button';button.className='bar-drink-item';button.dataset.barDrink=drink.name;button.innerHTML=`<span class="num">${drink.no}</span><span><strong>${drink.name}</strong><small>${drink.ingredients}</small></span><span class="choose">SELECT</span>`;button.addEventListener('click',()=>{selectedBarDrink=drink.name;renderBarOrderState()});barDrinkList.append(button)});
     }
     let extraDrinkTicketUsing=false;
-    function extraDrinkTicketDailyKey(){return `bar-extra-ticket-used:${resortDayToken()}:${barPeriodInfo().serviceDate}`}
-    function extraDrinkTicketUsedToday(){const key=extraDrinkTicketDailyKey();return localStorage.getItem(`spr-${key}:${playerStorageId}`)==='1'||windowSprFlagCache[key]===true}
     function renderBarOrderState(){
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null;
       const periodText=`${info.label}　${info.hours}`;
       const extraTicketCount=belongingCount('extraDrinkTicket');
       barExtraTicketBox.classList.toggle('hidden',!ordered);
-      if(ordered){barExtraTicketStatus.textContent=`BARドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraDrinkTicketUsing||extraDrinkTicketUsedToday()||extraTicketCount<1;useExtraDrinkTicket.textContent=extraDrinkTicketUsedToday()?'本日は使用済みです':extraTicketCount<1?'BARドリンクチケットを所持していません':'BARドリンクチケットを使用する';}
+      if(ordered){barExtraTicketStatus.textContent=`BARドリンクチケット 所持 ${extraTicketCount}`;useExtraDrinkTicket.disabled=extraDrinkTicketUsing||extraTicketCount<1;useExtraDrinkTicket.textContent=extraTicketCount<1?'BARドリンクチケットを所持していません':'BARドリンクチケットを使用する';}
       if(ordered){
         const effectLimit=ordered.effectKey==='room-service:ng'?'このDAYが切り替わる翌朝7:00まで':`${info.label}の時間帯が終了するまで`;
         barPeriodCard.innerHTML=`<strong>${periodText}</strong><small>ONE DRINK PER PERIOD</small><p>${ordered.name} をご注文済みです。この一杯の余韻は${effectLimit}続きます。</p>`;
@@ -3695,17 +3691,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     useExtraDrinkTicket.addEventListener('click',async()=>{
       const info=barPeriodInfo(),state=loadBarDrinkState(),ordered=state[info.token]||null,belongings=loadBelongings(),count=Math.max(0,Math.floor(Number(belongings.extraDrinkTicket||0)));
-      if(extraDrinkTicketUsing||extraDrinkTicketUsedToday()||!ordered||count<1){renderBarOrderState();return}
+      if(extraDrinkTicketUsing||!ordered||count<1){renderBarOrderState();return}
       extraDrinkTicketUsing=true;useExtraDrinkTicket.disabled=true;
-      const usedKey=extraDrinkTicketDailyKey();
       // 旧版で注文済みのNGドリンクでも、レコードを削除する前にDAY終了フラグへ移して効能を残す。
       const persistentNgBeforeChange=activeNgDrinkEffect();
       try{
         await hydratePersistentState();
-        if(extraDrinkTicketUsedToday()){renderBarOrderState();return}
         const qty=await remoteInventoryAdjust('extraDrinkTicket',-1);if(qty===null)throw new Error('player id missing');
-        localStorage.setItem(`spr-${usedKey}:${playerStorageId}`,'1');windowSprFlagCache[usedKey]=true;
-        await setRemoteFlag(usedKey,true);
         await deleteBarOrderRemote(info.serviceDate,info.id);
         belongings.extraDrinkTicket=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));delete state[info.token];saveBarDrinkState(state);selectedBarDrink='';
       }catch(e){console.warn('extra drink ticket sync',e);barOrderResult.textContent='チケットの使用を同期できませんでした。もう一度お試しください。';barOrderResult.classList.remove('hidden');return}
@@ -11748,7 +11740,7 @@ window.addEventListener('message',e=>{
  const setAnimalStage=(id,value)=>{localStorage.setItem(anomalyPrefix+id+'-stage',String(value));window.__sprNamedEvents.remember('animal:'+id,value)};
  // 全ての異変動物は、エルナンドの酔い＋NGまたは不穏ドリンクで遭遇可能。
  const anomalyEligible=()=>day>=2&&day<=6&&poison()&&anyHorrorDrink();
- const smokeLizardEligible=()=>day>=3&&day<=6&&poison()&&anyHorrorDrink();
+ const smokeLizardEligible=()=>day>=4&&day<=6&&poison()&&anyHorrorDrink();
  const explorePeriod=()=>{const h=time().h;return h>=7&&h<16?'day':h>=16&&h<20?'sunset':'night'};
  const exploreSpot=()=>String(document.getElementById('exploreLocationBg')?.dataset.spot||'');
  const guestName=()=>String(window.__sprGetGuestName?.()||localStorage.getItem('spr-guest-name')||'お客様').trim()||'お客様';
@@ -12263,7 +12255,7 @@ window.addEventListener('message',e=>{
      await closeAnimatedAnimalScene(fawnStage);
    }
  }
- // 波渡の黒馬：DAY2〜6／夜／人魚の入江／エルナンドの酔い＋不穏またはNGドリンク。
+ // 波渡の黒馬：DAY4〜6／夜／人魚の入江／エルナンドの酔い＋不穏またはNGドリンク。
  // 望遠鏡を覗くごとに 星空→馬の足元→青いランタン。各シーンは黒フェードを挟む。
  // 望遠鏡の3場面は別画像を使い、全体を切り抜かず表示する。
  // 01＝星空、02＝水面の足元、03＝青いランタン。各画像は16:9推奨。
@@ -12544,9 +12536,9 @@ window.addEventListener('message',e=>{
    if(period==='night'&&spot==='beach'&&action==='camera'&&fawnEligible())return 'glass-fawn';
    if(!anomalyEligible())return '';
    if(period==='sunset'&&spot==='beach'&&action==='camera'&&!animalSeen('seabird'))return 'seabird';
-   if(period==='night'&&spot==='beach'&&action==='fishing'&&!animalSeen('giant-shadow'))return 'giant-shadow';
-   if(period==='night'&&spot==='mermaids_cove'&&action==='camera'&&!animalSeen('star-hedgehog'))return 'star-hedgehog';
-   if(period==='night'&&spot==='mermaids_cove'&&action==='telescope'&&!animalSeen('black-horse'))return 'black-horse';
+   if(day>=3&&period==='night'&&spot==='beach'&&action==='fishing'&&!animalSeen('giant-shadow'))return 'giant-shadow';
+   if(day>=3&&period==='night'&&spot==='mermaids_cove'&&action==='camera'&&!animalSeen('star-hedgehog'))return 'star-hedgehog';
+   if(day>=4&&period==='night'&&spot==='mermaids_cove'&&action==='telescope'&&!animalSeen('black-horse'))return 'black-horse';
    return '';
  }
  async function runAnomalyAction(kind){
