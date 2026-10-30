@@ -3949,9 +3949,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!specialOverlay){specialInvitationDecisionPending=false;return}
       seriousEmilyMode=royalInvitation;
       specialSpeaker.textContent=royalInvitation?'運のみぞ知る':'UNKNOWN';
-      casinoBgm.pause();specialBgm.pause();
+      casinoBgm.pause();
+      sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
+      // 通常のSPECIAL TABLE招待では、会話の開始から専用BGMを流す。
+      // iOS Safariが自動再生を拒否した場合は、招待画面の最初のタップで再試行する。
+      if(!royalInvitation){
+        const started=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(!started&&localStorage.getItem('spr-bgm-enabled')!=='off'){
+          const unlockSpecialInvitationBgm=()=>{void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})};
+          specialOverlay.addEventListener('pointerdown',unlockSpecialInvitationBgm,{once:true});
+        }
+      }
       await sleep(1800);
       const lines=royalInvitation?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
         randomOpener(),
