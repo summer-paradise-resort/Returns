@@ -5075,13 +5075,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function playAudio(audio,volume){if(!audio||localStorage.getItem('spr-bgm-enabled')==='off')return;audio.volume=volume;const promise=audio.play();if(promise&&promise.catch)promise.catch(()=>{})}
 
     // EXPLORE BGM BY TIME
-    // 07:00-19:59 は従来の探索BGM、20:00-06:59 は room_phone_wave.mp3 に切り替える。
+    // DAY7は全時間帯で波音。DAY1〜6は昼夕が探索BGM、夜がroom_phone_wave.mp3。
     // 探索画面を開いたまま時刻をまたいだ場合も自動で切り替える。
     const EXPLORE_BGM_DAY_SRC='explore_bgm.mp3';
     const EXPLORE_BGM_NIGHT_SRC='room_phone_wave.mp3';
     let exploreBgmPeriod='';
     function desiredExploreBgm(period=currentTokyoPeriod()){
-      return period==='night'?EXPLORE_BGM_NIGHT_SRC:EXPLORE_BGM_DAY_SRC;
+      const resortDay=Number(document.documentElement.dataset.resortDay||1);
+      return resortDay===7||period==='night'?EXPLORE_BGM_NIGHT_SRC:EXPLORE_BGM_DAY_SRC;
     }
     function sameAudioSrc(audio,src){
       try{return new URL(audio.currentSrc||audio.src,window.location.href).href===new URL(src,window.location.href).href}catch{return false}
