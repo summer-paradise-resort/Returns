@@ -12087,8 +12087,16 @@ window.addEventListener('message',e=>{
      starHedgehogScenePlaying=false;
    }
  }
+ // 漂流ラッコと硝子角の小鹿は、酔いがなく、現在の時間帯に
+ // 不穏・NG以外のBARドリンクを飲んでいる場合だけ遭遇できる。
+ function eligibleRegularBarDrink(period){
+   const drink=window.getCurrentBarDrinkEffect?.();
+   return !poison()&&!!drink&&drink.period===period&&
+     !['room-service:ominous','room-service:ng'].includes(drink.effectKey)&&
+     Date.now()<Number(drink.expiresAt||0);
+ }
  function fawnEligible(){
-   return day>=5&&day<=6&&!animalSeen('glass-fawn')&&poison()&&anyHorrorDrink();
+   return day>=5&&day<=6&&!animalSeen('glass-fawn')&&eligibleRegularBarDrink('night');
  }
  async function encounterFawn(){
    loadAnimalStageImages(fawnStage);loadAnimalStageImages(fawnCloseupStage);
@@ -12431,11 +12439,12 @@ window.addEventListener('message',e=>{
    // ケムリトカゲは「エルナンドの酔い＋不穏またはNGドリンク」で発生するため、
    // 他の動物用の「不穏＋NGドリンク両方」判定より先に個別条件を確認する。
    if(period==='night'&&spot==='lighthouse'&&action==='fishing'&&smokeLizardEligible()&&!animalSeen('smoke-lizard'))return 'smoke-lizard';
-   // Day5夜のビーチで、カメラを使った場合だけ硝子角の小鹿に出会う。
+   // 漂流ラッコはDay2〜6の夕方、子鹿はDay5〜6の夜。
+   // どちらも酔いなし＋不穏・NG以外の時間帯に合ったドリンクが必要。
+   if(day>=2&&day<=6&&period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter')&&eligibleRegularBarDrink('sunset'))return 'drifting-otter';
    if(period==='night'&&spot==='beach'&&action==='camera'&&fawnEligible())return 'glass-fawn';
    if(!anomalyEligible())return '';
    if(period==='sunset'&&spot==='beach'&&action==='camera'&&!animalSeen('seabird'))return 'seabird';
-   if(period==='sunset'&&spot==='beach'&&action==='snorkel'&&!animalSeen('drifting-otter'))return 'drifting-otter';
    if(period==='night'&&spot==='beach'&&action==='fishing'&&!animalSeen('giant-shadow'))return 'giant-shadow';
    if(period==='night'&&spot==='mermaids_cove'&&action==='camera'&&!animalSeen('star-hedgehog'))return 'star-hedgehog';
    if(period==='night'&&spot==='mermaids_cove'&&action==='telescope'&&!animalSeen('black-horse'))return 'black-horse';
