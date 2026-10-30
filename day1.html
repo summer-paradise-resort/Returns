@@ -5438,6 +5438,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       await new Promise(resolve=>setTimeout(resolve,800));
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
       returnFromCasinoElevatorToRoom();
+      await window.__sprWaitRoomReady?.();
       scene.style.opacity='0';
       await new Promise(resolve=>setTimeout(resolve,850));
       scene.remove();
@@ -7680,6 +7681,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
       const returned=window.__sprReturnToLastRoom?.();
       if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+      await window.__sprWaitRoomReady?.();
       scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,680));scene.remove();await showPendingMermaidGuardNotice();
     }
     function showHernandoArena(){
@@ -8481,6 +8483,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return value;
     }
     function roomServiceHorrorRandomHit(probability){return roomServiceHorrorRandomValue()<probability}
+    const roomLuckyStayBgm=new Audio('explore_bgm.mp3');
+    roomLuckyStayBgm.loop=true;roomLuckyStayBgm.preload='none';
+    function stopRoomLuckyStayBgm(){sprCancelGuardedAudioStart(roomLuckyStayBgm);roomLuckyStayBgm.pause();try{roomLuckyStayBgm.currentTime=0}catch{}}
     function showRoomServiceHorrorResult(text,speaker='ROOM SERVICE'){
       if(typeof window.__sprShowStaffDialogue==='function'){
         window.__sprShowStaffDialogue(String(text||''),null,speaker);
@@ -8509,11 +8514,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=selectedFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
       try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
     }
-    async function showRoomServiceNgAftermath(){
+    async function showRoomServiceNgAftermath(onCovered){
       const overlay=document.createElement('div');
       overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','気がつくと部屋のベッドにいた');
       overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:28px;background:#000;color:#fff;opacity:1;transition:opacity 1s ease';
       document.body.append(overlay);
+      // 黒い画面が実際に描画されるまで、元の動画を残す。
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      await onCovered?.();
       await new Promise(resolve=>setTimeout(resolve,500));
       const message=document.createElement('div');
       message.textContent='気がつくと部屋のベッドにいた。\n何があったのか、思い出せない。';
@@ -8523,17 +8531,28 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       await new Promise(resolve=>overlay.addEventListener('click',resolve,{once:true}));
       overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,1050));overlay.remove();
     }
+    let roomServiceNgAftermathRunning=false;
     async function finishRoomServiceNgVideo(){
+      if(roomServiceNgAftermathRunning)return;
       const videoFile=roomServiceNgCurrentVideoFile,eventId=roomServiceNgCurrentEventId;
-      closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');
-      if(videoFile!=='room_service_ng_01.mp4')return;
-      const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
-      if(localStorage.getItem(appliedKey)!=='1'){
-        await window.sprApplyNgGimmick?.('未注文のルームサービス');
-        localStorage.setItem(appliedKey,'1');
+      if(videoFile!=='room_service_ng_01.mp4'){
+        closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');return;
       }
-      if(videoFile==='room_service_ng_01.mp4')await showRoomServiceNgAftermath();
-      await showPendingMermaidGuardNotice();
+      roomServiceNgAftermathRunning=true;
+      try{
+        await showRoomServiceNgAftermath(async()=>{
+          // 黒い幕が描画されてから元画面を閉じる。通信中も黒い幕を維持する。
+          closeRoomServiceNgVideo();roomServiceNgClose?.classList.remove('hidden');
+          const appliedKey=roomServiceHorrorNgAppliedKey(eventId);
+          if(localStorage.getItem(appliedKey)!=='1'){
+            try{
+              await window.sprApplyNgGimmick?.('未注文のルームサービス');
+              localStorage.setItem(appliedKey,'1');
+            }catch(error){console.warn('room service aftermath life sync',error)}
+          }
+        });
+        await showPendingMermaidGuardNotice();
+      }finally{roomServiceNgAftermathRunning=false}
     }
     roomServiceNgClose?.addEventListener('click',closeRoomServiceNgVideo);
     roomServiceNgVideo?.addEventListener('ended',()=>{void finishRoomServiceNgVideo()});
@@ -8572,7 +8591,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const prizeText='おめでとうございます！お客様は本日のラッキーステイに選ばれました！10000000チップの贈呈です。ぜひ、カジノでお楽しみくださいね！';
         const awarded=await window.__sprAwardCasinoChipsOnce?.(10000000,resolution.event_id);
         if(!awarded&&localStorage.getItem(`spr-casino-award:${playerStorageId}:${resolution.event_id}`)!=='1')console.warn('room service lucky stay chip award could not be confirmed');
-        showRoomServiceHorrorResult(prizeText,'STAFF');return true;
+        stopRoomLuckyStayBgm();
+        if(localStorage.getItem('spr-bgm-enabled')!=='off')void sprStartAudioClean(roomLuckyStayBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue(prizeText,stopRoomLuckyStayBgm,'STAFF');
+        else{showRoomServiceHorrorResult(prizeText,'STAFF');stopRoomLuckyStayBgm()}
+        return true;
       }
       if(resolution.outcome==='video'){
         if(resolution.video_file==='room_service_ng_03.mp4')markRoomServiceHorrorGimmickSeen('03');
@@ -9073,6 +9096,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           await new Promise(resolve=>setTimeout(resolve,600));
           const returned=window.__sprReturnToLastRoom?.();
           if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+      await window.__sprWaitRoomReady?.();
           scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,650));scene.remove();resolve();
         };
         if(blackoutFirst){void scene.offsetWidth;scene.style.opacity='1';setTimeout(showPage,660)}else showPage();
@@ -9307,6 +9331,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       document.getElementById('roomEntryForm')?.requestSubmit();
       return true;
     };
+    window.__sprWaitRoomReady=async()=>{
+      const deadline=Date.now()+6000;
+      while(roomView.classList.contains('open')&&!roomView.classList.contains('room-active')&&Date.now()<deadline){await new Promise(r=>setTimeout(r,40))}
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      if(roomView.classList.contains('room-active')&&roomPhoto){
+        await Promise.race([roomPhoto.decode?.().catch(()=>{}),new Promise(r=>setTimeout(r,4000))]);
+      }
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    };
     window.__sprSendArthurChat=async(room,body)=>{const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(room),player_id:playerId,display_name:'Arthur Grey',body:String(body)});if(error){console.warn('Arthur chat event',error);return false}return true};
     document.getElementById('chatForm').addEventListener('submit',async event=>{
       event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
@@ -9331,7 +9364,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         safely('room presence leave',()=>syncMysteryRoomPresence(''));
         const cleanup=[
           ()=>{if(mysteryBoxModal&&!mysteryBoxModal.classList.contains('hidden')&&!mysteryBusy)mysteryClose()},
-          ()=>closeVillaPoolExperience(true),stopRoomServiceHorrorStay,stopRoomPhoneStay,stopRoomSync,
+          stopRoomLuckyStayBgm,()=>closeVillaPoolExperience(true),stopRoomServiceHorrorStay,stopRoomPhoneStay,stopRoomSync,
           closeChatSheet,closeRoomService,closeRoomBelongings,closeRoomServiceDeliveryNotice,closeRoomServiceNgVideo
         ];
         cleanup.forEach((run,index)=>safely('room leave cleanup '+index,run));
@@ -10768,6 +10801,7 @@ window.addEventListener('message',e=>{
       lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
       const returned=window.__sprReturnToLastRoom?.();
       if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+      await window.__sprWaitRoomReady?.();
       lighthouseAftermathScene.style.opacity='0';await lighthouseAftermathWait(900);
     }catch(error){
       console.error('lighthouse evening anomaly aftermath:',error);
@@ -12410,7 +12444,6 @@ window.addEventListener('message',e=>{
    blackHorseText.style.textAlign=enabled?'center':'left';
  }
  async function horseBegin(){
-   close();
    horseSetCenteredMonologue(false);
    blackHorseText.textContent='';blackHorseText.style.opacity='0';
    blackHorseViewport.style.opacity='0';blackHorseViewport.style.display='block';
@@ -12422,6 +12455,7 @@ window.addEventListener('message',e=>{
    blackHorseScene.style.transition='opacity .85s ease,visibility 0s linear 0s';
    blackHorseScene.style.opacity='1';
    await horseFade(900);
+   close();
  }
  async function horseEnd(){
    horseSetCenteredMonologue(false);
@@ -12547,6 +12581,7 @@ window.addEventListener('message',e=>{
      if(returned===false&&!document.getElementById('roomView')?.classList.contains('open')){
        window.__sprShowView?.('roomView');
      }
+     await window.__sprWaitRoomReady?.();
      await horseFade(650);
      await horseEnd();
      await window.sprShowPendingMermaidGuardNotice?.();
