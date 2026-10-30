@@ -3971,7 +3971,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualChoices.classList.remove('spr-pending-choices');emilyCasualChoices.inert=false;
       emilyCasualNextAction=nextAction;
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
-      emilyCasualNext.textContent='NEXT　›';
+      emilyCasualNext.textContent=nextAction===closeEmilyCasualDialogue?'CLOSE　×':'NEXT';
+      emilyCasualNext.classList.toggle('spr-text-close',nextAction===closeEmilyCasualDialogue);
       emilyCasualNext.classList.toggle('hidden',!showNext);
       emilyCasualNext.classList.add('spr-dialogue-typing');emilyCasualNext.disabled=true;
       emilyCasualText.replaceChildren();
@@ -5401,7 +5402,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const text=document.createElement('div');
       text.textContent='気がつくと、ホテルの部屋にいた。\n\nどうやって戻ってきたのか、思い出せない。';
       text.style.cssText='width:min(780px,100%);white-space:pre-line;text-align:center;color:#fff;text-shadow:0 2px 12px #000;font:clamp(16px,3.9vw,24px)/1.95 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;opacity:0;transition:opacity .8s ease';
-      scene.append(text);document.body.append(scene);
+      scene.append(text);document.body.append(scene);window.sprFitBlackoutLines(text);
       void scene.offsetWidth;scene.style.opacity='1';
       await new Promise(resolve=>setTimeout(resolve,850));
       try{await onBlackout?.()}catch(error){console.warn('casino elevator life sync',error)}
@@ -7634,7 +7635,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const message=document.createElement('div');
       message.textContent='気がつくと部屋のベッドに横たわっていた。\n何かあったのか、思い出せない。';
       message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
-      scene.append(message);requestAnimationFrame(()=>{message.style.opacity='1'});
+      scene.append(message);window.sprFitBlackoutLines(message);requestAnimationFrame(()=>{message.style.opacity='1'});
       await new Promise(resolve=>setTimeout(resolve,700));
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
       const returned=window.__sprReturnToLastRoom?.();
@@ -8462,7 +8463,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const message=document.createElement('div');
       message.textContent='気がつくと部屋のベッドにいた。\n何があったのか、思い出せない。';
       message.style.cssText='max-width:90vw;text-align:center;white-space:pre-line;font:clamp(16px,4.3vw,22px)/2 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .7s ease';
-      overlay.append(message);requestAnimationFrame(()=>{message.style.opacity='1'});
+      overlay.append(message);window.sprFitBlackoutLines(message);requestAnimationFrame(()=>{message.style.opacity='1'});
       await new Promise(resolve=>setTimeout(resolve,750));
       await new Promise(resolve=>overlay.addEventListener('click',resolve,{once:true}));
       overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,1050));overlay.remove();
@@ -10641,7 +10642,7 @@ window.addEventListener('message',e=>{
   async function showLighthouseAftermathPage(text){
     lighthouseAftermathText.style.opacity='0';
     await lighthouseAftermathWait(450);
-    lighthouseAftermathText.textContent=text;
+    lighthouseAftermathText.textContent=text;window.sprFitBlackoutLines(lighthouseAftermathText);
     void lighthouseAftermathText.offsetWidth;
     const tapped=new Promise(resolve=>lighthouseAftermathScene.addEventListener('click',resolve,{once:true}));
     lighthouseAftermathText.style.opacity='1';
@@ -12376,6 +12377,7 @@ window.addEventListener('message',e=>{
  async function horseTapTextPage(line){
    blackHorseText.style.opacity='0';await horseFade(850);
    blackHorseText.textContent=line;
+   if(String(line).startsWith('気がつくと'))window.sprFitBlackoutLines(blackHorseText);
    void blackHorseText.offsetWidth;blackHorseText.style.opacity='1';
    await horseFade(850);
    // 独白はNEXTを出さず、画面のタップで一文ずつ進める。
@@ -12761,7 +12763,7 @@ window.addEventListener('message',e=>{
 <style id="spr-text-next-style">
 body.spr-emily-knife-scene #casinoEmilyTalk,
 body.spr-emily-knife-scene #casinoEmilyKnife{display:none!important}
-button.spr-text-next{
+button.spr-text-next,button.spr-text-close{
 width:max-content!important;min-width:0!important;max-width:100%!important;
 min-height:38px!important;height:auto!important;padding:8px 4px!important;
 margin-left:auto!important;margin-right:0!important;
@@ -12805,6 +12807,33 @@ flex:0 0 auto!important;cursor:pointer;
  }
  install(document);
 })();
+</script>
+<script>
+// Keep each authored line of blackout narration intact, fitting it to the screen.
+window.sprFitBlackoutLines=function(element){
+ const raw=element.textContent;
+ element.replaceChildren();
+ element.style.width='100%';element.style.maxWidth='100%';element.style.minWidth='0';
+ const base=parseFloat(getComputedStyle(element).fontSize);
+ const lines=raw.split(/\n+/).map(text=>{
+  const span=document.createElement('span');span.textContent=text;
+  span.style.cssText='display:block;white-space:nowrap;word-break:normal;overflow-wrap:normal';
+  element.append(span);return span;
+ });
+ function fit(){
+  if(!element.isConnected)return;
+  const width=element.clientWidth;
+  if(!width)return;
+  for(const line of lines){
+   line.style.fontSize=base+'px';
+   const natural=line.scrollWidth;
+   if(natural>width)line.style.fontSize=(base*width/natural*.98)+'px';
+  }
+ }
+ fit();requestAnimationFrame(fit);
+ const observer=new ResizeObserver(()=>{if(!element.isConnected){observer.disconnect();return}fit()});
+ observer.observe(element);
+};
 </script>
 </body>
 </html>
