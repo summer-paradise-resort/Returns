@@ -1767,7 +1767,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     <img id="hernandoArenaBg" class="hernando-arena-loop" data-deferred-src="hernandos_bullring01.jpg" alt="エルナンドの闘牛場" loading="lazy" decoding="async">
     <audio id="hernandoArenaBgm" src="hernandos_bullring.mp3" preload="none" loop playsinline webkit-playsinline></audio>
     <div class="hernando-encounter-shade"></div>
-    <button id="hernandoArenaBack" class="hernando-arena-back" type="button" aria-label="部屋へ戻る">← BACK</button>
     <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
       <div class="hernando-dialogue-name">エルナンド</div>
       <div id="hernandoDialogueText" class="hernando-dialogue-text"></div>
@@ -7475,6 +7474,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       
     }
     function showHernandoDialogueLine(line){
+      const closes=hernandoDialogueAfter==='exit'&&hernandoDialogueIndex===hernandoDialogueLines.length-1;
+      hernandoDialogueNext.textContent=closes?'CLOSE　×':'NEXT';
+      hernandoDialogueNext.classList.toggle('spr-text-close',closes);
       const text=String(line||'');
       if(hernandoDialogueMode==='knifeEvent'&&hernandoDialogueIndex===2)playHernandoArenaBgm();
       hernandoDialogueCurrentText=text;
@@ -7524,7 +7526,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!hernandoDialogueLines.length){hernandoDialogue.classList.add('hidden');return}
       hernandoDialogue.classList.remove('hidden');
       showHernandoDialogueLine(hernandoDialogueLines[0]);
-      hernandoDialogueNext.textContent='NEXT';
     }
     function hernandoUniformChoice(){
       const options=['right','center','left'];
@@ -7691,9 +7692,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!hernandoArenaTimeAllowed()){setExploreMessage('闘牛場へ続く扉は、夕暮れから夜明け前までしか開かないようだ。');return}
       hideHernandoDoorChoice();
       clearHernandoDescentTimers();
-      const introSeen=hasSeenHernandoIntro();hernandoEntryWasIntroSeen=introSeen;
+      const introSeen=hasSeenHernandoIntro()||hasFinishedHernandoFirstConversation()||hernandoVisitCount()>0;hernandoEntryWasIntroSeen=introSeen;
       hernandoVideoStarted=false;
-      hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent='地下へと続く階段がある。';
+      hernandoDescentText.classList.remove('fade');hernandoDescentText.textContent=introSeen?'':'地下へと続く階段がある。';
       hernandoDescent.classList.add('open');hernandoDescent.setAttribute('aria-hidden','false');
       pauseRoomPhoneForHernando();
 
@@ -7704,6 +7705,18 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
         }
+
+      // 再訪は文章・階段・動画を挟まず、短い暗転だけで闘牛場へ。
+      if(introSeen){
+        hernandoDescent.style.transition='none';hernandoDescent.style.opacity='0';
+        void hernandoDescent.offsetWidth;
+        hernandoDescent.style.transition='opacity .45s ease';hernandoDescent.style.opacity='1';
+        hernandoDescentTimerB=setTimeout(()=>{
+          showHernandoArena();
+          hernandoDescent.style.removeProperty('transition');hernandoDescent.style.removeProperty('opacity');
+        },500);
+        return;
+      }
 
       // 初回だけ、同じユーザー操作中に導入動画の再生権限も確保する。
       if(!introSeen){
@@ -7720,8 +7733,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         hernandoDescentText.classList.add('fade');
         setTimeout(()=>{hernandoDescentText.textContent='ゆっくりと、階段を降りていった。';hernandoDescentText.classList.remove('fade')},360);
       },1550);
-      // 2回目以降も暗転＋階段演出は毎回表示し、その後だけ導入動画を省略する。
-      hernandoDescentTimerB=setTimeout(()=>{if(introSeen)showHernandoArena();else playHernandoVideo()},3600);
+      // 階段と導入動画は初回だけ。
+      hernandoDescentTimerB=setTimeout(()=>playHernandoVideo(),3600);
     }
     if(hernandoSecretEnter)hernandoSecretEnter.addEventListener('click',startHernandoDescent);
     if(hernandoSecretCancel)hernandoSecretCancel.addEventListener('click',hideHernandoDoorChoice);
@@ -7769,7 +7782,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     if(hernandoBullDecline)hernandoBullDecline.addEventListener('click',()=>{
       if(hernandoDialogueMode==='postLimitChoice'){
-        setHernandoDialogueLines(['今日はここまでだな。次に来る時は、また別の話をしてやる。'],'postLimitExit','exit');return;
+        setHernandoDialogueLines(['今日はここまでだな。夜は長い。あとは好きに過ごすといい。'],'postLimitExit','exit');return;
       }
       cancelHernandoArenaBgmFade(true);
       const key=Math.max(1,Math.min(3,Number(hernandoDialogue.dataset.visitGroup)||1));
