@@ -1874,7 +1874,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <button id="casinoPrizeMenu" class="casino-menu-card" type="button"><strong>景品を見る</strong><span>お持ちのチップと景品交換所をご覧いただけます。</span><small>PRIZE COUNTER　›</small></button>
           <button id="casinoGalleryMenu" class="casino-menu-card" type="button"><strong>館内を見て回る</strong><span>カジノ・ブルーシェルの館内を歩くようにご覧いただけます。</span><small>EXPLORE THE CASINO　›</small></button>
           <button id="casinoSpectatorMenu" class="casino-menu-card hidden" type="button"><strong>観戦席に着く</strong><span>開催中のSPECIAL TABLEをご覧いただけます。</span><small>SPECIAL TABLE　›</small></button>
-          <button id="casinoSeriousEmilyChallenge" class="casino-menu-card casino-emily-rematch hidden" type="button"><strong>ROYAL TABLEに挑む</strong><span>5,000万CHIP以上と、本日の「アンコール」を携えて、もう一度ロイヤルテーブルへ。</span><small>ROYAL TABLE　›</small></button>
         </div>
         <p id="casinoVipDoorNotice" class="casino-vip-door-notice hidden" role="status" aria-live="polite"></p>
       </div>
@@ -3941,7 +3940,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!activeSpecialSessionId){
         const startsAt=new Date(Date.now()+3*60*1000).toISOString();
         const reservedId=await createSpecialSession(startsAt,'invitation',specialTableDisplayName());
-        if(!reservedId){specialInvitationDecisionPending=false;seriousEmilyMode=false;syncSeriousEmilyChallenge();return}
+        if(!reservedId){specialInvitationDecisionPending=false;seriousEmilyMode=false;return}
         activeSpecialSessionId=reservedId;specialStake=casinoChips;specialStartsAt=new Date(startsAt).getTime();
         writeSpecialPresenceMarker({sessionId:reservedId,stake:specialStake,hiddenAt:0,createdAt:Date.now()});startSpecialHeartbeat();
       }
@@ -4333,7 +4332,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const id=String(activeSpecialSessionId||'');
       if(id&&window.supabaseClientSpecial){try{const {data:row}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state').eq('id',id).maybeSingle();await window.supabaseClientSpecial.from('special_table_sessions').update({status:'finished',public_state:{...(row?.public_state||{}),phase:'declined',finished:true,message:'挑戦者は辞退しました。'}}).eq('id',id).in('status',['countdown','open','playing'])}catch(e){console.warn('special reservation release',e)}}
       if(id===String(activeSpecialSessionId||'')){activeSpecialSessionId=null;stopSpecialHeartbeat();clearSpecialPresenceMarker()}
-      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();refreshCasinoSpectatorMenu();syncSeriousEmilyChallenge()
+      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();refreshCasinoSpectatorMenu()
     }
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
@@ -4481,7 +4480,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(back){back.classList.remove('hidden');back.textContent='カジノホールへ戻る';back.dataset.casinoReturn='hub'}
       }
       specialSelectedGame=null;seriousEmilyMode=false;
-      syncSeriousEmilyChallenge();
       refreshCasinoSpectatorMenu();
     }
     function startSpecialBlackjack(){
@@ -4830,10 +4828,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
     const specialTable140kOnceKey='spr-special-table-140k-once';
-    const seriousEmilyKey=`spr-emily-serious-announced:${playerStorageId}`;
+    const seriousEmilyDailyKey=()=>`spr-emily-serious-invited:${playerStorageId}:${resortDayToken()}`;
     const encoreMealDateKey=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;
     const encoreNightDateKey=`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`;
-    const seriousEmilyChallengeButton=document.getElementById('casinoSeriousEmilyChallenge');
     let seriousEmilyMode=false;
     function tokyoDateKey(date=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date)}
     function hasEncoreToday(){
@@ -4845,36 +4842,23 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function seriousEmilySessionBusy(){
       return specialOverlay?.classList.contains('open')||!specialTableScreen?.classList.contains('hidden')||!!activeSpecialSessionId||document.body.classList.contains('special-table-playing')||specialMenuHasLiveTable||specialInvitationStarting;
     }
-    function syncSeriousEmilyChallenge(){
-      if(!seriousEmilyChallengeButton)return;
-      const alreadyInvited=localStorage.getItem(seriousEmilyKey)==='1'||windowSprFlagCache['emily-serious-announced']===true;
-      const visible=casinoLevel==='hub'&&seriousEmilyRequirementsMet()&&alreadyInvited&&!seriousEmilySessionBusy();
-      seriousEmilyChallengeButton.classList.toggle('hidden',!visible);
-      seriousEmilyChallengeButton.disabled=!visible;
+    function seriousEmilyAlreadyInvitedToday(){
+      const key=seriousEmilyDailyKey();
+      const remoteKey=`emily-serious-invited:${resortDayToken()}`;
+      return localStorage.getItem(key)==='1'||windowSprFlagCache[remoteKey]===true;
     }
-    function startSeriousEmilyChallenge(automatic=false){
-      if((!automatic&&casinoLevel!=='hub')||casinoGame.classList.contains('hidden')||!seriousEmilyRequirementsMet()||seriousEmilySessionBusy())return false;
-      // Automatically invite the player once, then let them request any number of rematches.
-      if(automatic&&localStorage.getItem(seriousEmilyKey)==='1')return false;
-      if(localStorage.getItem(seriousEmilyKey)!=='1'){
-        localStorage.setItem(seriousEmilyKey,'1');
-        setRemoteFlag('emily-serious-announced',true).catch(e=>console.warn('Serious Emily flag sync',e));
-      }
+    function startSeriousEmilyChallenge(){
+      if(!casinoVipMode||casinoGame.classList.contains('hidden')||!seriousEmilyRequirementsMet()||seriousEmilyAlreadyInvitedToday()||seriousEmilySessionBusy())return false;
+      // Royal Table invitations happen once per resort day; declining ends today's chance.
+      localStorage.setItem(seriousEmilyDailyKey(),'1');
+      setRemoteFlag(`emily-serious-invited:${resortDayToken()}`,true).catch(e=>console.warn('Serious Emily daily flag sync',e));
+      royalTableWinStreak=0;
       seriousEmilyMode=true;
       specialInvitationStarting=true;
       void triggerEmilyInvitation().finally(()=>{specialInvitationStarting=false});
-      syncSeriousEmilyChallenge();
       return true;
     }
-    function tryTriggerSeriousEmily(){return royalTableWinStreak>=3?startSeriousEmilyChallenge(true):false}
-    seriousEmilyChallengeButton?.addEventListener('click',async()=>{
-      if(casinoLevel!=='hub')return;
-      await refreshCasinoChipsFromSupabase();
-      if(!startSeriousEmilyChallenge(false)){
-        syncSeriousEmilyChallenge();
-        if(casinoVipDoorNotice){casinoVipDoorNotice.textContent='ロイヤルテーブルの再戦には、5,000万CHIP以上と本日の「アンコール」が必要です。';casinoVipDoorNotice.classList.remove('hidden')}
-      }
-    });
+    function tryTriggerSeriousEmily(){return royalTableWinStreak>=3?startSeriousEmilyChallenge():false}
     // CHIPの正本はSupabase players.chips。localStorageは通信不能時の表示用キャッシュとしてのみ使用する。
     let casinoChips=Number(localStorage.getItem(casinoChipKey)||1000);
     if(!Number.isFinite(casinoChips)||casinoChips<0)casinoChips=1000;
@@ -4955,8 +4939,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         return true;
       }finally{specialInvitationStarting=false}
     }
+    let royalTableWinStreakDay=resortDayToken();
     function recordNormalCasinoResult(won){
-      if(won&&Number(document.documentElement.dataset.resortDay||1)>=4&&casinoChips>=50000000&&hasEncoreToday()&&isCasinoNight()&&!specialMenuHasLiveTable&&!seriousEmilySessionBusy()&&!specialInvitationStarting){
+      const currentRoyalDay=resortDayToken();
+      if(currentRoyalDay!==royalTableWinStreakDay){royalTableWinStreak=0;royalTableWinStreakDay=currentRoyalDay}
+      if(won&&casinoVipMode&&seriousEmilyRequirementsMet()&&!seriousEmilyAlreadyInvitedToday()&&!specialMenuHasLiveTable&&!seriousEmilySessionBusy()&&!specialInvitationStarting){
         royalTableWinStreak++;
         if(royalTableWinStreak>=3){tryTriggerSeriousEmily();royalTableWinStreak=0}
       }else royalTableWinStreak=0;
@@ -4993,7 +4980,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const adminEventReset=document.getElementById('adminEventReset');
     const adminSeriousReset=document.getElementById('adminSeriousReset');
     async function resetEmilyTest(chips,serious=false){
-      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(specialTable140kOnceKey);localStorage.removeItem(seriousEmilyKey);localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});
+      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(specialTable140kOnceKey);localStorage.removeItem(seriousEmilyDailyKey());localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});deleteRemoteFlag(`emily-serious-invited:${resortDayToken()}`).catch(()=>{});
       if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());localStorage.setItem(encoreNightDateKey,tokyoDateKey());await setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{});await setRemoteFlag(`sunset-encore-night-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{})}
       casinoChips=chips;previousCasinoChips=chips;specialTableWinStreak=0;activeSpecialSessionId=null;seriousEmilyMode=false;stopSpecialHeartbeat();clearSpecialPresenceMarker();
       await queueCasinoChipSync(casinoChips);
@@ -5019,7 +5006,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function syncCasinoBalances(){
       casinoChipsEl.textContent=casinoMoney(casinoChips);prizeChips.textContent=casinoMoney(casinoChips);
       if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
-      syncSeriousEmilyChallenge();
     }
     function casinoMinBet(){return casinoVipMode?100000:100}
     function casinoBetUnit(){return casinoVipMode?100000:100}
@@ -5271,7 +5257,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(typeof updateCasinoVipDoorAccess==='function')updateCasinoVipDoorAccess();
       casinoGame.classList.toggle('gallery-lock',level==='gallery');
       if(level==='gallery')casinoGame.scrollTop=0;
-      if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR');syncSeriousEmilyChallenge()}
+      if(level==='hub'){casinoHub.classList.remove('hidden');setCasinoHeader('CASINO BLUE SHELL','CASINO FLOOR')}
       else if(level==='games'){casinoGameSelect.classList.remove('hidden');setCasinoHeader('GAME TABLES','CHOOSE YOUR GAME')}
       else if(level==='vip'){casinoVipRoom.classList.remove('hidden');setCasinoHeader('PRIVATE ROOM','BLUE SHELL / LOWER LEVEL')}
       else if(level==='prize'){casinoPrize.classList.remove('hidden');setCasinoHeader('PRIZE COUNTER','CASINO BLUE SHELL');renderPrizeCounter();void refreshMysteryCounter()}
