@@ -1266,6 +1266,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 };
 </script>
 <!-- ANIMAL_EVENTS_REVIEW_V2_20261028: seabird silent intro + otter swim choice -->
+
+<style id="sprStableDialogueControls">
+.spr-dialogue-controls{display:grid;grid-template-columns:minmax(0,1fr)}
+.spr-dialogue-controls > *{grid-area:1 / 1;align-self:end}
+.spr-dialogue-controls > button.hidden{display:block!important;visibility:hidden!important;pointer-events:none!important}
+.spr-dialogue-controls:has(> div:not(.hidden)) > button.hidden{display:none!important}
+.spr-dialogue-controls .spr-pending-choices{visibility:hidden!important;pointer-events:none!important}
+</style>
 </head>
 <body>
   <header>
@@ -1345,7 +1353,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       </div>
     </section>
   </main>
-  <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE</footer>
+  <footer>Summer Paradise Resort　—　A REFINED STAY IN PARADISE
+    <p class="fan-site-notice" style="max-width:720px;margin:18px auto 0;padding:0 18px;font-size:12px;line-height:1.9;letter-spacing:.025em;text-align:left;word-break:normal;overflow-wrap:break-word">本サイトは、『第／五／人／格』を題材とした非公式の二次創作ファンサイトです。サイト内に登場するキャラクターその他の著作物に関する権利は、各権利者に帰属します。本サイトは、公式運営元および各権利者とは一切関係ありません。</p>
+  </footer>
 
   <section class="subview" id="roomView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">YOUR PRIVATE ROOM</div><div></div></div>
@@ -1760,12 +1770,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     <div id="hernandoDialogue" class="hernando-dialogue hidden" role="dialog" aria-live="polite" aria-label="エルナンドとの会話">
       <div class="hernando-dialogue-name">エルナンド</div>
       <div id="hernandoDialogueText" class="hernando-dialogue-text"></div>
+      <div class="spr-dialogue-controls">
       <button id="hernandoDialogueNext" class="hernando-dialogue-next" type="button">NEXT　›</button>
       <div id="hernandoDialogueChoices" class="hernando-dialogue-choices hidden">
         <button id="hernandoBullAccept" class="hernando-dialogue-choice" type="button">今夜の牡牛になる</button>
         <button id="hernandoBullDecline" class="hernando-dialogue-choice" type="button">今夜の牡牛にはならない</button>
         <button id="hernandoTalkButton" class="hernando-dialogue-choice hidden" type="button">エルナンドと話す</button>
         <button id="hernandoBullKnife" class="hernando-dialogue-choice hidden" type="button">エルナンドを刺す</button>
+      </div>
       </div>
       <div id="hernandoDrinkGame" class="hernando-drink-game hidden" aria-label="毒杯を選ぶ">
         <div id="hernandoDrinkRound" class="hernando-drink-round">1 / 3</div>
@@ -1810,8 +1822,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     <div class="casino-emily-dialogue">
       <div class="casino-emily-dialogue-name">運のみぞ知る</div>
       <div id="casinoEmilyDialogueText" class="casino-emily-dialogue-text" aria-live="polite"></div>
+      <div class="spr-dialogue-controls">
       <button id="casinoEmilyDialogueNext" class="casino-emily-dialogue-next" type="button">NEXT　›</button>
       <div id="casinoEmilyDialogueChoices" class="casino-emily-dialogue-choices hidden"></div>
+      </div>
     </div>
   </div>
   <div id="royalCountdownOverlay" class="royal-countdown-overlay hidden" aria-hidden="true"><span id="royalCountdownValue" class="royal-countdown-value"></span></div>
@@ -3924,6 +3938,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function emilyCasualChoiceButtons(options){
       emilyCasualNext.classList.add('hidden');
+      emilyCasualChoices.classList.remove('spr-pending-choices');emilyCasualChoices.inert=false;
       emilyCasualChoices.replaceChildren();
       options.forEach(({label,click})=>{
         const button=document.createElement('button');button.type='button';button.textContent=label==='CLOSE'?'CLOSE　×':label;if(label==='CLOSE')button.classList.add('emily-close-action');
@@ -3941,6 +3956,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function emilyCasualSay(line,nextAction,{showNext=true,speaker='運のみぞ知る',onComplete=null}={}){
       stopEmilyCasualTyping();
       if(emilyCasualSpeaker){emilyCasualSpeaker.textContent=speaker;emilyCasualSpeaker.classList.toggle('hidden',!speaker)}
+      emilyCasualChoices.classList.remove('spr-pending-choices');emilyCasualChoices.inert=false;
       emilyCasualNextAction=nextAction;
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
       emilyCasualNext.textContent='NEXT　›';
@@ -3989,7 +4005,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function emilyCasualRunLines(lines,done,index=0){
       if(index>=lines.length){done?.();return}
       const isLast=index===lines.length-1;
-      emilyCasualSay(lines[index],isLast?null:()=>emilyCasualRunLines(lines,done,index+1),{showNext:!isLast,onComplete:isLast?done:null});
+      emilyCasualSay(lines[index],isLast?null:()=>emilyCasualRunLines(lines,done,index+1),{showNext:!isLast,onComplete:isLast?()=>{
+        emilyCasualChoices.classList.remove('spr-pending-choices');
+        emilyCasualChoices.inert=false;
+      }:null});
+      if(isLast){
+        done?.();
+        emilyCasualChoices.classList.add('spr-pending-choices');
+        emilyCasualChoices.inert=true;
+      }
     }
     function emilyCasualNextClick(){
       if(revealEmilyCasualLine())return;
@@ -4935,7 +4959,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const dimensionalBagButton=document.getElementById('buyDimensionalBag'),acornButton=document.getElementById('buyFreshAcorn'),antidoteButton=document.getElementById('buyAntidote'),ultraMysteryButton=document.getElementById('buyUltraMystery');
       if(dimensionalBagButton){dimensionalBagButton.disabled=casinoChips<200;dimensionalBagButton.textContent=casinoChips<200?'チップ不足':'交換する'}
       if(acornButton){acornButton.disabled=casinoChips<500;acornButton.textContent=casinoChips<500?'チップ不足':'交換する'}
-      if(antidoteButton){const poisoned=!!window.__sprIsHernandoPoisoned?.();antidoteButton.disabled=casinoChips<5000||!poisoned;antidoteButton.textContent=casinoChips<5000?'チップ不足':poisoned?'酔いを治す':'毒状態で交換できます'}
+      if(antidoteButton){const poisoned=!!window.__sprIsHernandoPoisoned?.();antidoteButton.disabled=casinoChips<5000||!poisoned;antidoteButton.textContent=casinoChips<5000?'チップ不足':'交換する'}
       if(ultraMysteryButton){ultraMysteryButton.disabled=casinoChips<10000000000;ultraMysteryButton.textContent=casinoChips<10000000000?'チップ不足':'交換する'}
       afternoonTea2Owned.textContent=`所持 ${tea2}`;afternoonTea4Owned.textContent=`所持 ${tea4}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
       [[buyAfternoonTea2Ticket,20000],[buyAfternoonTea4Ticket,15000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
@@ -4953,7 +4977,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function buyStoryItem(key,label,price){
       await refreshCasinoChipsFromSupabase();
-      if(key==='antidote'&&!window.__sprIsHernandoPoisoned?.()){renderPrizeCounter('酔いざましは、エルナンドの毒状態の時だけ交換できます。');return}
+      if(key==='antidote'&&!window.__sprIsHernandoPoisoned?.()){renderPrizeCounter('今は酔い覚ましを飲む必要はなさそうだ。');return}
       if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
       const before=casinoChips;
@@ -11890,6 +11914,15 @@ window.addEventListener('message',e=>{
      void anomalySceneText.offsetWidth;anomalySceneText.style.opacity='1';
      await waitForTap(anomalyScene);
      anomalySceneText.style.opacity='0';await wait(500);
+     anomalySceneText.textContent='違う、あれは多分岩か何かだ。';
+     anomalySceneText.style.opacity='1';
+     await waitForTap(anomalyScene);
+     anomalySceneText.style.opacity='0';await wait(500);
+     anomalySceneText.textContent='あんな、“鯨を丸呑みできるほど巨大な生き物”が、この世の中に存在するわけがない。';
+     anomalySceneText.style.opacity='1';
+     await waitForTap(anomalyScene);
+     anomalySceneText.style.opacity='0';await wait(500);
+     anomalyScene.style.opacity='0';await wait(750);
    }catch(error){console.error('giant shadow fishing event:',error)}
    finally{
      reelAudio.pause();try{reelAudio.currentTime=0}catch{}
