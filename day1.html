@@ -3940,6 +3940,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function closeEmilyCasualDialogue(){
       stopEmilyCasualTyping();emilyCasualSpans=[];emilyCasualNextAction=null;
       emilyCasualOverlay.classList.add('hidden');
+      document.body.classList.remove('spr-emily-knife-scene');
       emilyCasualOverlay.setAttribute('aria-hidden','true');
       emilyCasualOverlay.style.removeProperty('opacity');emilyCasualOverlay.style.removeProperty('transition');
       emilyCasualChoices.replaceChildren();emilyCasualChoices.classList.add('hidden');
@@ -4046,12 +4047,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function emilyCasualUseKnife(){
       if(emilyKnifeSequenceActive)return;
       emilyKnifeSequenceActive=true;
+      document.body.classList.add('spr-emily-knife-scene');
       emilyCasualChoices.querySelectorAll('button').forEach(b=>{b.disabled=true});
       const knifeButton=document.getElementById('casinoEmilyKnife');
       if(knifeButton)knifeButton.disabled=true;
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
         closeEmilyCasualDialogue();
+        document.body.classList.add('spr-emily-knife-scene');
         syncEmilyTalkButton();
         casinoBgm.pause();
         void playKnifeStabSound();
@@ -4059,7 +4062,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         await new Promise(resolve=>setTimeout(resolve,2000));
         emilyCasualOverlay.classList.remove('hidden');emilyCasualOverlay.setAttribute('aria-hidden','false');
       }catch(e){
-        console.warn('Emily knife',e);syncEmilyTalkButton();return;
+        console.warn('Emily knife',e);document.body.classList.remove('spr-emily-knife-scene');syncEmilyTalkButton();return;
       }finally{
         emilyKnifeSequenceActive=false;if(knifeButton)knifeButton.disabled=false;
       }
@@ -12741,6 +12744,55 @@ window.addEventListener('message',e=>{
      void getEscapeState().then(state=>{if(state==='coordinates'||state==='station')setTimeout(()=>void chooseStation(),260)});
    }
  },true);
+})();
+</script>
+
+<style id="spr-text-next-style">
+body.spr-emily-knife-scene #casinoEmilyTalk,
+body.spr-emily-knife-scene #casinoEmilyKnife{display:none!important}
+button.spr-text-next{
+width:auto!important;min-width:0!important;max-width:100%!important;
+min-height:38px!important;height:auto!important;padding:8px 4px!important;
+margin-left:auto!important;margin-right:0!important;
+border:0!important;border-radius:0!important;background:transparent!important;
+box-shadow:none!important;color:#a87b2f!important;
+font:11px Georgia,"Times New Roman",serif!important;letter-spacing:.15em!important;
+text-align:right!important;align-self:flex-end!important;justify-self:end!important;
+flex:0 0 auto!important;cursor:pointer;
+}
+</style>
+<script>
+// Apply the same text-only advance control to static and dynamically created scenes.
+(function(){
+ const css=document.getElementById('spr-text-next-style').textContent;
+ const installed=new WeakSet();
+ function install(doc){
+   if(!doc||installed.has(doc)||!doc.documentElement)return;
+   installed.add(doc);
+   if(doc!==document){const style=doc.createElement('style');style.textContent=css;doc.head.append(style)}
+   function update(root){
+     const buttons=[];
+     if(root.nodeType===1&&root.matches('button'))buttons.push(root);
+     if(root.querySelectorAll)buttons.push(...root.querySelectorAll('button'));
+     for(const b of buttons){
+       const advance=/^NEXT(?:\s|[›>»→]|$)/i.test(b.textContent.trim());
+       b.classList.toggle('spr-text-next',advance);
+       if(advance&&b.textContent!=='NEXT')b.textContent='NEXT';
+     }
+     const frames=[];
+     if(root.nodeType===1&&root.matches('iframe'))frames.push(root);
+     if(root.querySelectorAll)frames.push(...root.querySelectorAll('iframe'));
+     frames.forEach(f=>{if(!f.dataset.sprNextWatch){f.dataset.sprNextWatch='1';f.addEventListener('load',()=>{try{install(f.contentDocument)}catch(e){}})}try{install(f.contentDocument)}catch(e){}});
+   }
+   update(doc);
+   new MutationObserver(records=>{
+     for(const r of records){
+       if(r.type==='characterData')update(r.target.parentElement);
+       else {if(r.target.nodeType===1&&r.target.matches('button'))update(r.target);r.addedNodes.forEach(update)}
+     }
+   }).observe(doc.documentElement,{subtree:true,childList:true,characterData:true});
+ }
+ install(document);
 })();
 </script>
 </body>
