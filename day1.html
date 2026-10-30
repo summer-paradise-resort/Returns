@@ -3948,7 +3948,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!specialOverlay){specialInvitationDecisionPending=false;return}
       seriousEmilyMode=royalInvitation;
       specialSpeaker.textContent=royalInvitation?'運のみぞ知る':'UNKNOWN';
-      casinoBgm.pause();
+      if(!royalInvitation)casinoBgm.pause();
       sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
@@ -4496,6 +4496,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const royalState=(extra={})=>({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,...extra});
       const beginRoyalTable=async()=>{
         royalIntroBusy=true;
+        // カジノBGMは卓の準備中まで流し、開始前のエミリーの台詞に入る時点で止める。
+        casinoBgm.pause();
         await royalEmilySaySequence([`互いの運に全てを委ねましょう、${storedGuestName}さん。`],{
           speaker:'エミリー',
           statePatch:royalState({visible_card:null,player_card:null,house_card:null,house_card_revealed:false,phase:'royal-intro',message:'ロイヤルテーブルが始まる。'})
@@ -4507,8 +4509,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           await sleep(1000);
         }
         royalCountdownOverlay?.classList.add('hidden');royalCountdownOverlay?.setAttribute('aria-hidden','true');
-        casinoBgm.pause();casinoBgm.currentTime=0;
-        await sprStartAudioClean(royalTableBgm,{volume:.46,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        // ROYAL TABLE専用BGMは音源準備中のため、ここでは再生しない。
         royalIntroReady=true;royalIntroBusy=false;
         play();
       };
