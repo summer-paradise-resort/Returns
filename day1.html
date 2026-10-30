@@ -3923,14 +3923,18 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
         await playKnifeStabSound();
+        casinoBgm.pause();
         setRemoteFlag('emily-knife-event-seen',true).catch(e=>console.warn('Emily knife flag',e));
       }catch(e){console.warn('Emily knife',e)}
       emilyCasualSay('あら………？',()=>emilyCasualSay(
         'ナイフを刺された女は、血を流すどころか痛みの感覚すらないようだ。',
-        ()=>emilyCasualSay(
-          'そんなに驚かなくても大丈夫よ。あの方の加護があるから、私、簡単には死ねないの。……ふふ、守られていると思うと、胸の奥まで満たされていくわ。',
-          closeEmilyCasualDialogue
-        ),
+        ()=>{
+          startCasinoMusic();
+          emilyCasualSay(
+            'そんなに驚かなくても大丈夫よ。あの方の加護があるから、私、簡単には死ねないの。……ふふ、守られていると思うと、胸の奥まで満たされていくわ。',
+            closeEmilyCasualDialogue
+          );
+        },
         {speaker:''}
       ));
     }
@@ -7222,6 +7226,48 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function closetSearchCount(){return Math.max(0,Number(localStorage.getItem(closetSearchKey())||0))}
     function setExploreMessage(text){roomExploreResult.textContent=text;roomExploreResult.classList.remove('hidden')}
+    let bathroomPetalSceneActive=false;
+    function showBathroomPetalBathScene(){
+      if(bathroomPetalSceneActive)return;
+      bathroomPetalSceneActive=true;
+      const scene=document.createElement('div');
+      scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');scene.setAttribute('aria-label','バスルームの花びら');
+      scene.style.cssText='position:fixed;inset:0;z-index:2147483646;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:max(20px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom));background:#000;color:#fff;opacity:0;transition:opacity .55s ease;cursor:pointer';
+      const image=document.createElement('img');
+      image.alt='花びらの浮かぶ浴槽';image.src='bathroom_flower_petals.jpg';
+      image.style.cssText='display:block;width:100%;max-height:72dvh;object-fit:contain;opacity:0;transition:opacity .8s ease';
+      const caption=document.createElement('div');
+      caption.style.cssText='width:min(90vw,720px);min-height:2em;text-align:center;font:clamp(16px,4.3vw,22px)/1.9 "Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;letter-spacing:.08em;opacity:0;transition:opacity .45s ease';
+      caption.textContent='疲れた、お湯に浸かってさっぱりしよう。';
+      scene.append(image,caption);document.body.append(scene);
+      let stage='bath',drainFallback=null,drainAudio=null,closed=false;
+      const revealOnePetal=()=>{
+        if(closed||stage!=='draining')return;
+        clearTimeout(drainFallback);if(drainAudio){drainAudio.onended=null;drainAudio.onerror=null}
+        stage='one-petal';image.src='bathroom_one_petal.jpg';image.alt='花びらが一枚だけ残った浴槽';
+        requestAnimationFrame(()=>{image.style.opacity='1';caption.style.opacity='1'});
+        caption.textContent='花びらが一枚だけ残っている。';
+      };
+      const advance=()=>{
+        if(stage==='bath'){
+          stage='draining';caption.textContent='浸かり終わったあと、お湯を抜いた。';
+          caption.style.opacity='1';image.style.opacity='0';
+          drainAudio=new Audio('bathroom_drain.mp3');drainAudio.preload='auto';drainAudio.playsInline=true;
+          drainAudio.onended=revealOnePetal;drainAudio.onerror=revealOnePetal;
+          drainFallback=setTimeout(revealOnePetal,10000);
+          try{const playing=drainAudio.play();if(playing?.catch)playing.catch(revealOnePetal)}catch{revealOnePetal()}
+          return;
+        }
+        if(stage==='one-petal'){
+          closed=true;scene.removeEventListener('click',advance);
+          setBathroomBloomState(2);updateRoomContextAction();setExploreMessage('花びらが一枚だけ残っている。');
+          scene.style.opacity='0';image.style.opacity='0';caption.style.opacity='0';
+          setTimeout(()=>{scene.remove();bathroomPetalSceneActive=false},580);
+        }
+      };
+      scene.addEventListener('click',advance);
+      requestAnimationFrame(()=>{scene.style.opacity='1';image.style.opacity='1';caption.style.opacity='1'});
+    }
     const hernandoSecretSequence=document.getElementById('hernandoSecretSequence');
     const hernandoSecretEnter=document.getElementById('hernandoSecretEnter'),hernandoSecretCancel=document.getElementById('hernandoSecretCancel');
     const hernandoDescent=document.getElementById('hernandoDescent'),hernandoDescentText=document.getElementById('hernandoDescentText');
@@ -7469,6 +7515,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       hernandoDialogueTypeToken++;
       hernandoDialogueTyping=false;
       hernandoDialogueText.textContent=hernandoDialogueCurrentText;
+      if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();
     }
     function showHernandoDialogueLine(line){
       const text=String(line||'');
@@ -7497,7 +7544,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const chars=[...text];
       const spans=chars.map(ch=>{const span=document.createElement('span');span.className='hernando-dialogue-char';span.textContent=ch;hernandoDialogueText.appendChild(span);return span});
       const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;return}
+      if(reduced){spans.forEach(span=>span.classList.add('in'));hernandoDialogueTyping=false;if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();return}
       (async()=>{
         await new Promise(r=>setTimeout(r,140));
         if(token!==hernandoDialogueTypeToken)return;
@@ -7507,7 +7554,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           spans[i].classList.add('in');
           await new Promise(r=>setTimeout(r,hernandoTypeDelay(chars[i])));
         }
-        if(token===hernandoDialogueTypeToken)hernandoDialogueTyping=false;
+        if(token===hernandoDialogueTypeToken){
+          hernandoDialogueTyping=false;
+          if(hernandoDialogueMode==='knifeEvent')playHernandoArenaBgm();
+        }
       })();
     }
     function setHernandoDialogueLines(lines,mode='intro',after='choice'){
@@ -7733,9 +7783,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{
         if(!await mysteryConsumeKnifeForNpc())throw new Error('ナイフを所持していません。');
         await playKnifeStabSound();
+        if(hernandoArenaBgm){sprCancelGuardedAudioStart(hernandoArenaBgm);hernandoArenaBgm.pause()}
         setRemoteFlag('hernando-knife-event-seen',true).catch(e=>console.warn('hernando knife flag',e));
         setHernandoDialogueLines([
-          '悪いな。先に傷を負ったのは君だ。俺をただのマタドールと見くびったな？地下闘技場で幾度も人と向き合い、勝ち残ってきた。この間合いは、身体が覚えている。'
+          '悪いな。刃が届いたと思ったか？先に傷を負ったのは君だ。'
         ],'knifeEvent','knifeBlackout');
       }catch(e){alert('使用できませんでした：'+String(e.message||e))}
       finally{hernandoBullKnife.disabled=false}
@@ -7796,20 +7847,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           setExploreMessage(text);
         };
       } else if(selectedRoomScene==='bathroom'){
-        // DAY1〜DAY7共通。既存の夜間の花イベントが優先される。
+        // ブルーム・フレンチを食べた日の夜だけ、花びらの浴槽イベントを一度再生する。
         const bloomAvailable=roomTimeIndex()===2&&hasBathroomFoodKey();
         const state=bloomAvailable?bathroomBloomState():2;
-        roomContextAction.textContent=bloomAvailable&&state===1?'水面の花に触れる':'バスルームを調べる';
+        roomContextAction.textContent=bloomAvailable&&state<2?'バスルームを調べる':'バスルームを調べる';
         roomContextAction.classList.remove('hidden');
         roomContextAction.onclick=()=>{
           const current=bloomAvailable?bathroomBloomState():2;
           if(bloomAvailable&&current<2){
-            if(current===0){
-              setBathroomBloomState(1);updateRoomContextAction();
-              setExploreMessage('浴槽には、いつの間にか水が張られている。静かな水面に、一輪の花だけが浮かんでいる。');return;
-            }
-            setBathroomBloomState(2);updateRoomContextAction();
-            setExploreMessage('花に指先が触れた瞬間、排水口がひとりでに開いた。水が引いていく。やがて浴槽の底に、濡れた文字が浮かび上がった。――「ここに沈んだものは、海へ還る。」');return;
+            setBathroomBloomState(1);
+            roomExploreResult.classList.add('hidden');
+            showBathroomPetalBathScene();return;
           }
           setExploreMessage('バスルームを調べた。特に変わったところはない。');
         };
