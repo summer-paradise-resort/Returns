@@ -2724,7 +2724,37 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       finally{window.__sprRemoteHydrating=false}
     }
 
-    let activeTeaPartyId='',teaPartyChannel=null;
+    let activeTeaPartyId='',teaPartyChannel=null,teaRoomExpiryTimer=null;
+    const TEA_ROOM_DURATION_MS=20*60*1000;
+    async function expireTeaParties(){
+      if(!window.supabaseClientSpecial)return;
+      const {error}=await window.supabaseClientSpecial.rpc('spr_expire_tea_parties');
+      if(error)throw error;
+    }
+    function clearTeaRoomExpiryTimer(){if(teaRoomExpiryTimer){clearTimeout(teaRoomExpiryTimer);teaRoomExpiryTimer=null}}
+    function scheduleTeaRoomExpiry(party){
+      clearTeaRoomExpiryTimer();const entered=Date.parse(party?.entered_at||'');if(!Number.isFinite(entered))return;
+      const delay=Math.max(0,entered+TEA_ROOM_DURATION_MS-Date.now());
+      teaRoomExpiryTimer=setTimeout(()=>void expireActiveTeaRoom(),delay);
+    }
+    async function expireActiveTeaRoom(){
+      const id=activeTeaPartyId;if(!id)return;
+      try{
+        await expireTeaParties();
+        const {data,error}=await window.supabaseClientSpecial.from('tea_party_members').select('left_at,entered_at').eq('party_id',id).eq('player_id',storedPlayerId).maybeSingle();
+        if(error)throw error;
+        if(id!==activeTeaPartyId)return;
+        if(data?.left_at){
+          closeTeaRoomView('入室から20分が経過したため、自動的に退室しました。このルームには再入室できません。');
+          await loadTeaParties();
+        }else{scheduleTeaRoomExpiry({entered_at:new Date(Date.now()-TEA_ROOM_DURATION_MS+15000).toISOString()})}
+      }catch(error){console.warn('tea room expiry',error);teaRoomExpiryTimer=setTimeout(()=>void expireActiveTeaRoom(),15000)}
+    }
+    function closeTeaRoomView(message){
+      clearTeaRoomExpiryTimer();if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);teaPartyChannel=null;activeTeaPartyId='';teaPartyChat.classList.add('hidden');closeView(teaPartyRoomView);teaSalonMessage.textContent=message;
+    }
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden&&activeTeaPartyId){const started=Date.parse(teaPartyEnteredAt||'');if(Number.isFinite(started)&&Date.now()-started>=TEA_ROOM_DURATION_MS)void expireActiveTeaRoom()}});
+    let teaPartyEnteredAt='';
     const teaTradeConfirmPanel=document.getElementById('teaTradeConfirmPanel'),teaTradePartner=document.getElementById('teaTradePartner'),teaTradePartnerName=document.getElementById('teaTradePartnerName'),teaTradeConfirm=document.getElementById('teaTradeConfirm'),teaTradeStatus=document.getElementById('teaTradeStatus');
     let currentTeaPartyMembers=[];
     const TEA_TRADE_CONFIRM_PREFIX='[SPR_COASTER_EXCHANGE_CONFIRM_V1]';
@@ -2828,7 +2858,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       button.disabled=true;try{
         await syncPendingCafeCoasters();
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_exchange_confirm',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_accept:accept,p_expected_partner_card:partnerCardId});if(error)throw error;
-        if(data?.status==='accepted'){await refreshOwnedCoasters();await loadTeaTradeOptions()}
+        if(data?.status==='accepted'){
+          await refreshOwnedCoasters();await loadTeaTradeOptions();
+          if(teaPartyChannel)void teaPartyChannel.send({type:'broadcast',event:'coaster-exchange-updated',payload:{partyId:activeTeaPartyId}}).catch(error=>console.warn('coaster exchange broadcast',error));
+        }
         await refreshTeaTradeStatus();teaTradeStatus.textContent=accept?(data?.status==='accepted'?'交換が成立しました。':'相手の提示が更新されました。もう一度ご確認ください。'):'交換を取りやめました。';
       }catch(error){teaTradeStatus.textContent=error.message||'交換を完了できませんでした。';button.disabled=false;await refreshTeaTradeStatus()}
     }
@@ -2876,6 +2909,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function joinTeaRoom(venue){
       if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
+      try{await expireTeaParties()}catch(error){console.error('tea room expiry check',error);teaSalonMessage.textContent='ルームの利用時間を確認できませんでした。';return}
       const {data:existing,error:findError}=await window.supabaseClientSpecial.from('tea_parties').select('id').eq('venue',venue).is('ends_at',null).maybeSingle();
       if(findError){console.error(findError);teaSalonMessage.textContent='チャットルームを確認できませんでした。';return}
       if(existing){
@@ -2897,7 +2931,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const id=activeTeaPartyId;if(!id)return;if(!window.confirm('退室すると、このチャットルームには再入室できません。退室しますか？'))return;
       const {error}=await window.supabaseClientSpecial.rpc('leave_tea_party',{p_party_id:id,p_player_id:storedPlayerId});
       if(error){console.error('tea room leave failed',error);teaSalonMessage.textContent='退室を記録できませんでした。通信状態をご確認ください。';return}
-      if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);teaPartyChannel=null;activeTeaPartyId='';teaPartyChat.classList.add('hidden');closeView(teaPartyRoomView);teaSalonMessage.textContent='退室しました。このチャットルームには再入室できません。';await loadTeaParties();
+      closeTeaRoomView('退室しました。このチャットルームには再入室できません。');await loadTeaParties();
     }
     function renderTeaExchange(){
       if(!teaExchangeList)return;const counts=coasterCounts();const rows=counts.map((count,n)=>({n,count,extra:Math.max(0,count-1)})).filter(x=>x.extra>0);
@@ -2910,33 +2944,38 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function loadTeaParties(){
       if(!window.supabaseClientSpecial)return;
+      try{await expireTeaParties()}catch(error){console.warn('tea room expiry check',error)}
       const {data:parties,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at,created_at').is('ends_at',null).order('venue');
       if(error){teaPartyPublicStatus.textContent='チャットルームを読み込めませんでした。';console.error(error);return}
       const rooms=parties||[];let allMembers=[];
       if(rooms.length){const {data,error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').select('party_id,player_id,display_name,is_host,left_at').in('party_id',rooms.map(p=>p.id)).is('left_at',null);if(memberError){teaPartyPublicStatus.textContent='参加者情報を読み込めません。';console.error(memberError);return}allMembers=data||[]}
-      teaPartyPublicStatus.textContent='各ルーム2名まで。入室にはチケットが必要です。退室後は再入室できません。';
+      teaPartyPublicStatus.textContent='各ルーム2名まで。入室から20分で自動退室となります。退室後は再入室できません。';
       teaPartyList.innerHTML=rooms.map(p=>{const members=allMembers.filter(m=>m.party_id===p.id),mine=members.some(m=>m.player_id===storedPlayerId),full=members.length>=2,names=members.map(m=>`${teaEscapeHtml(m.display_name||'GUEST')}様`).join('、')||'空室',label=mine?'入室中・再表示':full?'満室':belongingCount('afternoonTeaTicket2')?'チケットで入室':'チケットが必要';return `<button class="menu-item" type="button" data-tea-party="${teaEscapeHtml(p.id)}" data-venue="${teaEscapeHtml(p.venue)}" data-tea-mine="${mine?'1':'0'}" data-tea-full="${full?'1':'0'}"><strong>${teaEscapeHtml(p.venue)}</strong><small>${label}　｜　${members.length}/2名</small><span class="tea-party-people">参加者：${names}</span></button>`}).join('');
       teaPartyList.querySelectorAll('[data-tea-party]').forEach(b=>b.onclick=()=>{if(b.dataset.teaMine==='1')openTeaParty(b.dataset.teaParty);else if(b.dataset.teaFull!=='1')joinTeaRoom(b.dataset.venue)});
     }
     async function openTeaParty(id){
       if(!window.supabaseClientSpecial||!storedPlayerId)return;
+      try{await expireTeaParties()}catch(error){console.warn('tea room expiry check',error)}
       const [{data:party,error:partyError},{data:members,error:membersError}]=await Promise.all([
         window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at').eq('id',id).single(),
-        window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host,left_at').eq('party_id',id).is('left_at',null)
+        window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host,left_at,entered_at').eq('party_id',id).is('left_at',null)
       ]);
       if(partyError||membersError||!party){teaSalonMessage.textContent='チャットルームを開けませんでした。';return}
+      if(party.ends_at){teaSalonMessage.textContent='利用時間の20分が終了したため、このルームは終了しました。';await loadTeaParties();return}
       const member=(members||[]).some(m=>m.player_id===storedPlayerId);
       if(!member){teaSalonMessage.textContent='入室にはチケットが必要です。';return}
-      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');teaPartyRoomTitle.textContent=party.venue||'CHAT ROOM';updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
+      const ownMembership=(members||[]).find(m=>String(m.player_id)===String(storedPlayerId));
+      if(!ownMembership){teaSalonMessage.textContent='入室状態を確認できませんでした。ルーム一覧を更新してください。';await loadTeaParties();return}
+      activeTeaPartyId=id;teaPartyEnteredAt=ownMembership.entered_at||new Date().toISOString();scheduleTeaRoomExpiry({entered_at:teaPartyEnteredAt});teaPartyChat.classList.remove('hidden');teaPartyRoomTitle.textContent=party.venue||'CHAT ROOM';updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
       renderTeaPartyMemberCount(members||[]);openView('teaPartyRoomView');
       teaPartyCompose.classList.remove('hidden');teaPartyReadOnly.classList.add('hidden');
       const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
       if(messageError){console.error(messageError);teaSalonMessage.textContent='会話を読み込めませんでした。';return}
       renderTeaMessages(messages||[]);if(teaTradePartner?.value)void refreshTeaTradeStatus();if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);
-      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus()}).on('postgres_changes',{event:'*',schema:'public',table:'tea_party_members',filter:`party_id=eq.${id}`},()=>{void refreshTeaPartyMembers(id)}).subscribe();
+      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('broadcast',{event:'coaster-exchange-updated'},({payload})=>{if(String(payload?.partyId)===String(activeTeaPartyId))void refreshTeaTradeStatus()}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus()}).on('postgres_changes',{event:'*',schema:'public',table:'tea_party_members',filter:`party_id=eq.${id}`},()=>{void refreshTeaPartyMembers(id)}).subscribe();
     }
     function renderTeaPartyMemberCount(members){
-      const active=(members||[]).filter(m=>!m.left_at);teaPartyChatMeta.textContent=`${teaPartyRoomTitle.textContent}　｜　参加者：${active.map(m=>m.display_name||'GUEST').join('、')||'なし'}　｜　${active.length}/2名`;
+      const active=(members||[]).filter(m=>!m.left_at),deadline=Date.parse(teaPartyEnteredAt||'')+TEA_ROOM_DURATION_MS,deadlineText=Number.isFinite(deadline)?new Date(deadline).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';teaPartyChatMeta.textContent=`${teaPartyRoomTitle.textContent}　｜　参加者：${active.map(m=>m.display_name||'GUEST').join('、')||'なし'}　｜　${active.length}/2名${deadlineText?`　｜　あなたの利用終了 ${deadlineText}`:''}`;
     }
     async function refreshTeaPartyMembers(id){
       if(!id||id!==activeTeaPartyId||!window.supabaseClientSpecial)return;
