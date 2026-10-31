@@ -2881,10 +2881,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const belongings=loadBelongings();belongings[key]=remaining;localStorage.setItem(belongingsKey,JSON.stringify(belongings));
       const endsAt=new Date(Date.now()+30*60*1000).toISOString();
       const {data:party,error}=await window.supabaseClientSpecial.from('tea_parties').insert({venue,host_player_id:storedPlayerId,host_name:storedGuestName,ticket_type:capacity,ends_at:endsAt}).select('id').single();
-      if(error){console.error(error);await remoteInventoryAdjust(key,1).catch(()=>{});teaSalonMessage.textContent='お茶会の作成に失敗しました。Supabase設定をご確認ください。';await hydratePersistentState();return}
+      if(error){console.error('afternoon tea party insert failed',error);await remoteInventoryAdjust(key,1).catch(()=>{});const detail=[error.code,error.message].filter(Boolean).join(' / ');teaSalonMessage.textContent=`お茶会の作成に失敗しました。${detail?`Supabaseエラー：${detail}`:'Supabase設定をご確認ください。'}`;await hydratePersistentState();return}
       const members=[{party_id:party.id,player_id:storedPlayerId,display_name:storedGuestName,is_host:true},...guests.map(g=>({party_id:party.id,player_id:g.id,display_name:g.name,is_host:false}))];
       const {error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').insert(members);
-      if(memberError){console.error(memberError);await window.supabaseClientSpecial.from('tea_parties').delete().eq('id',party.id);await remoteInventoryAdjust(key,1).catch(()=>{});teaSalonMessage.textContent='招待メンバーの登録に失敗しました。';await hydratePersistentState();return}
+      if(memberError){console.error('afternoon tea member insert failed',memberError);await window.supabaseClientSpecial.from('tea_parties').delete().eq('id',party.id);await remoteInventoryAdjust(key,1).catch(()=>{});const detail=[memberError.code,memberError.message].filter(Boolean).join(' / ');teaSalonMessage.textContent=`招待メンバーの登録に失敗しました。${detail?`Supabaseエラー：${detail}`:''}`;await hydratePersistentState();return}
       teaSalonMessage.textContent=`${guests.map(g=>g.name).join('、')} 様をご招待しました。30分間のAFTERNOON TEA SALONを開始します。`;
       refreshTeaSalonStatus();if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
       document.body.classList.add('tea-salon-active');setTimeout(()=>document.body.classList.remove('tea-salon-active'),1800);
