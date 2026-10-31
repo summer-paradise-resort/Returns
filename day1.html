@@ -13089,7 +13089,8 @@ window.addEventListener('message',e=>{
    const layer=document.createElement('div');layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','true');
    layer.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:28px 5vw;background:#000;color:#fff;opacity:0;transition:opacity .8s ease;cursor:pointer';
    const text=document.createElement('div');text.style.cssText='width:min(33em,100%);text-align:center;white-space:pre-line;font:clamp(17px,4vw,25px)/1.9 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.055em;text-shadow:0 2px 12px #000';
-   layer.append(text);document.body.append(layer);void layer.offsetWidth;layer.style.opacity='1';await wait(850);
+   const endButton=document.createElement('button');endButton.type='button';endButton.textContent='END';endButton.style.cssText='position:absolute;bottom:max(28px,env(safe-area-inset-bottom));right:6vw;padding:12px 18px;border:0;background:transparent;color:#fff;font:12px Georgia,serif;letter-spacing:.2em;cursor:pointer;display:none';
+   layer.append(text,endButton);document.body.append(layer);void layer.offsetWidth;layer.style.opacity='1';await wait(850);
    let bgm=null;
    if(ending){
      document.querySelectorAll('audio,video').forEach(media=>{try{media.pause()}catch{}});
@@ -13101,10 +13102,22 @@ window.addEventListener('message',e=>{
    }
    for(const line of lines){
      text.textContent=line;window.sprFitBlackoutLines?.(text);
+     if(ending&&line==='END'){
+       endButton.style.display='block';
+       await new Promise(resolve=>endButton.addEventListener('click',resolve,{once:true}));
+       break;
+     }
      await new Promise(resolve=>layer.addEventListener('click',resolve,{once:true}));
    }
    if(bgm){bgm.pause();try{bgm.currentTime=0}catch{}}
    layer.style.opacity='0';await wait(850);layer.remove();
+   if(ending){
+     localStorage.setItem(day7EndingSeenKey,'1');
+     const bgmSetting=localStorage.getItem('spr-bgm-enabled');
+     Object.keys(localStorage).filter(key=>key.startsWith('spr-')&&key!==day7EndingSeenKey).forEach(key=>localStorage.removeItem(key));
+     if(bgmSetting!==null)localStorage.setItem('spr-bgm-enabled',bgmSetting);
+     window.location.replace('security_check_supabase.html');
+   }
  }
  const day7StaffWarningLines=['お客様','本日は立ち入り禁止となります。','本日は立ち入り禁止となります。','それよりもダイビングはいかがですか。あのお方もきっとお喜びになりますよ。'];
  async function denyEarlyLighthouseEntry(){
