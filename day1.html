@@ -2516,6 +2516,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function applyRemoteFlagToLocal(flagKey,value){
       const bool=v=>v===true||v===1||v==='1';
       if(flagKey==='emily-special-announced'){if(bool(value))localStorage.setItem(`spr-emily-special-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-special-announced:${playerStorageId}`);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
+      else if(flagKey==='special-table-140k-once'){const k=`spr-special-table-140k-once:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='emily-serious-announced'){if(bool(value))localStorage.setItem(`spr-emily-serious-announced:${playerStorageId}`,'1');else localStorage.removeItem(`spr-emily-serious-announced:${playerStorageId}`)}
       else if(flagKey===`sunset-meal-used:${resortDayToken()}`){const k=`spr-sunset-meal-used:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
@@ -2552,6 +2553,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const out={};
       if(localStorage.getItem(`spr-hernando-first-conversation-done:${playerStorageId}`)==='1')out['hernando-first-conversation-done']=true;
       if(localStorage.getItem(`spr-emily-special-announced:${playerStorageId}`)==='1')out['emily-special-announced']=true;
+      if(localStorage.getItem(`spr-special-table-140k-once:${playerStorageId}`)==='1')out['special-table-140k-once']=true;
       if(localStorage.getItem(`spr-emily-serious-announced:${playerStorageId}`)==='1')out['emily-serious-announced']=true;
       const emilyCasualProgress=normalizeEmilyCasualProgress(localStorage.getItem(`spr-emily-casual-progress:${playerStorageId}`));
       if(emilyCasualProgress.heard.length||emilyCasualProgress.special_seen)out['emily-casual-progress']=emilyCasualProgress;
@@ -4893,7 +4895,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
     const casinoChipKey=`spr-casino-chips:${playerStorageId}`;
     const emilyAnnouncedKey=`spr-emily-special-announced:${playerStorageId}`;
-    const specialTable140kOnceKey='spr-special-table-140k-once';
+    // SPECIAL TABLEの発生済み状態は、ブラウザ共通ではなくプレイヤーごとに保持する。
+    const specialTable140kOnceKey=`spr-special-table-140k-once:${playerStorageId}`;
     const seriousEmilyDailyKey=()=>`spr-emily-serious-invited:${playerStorageId}:${resortDayToken()}`;
     const encoreMealDateKey=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;
     const encoreNightDateKey=`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`;
@@ -4985,9 +4988,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     let specialInvitationStarting=false;
     function specialTableDisplayName(){return seriousEmilyMode?'ROYAL TABLE':'SPECIAL TABLE'}
+    function specialTable140kAlreadyTriggered(){return localStorage.getItem(specialTable140kOnceKey)==='1'||windowSprFlagCache['special-table-140k-once']===true}
     async function triggerNormalEmilyEvent(){
       if(seriousEmilyRequirementsMet())return startSeriousEmilyChallenge(true);
-      if(casinoChips<=140000||localStorage.getItem(specialTable140kOnceKey)==='1')return false;
+      if(casinoChips<=140000||specialTable140kAlreadyTriggered())return false;
       if(specialInvitationStarting||seriousEmilySessionBusy()||specialMenuHasLiveTable)return false;
       specialInvitationStarting=true;
       try{
@@ -4998,6 +5002,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         activeSpecialSessionId=reservedId;specialStake=casinoChips;specialStartsAt=new Date(reservedStartsAt).getTime();
         writeSpecialPresenceMarker({sessionId:reservedId,stake:specialStake,hiddenAt:0,createdAt:Date.now()});startSpecialHeartbeat();
         localStorage.setItem(specialTable140kOnceKey,'1');
+        setRemoteFlag('special-table-140k-once',true).catch(e=>console.warn('SPECIAL TABLE player flag sync',e));
         localStorage.setItem(emilyAnnouncedKey,'1');
         setRemoteFlag('emily-special-announced',true).catch(e=>console.warn('Emily flag sync',e));
         seriousEmilyMode=false;
@@ -5013,7 +5018,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         royalTableWinStreak++;
         if(royalTableWinStreak>=3){tryTriggerSeriousEmily();royalTableWinStreak=0}
       }else royalTableWinStreak=0;
-      if(!won||casinoChips<=140000||localStorage.getItem(specialTable140kOnceKey)==='1'||specialMenuHasLiveTable||seriousEmilySessionBusy()||specialInvitationStarting){specialTableWinStreak=0;return}
+      if(!won||casinoChips<=140000||specialTable140kAlreadyTriggered()||specialMenuHasLiveTable||seriousEmilySessionBusy()||specialInvitationStarting){specialTableWinStreak=0;return}
       specialTableWinStreak++;
       if(specialTableWinStreak>=3){
         specialTableWinStreak=0;
@@ -5046,7 +5051,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const adminEventReset=document.getElementById('adminEventReset');
     const adminSeriousReset=document.getElementById('adminSeriousReset');
     async function resetEmilyTest(chips,serious=false){
-      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(specialTable140kOnceKey);localStorage.removeItem(seriousEmilyDailyKey());localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});deleteRemoteFlag(`emily-serious-invited:${resortDayToken()}`).catch(()=>{});
+      localStorage.removeItem(emilyAnnouncedKey);localStorage.removeItem(specialTable140kOnceKey);localStorage.removeItem(seriousEmilyDailyKey());localStorage.removeItem('spr-resort-announcement');deleteRemoteFlag('emily-special-announced').catch(()=>{});deleteRemoteFlag('special-table-140k-once').catch(()=>{});deleteRemoteFlag('emily-serious-announced').catch(()=>{});deleteRemoteFlag(`emily-serious-invited:${resortDayToken()}`).catch(()=>{});
       if(serious){localStorage.setItem(encoreMealDateKey,tokyoDateKey());localStorage.setItem(encoreNightDateKey,tokyoDateKey());await setRemoteFlag(`sunset-encore-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{});await setRemoteFlag(`sunset-encore-night-date:${resortDayToken()}`,tokyoDateKey()).catch(()=>{})}
       casinoChips=chips;previousCasinoChips=chips;specialTableWinStreak=0;activeSpecialSessionId=null;seriousEmilyMode=false;stopSpecialHeartbeat();clearSpecialPresenceMarker();
       await queueCasinoChipSync(casinoChips);
