@@ -13249,11 +13249,18 @@ window.addEventListener('message',e=>{
    if(bgm){bgm.pause();try{bgm.currentTime=0}catch{}}
    layer.style.opacity='0';await wait(850);layer.remove();
    if(ending){
+     // ENDを一度見た記録とログイン情報は保持し、再ログイン時の再生と強制ログアウトを防ぐ。
      localStorage.setItem(day7EndingSeenKey,'1');
-     const bgmSetting=localStorage.getItem('spr-bgm-enabled');
-     Object.keys(localStorage).filter(key=>key.startsWith('spr-')&&key!==day7EndingSeenKey).forEach(key=>localStorage.removeItem(key));
-     if(bgmSetting!==null)localStorage.setItem('spr-bgm-enabled',bgmSetting);
-     window.location.replace('security_check_supabase.html');
+     const preservedKeys=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled',day7EndingSeenKey]);
+     Object.keys(localStorage).filter(key=>key.startsWith('spr-')&&!preservedKeys.has(key)).forEach(key=>localStorage.removeItem(key));
+     // END後は開いていた施設画面を閉じて、ログインしたままトップページへ戻す。
+     document.querySelectorAll('.subview.open').forEach(view=>{
+       const back=view.querySelector('[data-back]');
+       if(back)back.click();
+       else{view.classList.remove('open');view.setAttribute('aria-hidden','true')}
+     });
+     document.body.style.overflow='';
+     window.scrollTo(0,0);
    }
  }
  const day7StaffWarningLines=['お客様','本日は立ち入り禁止となります。','本日は立ち入り禁止となります。','それよりもダイビングはいかがですか。あのお方もきっとお喜びになりますよ。'];
