@@ -442,6 +442,7 @@
 
     .collection-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.collection-card{min-width:0;padding:7px;background:var(--message-bg);border:1px solid rgba(130,110,76,.18);text-align:center}.collection-card.missing{opacity:.42}.collection-card img{display:block;width:100%;aspect-ratio:1;object-fit:contain}.collection-card strong{display:block;margin-top:5px;font:11px Georgia,serif}.collection-card small{display:block;margin-top:2px;font-size:9px;color:var(--sheet-muted)}
     .tea-exchange{margin-top:18px;padding:14px;border:1px solid #e1d4bd;background:#fbf8f1}.tea-exchange h4{margin:0 0 7px;font:500 13px Georgia,serif;letter-spacing:.08em}.tea-exchange-note{font-size:11px;line-height:1.8;color:#6f675c}.tea-exchange-list{display:grid;gap:7px;margin-top:10px}.tea-exchange-item{display:flex;justify-content:space-between;gap:12px;padding:10px;background:#fff;border:1px solid #e7dfd1;font-size:12px}.tea-exchange-empty{padding:10px;text-align:center;font-size:11px;color:#7a7063}
+    .tea-trade-choice-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:8px}.tea-trade-choice{display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;min-height:58px;padding:10px 12px;border:1px solid #d8cbb7;background:#fff;color:#17304f;text-align:left;font:inherit;cursor:pointer}.tea-trade-choice.selected{border:2px solid #17304f;background:#f3eee4}.tea-trade-choice small{font-size:11px;color:#70675d}.tea-trade-choice.unowned{color:#bd2727;font-weight:700}.tea-trade-choice.unowned small{color:#bd2727}.tea-trade-request-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.tea-trade-count{font-size:12px;color:#655f58}.tea-trade-count.unowned{color:#bd2727;font-weight:700}
     .room-fallback{height:100%;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:28px;text-align:center;background:linear-gradient(160deg,#173b5d,#071a2b)}
     .room-fallback h2{font-size:25px;font-weight:400;letter-spacing:.08em;margin:0}
     .room-fallback p{font-size:13px;line-height:1.9;color:rgba(255,255,255,.75);margin:0 0 8px}
@@ -1737,7 +1738,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               <h4 style="margin:0 0 8px">コースター交換</h4>
               <p class="tea-party-note">相手と交換するコースターを選びます。相手が承諾すると、選んだコースターを1枚ずつ交換します。交換できるのは2枚以上ある絵柄の余剰分です。</p>
               <select id="teaTradePartner" style="width:100%;min-height:43px;padding:7px 9px;border:1px solid #d8cfbf;background:#fff;color:#0d2743;font:inherit;font-size:13px"><option value="">交換相手を選択</option></select>
-              <label style="display:block;margin-top:10px">渡すコースター<select id="teaTradeGive" style="width:100%;min-height:43px"></select></label><label style="display:block;margin-top:10px">受け取るコースター<select id="teaTradeReceive" style="width:100%;min-height:43px"></select></label><button id="teaTradeConfirm" class="primary-btn" type="button" style="margin-top:9px">交換を申し込む</button><div id="teaTradeRequests"></div>
+              <div class="tea-exchange-note" style="margin-top:10px">差し出すコースターを選んで申し込みます。相手が返す1枚を選んだ後、内容を確認して交換します。</div><label style="display:block;margin-top:10px;font-weight:600">差し出すコースター</label><select id="teaTradeGive" hidden></select><div id="teaTradeGiveChoices" class="tea-trade-choice-list" aria-label="差し出すコースターを選択"></div><button id="teaTradeConfirm" class="primary-btn" type="button" style="margin-top:9px" disabled>交換を申し込む</button><div id="teaTradeRequests"></div>
               <p id="teaTradeStatus" class="tea-party-note" aria-live="polite" style="margin:10px 0 0"></p>
             </div>
             <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会の会話は、参加者だけに表示されます。</div>
@@ -2773,7 +2774,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return agreed;
     }
     let coasterReadGeneration=0,tradeLoading=false,tradeSelectionGeneration=0;
-    const teaTradeGive=document.getElementById('teaTradeGive'),teaTradeReceive=document.getElementById('teaTradeReceive'),teaTradeRequests=document.getElementById('teaTradeRequests');
+    const teaTradeGive=document.getElementById('teaTradeGive'),teaTradeGiveChoices=document.getElementById('teaTradeGiveChoices'),teaTradeRequests=document.getElementById('teaTradeRequests');
     async function refreshOwnedCoasters(){
       const generation=++coasterReadGeneration,playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const migrationKey=`spr-coaster-owner-migrated:${playerStorageId}`;
@@ -2793,64 +2794,89 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       teaTradeConfirmPanel.classList.toggle('hidden',currentTeaPartyMembers.length<2);teaTradeConfirm.disabled=true;
       void loadTeaTradeOptions();
     }
+    function ownCoasterCounts(){const counts=new Map();for(const c of loadCoasterInventory())counts.set(c.file,(counts.get(c.file)||0)+1);return counts}
+    function addOwnCoasterCount(parent,file,counts=ownCoasterCounts()){
+      const count=counts.get(file)||0,badge=document.createElement('span');badge.className=`tea-trade-count${count?'':' unowned'}`;badge.textContent=count?`あなたの所持：${count}枚`:'未取得';parent.append(badge);return count;
+    }
+    function makeTradeChoice(file,count,selected,onChoose){
+      const button=document.createElement('button');button.type='button';button.className=`tea-trade-choice${selected?' selected':''}`;
+      const name=document.createElement('span');name.textContent=sprCoasterLabel(file);const qty=document.createElement('small');qty.textContent=`所持 ${count}枚`;
+      button.append(name,qty);button.addEventListener('click',onChoose);return button;
+    }
     async function loadTeaTradeOptions(){
       const generation=++tradeSelectionGeneration,party=activeTeaPartyId,partner=teaTradePartner.value;
-      teaTradeConfirm.disabled=true;teaTradeGive.replaceChildren();teaTradeReceive.replaceChildren();
+      teaTradeConfirm.disabled=true;teaTradeGive.replaceChildren();teaTradeGiveChoices.replaceChildren();
       if(!party||!partner)return;
       try{
         await syncPendingCafeCoasters();await refreshOwnedCoasters();
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_options',{p_party_id:party,p_player_id:storedPlayerId,p_partner:partner});if(error)throw error;
         if(generation!==tradeSelectionGeneration||party!==activeTeaPartyId||partner!==teaTradePartner.value)return;
-        const ownCounts=new Map();for(const c of loadCoasterInventory())ownCounts.set(c.file,(ownCounts.get(c.file)||0)+1);
-        for(const [select,cards] of [[teaTradeGive,data.mine],[teaTradeReceive,data.theirs]]){
-          const files=new Set();for(const c of cards||[]){if(files.has(c.file))continue;files.add(c.file);
-            const receiving=select===teaTradeReceive,owned=ownCounts.get(c.file)||0;
-            const suffix=receiving?(owned?`（所持${owned}枚）`:'（未取得）'):`（所持${c.qty}枚）`;
-            const option=new Option(`${sprCoasterLabel(c.file)}${suffix}`,c.id);
-            if(receiving&&!owned){option.style.color='#c62828';option.style.fontWeight='700';option.dataset.unowned='true'}
-            select.add(option);
-          }
-          if(!select.options.length)select.add(new Option('交換できるダブりがありません',''));
+        teaTradeGive.add(new Option('コースターを選択してください',''));
+        const files=new Set();for(const c of data.mine||[]){if(files.has(c.file))continue;files.add(c.file);
+          const option=new Option(`${sprCoasterLabel(c.file)}（所持${c.qty}枚）`,c.id);teaTradeGive.add(option);
+          teaTradeGiveChoices.append(makeTradeChoice(c.file,c.qty,false,()=>{
+            teaTradeGive.value=c.id;teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.remove('selected'));
+            teaTradeGiveChoices.querySelectorAll('.tea-trade-choice')[ [...files].indexOf(c.file) ]?.classList.add('selected');
+            teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradePartner.value;
+          }));
         }
-        const selectedReceive=teaTradeReceive.selectedOptions[0];teaTradeReceive.style.color=selectedReceive?.dataset.unowned==='true'?'#c62828':'';
-        teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradeReceive.value;
+        if(!files.size){const empty=document.createElement('div');empty.className='tea-exchange-empty';empty.textContent='交換に出せるダブりがありません。';teaTradeGiveChoices.append(empty)}
+        teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradePartner.value;
       }catch(error){teaTradeStatus.textContent='交換用の所持品を確認できません。通信状態と追加SQLを確認してください。';console.warn('coaster options',error)}
     }
-    teaTradeReceive.addEventListener('change',()=>{const selected=teaTradeReceive.selectedOptions[0];teaTradeReceive.style.color=selected?.dataset.unowned==='true'?'#c62828':''});
+    async function chooseTeaTradeReturn(trade,cardId,button){
+      button.disabled=true;try{
+        await syncPendingCafeCoasters();
+        const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_choose_return',{p_trade_id:trade.id,p_player_id:storedPlayerId,p_card_id:cardId});if(error)throw error;
+        teaTradeStatus.textContent='返すコースターを選びました。申込者の最終確認をお待ちください。';await refreshTeaTradeStatus();
+      }catch(error){teaTradeStatus.textContent=error.message||'返すコースターを登録できませんでした。';button.disabled=false}
+    }
+    async function resolveTeaTrade(trade,accept,button){
+      button.disabled=true;try{
+        await syncPendingCafeCoasters();
+        const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_respond',{p_trade_id:trade.id,p_player_id:storedPlayerId,p_accept:accept});if(error)throw error;
+        await refreshOwnedCoasters();await loadTeaTradeOptions();teaTradeStatus.textContent=accept?'コースターを1枚ずつ交換しました。':'交換の申込みを終了しました。';await refreshTeaTradeStatus();
+      }catch(error){teaTradeStatus.textContent=error.message||'交換できませんでした。';button.disabled=false}
+    }
     async function refreshTeaTradeStatus(){
       if(tradeLoading||!activeTeaPartyId)return;tradeLoading=true;const party=activeTeaPartyId;
       try{
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_list',{p_party_id:party,p_player_id:storedPlayerId});if(error)throw error;
         if(party!==activeTeaPartyId)return;
+        await refreshOwnedCoasters();const counts=ownCoasterCounts();
         teaTradeRequests.replaceChildren();
         for(const trade of data||[]){
           const row=document.createElement('div');row.style.cssText='padding:12px 0;border-top:1px solid #ded5c5;margin-top:10px';
-          const outgoing=String(trade.from_player)===String(storedPlayerId),description=document.createElement('p');
-          description.textContent=`${trade.from_name} → ${trade.to_name}：${sprCoasterLabel(trade.from_file)} と ${sprCoasterLabel(trade.to_file)} ／ ${trade.status==='pending'?'確認待ち':trade.status==='accepted'?'交換完了':trade.status==='cancelled'?'取消済み':'辞退済み'}`;row.append(description);
-          if(trade.status==='pending'){
-            for(const [label,accept] of outgoing?[['取り消す',false]]:[['承諾して交換する',true],['辞退する',false]]){
-              const b=document.createElement('button');b.textContent=label;b.style.cssText='min-height:42px;margin:4px;padding:8px 14px';
-              b.onclick=async()=>{row.querySelectorAll('button').forEach(x=>x.disabled=true);try{
-                await syncPendingCafeCoasters();
-                const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_respond',{p_trade_id:trade.id,p_player_id:storedPlayerId,p_accept:accept});if(error)throw error;
-                await refreshOwnedCoasters();await loadTeaTradeOptions();await refreshTeaTradeStatus();teaTradeStatus.textContent=accept?'コースターを1枚ずつ交換しました。':'交換の申込みを終了しました。';
-              }catch(error){teaTradeStatus.textContent=error.message||'交換できませんでした。';row.querySelectorAll('button').forEach(x=>x.disabled=false)}};row.append(b);
-            }
+          const outgoing=String(trade.from_player)===String(storedPlayerId),people=document.createElement('div');people.style.cssText='font-size:12px;font-weight:600;margin-bottom:7px';people.textContent=outgoing?`あなた ↔ ${trade.to_name}`:`${trade.from_name} ↔ あなた`;row.append(people);
+          const first=document.createElement('div');first.textContent=`${outgoing?'あなたが差し出す':'あなたが受け取る'}：${sprCoasterLabel(trade.from_file)}　`;
+          addOwnCoasterCount(first,trade.from_file,counts);row.append(first);
+          if(trade.status==='awaiting_confirmation'&&trade.to_file){const second=document.createElement('div');second.style.marginTop='5px';second.textContent=`${outgoing?'あなたが受け取る':'あなたが差し出す'}：${sprCoasterLabel(trade.to_file)}　`;addOwnCoasterCount(second,trade.to_file,counts);row.append(second)}
+          const state=document.createElement('p');state.style.margin='7px 0 0';
+          state.textContent=trade.status==='pending'?(outgoing?'相手が返すコースターを選ぶのをお待ちください。':'返すコースターを選んでください。'):trade.status==='awaiting_confirmation'?(outgoing?'相手が選んだコースターを確認してください。':'申込者の最終確認待ちです。'):trade.status==='accepted'?'交換完了':trade.status==='cancelled'?'申込み取消済み':'申込み終了';row.append(state);
+          if(trade.status==='pending'&&!outgoing){
+            const choices=document.createElement('div');choices.className='tea-trade-choice-list';const ownCards=loadCoasterInventory(),byFile=new Map();
+            ownCards.forEach(c=>{const entry=byFile.get(c.file)||{count:0,id:c.client_id};entry.count++;byFile.set(c.file,entry)});
+            for(const [file,entry] of byFile){if(entry.count<2)continue;choices.append(makeTradeChoice(file,entry.count,false,event=>void chooseTeaTradeReturn(trade,entry.id,event.currentTarget)))}
+            if(!choices.children.length){const empty=document.createElement('div');empty.className='tea-exchange-empty';empty.textContent='返せるダブりのコースターがありません。';choices.append(empty)}row.append(choices);
           }
+          if(trade.status==='pending'&&outgoing){const b=document.createElement('button');b.textContent='申込みを取り消す';b.style.cssText='min-height:42px;margin-top:8px;padding:8px 14px';b.onclick=()=>void resolveTeaTrade(trade,false,b);row.append(b)}
+          if(trade.status==='awaiting_confirmation'&&outgoing){
+            for(const [label,accept] of [['内容を確認して交換する',true],['辞退する',false]]){const b=document.createElement('button');b.textContent=label;b.style.cssText='min-height:42px;margin:8px 6px 0 0;padding:8px 14px';b.onclick=()=>void resolveTeaTrade(trade,accept,b);row.append(b)}
+          }
+          if(trade.status==='awaiting_confirmation'&&!outgoing){const b=document.createElement('button');b.textContent='選択を取り下げる';b.style.cssText='min-height:42px;margin-top:8px;padding:8px 14px';b.onclick=()=>void resolveTeaTrade(trade,false,b);row.append(b)}
           teaTradeRequests.append(row);
         }
-        await refreshOwnedCoasters();
       }catch(error){teaTradeStatus.textContent='交換情報を読み込めません。通信状態と追加SQLを確認してください。';console.warn('trade list',error)}
       finally{tradeLoading=false}
     }
     teaTradePartner.addEventListener('change',()=>{void loadTeaTradeOptions();void refreshTeaTradeStatus()});
     teaTradeConfirm.addEventListener('click',async()=>{
-      if(!teaTradeGive.value||!teaTradeReceive.value||!teaTradePartner.value)return;teaTradeConfirm.disabled=true;
+      if(!teaTradeGive.value||!teaTradePartner.value)return;teaTradeConfirm.disabled=true;
       try{
-        const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_offer',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_partner:teaTradePartner.value,p_from_card:teaTradeGive.value,p_to_card:teaTradeReceive.value,p_day:resortDayToken(),p_date:cafeServiceDate()});if(error)throw error;
-        teaTradeStatus.textContent='交換を申し込みました。相手の承諾をお待ちください。';await refreshTeaTradeStatus();
+        const {error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_offer',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_partner:teaTradePartner.value,p_from_card:teaTradeGive.value,p_to_card:null,p_day:resortDayToken(),p_date:cafeServiceDate()});if(error)throw error;
+        teaTradeStatus.textContent='コースターを提示しました。相手が返すコースターを選びます。';await refreshTeaTradeStatus();
       }catch(error){teaTradeStatus.textContent=error.message||'交換を申し込めませんでした。'}
-      finally{teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradeReceive.value}
+      finally{teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradePartner.value}
     });
     setInterval(()=>{if(!document.hidden&&activeTeaPartyId&&!teaPartyChat.classList.contains('hidden'))void refreshTeaTradeStatus()},5000);
 
