@@ -2111,7 +2111,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
     const belongingsKey=`spr-belongings:${playerStorageId}`;
     const coasterInventoryKey=`spr-cafe-coasters:${playerStorageId}`;
-    if(!localStorage.getItem(coasterInventoryKey)&&localStorage.getItem('spr-cafe-coasters'))localStorage.setItem(coasterInventoryKey,localStorage.getItem('spr-cafe-coasters'));
     function loadCoasterInventory(){try{const v=JSON.parse(localStorage.getItem(coasterInventoryKey)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
     function coasterCounts(){const c=Array(89).fill(0);loadCoasterInventory().forEach(x=>{const m=String(x?.file||'').match(/coaster(\d{2})\.PNG/i);if(m){const n=Number(m[1]);if(n>=0&&n<=88)c[n]++}});return c}
     // Old releases may still have this key in device storage or player inventory.
@@ -2521,10 +2520,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       else if(flagKey===`sunset-meal-used:${resortDayToken()}`){const k=`spr-sunset-meal-used:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey===`sunset-encore-date:${resortDayToken()}`){const k=`spr-sunset-encore-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
       else if(flagKey===`sunset-encore-night-date:${resortDayToken()}`){const k=`spr-sunset-encore-night-date:${playerStorageId}:${resortDayToken()}`;if(value)localStorage.setItem(k,String(value));else localStorage.removeItem(k)}
-      else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
-      else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
-      else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
-      else if(flagKey==='cafe-first-dialogue'){if(bool(value))localStorage.setItem('spr-cafe-coaster-event-seen','1');else localStorage.removeItem('spr-cafe-coaster-event-seen')}
+      else if(flagKey===`closet-food-key:${resortDayToken()}`){const k=`spr-closet-food-key:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey===`bathroom-food-key:${resortDayToken()}`){const k=`spr-bathroom-food-key:${playerStorageId}:${resortDayToken()}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
+      else if(flagKey===`bathroom-bloom-state:${resortDayToken()}`){localStorage.setItem(`spr-bathroom-bloom-state:${playerStorageId}:${resortDayToken()}`,String(Math.max(0,Math.min(2,Number(value)||0))))}
+      else if(flagKey==='cafe-first-dialogue-v2'){const k=`spr-cafe-coaster-event-seen:v2:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='hernando-first-conversation-done'){const k=`spr-hernando-first-conversation-done:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k)}
       else if(flagKey==='emily-met'){const k=`spr-emily-met:${playerStorageId}`;if(bool(value))localStorage.setItem(k,'1');else localStorage.removeItem(k);if(typeof syncEmilyTalkButton==='function')syncEmilyTalkButton()}
       else if(flagKey==='emily-casual-progress'){
@@ -2560,10 +2559,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const dayScope=resortDayToken();
       const encore=localStorage.getItem(`spr-sunset-encore-date:${playerStorageId}:${dayScope}`);if(encore)out[`sunset-encore-date:${dayScope}`]=encore;
       const nightEncore=localStorage.getItem(`spr-sunset-encore-night-date:${playerStorageId}:${dayScope}`);if(nightEncore)out[`sunset-encore-night-date:${dayScope}`]=nightEncore;
-      if(localStorage.getItem(`spr-closet-food-key:${dayScope}`)==='1')out[`closet-food-key:${dayScope}`]=true;
-      if(localStorage.getItem(`spr-bathroom-food-key:${dayScope}`)==='1')out[`bathroom-food-key:${dayScope}`]=true;
-      const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
-      if(localStorage.getItem('spr-cafe-coaster-event-seen')==='1')out['cafe-first-dialogue']=true;
+      if(localStorage.getItem(`spr-closet-food-key:${playerStorageId}:${dayScope}`)==='1')out[`closet-food-key:${dayScope}`]=true;
+      if(localStorage.getItem(`spr-bathroom-food-key:${playerStorageId}:${dayScope}`)==='1')out[`bathroom-food-key:${dayScope}`]=true;
+      const bathroomBloomState=Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${playerStorageId}:${dayScope}`))||0));if(bathroomBloomState)out[`bathroom-bloom-state:${dayScope}`]=bathroomBloomState;
+      if(localStorage.getItem(`spr-cafe-coaster-event-seen:v2:${playerStorageId}`)==='1')out['cafe-first-dialogue-v2']=true;
       if(localStorage.getItem(`spr-sunset-mystery-intro-seen:${playerStorageId}`)==='1')out['sunset-mystery-intro-seen']=true;
       if(localStorage.getItem(`spr-sunset-meal-used:${playerStorageId}:${dayScope}`)==='1')out[`sunset-meal-used:${dayScope}`]=true;
       const mysteryAwardPrefix=`spr-sunset-mystery-awarded:${playerStorageId}:`;
@@ -2971,7 +2970,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
-      if(button.dataset.closetKey==='1'){localStorage.setItem(`spr-closet-food-key:${resortDayToken()}`,'1');setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(e=>console.warn('closet food flag sync',e));}
+      if(button.dataset.closetKey==='1'){localStorage.setItem(`spr-closet-food-key:${playerStorageId}:${resortDayToken()}`,'1');setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(e=>console.warn('closet food flag sync',e));}
       if(cafeMealResult)cafeMealResult.textContent=`${meal} をお召し上がりいただきました。`;
     }));
     document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',async()=>{
@@ -5773,16 +5772,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           setRemoteFlag(`cafe-order:${resortDayToken()}:${d.date}`,true).catch(err=>console.warn('cafe order flag',err));
           const venue=String(d.venue||''),meal=String(d.meal||'');
           if(venue==='The Pearl Terrace'&&meal==='ラボ・デ・トロ'){
-            localStorage.setItem(`spr-closet-food-key:${resortDayToken()}`,'1');
+            localStorage.setItem(`spr-closet-food-key:${playerStorageId}:${resortDayToken()}`,'1');
             setRemoteFlag(`closet-food-key:${resortDayToken()}`,true).catch(err=>console.warn('closet food flag',err));
           }
           if(venue==='Marine Bloom Cafe'&&meal==='ブルーム・フレンチ'&&Number(document.documentElement.dataset.resortDay||1)>=2&&Number(document.documentElement.dataset.resortDay||1)<=6){
-            localStorage.setItem(`spr-bathroom-food-key:${resortDayToken()}`,'1');
+            localStorage.setItem(`spr-bathroom-food-key:${playerStorageId}:${resortDayToken()}`,'1');
             setRemoteFlag(`bathroom-food-key:${resortDayToken()}`,true).catch(err=>console.warn('bathroom food flag',err));
           }
         }
         if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${resortDayToken()}:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
-        if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue',true).catch(err=>console.warn('cafe first flag',err));
+        if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue-v2',true).catch(err=>console.warn('cafe first flag',err));
         return;
       }
       if(d.type==='spr-cafe-consume-ticket'){
@@ -6128,11 +6127,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function closetSearchKey(){return `spr-closet-search-${activeGuest||'guest'}-${activeRoom||'room'}`}
     function closetDoorKey(){return `spr-closet-door-${activeGuest||'guest'}-${activeRoom||'room'}`}
     // The Pearl Terrace の「ラボ・デ・トロ」でクローゼットギミックが有効になる。
-    function hasClosetFoodKey(){return localStorage.getItem(`spr-closet-food-key:${resortDayToken()}`)==='1'}
+    function hasClosetFoodKey(){return localStorage.getItem(`spr-closet-food-key:${playerStorageId}:${resortDayToken()}`)==='1'}
     // Marine Bloom Cafe の「ブルーム・フレンチ」で、その日の夜のバスルームギミックが有効になる。
-    function hasBathroomFoodKey(){return localStorage.getItem(`spr-bathroom-food-key:${resortDayToken()}`)==='1'}
-    function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${resortDayToken()}`))||0))}
-    function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem(`spr-bathroom-bloom-state:${resortDayToken()}`,String(state));setRemoteFlag(`bathroom-bloom-state:${resortDayToken()}`,state).catch(e=>console.warn('bathroom bloom sync',e));return state}
+    function hasBathroomFoodKey(){return localStorage.getItem(`spr-bathroom-food-key:${playerStorageId}:${resortDayToken()}`)==='1'}
+    function bathroomBloomState(){return Math.max(0,Math.min(2,Number(localStorage.getItem(`spr-bathroom-bloom-state:${playerStorageId}:${resortDayToken()}`))||0))}
+    function setBathroomBloomState(value){const state=Math.max(0,Math.min(2,Number(value)||0));localStorage.setItem(`spr-bathroom-bloom-state:${playerStorageId}:${resortDayToken()}`,String(state));setRemoteFlag(`bathroom-bloom-state:${resortDayToken()}`,state).catch(e=>console.warn('bathroom bloom sync',e));return state}
 
     // DAY2+ ROOM PHONE (Supabase shared event)
     // DAY2以降の22:00〜翌2:59、ROOMに自分ひとりで連続2分滞在した場合のみ電話が鳴る。
@@ -9969,7 +9968,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     inv.push(newCoaster);
     localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
-    const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
+    const firstKey=&#x60;spr-cafe-coaster-event-seen:v2:${pid}&#x60;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
     parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
@@ -10158,7 +10157,7 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
     inv.push(newCoaster);
     localStorage.setItem(coKey,JSON.stringify(inv));
     localStorage.setItem(orderKey,&#x27;1&#x27;); // 成功した時だけ使用済みにする
-    const firstKey=&#x27;spr-cafe-coaster-event-seen&#x27;;
+    const firstKey=&#x60;spr-cafe-coaster-event-seen:v2:${pid}&#x60;;
     firstDialogue=!localStorage.getItem(firstKey);
     if(firstDialogue){localStorage.setItem(firstKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;first-dialogue&#x27;},&#x27;*&#x27;)}
     parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;order&#x27;,date:day,venue:VENUE,meal,drink},&#x27;*&#x27;);
