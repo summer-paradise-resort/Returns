@@ -1714,6 +1714,18 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <h3>チャットルーム</h3>
           <div id="teaPartyPublicStatus" class="tea-party-note">お茶会を読み込んでいます。</div>
           <div id="teaPartyList"></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="subview" id="teaPartyRoomView" aria-hidden="true">
+    <div class="subhead"><button id="teaPartyRoomBack" class="back" type="button">← BACK</button><div id="teaPartyRoomTitle" class="subhead-title">CHAT ROOM</div><div></div></div>
+    <div class="info" style="max-width:760px;padding-top:28px">
+      <h2>PRIVATE CHAT ROOM</h2>
+      <div class="jp">COASTER EXCHANGE SALON</div>
+      <p>このルームの参加者だけで会話とコースター交換をお楽しみいただけます。</p>
           <div id="teaPartyChat" class="hidden">
             <div id="teaPartyChatMeta" class="tea-party-note"></div><button id="teaPartyExit" type="button" style="margin:10px 0">退室する</button>
             <div id="teaPartyLog" class="tea-party-log"></div>
@@ -1730,8 +1742,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             </div>
             <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会の会話は、参加者だけに表示されます。</div>
           </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -2299,6 +2309,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const teaSalonMessage=document.getElementById('teaSalonMessage');
     const teaExchangeList=document.getElementById('teaExchangeList');
     const teaSalonTicketStatus=document.getElementById('teaSalonTicketStatus');
+    const teaPartyRoomView=document.getElementById('teaPartyRoomView'),teaPartyRoomBack=document.getElementById('teaPartyRoomBack'),teaPartyRoomTitle=document.getElementById('teaPartyRoomTitle');
     const teaPartyList=document.getElementById('teaPartyList'),teaPartyChat=document.getElementById('teaPartyChat'),teaPartyChatMeta=document.getElementById('teaPartyChatMeta'),teaPartyLog=document.getElementById('teaPartyLog'),teaPartyCompose=document.getElementById('teaPartyCompose'),teaPartyReadOnly=document.getElementById('teaPartyReadOnly'),teaPartyInput=document.getElementById('teaPartyInput'),teaPartySend=document.getElementById('teaPartySend'),teaPartyExit=document.getElementById('teaPartyExit'),teaPartyPublicStatus=document.getElementById('teaPartyPublicStatus');
     let storedPlayerId=handoffPlayerId;
     let storedIdentityVerified=false;
@@ -2863,7 +2874,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const id=activeTeaPartyId;if(!id)return;if(!window.confirm('退室すると、このチャットルームには再入室できません。退室しますか？'))return;
       const {error}=await window.supabaseClientSpecial.rpc('leave_tea_party',{p_party_id:id,p_player_id:storedPlayerId});
       if(error){console.error('tea room leave failed',error);teaSalonMessage.textContent='退室を記録できませんでした。通信状態をご確認ください。';return}
-      if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);teaPartyChannel=null;activeTeaPartyId='';teaPartyChat.classList.add('hidden');teaSalonMessage.textContent='退室しました。このチャットルームには再入室できません。';await loadTeaParties();
+      if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);teaPartyChannel=null;activeTeaPartyId='';teaPartyChat.classList.add('hidden');closeView(teaPartyRoomView);teaSalonMessage.textContent='退室しました。このチャットルームには再入室できません。';await loadTeaParties();
     }
     function renderTeaExchange(){
       if(!teaExchangeList)return;const counts=coasterCounts();const rows=counts.map((count,n)=>({n,count,extra:Math.max(0,count-1)})).filter(x=>x.extra>0);
@@ -2893,13 +2904,24 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(partyError||membersError||!party){teaSalonMessage.textContent='チャットルームを開けませんでした。';return}
       const member=(members||[]).some(m=>m.player_id===storedPlayerId);
       if(!member){teaSalonMessage.textContent='入室にはチケットが必要です。';return}
-      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
-      teaPartyChatMeta.textContent=`${party.venue||''}　｜　参加者：${(members||[]).map(m=>m.display_name).join('、')}　｜　${(members||[]).length}/2名`;
+      activeTeaPartyId=id;teaPartyChat.classList.remove('hidden');teaPartyRoomTitle.textContent=party.venue||'CHAT ROOM';updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
+      renderTeaPartyMemberCount(members||[]);openView('teaPartyRoomView');
       teaPartyCompose.classList.remove('hidden');teaPartyReadOnly.classList.add('hidden');
       const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
       if(messageError){console.error(messageError);teaSalonMessage.textContent='会話を読み込めませんでした。';return}
       renderTeaMessages(messages||[]);if(teaTradePartner?.value)void refreshTeaTradeStatus();if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);
-      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus()}).subscribe();
+      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus()}).on('postgres_changes',{event:'*',schema:'public',table:'tea_party_members',filter:`party_id=eq.${id}`},()=>{void refreshTeaPartyMembers(id)}).subscribe();
+    }
+    function renderTeaPartyMemberCount(members){
+      const active=(members||[]).filter(m=>!m.left_at);teaPartyChatMeta.textContent=`${teaPartyRoomTitle.textContent}　｜　参加者：${active.map(m=>m.display_name||'GUEST').join('、')||'なし'}　｜　${active.length}/2名`;
+    }
+    async function refreshTeaPartyMembers(id){
+      if(!id||id!==activeTeaPartyId||!window.supabaseClientSpecial)return;
+      const {data,error}=await window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host,left_at').eq('party_id',id).is('left_at',null);
+      if(error){console.warn('tea room participant refresh',error);return}
+      if(id!==activeTeaPartyId)return;
+      renderTeaPartyMemberCount(data||[]);updateTeaTradeParticipants(data||[]);
+      await loadTeaParties();
     }
     function renderTeaMessages(rows){teaPartyLog.innerHTML='';rows.forEach(appendTeaMessage);if(!rows.length)teaPartyLog.innerHTML='<div class="tea-party-note">まだ会話はありません。</div>'}
     function appendTeaMessage(m){
@@ -2931,6 +2953,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }));
     document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',()=>joinTeaRoom(button.dataset.salonVenue)));
     teaPartyExit?.addEventListener('click',leaveTeaRoom);
+    teaPartyRoomBack?.addEventListener('click',()=>closeView(teaPartyRoomView));
     localStorage.setItem('spr-last-seen',String(Date.now()));
 
     const resortLiveLocationNodes=[...document.querySelectorAll('[data-resort-live-line]')];
@@ -2939,7 +2962,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let resortLivePresenceChannel=null,resortLivePresenceReady=false,resortLiveDesiredZone='';
     function currentResortLiveZone(){
       if(document.getElementById('integratedCafeShell')?.classList.contains('open'))return 'restaurant';
-      if(['sunsetTerraceView','teaSalonView','restaurantView'].some(id=>document.getElementById(id)?.classList.contains('open')))return 'restaurant';
+      if(['sunsetTerraceView','teaSalonView','teaPartyRoomView','restaurantView'].some(id=>document.getElementById(id)?.classList.contains('open')))return 'restaurant';
       if(document.getElementById('barView')?.classList.contains('open'))return 'bar';
       if(document.getElementById('exploreView')?.classList.contains('open'))return 'explore';
       if(document.getElementById('casinoView')?.classList.contains('open'))return 'casino';
