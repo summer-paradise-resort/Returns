@@ -5765,7 +5765,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const d=e.data||{};
       const frame=[document.getElementById('integratedCafePearl'),document.getElementById('integratedCafeMarine')].find(f=>f&&f.contentWindow===e.source);
       if(d.type==='spr-cafe-request-inventory'){
-        if(frame)frame.contentWindow.postMessage({type:'spr-cafe-inventory',cafeDrinkTicket:belongingCount('cafeDrinkTicket')},'*');
+        if(frame){
+          const playerId=await sprPlayerId(),dayToken=resortDayToken(),date=cafeServiceDate();
+          const flagKey=`cafe-drink-ticket-used:${dayToken}:${date}`,localKey=`spr-cafe-drink-ticket-used:${playerId}:${dayToken}:${date}`;
+          let ticketUsed=localStorage.getItem(localKey)==='1';
+          if(playerId&&window.supabaseClientSpecial){
+            try{
+              const {data,error}=await window.supabaseClientSpecial.from('spr_player_flags').select('value').eq('player_id',playerId).eq('flag_key',flagKey).maybeSingle();
+              if(error)throw error;
+              ticketUsed=ticketUsed||data?.value===true||data?.value===1||data?.value==='1';
+              if(ticketUsed)localStorage.setItem(localKey,'1');else localStorage.removeItem(localKey);
+              windowSprFlagCache[flagKey]=ticketUsed;
+            }catch(error){console.warn('cafe ticket status sync',error)}
+          }
+          frame.contentWindow.postMessage({type:'spr-cafe-inventory',cafeDrinkTicket:belongingCount('cafeDrinkTicket'),playerId,dayToken,serviceDate:date,ticketUsed},'*');
+        }
         return;
       }
       if(d.type==='spr-cafe-coasters-updated'){
@@ -5787,7 +5801,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             setRemoteFlag(`bathroom-food-key:${resortDayToken()}`,true).catch(err=>console.warn('bathroom food flag',err));
           }
         }
-        if(d.kind==='ticket-use'&&d.date)setRemoteFlag(`cafe-drink-ticket-used:${resortDayToken()}:${d.date}`,true).catch(err=>console.warn('cafe ticket flag',err));
+        if(d.kind==='ticket-use'&&d.date){const dayToken=resortDayToken(),key=`cafe-drink-ticket-used:${dayToken}:${d.date}`,localKey=`spr-cafe-drink-ticket-used:${storedPlayerId}:${dayToken}:${d.date}`;localStorage.setItem(localKey,'1');setRemoteFlag(key,true).catch(err=>console.warn('cafe ticket flag',err))}
         if(d.kind==='first-dialogue')setRemoteFlag('cafe-first-dialogue-v2',true).catch(err=>console.warn('cafe first flag',err));
         return;
       }
@@ -9986,25 +10000,26 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
-const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;
-const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${resortDayToken}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
-let parentTicketCount=0,consumePending=false;
+const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
+let currentPlayerId=&#x27;&#x27;,currentDayToken=&#x27;&#x27;,currentServiceDate=&#x27;&#x27;,parentTicketCount=0,consumePending=false,parentTicketUsed=false;
+function ticketUseKey(){return currentPlayerId&&currentDayToken&&currentServiceDate?`spr-cafe-drink-ticket-used:${currentPlayerId}:${currentDayToken}:${currentServiceDate}`:&#x27;&#x27;}
+function refreshDayContext(){currentDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;const parts=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),values=Object.fromEntries(parts.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(values.year),Number(values.month)-1,Number(values.day)));if(Number(values.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);currentServiceDate=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;}
+refreshDayContext();
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
-  const b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;
+  refreshDayContext();const key=ticketUseKey(),b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=!!key&&(localStorage.getItem(key)===&#x27;1&#x27;||parentTicketUsed);
   if(!b)return;
-  b.disabled=used||parentTicketCount&lt;1||consumePending;
-  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
+  b.disabled=!currentPlayerId||used||parentTicketCount&lt;1||consumePending;
+  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=!currentPlayerId?&#x27;プレイヤー情報を確認中です。&#x27;:used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
 }
 function requestInventory(){parent.postMessage({type:&#x27;spr-cafe-request-inventory&#x27;},&#x27;*&#x27;)}
 window.addEventListener(&#x27;message&#x27;,e=&gt;{
   const d=e.data||{};
-  if(d.type===&#x27;spr-cafe-inventory&#x27;){parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
+  if(d.type===&#x27;spr-cafe-inventory&#x27;){if(d.playerId){currentPlayerId=String(d.playerId);currentDayToken=String(d.dayToken||currentDayToken);currentServiceDate=String(d.serviceDate||currentServiceDate);parentTicketUsed=!!d.ticketUsed;}parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
   if(d.type===&#x27;spr-cafe-consume-result&#x27;){
     consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
     if(!d.ok){refresh();return}
-    localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
+    refreshDayContext();const key=ticketUseKey();if(key)localStorage.setItem(key,&#x27;1&#x27;);parentTicketUsed=true;parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date:currentServiceDate},&#x27;*&#x27;);
     const nums=Array.from({length:10},()=&gt;Math.floor(Math.random()*(52-0+1))+0);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
     const awardedIds=[];
@@ -10022,7 +10037,7 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
 document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   refresh();requestInventory();
   document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
-    if(parentTicketCount&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;||consumePending)return;
+    refreshDayContext();const key=ticketUseKey();if(!currentPlayerId||parentTicketCount&lt;1||!key||(localStorage.getItem(key)===&#x27;1&#x27;||parentTicketUsed)||consumePending)return;
     consumePending=true;refresh();parent.postMessage({type:&#x27;spr-cafe-consume-ticket&#x27;},&#x27;*&#x27;);
   });
   document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
@@ -10175,25 +10190,26 @@ document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
 })();
 &lt;/script&gt;&lt;script&gt;
 (()=&gt;{
-const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),resortDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;
-const dp=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),dv=Object.fromEntries(dp.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(dv.year),Number(dv.month)-1,Number(dv.day)));if(Number(dv.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);const date=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;
-const useKey=`spr-cafe-drink-ticket-used:${pid}:${resortDayToken}:${date}`,coKey=`spr-cafe-coasters:${pid}`;
-let parentTicketCount=0,consumePending=false;
+const guest=(localStorage.getItem(&#x27;spr-guest-name&#x27;)||&#x27;guest&#x27;).trim(),pid=encodeURIComponent(guest||&#x27;guest&#x27;),coKey=`spr-cafe-coasters:${pid}`;
+let currentPlayerId=&#x27;&#x27;,currentDayToken=&#x27;&#x27;,currentServiceDate=&#x27;&#x27;,parentTicketCount=0,consumePending=false,parentTicketUsed=false;
+function ticketUseKey(){return currentPlayerId&&currentDayToken&&currentServiceDate?`spr-cafe-drink-ticket-used:${currentPlayerId}:${currentDayToken}:${currentServiceDate}`:&#x27;&#x27;}
+function refreshDayContext(){currentDayToken=`day${Math.max(1,Number(parent.document.documentElement.dataset.resortDay||1))}`;const parts=new Intl.DateTimeFormat(&#x27;en-CA&#x27;,{timeZone:&#x27;Asia/Tokyo&#x27;,year:&#x27;numeric&#x27;,month:&#x27;2-digit&#x27;,day:&#x27;2-digit&#x27;,hour:&#x27;2-digit&#x27;,hourCycle:&#x27;h23&#x27;}).formatToParts(new Date()),values=Object.fromEntries(parts.map(p=&gt;[p.type,p.value])),base=new Date(Date.UTC(Number(values.year),Number(values.month)-1,Number(values.day)));if(Number(values.hour)&lt;3)base.setUTCDate(base.getUTCDate()-1);currentServiceDate=`${base.getUTCFullYear()}-${String(base.getUTCMonth()+1).padStart(2,&#x27;0&#x27;)}-${String(base.getUTCDate()).padStart(2,&#x27;0&#x27;)}`;}
+refreshDayContext();
 const loadArray=k=&gt;{try{const v=JSON.parse(localStorage.getItem(k)||&#x27;[]&#x27;);return Array.isArray(v)?v:[]}catch{return []}};
 function refresh(){
-  const b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=localStorage.getItem(useKey)===&#x27;1&#x27;;
+  refreshDayContext();const key=ticketUseKey(),b=document.getElementById(&#x27;useCafeDrinkTicket&#x27;),used=!!key&&(localStorage.getItem(key)===&#x27;1&#x27;||parentTicketUsed);
   if(!b)return;
-  b.disabled=used||parentTicketCount&lt;1||consumePending;
-  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
+  b.disabled=!currentPlayerId||used||parentTicketCount&lt;1||consumePending;
+  document.getElementById(&#x27;cafeDrinkTicketStatus&#x27;).textContent=!currentPlayerId?&#x27;プレイヤー情報を確認中です。&#x27;:used?&#x27;本日は使用済みです。&#x27;:`所持 ${parentTicketCount}枚`;
 }
 function requestInventory(){parent.postMessage({type:&#x27;spr-cafe-request-inventory&#x27;},&#x27;*&#x27;)}
 window.addEventListener(&#x27;message&#x27;,e=&gt;{
   const d=e.data||{};
-  if(d.type===&#x27;spr-cafe-inventory&#x27;){parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
+  if(d.type===&#x27;spr-cafe-inventory&#x27;){if(d.playerId){currentPlayerId=String(d.playerId);currentDayToken=String(d.dayToken||currentDayToken);currentServiceDate=String(d.serviceDate||currentServiceDate);parentTicketUsed=!!d.ticketUsed;}parentTicketCount=Math.max(0,Number(d.cafeDrinkTicket||0));refresh();}
   if(d.type===&#x27;spr-cafe-consume-result&#x27;){
     consumePending=false;parentTicketCount=Math.max(0,Number(d.count||0));
     if(!d.ok){refresh();return}
-    localStorage.setItem(useKey,&#x27;1&#x27;);parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date},&#x27;*&#x27;);
+    refreshDayContext();const key=ticketUseKey();if(key)localStorage.setItem(key,&#x27;1&#x27;);parentTicketUsed=true;parent.postMessage({type:&#x27;spr-cafe-state-updated&#x27;,kind:&#x27;ticket-use&#x27;,date:currentServiceDate},&#x27;*&#x27;);
     const nums=Array.from({length:10},()=&gt;Math.floor(Math.random()*(88-53+1))+53);
     const cs=loadArray(coKey),g=document.getElementById(&#x27;coaster14Grid&#x27;);g.innerHTML=&#x27;&#x27;;
     const awardedIds=[];
@@ -10211,7 +10227,7 @@ window.addEventListener(&#x27;message&#x27;,e=&gt;{
 document.addEventListener(&#x27;DOMContentLoaded&#x27;,()=&gt;{
   refresh();requestInventory();
   document.getElementById(&#x27;useCafeDrinkTicket&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;{
-    if(parentTicketCount&lt;1||localStorage.getItem(useKey)===&#x27;1&#x27;||consumePending)return;
+    refreshDayContext();const key=ticketUseKey();if(!currentPlayerId||parentTicketCount&lt;1||!key||(localStorage.getItem(key)===&#x27;1&#x27;||parentTicketUsed)||consumePending)return;
     consumePending=true;refresh();parent.postMessage({type:&#x27;spr-cafe-consume-ticket&#x27;},&#x27;*&#x27;);
   });
   document.getElementById(&#x27;coaster14Close&#x27;)?.addEventListener(&#x27;click&#x27;,()=&gt;document.getElementById(&#x27;coaster14Modal&#x27;).classList.remove(&#x27;show&#x27;));
