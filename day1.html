@@ -2801,13 +2801,22 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         await syncPendingCafeCoasters();await refreshOwnedCoasters();
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_trade_options',{p_party_id:party,p_player_id:storedPlayerId,p_partner:partner});if(error)throw error;
         if(generation!==tradeSelectionGeneration||party!==activeTeaPartyId||partner!==teaTradePartner.value)return;
+        const ownCounts=new Map();for(const c of loadCoasterInventory())ownCounts.set(c.file,(ownCounts.get(c.file)||0)+1);
         for(const [select,cards] of [[teaTradeGive,data.mine],[teaTradeReceive,data.theirs]]){
-          const files=new Set();for(const c of cards||[]){if(files.has(c.file))continue;files.add(c.file);select.add(new Option(`${sprCoasterLabel(c.file)}（所持${c.qty}枚）`,c.id))}
+          const files=new Set();for(const c of cards||[]){if(files.has(c.file))continue;files.add(c.file);
+            const receiving=select===teaTradeReceive,owned=ownCounts.get(c.file)||0;
+            const suffix=receiving?(owned?`（所持${owned}枚）`:'（未取得）'):`（所持${c.qty}枚）`;
+            const option=new Option(`${sprCoasterLabel(c.file)}${suffix}`,c.id);
+            if(receiving&&!owned){option.style.color='#c62828';option.style.fontWeight='700';option.dataset.unowned='true'}
+            select.add(option);
+          }
           if(!select.options.length)select.add(new Option('交換できるダブりがありません',''));
         }
+        const selectedReceive=teaTradeReceive.selectedOptions[0];teaTradeReceive.style.color=selectedReceive?.dataset.unowned==='true'?'#c62828':'';
         teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradeReceive.value;
       }catch(error){teaTradeStatus.textContent='交換用の所持品を確認できません。通信状態と追加SQLを確認してください。';console.warn('coaster options',error)}
     }
+    teaTradeReceive.addEventListener('change',()=>{const selected=teaTradeReceive.selectedOptions[0];teaTradeReceive.style.color=selected?.dataset.unowned==='true'?'#c62828':''});
     async function refreshTeaTradeStatus(){
       if(tradeLoading||!activeTeaPartyId)return;tradeLoading=true;const party=activeTeaPartyId;
       try{
