@@ -1620,7 +1620,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <div class="menu-list">
           <button id="sunsetTerraceOpen" class="menu-item" type="button">サンセットテラス<small>DINNER &amp; SEA VIEW / 11:00〜23:00</small></button>
           <button class="menu-item cafe-entry" type="button" data-cafe-mode="normal">CAFE<small>The Pearl Terrace / Marine Bloom Cafe　10:00〜翌3:00</small></button>
-          <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>チケットをお持ちのお客様</small></button>
+          <button class="menu-item cafe-entry" type="button" data-cafe-mode="salon">AFTERNOON TEA SALON<small>営業時間 10:00〜翌3:00 / チケットをお持ちのお客様</small></button>
         </div>
 
       <div id="cafeMenu" class="panel hidden"><h3>CAFÉ / DINING MENU</h3><p>カフェのお食事メニューをお選びください。</p><div class="menu-list">
@@ -1701,7 +1701,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="slide"><img data-tea-scene="pearl_terrace_afternoon_tea" data-deferred-src="pearl_terrace_afternoon_tea_day.jpg" alt="The Pearl Terraceのアフタヌーンティー" loading="lazy" decoding="async"></div>
       <div class="slide"><img data-tea-scene="marine_bloom_afternoon_tea" data-deferred-src="marine_bloom_afternoon_tea_day.jpg" alt="Marine Bloom Cafeのアフタヌーンティー" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="teaSalon"></div>
-    <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES</div>
+    <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA TIME / 30 MINUTES<br>営業時間 10:00〜翌3:00</div>
       <p>チケットを使用して、特別なアフタヌーンティーのひとときをお楽しみいただけます。</p>
       <div class="panel"><h3>ご利用案内</h3>
         <div id="teaSalonTicketStatus" class="bar-selection"></div>
@@ -2962,8 +2962,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     };
     const cafeMenu=document.getElementById('cafeMenu'),cafeMealResult=document.getElementById('cafeMealResult');
     document.querySelectorAll('[data-cafe-mode]').forEach(button=>button.addEventListener('click',()=>{
-      if(button.dataset.cafeMode==='salon'){refreshTeaSalonStatus();openView('teaSalonView');loadTeaParties()}
-      else { openIntegratedCafe(); }
+      if(button.dataset.cafeMode==='salon'){
+        if(!window.__sprCafeIsOpenNow?.()){teaSalonMessage.textContent='アフタヌーンティールームの営業時間は10:00〜翌3:00です。';return}
+        refreshTeaSalonStatus();openView('teaSalonView');loadTeaParties()
+      }else{openIntegratedCafe()}
     }));
     document.querySelectorAll('.cafe-meal').forEach(button=>button.addEventListener('click',()=>{
       const meal=button.dataset.cafeMeal||'ランチ';
@@ -2971,6 +2973,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(cafeMealResult)cafeMealResult.textContent=`${meal} をお召し上がりいただきました。`;
     }));
     document.querySelectorAll('.tea-salon-venue').forEach(button=>button.addEventListener('click',async()=>{
+      if(!window.__sprCafeIsOpenNow?.()){teaSalonMessage.textContent='アフタヌーンティールームの営業時間は10:00〜翌3:00です。';return}
       const venue=button.dataset.salonVenue,{t2,t4}=refreshTeaSalonStatus();
       if(!t2&&!t4){teaSalonMessage.textContent='AFTERNOON TEA SALONのご利用にはチケットが必要です。';return}
       let key='',label='',capacity=0;
@@ -2980,6 +2983,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }else if(t2){key='afternoonTeaTicket2';label='2名様用';capacity=2}else{key='afternoonTeaTicket4';label='4名様用';capacity=4}
       const guests=await chooseTeaGuests(capacity,venue,label);if(!guests)return;
       if(!window.confirm(`${venue} / ${label}\n${guests.map(g=>g.name).join('、')} 様をご招待します。\nチケットを1枚使用して30分間のティータイムを開始しますか？`))return;
+      if(!window.__sprCafeIsOpenNow?.()){teaSalonMessage.textContent='アフタヌーンティールームの営業時間は10:00〜翌3:00です。';return}
       await createTeaParty(venue,label,capacity,key,guests);
     }));
     localStorage.setItem('spr-last-seen',String(Date.now()));
@@ -10301,6 +10305,7 @@ function cafeIsOpenNow(){
   const h=Number(parts.find(p=>p.type==='hour')?.value||0);
   return h>=10||h<3;
 }
+window.__sprCafeIsOpenNow=cafeIsOpenNow;
 // CAFE uses the same master ♪ setting as the rest of the resort.
 // This function runs directly in the CAFE-opening user gesture for iOS playback.
 function syncIntegratedCafeMasterBgm(){
