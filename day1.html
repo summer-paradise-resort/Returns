@@ -13212,14 +13212,15 @@ window.addEventListener('message',e=>{
    if((await getEscapeState())!=='unused')return;
    finalLighthouseRunning=true;
    const scene=document.createElement('div');scene.setAttribute('role','dialog');scene.setAttribute('aria-modal','true');
-   scene.style.cssText='position:fixed;inset:0;z-index:2147483500;background:#000;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;padding:24px 0;box-sizing:border-box;opacity:0;transition:opacity .85s ease';
-   const image=document.createElement('img');image.src='lighthouse_top_night.jpg';image.alt='灯台の上から見下ろす夜の海';image.style.cssText='width:100%;max-height:62dvh;object-fit:contain;opacity:0;transition:opacity .9s ease';
+   scene.style.cssText='position:fixed;inset:0;z-index:2147483500;background:#000;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:24px;padding:24px 0;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;opacity:0;transition:opacity .85s ease';
    const question=document.createElement('div');question.textContent='灯台の上まで行き、正しい航路を示しますか？';question.style.cssText='width:min(560px,90vw);padding:0 18px;box-sizing:border-box;text-align:center;font:clamp(17px,4vw,23px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.05em';
-   const buttons=document.createElement('div');buttons.style.cssText='display:grid;gap:12px;width:min(560px,90vw)';scene.append(image,question,buttons);document.body.append(scene);
+   const buttons=document.createElement('div');buttons.style.cssText='display:grid;gap:12px;width:min(560px,90vw)';scene.append(question,buttons);document.body.append(scene);
    const dismiss=async()=>{scene.style.opacity='0';await wait(900);scene.remove();finalLighthouseRunning=false};
    const button=(label,action)=>{const b=document.createElement('button');b.textContent=label;b.style.cssText='padding:13px 18px;min-height:44px;background:#071525;color:#eed7a6;border:1px solid #b99b60;font:inherit';b.onclick=action;return b};
    const chooseCoordinates=()=>{
      if(!timeOK()){void dismiss();return}
+     const coordinateImage=document.createElement('img');coordinateImage.src='lighthouse_top_night.jpg';coordinateImage.alt='灯台の上から見下ろす夜の海';coordinateImage.style.cssText='display:block;width:min(92vw,560px);height:auto;max-height:34dvh;object-fit:contain;opacity:0;transition:opacity .6s ease';
+     scene.insertBefore(coordinateImage,question);void coordinateImage.offsetWidth;coordinateImage.style.opacity='1';
      buttons.replaceChildren(...[
        ['南緯47度09分、西経126度43分',false],['南緯49度51分、西経128度34分',false],
        ['南緯46度38分、西経125度57分',true],['南緯44度27分、西経127度51分',false]
@@ -13241,7 +13242,7 @@ window.addEventListener('message',e=>{
      chooseCoordinates();
    };
    buttons.append(button('正しい航路を示しに行く',attemptRoute),button('今の時間はまだやめておく',dismiss));
-   void scene.offsetWidth;scene.style.opacity='1';await wait(900);image.style.opacity='1';
+   void scene.offsetWidth;scene.style.opacity='1';
  }
 
  async function success(){
