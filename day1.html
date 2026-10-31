@@ -3338,6 +3338,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             }
             casinoSpectatorMenu.dataset.sessionId=row.id;
             casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
+            casinoSpectatorMenu.dataset.tableName=row.public_state?.table_name||'';
             casinoSpectatorMenu.classList.remove('hidden');
             return;
           }
@@ -3364,7 +3365,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
       }
     }
-    if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
+    if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'',casinoSpectatorMenu.dataset.tableName||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
     let specialBroadcastSessionId='',specialBroadcastDismissedSessionId='';
 
@@ -3460,7 +3461,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(specialBroadcastKicker)specialBroadcastKicker.textContent=`${m.table_name||'SPECIAL TABLE'} ANNOUNCEMENT`;
       specialBroadcast.classList.remove('hidden');
       specialBroadcast.dataset.userPending='1';
-      if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');
+      if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'',m.table_name||'');
       const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();
       clearInterval(broadcastTimer);
       const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};
@@ -3476,7 +3477,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       clearInterval(broadcastTimer);
       return true;
     }
-    function showSpectatorInvite(sessionId,challenger){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger)}
+    function showSpectatorInvite(sessionId,challenger,tableName=''){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger,tableName)}
     specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId||String(activeSpecialSessionId||'');hideSpecialBroadcast('user');};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
     let spectatorBgmTrack='';
@@ -3485,10 +3486,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return tableName==='ROYAL TABLE'||phase==='royal-intro'||phase==='royal-countdown';
     }
     async function syncSpectatorTableBgm(state={}){
-      const royal=isRoyalSpectatorTable(state),track=royal?'royal':'special',target=royal?royalTableBgm:specialBgm,other=royal?specialBgm:royalTableBgm;
+      const royal=isRoyalSpectatorTable(state),phase=String(state.phase||''),royalMusicStarted=royal&&['guess','result','emily-dialogue'].includes(phase);
+      if(royal&&!royalMusicStarted){
+        for(const audio of [specialBgm,royalTableBgm])if(audio){sprCancelGuardedAudioStart(audio);audio.pause();try{audio.currentTime=0}catch{}}
+        spectatorBgmTrack='casino';if(casinoBgm?.paused)startCasinoMusic();return !!casinoBgm&&!casinoBgm.paused;
+      }
+      const track=royal?'royal':'special',target=royal?royalTableBgm:specialBgm,other=royal?specialBgm:royalTableBgm;
       if(!target)return false;
       if(spectatorBgmTrack!==track||target.paused){
         const shouldRestart=spectatorBgmTrack!==track;
+        stopCasinoMusic();
         if(other){sprCancelGuardedAudioStart(other);other.pause();try{other.currentTime=0}catch{}}
         if(shouldRestart){sprCancelGuardedAudioStart(target);target.pause();try{target.currentTime=0}catch{}}
         spectatorBgmTrack=track;
@@ -3496,6 +3503,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       return true;
     }
+    spectatorScreen.addEventListener('pointerdown',()=>{if(spectatorPresenceState)void syncSpectatorTableBgm(spectatorPresenceState)});
     function renderSpectatorState(state={}){
       void syncSpectatorTableBgm(state);
       if(spectatorTableName)spectatorTableName.textContent=state.table_name||'SPECIAL TABLE';
@@ -3523,10 +3531,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         window.__sprSpectatorCountdown=setInterval(()=>{const el=spectatorStage.querySelector('[data-spectator-countdown]');if(!el){clearInterval(window.__sprSpectatorCountdown);return}const n=Math.max(0,Math.ceil((new Date(state.starts_at).getTime()-Date.now())/1000));el.textContent=n?`開卓まで ${n} 秒`:'開卓をお待ちください。';if(!n)clearInterval(window.__sprSpectatorCountdown)},500);
       }else spectatorStage.innerHTML=`${matchup}${allInMarkup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
-    async function openSpectator(sessionId,challenger=''){hideSpecialBroadcast('watch',sessionId);
+    async function openSpectator(sessionId,challenger='',tableName=''){hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
       try{
-        spectatorBgmTrack='';const ok=await syncSpectatorTableBgm({table_name:'SPECIAL TABLE'});
+        spectatorBgmTrack='';const ok=await syncSpectatorTableBgm({table_name:tableName||'SPECIAL TABLE'});
         if(!ok){
           const unlockSpectatorBgm=async()=>{try{await syncSpectatorTableBgm(spectatorPresenceState||{table_name:'SPECIAL TABLE'})}catch{}};
           spectatorScreen.addEventListener('pointerdown',unlockSpectatorBgm,{once:true});
