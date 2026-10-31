@@ -2803,7 +2803,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       return agreed;
     }
-    let coasterReadGeneration=0,tradeLoading=false,tradeSelectionGeneration=0;
+    let coasterReadGeneration=0,tradeLoading=false,tradeSelectionGeneration=0,tradeRefreshQueued=false,tradeChoiceReloadQueued=false;
     const teaTradeGive=document.getElementById('teaTradeGive'),teaTradeGiveChoices=document.getElementById('teaTradeGiveChoices'),teaTradePrompt=document.getElementById('teaTradePrompt');
     async function refreshOwnedCoasters(){
       const generation=++coasterReadGeneration,playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
@@ -2858,16 +2858,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       button.disabled=true;try{
         await syncPendingCafeCoasters();
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_exchange_confirm',{p_party_id:activeTeaPartyId,p_player_id:storedPlayerId,p_accept:accept,p_expected_partner_card:partnerCardId});if(error)throw error;
-        if(data?.status==='accepted'){
-          await refreshOwnedCoasters();await loadTeaTradeOptions();
-          if(teaPartyChannel)void teaPartyChannel.send({type:'broadcast',event:'coaster-exchange-updated',payload:{partyId:activeTeaPartyId}}).catch(error=>console.warn('coaster exchange broadcast',error));
-        }
-        await refreshTeaTradeStatus();teaTradeStatus.textContent=accept?(data?.status==='accepted'?'交換が成立しました。':'相手の提示が更新されました。もう一度ご確認ください。'):'交換を取りやめました。';
+        if(data?.status==='accepted'&&teaPartyChannel)void teaPartyChannel.send({type:'broadcast',event:'coaster-exchange-updated',payload:{partyId:activeTeaPartyId}}).catch(error=>console.warn('coaster exchange broadcast',error));
+        await refreshTeaTradeStatus({refreshChoices:data?.status==='accepted'});teaTradeStatus.textContent=accept?(data?.status==='accepted'?'交換が成立しました。':'相手の提示が更新されました。もう一度ご確認ください。'):'交換を取りやめました。';
       }catch(error){teaTradeStatus.textContent=error.message||'交換を完了できませんでした。';button.disabled=false;await refreshTeaTradeStatus()}
     }
-    async function refreshTeaTradeStatus(){
-      if(tradeLoading||!activeTeaPartyId)return;tradeLoading=true;const party=activeTeaPartyId;
+    async function refreshTeaTradeStatus({refreshChoices=false}={}){
+      if(!activeTeaPartyId)return;
+      if(tradeLoading){tradeRefreshQueued=true;tradeChoiceReloadQueued=tradeChoiceReloadQueued||refreshChoices;return}
+      tradeLoading=true;const party=activeTeaPartyId;
       try{
+        if(refreshChoices)await loadTeaTradeOptions();
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_exchange_state',{p_party_id:party,p_player_id:storedPlayerId});if(error)throw error;
         if(party!==activeTeaPartyId)return;
         await refreshOwnedCoasters();const counts=ownCoasterCounts();teaTradePrompt.replaceChildren();
@@ -2887,7 +2887,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }else if(ownCard){teaTradeStatus.textContent='コースターを差し出しました。相手が選ぶのをお待ちください。'}
         else{teaTradeStatus.textContent='差し出すコースターを選んでください。'}
       }catch(error){teaTradeStatus.textContent='交換情報を読み込めません。通信状態と追加SQLを確認してください。';console.warn('exchange state',error)}
-      finally{tradeLoading=false}
+      finally{
+        tradeLoading=false;
+        if(tradeRefreshQueued&&activeTeaPartyId){const reloadChoices=tradeChoiceReloadQueued;tradeRefreshQueued=false;tradeChoiceReloadQueued=false;setTimeout(()=>void refreshTeaTradeStatus({refreshChoices:reloadChoices}),100)}
+      }
     }
     teaTradePartner.addEventListener('change',()=>{void loadTeaTradeOptions();void refreshTeaTradeStatus()});
     teaTradeConfirm.addEventListener('click',async()=>{
@@ -2972,7 +2975,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
       if(messageError){console.error(messageError);teaSalonMessage.textContent='会話を読み込めませんでした。';return}
       renderTeaMessages(messages||[]);if(teaTradePartner?.value)void refreshTeaTradeStatus();if(teaPartyChannel)window.supabaseClientSpecial.removeChannel(teaPartyChannel);
-      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('broadcast',{event:'coaster-exchange-updated'},({payload})=>{if(String(payload?.partyId)===String(activeTeaPartyId))void refreshTeaTradeStatus()}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus()}).on('postgres_changes',{event:'*',schema:'public',table:'tea_party_members',filter:`party_id=eq.${id}`},()=>{void refreshTeaPartyMembers(id)}).subscribe();
+      teaPartyChannel=window.supabaseClientSpecial.channel(`tea-party-${id}`).on('broadcast',{event:'coaster-exchange-updated'},({payload})=>{if(String(payload?.partyId)===String(activeTeaPartyId))void refreshTeaTradeStatus({refreshChoices:true})}).on('postgres_changes',{event:'INSERT',schema:'public',table:'tea_party_messages',filter:`party_id=eq.${id}`},p=>{appendTeaMessage(p.new);if(parseTeaTradeMarker(p.new?.body)&&teaTradePartner?.value)void refreshTeaTradeStatus({refreshChoices:true})}).on('postgres_changes',{event:'*',schema:'public',table:'tea_party_members',filter:`party_id=eq.${id}`},()=>{void refreshTeaPartyMembers(id)}).subscribe();
     }
     function renderTeaPartyMemberCount(members){
       const active=(members||[]).filter(m=>!m.left_at),deadline=Date.parse(teaPartyEnteredAt||'')+TEA_ROOM_DURATION_MS,deadlineText=Number.isFinite(deadline)?new Date(deadline).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}):'';teaPartyChatMeta.textContent=`${teaPartyRoomTitle.textContent}　｜　参加者：${active.map(m=>m.display_name||'GUEST').join('、')||'なし'}　｜　${active.length}/2名${deadlineText?`　｜　あなたの利用終了 ${deadlineText}`:''}`;
