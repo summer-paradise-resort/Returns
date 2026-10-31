@@ -13169,7 +13169,7 @@ window.addEventListener('message',e=>{
  async function denyEarlyLighthouseEntry(){
    localStorage.setItem(lighthouseDeniedKey,'1');
    void markLighthouseEntryDenied();
-   window.__sprShowStaffDialogueSequence?.(day7StaffWarningLines,()=>{void showDay7BlackoutPages(['ダメだ、完全にスタッフに目をつけられた。今日はもう、灯台に入ることができない。'])},'STAFF');
+   window.__sprShowStaffDialogueSequence?.(day7StaffWarningLines,()=>{void showDay7BlackoutPages(['ダメだ、完全にスタッフに目をつけられた。\n今日はもう、灯台に入ることができない。'])},'STAFF');
  }
  const day7EscapeEndingLines=[
    '全員、無事にリゾートから脱出することができた。',
@@ -13206,7 +13206,7 @@ window.addEventListener('message',e=>{
  async function openFinalLighthouse(){
    if(day!==7||!lighthousePromptTimeOK()||!eligible()||finalLighthouseRunning)return;
    if(await lighthouseEntryDenied()){
-     void showDay7BlackoutPages(['ダメだ、完全にスタッフに目をつけられた。今日はもう、灯台に入ることができない。']);
+     void showDay7BlackoutPages(['ダメだ、完全にスタッフに目をつけられた。\n今日はもう、灯台に入ることができない。']);
      return;
    }
    if((await getEscapeState())!=='unused')return;
