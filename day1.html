@@ -1376,7 +1376,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <button class="primary-btn" type="submit">客室に入る</button>
           <p id="roomError" class="room-error" aria-live="polite"></p>
         </form>
-        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜110：デラックスオーシャン<br>201〜205：ファミリー<br>301〜310：オーシャンラグーン<br>401〜405：スイート<br>特別ヴィラ：暗証番号をお持ちのお客様</div></div>
+        <div class="panel"><h3>客室番号のご案内</h3><div class="room-mapping">101〜119：デラックスオーシャン<br>201〜219：ファミリー<br>301〜319：オーシャンラグーン<br>401〜419：スイート<br>特別ヴィラ：暗証番号をお持ちのお客様</div></div>
       </div>
       <div id="roomLounge" class="room-lounge hidden">
         <audio id="roomPhoneRing" src="room_phone_ring.mp3" preload="none" loop playsinline></audio>
@@ -5886,12 +5886,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     hiloRefill.addEventListener('click',()=>{if(hiloActive)return;casinoChips=1000;hiloBet=100;casinoSave();hiloStatus.textContent='1,000 CHIPをご用意しました。';updateHiloHud()});
     syncCasinoBalances();updateCasinoHud();updateHiloHud();renderPrizeCounter();
 
-    const roomTypes={
-      101:'デラックスオーシャン',102:'デラックスオーシャン',103:'デラックスオーシャン',104:'デラックスオーシャン',105:'デラックスオーシャン',106:'デラックスオーシャン',107:'デラックスオーシャン',108:'デラックスオーシャン',109:'デラックスオーシャン',110:'デラックスオーシャン',
-      201:'ファミリー',202:'ファミリー',203:'ファミリー',204:'ファミリー',205:'ファミリー',
-      301:'オーシャンラグーン',302:'オーシャンラグーン',303:'オーシャンラグーン',304:'オーシャンラグーン',305:'オーシャンラグーン',306:'オーシャンラグーン',307:'オーシャンラグーン',308:'オーシャンラグーン',309:'オーシャンラグーン',310:'オーシャンラグーン',
-      401:'スイート',402:'スイート',403:'スイート',404:'スイート',405:'スイート',501:'ヴィラ'
-    };
+    const roomTypes={};
+    for(let n=101;n<=119;n++)roomTypes[String(n)]='デラックスオーシャン';
+    for(let n=201;n<=219;n++)roomTypes[String(n)]='ファミリー';
+    for(let n=301;n<=319;n++)roomTypes[String(n)]='オーシャンラグーン';
+    for(let n=401;n<=419;n++)roomTypes[String(n)]='スイート';
+    for(let n=501;n<=508;n++)roomTypes[String(n)]='特別ヴィラ';
+    const villaRoomPins={'0923':'501','1847':'502','2608':'503','3715':'504','4286':'505','5391':'506','6472':'507','8153':'508'};
+    const villaPinByRoom=Object.fromEntries(Object.entries(villaRoomPins).map(([pin,room])=>[room,pin]));
+    function isVillaRoom(room){return /^50[1-8]$/.test(String(room||''))}
     let activeRoom='', activeGuest=storedGuestName||'ゲスト', unreadCount=0, toastTimer, sceneTouchStart=0, sceneTouchStartY=0, sheetTouchStart=0;
     const roomView=document.getElementById('roomView'), roomPin=document.getElementById('roomPin'), roomError=document.getElementById('roomError');
     const roomEntry=document.getElementById('roomEntry'), roomLounge=document.getElementById('roomLounge'), chatLog=document.getElementById('chatLog');
@@ -5947,7 +5950,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       closet:['Ocean_Lagoon_closet.jpg','Ocean_Lagoon_closet_evening.jpg','Ocean_Lagoon_closet_Night.jpg'],
       bathroom:['Ocean_Lagoon_bathroom.jpg','Ocean_Lagoon_bathroom_evening.jpg','Ocean_Lagoon_bathroom_Night.jpg']
     };
-    // Ocean Grand Suite（401〜405号室）: 画像名の大文字小文字はGitHub上のファイル名に一致させる。
+    // Ocean Grand Suite（401〜419号室）: 画像名の大文字小文字はGitHub上のファイル名に一致させる。
     // 3枚の並びは昼（7:00〜15:59）、夕（16:00〜19:59）、夜（20:00〜6:59）。
     const suiteScenes={
       room:['Ocean_Grand_Suite_Room.jpg','Ocean_Grand_Suite_Room_evening.jpg','Ocean_Grand_Suite_Room_Night.jpg'],
@@ -6022,11 +6025,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
     };
     function roomVisualConfig(room){
-      if(/^(10[1-9]|110)$/.test(room))return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
-      if(/^20[1-5]$/.test(room))return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
-      if(/^(30[1-9]|310)$/.test(room))return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
-      if(/^40[1-5]$/.test(room))return{key:'suite',label:'OCEAN GRAND SUITE',name:'スイート',scenes:suiteScenes};
-      if(room==='501')return{key:'villa',label:'ROYAL VILLA',name:'ロイヤルヴィラ',scenes:villaScenes};
+      if(Number(room)>=101&&Number(room)<=119)return{key:'deluxe',label:'DELUXE OCEAN',name:'デラックスオーシャン',scenes:deluxeScenes};
+      if(Number(room)>=201&&Number(room)<=219)return{key:'family',label:'FAMILY ROOM',name:'ファミリー',scenes:familyScenes};
+      if(Number(room)>=301&&Number(room)<=319)return{key:'oceanLagoon',label:'OCEAN LAGOON',name:'オーシャンラグーン',scenes:oceanLagoonScenes};
+      if(Number(room)>=401&&Number(room)<=419)return{key:'suite',label:'OCEAN GRAND SUITE',name:'スイート',scenes:suiteScenes};
+      if(isVillaRoom(room))return{key:'villa',label:'ROYAL VILLA',name:'特別ヴィラ',scenes:villaScenes};
       return null;
     }
     const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム'};
@@ -6128,7 +6131,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       villaPoolBubbles.append(fragment);
     }
     function openVillaPoolExperience(){
-      if(!villaPoolExperience||activeRoom!=='501'||selectedRoomScene!=='pool')return;
+      if(!villaPoolExperience||!isVillaRoom(activeRoom)||selectedRoomScene!=='pool')return;
       if(villaPoolExperience.classList.contains('open'))return;
       clearVillaPoolTimers();ensureVillaPoolBubbles();preloadVillaPoolBackdrops();updateVillaPoolBackdrop();
       closeChatSheet();closeRoomService();closeRoomBelongings();
@@ -6155,13 +6158,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         villaPoolExperience.classList.remove('open');
         villaPoolExperience.setAttribute('aria-hidden','true');
         document.body.classList.remove('villa-pool-active');
-        if(!immediate&&activeRoom==='501'&&selectedRoomScene==='pool')roomContextAction?.focus({preventScroll:true});
+        if(!immediate&&isVillaRoom(activeRoom)&&selectedRoomScene==='pool')roomContextAction?.focus({preventScroll:true});
       };
       if(immediate){finish();return}
       villaPoolTimers.push(setTimeout(finish,520));
     }
     function openVillaPoolChat(){
-      if(!villaPoolExperience?.classList.contains('open')||activeRoom!=='501')return;
+      if(!villaPoolExperience?.classList.contains('open')||!isVillaRoom(activeRoom))return;
       chatSheet.classList.add('pool-over-water');
       openChatSheet();
       document.getElementById('chatInput')?.focus({preventScroll:true});
@@ -6783,7 +6786,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function applyVillaPoolSharedAction(payload){
       const eventId=String(payload?.event_id||'').trim(),room=String(payload?.room_no||'').trim(),action=String(payload?.action||'').trim();
-      if(!eventId||room!=='501'||activeRoom!=='501'||!roomView.classList.contains('room-active')||!['enter','exit'].includes(action))return false;
+      if(!eventId||!isVillaRoom(room)||!isVillaRoom(activeRoom)||!roomView.classList.contains('room-active')||!['enter','exit'].includes(action))return false;
       if(villaPoolSharedEventIds.has(eventId))return true;
       rememberVillaPoolSharedEvent(eventId);
       if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return true;
@@ -6793,9 +6796,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return true;
     }
     async function broadcastVillaPoolAction(action){
-      if(activeRoom!=='501'||!['enter','exit'].includes(action))return false;
+      if(!isVillaRoom(activeRoom)||!['enter','exit'].includes(action))return false;
       const payload={
-        event_id:sprSafeUuid(),room_no:'501',action,
+        event_id:sprSafeUuid(),room_no:String(activeRoom),action,
         player_id:String(storedPlayerId||''),display_name:String(activeGuest||storedGuestName||'ゲスト'),
         origin_session_key:roomPhonePresenceSessionKey,occurred_at:new Date().toISOString()
       };
@@ -6805,7 +6808,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       catch(error){console.warn('villa pool action sync',error);return false}
     }
     async function flushVillaPoolPendingBroadcasts(){
-      if(!roomPhonePresenceChannel||!roomPhonePresenceReady||activeRoom!=='501'||!villaPoolPendingBroadcasts.length)return;
+      if(!roomPhonePresenceChannel||!roomPhonePresenceReady||!isVillaRoom(activeRoom)||!villaPoolPendingBroadcasts.length)return;
       const pending=villaPoolPendingBroadcasts.splice(0);
       for(const payload of pending){
         try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-pool-action',payload})}
@@ -8024,7 +8027,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!roomContextAction)return;
       const generalService=document.getElementById('roomServiceOpen');if(generalService)generalService.classList.remove('hidden');
       roomContextAction.classList.add('hidden');roomExploreResult.classList.add('hidden');roomContextAction.onclick=null;
-      if(activeRoom==='501'&&selectedRoomScene==='pool'){
+      if(isVillaRoom(activeRoom)&&selectedRoomScene==='pool'){
         roomContextAction.textContent='プールに入る';
         roomContextAction.classList.remove('hidden');
         roomContextAction.onclick=openVillaPoolExperience;
@@ -9468,11 +9471,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
     chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
     document.getElementById('roomEntryForm').addEventListener('submit',event=>{
-      event.preventDefault();const entered=roomPin.value.trim();const room=entered==='0923'?'501':entered; if(entered==='501'){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
+      event.preventDefault();const entered=roomPin.value.trim();const room=villaRoomPins[entered]||entered;if(isVillaRoom(entered)){roomError.textContent='特別ヴィラは部屋番号ではなく暗証番号を入力してください。';return;}
       if(!Object.prototype.hasOwnProperty.call(roomTypes,room)){roomError.textContent='ご案内している部屋番号、または暗証番号を入力してください。';return;}
       // 有効な客室へ入るタップの中で着信音とルームサービスのドアベルを先に解除しておく。
       primeRoomPhoneAudio();primeRoomServiceDoorbellAudio();
-      if(room==='501'){primeVillaPoolSharedAudio();}
+      if(isVillaRoom(room)){primeVillaPoolSharedAudio();}
       activeRoom=room;activeGuest=storedGuestName||'ゲスト';roomError.textContent='';
       window.__sprActiveRoom=activeRoom;window.__sprRoomEntryTime=Date.now();
       localStorage.setItem(`spr-last-room:${playerStorageId}`,room);
@@ -9496,7 +9499,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const explore=document.getElementById('exploreView');if(explore?.classList.contains('open'))closeView(explore);
       if(!roomView.classList.contains('open'))openView('roomView');
       if(!saved||!Object.prototype.hasOwnProperty.call(roomTypes,saved))return false;
-      roomPin.value=saved==='501'?'0923':saved;
+      roomPin.value=isVillaRoom(saved)?(villaPinByRoom[saved]||''):saved;
       document.getElementById('roomEntryForm')?.requestSubmit();
       return true;
     };
