@@ -11488,11 +11488,13 @@ window.addEventListener('message',e=>{
     locationPage.classList.remove('hidden');
     locationPage.setAttribute('aria-hidden','false');
   }
+  window.__sprOpenExploreLocation=openLocation;
   function closeLocation(){
     clearActionMessage();
     locationPage.classList.add('hidden');
     locationPage.setAttribute('aria-hidden','true');
   }
+  window.__sprCloseExploreLocation=closeLocation;
   choiceButtons.forEach(btn=>btn.addEventListener('click',()=>{
     const spotKey=btn.dataset.exploreSpot;
     openLocation(spotKey);
@@ -11584,6 +11586,7 @@ window.addEventListener('message',e=>{
 <script>
 (()=>{
  const day=Number(document.documentElement.dataset.resortDay||1),who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+ const day7PlayerIdentity=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
  const K=`spr-story:${who}:day${day}:`;
  const seen=x=>localStorage.getItem(K+x)==='1',mark=x=>localStorage.setItem(K+x,'1');
  const count=x=>Number(window.__sprGetBelongingCount?.(x)||0),anyHorrorDrink=()=>!!window.__sprHasAnyHorrorDrink?.(),poison=()=>!!window.__sprIsHernandoPoisoned?.();
@@ -13042,17 +13045,18 @@ window.addEventListener('message',e=>{
    })();
  }
  // Day7脱出: 正しい座標を選んだ後だけ入り江が解放。一人一回限り。
- const escapeKey=`spr-story:${who}:day7:escape-state`;
+ const escapeKey=`spr-story:${day7PlayerIdentity}:day7:escape-state`;
  const escapeFlag='day7-escape-attempt-state';
- const lighthouseDeniedKey=`spr-story:${who}:day7:lighthouse-entry-denied`;
+ const lighthouseDeniedKey=`spr-story:${day7PlayerIdentity}:day7:lighthouse-entry-denied`;
  const lighthouseDeniedFlag='day7-lighthouse-entry-denied';
+ const day7EscapeNamedKey=`day7-escape:${day7PlayerIdentity}`;
  const escapeValidStates=new Set(['unused','coordinates','station','failed','success']);
  const escapeLocalState=()=>{const v=localStorage.getItem(escapeKey)||'unused';return escapeValidStates.has(v)?v:'unused'};
  async function getEscapeState(){
    const local=escapeLocalState();
-   const named=await window.__sprNamedEvents.read('day7-escape');
-   if(named===3)return 'failed';
-   if(named===2)return 'success';
+   const named=await window.__sprNamedEvents.read(day7EscapeNamedKey);
+   if(named===3){localStorage.setItem(escapeKey,'failed');return 'failed'}
+   if(named===2){localStorage.setItem(escapeKey,'success');return 'success'}
    if(named===1)return local==='station'?'station':'coordinates';
    if(local!=='unused')return local;
    const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
@@ -13067,8 +13071,8 @@ window.addEventListener('message',e=>{
  }
  async function setEscapeState(value){
    if(!escapeValidStates.has(value))return;
-   if(value==='success'&&!await window.__sprNamedEvents.advance('day7-escape',1,2))return false;
-   if(value==='failed'&&await window.__sprNamedEvents.read('day7-escape')===1&&!await window.__sprNamedEvents.advance('day7-escape',1,3))return false;
+   if(value==='success'&&!await window.__sprNamedEvents.advance(day7EscapeNamedKey,1,2))return false;
+   if(value==='failed'&&await window.__sprNamedEvents.read(day7EscapeNamedKey)===1&&!await window.__sprNamedEvents.advance(day7EscapeNamedKey,1,3))return false;
    localStorage.setItem(escapeKey,value);
    const id=await window.__sprGetPlayerId?.(),c=window.supabaseClientSpecial;
    if(!id||!c)return;
@@ -13218,7 +13222,7 @@ window.addEventListener('message',e=>{
        if(!timeOK()||!eligible()||(await getEscapeState())!=='unused')return;
        buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
        // A compare-and-set prevents another browser from choosing again.
-       if(!await window.__sprNamedEvents.advance('day7-escape',0,ok?1:3)){await dismiss();return}
+       if(!await window.__sprNamedEvents.advance(day7EscapeNamedKey,0,ok?1:3)){await dismiss();return}
        await setEscapeState(ok?'coordinates':'failed');
        if(ok)await announceDay7RouteOpen();
        await dismiss();
@@ -13236,6 +13240,7 @@ window.addEventListener('message',e=>{
  }
 
  async function success(){
+   await setEscapeState('success');
    await announceDay7Success();
    void playDay7EscapeEnding();
  }
@@ -13243,12 +13248,26 @@ window.addEventListener('message',e=>{
    open('乗り場を見つけた','人魚の入り江に、五隻の船が待っている。どの船で生還する？',
      ['TRUE SHORE','BEYOND','HOMEWARD','DAYBREAK','CROSSING'].map(name=>({label:name,run:async()=>{
        close();if(!timeOK()||!eligible()||!(await hasDay7Announcement(day7RouteType)))return;
+       const state=await getEscapeState();
+       if(state!=='coordinates'&&state!=='station')return;
        if(name==='TRUE SHORE')await success();
-       else{if(await setEscapeState('failed')===false)return;open('脱出失敗','その船は島から離れようとしない。脱出の機会は失われた。')}
+       else{
+         if(await setEscapeState('failed')===false)return;
+         window.__sprDay7CoveLocked=true;
+         await showDay7BlackoutPages([
+           '船に乗ろうと足をかけたら、船が海に沈んでいった。',
+           '別の船に乗ろうとして、慌てて辺りを見渡す。',
+           'さっきまであった4隻の船が忽然と消えている。'
+         ]);
+         window.__sprCloseExploreLocation?.();
+       }
      }})));
  }
  async function chooseStation(){
    if(!timeOK()||!eligible()||await hasDay7Announcement(day7SuccessType))return;
+   const state=await getEscapeState();
+   // 航路が全体に開いていても、自分で正しい座標を選んだ宿泊者だけが船を選べる。
+   if(state!=='coordinates'&&state!=='station')return;
    if(await hasDay7Announcement(day7RouteType))showEscapeBoats();
  }
  window.supabaseClientSpecial?.channel('spr-day7-escape-events').on('postgres_changes',{event:'INSERT',schema:'public',table:'resort_announcements'},p=>{
@@ -13279,7 +13298,17 @@ window.addEventListener('message',e=>{
    }
    if(e.target.closest?.('[data-explore-spot="lighthouse"]'))setTimeout(()=>void openFinalLighthouse(),260);
    if(day===7&&coveButton){
-     void hasDay7Announcement(day7RouteType).then(ready=>{if(ready)setTimeout(()=>void chooseStation(),260)});
+     e.preventDefault();e.stopImmediatePropagation();
+     void (async()=>{
+       const state=await getEscapeState();
+       if(window.__sprDay7CoveLocked===true||state==='failed'){
+         window.__sprDay7CoveLocked=true;
+         open('人魚の入り江','もう人魚の入り江へ戻ることはできない。');
+         return;
+       }
+       window.__sprOpenExploreLocation?.('mermaids_cove');
+       if(state==='coordinates'||state==='station')setTimeout(()=>void chooseStation(),260);
+     })();
    }
  },true);
 })();
