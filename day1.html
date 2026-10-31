@@ -2646,6 +2646,25 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;
       try{
         window.__sprRemoteHydrating=true;
+        const [invRes,flagRes,barRes,coRes,resetRes]=await Promise.all([
+          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity,updated_at').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_player_flags').select('flag_key,value,updated_at').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_bar_orders').select('record,service_date,period,expires_at').eq('player_id',playerId),
+          window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at'),
+          window.supabaseClientSpecial.from('resort_announcements').select('message,created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1)
+        ]);
+        for(const r of [invRes,flagRes,barRes,coRes,resetRes])if(r.error)throw r.error;
+        const latestResetMarker=resetRes.data&&resetRes.data[0]?resetRes.data[0]:null;
+        const latestWorldResetAt=latestResetMarker?.created_at?new Date(latestResetMarker.created_at).getTime():0;
+        const latestResetToken=String(latestResetMarker?.message||latestResetMarker?.created_at||'');
+        const appliedResetKey=`spr-applied-world-reset:${playerStorageId}`;
+        // SECURITY CHECK may preserve device storage. When the server has a newer reset marker,
+        // discard every cached snapshot before any empty-table migration can restore old progress.
+        if(latestResetToken&&localStorage.getItem(appliedResetKey)!==latestResetToken){
+          const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);
+          Object.keys(localStorage).filter(key=>key.startsWith('spr-')&&!preserve.has(key)).forEach(key=>localStorage.removeItem(key));
+          localStorage.setItem(appliedResetKey,latestResetToken);
+        }
         const localBelongings=loadBelongings();
         // 廃止した灯台由来の「切り取られた乗船チケット」は所持品へ残さない。
         delete localBelongings.lucaBalsaUsedTicket;
@@ -2653,15 +2672,6 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const localCoasters=loadCoasterInventory();
         const coastersBeforeHydrationIds=new Set(localCoasters.map(x=>String(x?.client_id||'')).filter(Boolean));
         const localFlags=collectLocalFlags();
-        const [invRes,flagRes,barRes,coRes,resetRes]=await Promise.all([
-          window.supabaseClientSpecial.from('spr_player_inventory').select('item_key,quantity,updated_at').eq('player_id',playerId),
-          window.supabaseClientSpecial.from('spr_player_flags').select('flag_key,value,updated_at').eq('player_id',playerId),
-          window.supabaseClientSpecial.from('spr_bar_orders').select('record,service_date,period,expires_at').eq('player_id',playerId),
-          window.supabaseClientSpecial.from('spr_cafe_coasters').select('client_id,venue,file,meal,drink,acquired_at').eq('player_id',playerId).order('acquired_at'),
-          window.supabaseClientSpecial.from('resort_announcements').select('created_at').eq('announcement_type','admin-world-reset').order('created_at',{ascending:false}).limit(1)
-        ]);
-        for(const r of [invRes,flagRes,barRes,coRes,resetRes])if(r.error)throw r.error;
-        const latestWorldResetAt=resetRes.data&&resetRes.data[0]?.created_at?new Date(resetRes.data[0].created_at).getTime():0;
 
         let belongings={},inventoryBootstrap={};
         if((invRes.data||[]).length){
