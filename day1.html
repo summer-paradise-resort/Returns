@@ -10607,25 +10607,25 @@ window.addEventListener('message',e=>{
     clearActionMessage();
     const overlay=document.createElement('div');
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','乗船チケットを釣り上げた');
-    overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));box-sizing:border-box;background:#000;color:#fff;opacity:0;transition:opacity .75s ease,background-color .75s ease';
+    overlay.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom));box-sizing:border-box;background:rgba(0,0,0,.88);color:#fff;opacity:0;transition:opacity .75s ease';
     const content=document.createElement('div');
-    content.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,26px);width:min(94vw,820px);max-height:100%;opacity:0;transition:opacity .75s ease';
+    content.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.4vh,20px);width:min(88vw,520px);max-height:100%;opacity:0;transition:opacity .75s ease';
     overlay.append(content);document.body.append(overlay);
     try{
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       overlay.style.opacity='1';await new Promise(resolve=>setTimeout(resolve,780));
+      await playExploreAudioToEnd(exploreFishingAudio,5000);
       await playExploreAudioToEnd(lucaTicketReelAudio);
-      await playExploreAudioToEnd(exploreWaterExitAudio);
       const image=document.createElement('img');image.src='worn_boarding_ticket_luca_balsa_used.png';image.alt='水に濡れ、使い込まれた乗船チケット';image.draggable=false;
-      image.style.cssText='display:block;width:100%;height:auto;max-height:68dvh;object-fit:contain;object-position:center';
-      const caption=document.createElement('div');caption.textContent='チケットが釣れた。';
+      image.style.cssText='display:block;width:min(78vw,460px);height:auto;max-height:48dvh;object-fit:contain;object-position:center';
+      const caption=document.createElement('div');caption.textContent='使用済みのチケットが釣れた。';
       caption.style.cssText='text-align:center;font:clamp(16px,4vw,22px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.08em;color:#fff';
       const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent='CLOSE';
       closeButton.style.cssText='min-width:92px;min-height:44px;padding:10px 22px;border:1px solid rgba(230,204,142,.72);background:rgba(5,21,36,.9);color:#f0d89d;font:11px Georgia,serif;letter-spacing:.16em';
       content.append(image,caption,closeButton);
       await Promise.race([image.decode?.().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,4000))]);
       const closed=new Promise(resolve=>closeButton.addEventListener('click',resolve,{once:true}));
-      content.style.opacity='1';overlay.style.backgroundColor='rgba(0,0,0,0)';
+      content.style.opacity='1';
       if(!(await itemGrantPromise))window.__sprGrantLocalStoryItem?.('lucaBalsaFishingTicket',1);
       closeButton.focus({preventScroll:true});await closed;
       overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,780));overlay.remove();
@@ -10672,8 +10672,8 @@ window.addEventListener('message',e=>{
       overlay.append(content);document.body.append(overlay);
       await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
       overlay.style.opacity='1';await new Promise(resolve=>setTimeout(resolve,780));
+      await playExploreAudioToEnd(exploreFishingAudio,5000);
       await playExploreAudioToEnd(lucaTicketReelAudio);
-      await playExploreAudioToEnd(exploreWaterExitAudio);
       const caption=document.createElement('div');caption.textContent=config.text;
       caption.style.cssText='width:100%;text-align:center;font:clamp(16px,4vw,22px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em';
       const close=document.createElement('button');close.type='button';close.textContent='CLOSE';
@@ -10688,7 +10688,7 @@ window.addEventListener('message',e=>{
   }
 
   // カメラ音・釣り音・ダイビング音は、異変動物イベントが通常アクションを止める場合でもタップした瞬間に鳴らす。
-  document.addEventListener('click',event=>{
+  window.addEventListener('click',event=>{
     const cameraButton=event.target.closest?.('[data-explore-action="camera"]');
     if(cameraButton&&exploreView.contains(cameraButton))playExploreOneShot(exploreCameraAudio,.9);
     const fishingButton=event.target.closest?.('[data-explore-action="fishing"]');
@@ -10697,12 +10697,14 @@ window.addEventListener('message',e=>{
       const clothEvent=clothFishingEventFor(fishingButton);
       if(clothEvent){
         event.preventDefault();event.stopImmediatePropagation();
-        primeLucaTicketEventAudio(lucaTicketReelAudio);primeLucaTicketEventAudio(exploreWaterExitAudio);
+        exploreWaterEntryAudio.pause();try{exploreWaterEntryAudio.currentTime=0}catch{}
+        primeLucaTicketEventAudio(exploreFishingAudio);primeLucaTicketEventAudio(lucaTicketReelAudio);
         void showClothFishingEvent(clothEvent);return;
       }
       if(lucaTicketFishingEligible(fishingButton)){
         event.preventDefault();event.stopImmediatePropagation();
-        primeLucaTicketEventAudio(lucaTicketReelAudio);primeLucaTicketEventAudio(exploreWaterExitAudio);
+        exploreWaterEntryAudio.pause();try{exploreWaterEntryAudio.currentTime=0}catch{}
+        primeLucaTicketEventAudio(exploreFishingAudio);primeLucaTicketEventAudio(lucaTicketReelAudio);
         void showLucaTicketFishingEvent();return;
       }
       playExploreOneShot(exploreFishingAudio,1);
@@ -10786,6 +10788,41 @@ window.addEventListener('message',e=>{
   }
   let activeExploreVideoEvent=null;
   const day1ExploreIntroGuest=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+  // DAY3ログイン時に一度だけ表示する、ルカ・バルサーの古びた航海日誌。
+  const seaBottleSeenKey=()=>`spr-sea-bottle-logbook-seen-v2:${encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest')}`;
+  function seaBottleDateLabel(){
+    const startAt=Number(localStorage.getItem('spr-game-start-at'))||Date.now();
+    const dateParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(startAt));
+    const parts=Object.fromEntries(dateParts.map(part=>[part.type,part.value]));
+    const date=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day)+7));
+    return `${date.getUTCFullYear()}年${date.getUTCMonth()+1}月${date.getUTCDate()}日`;
+  }
+  function showSeaBottleLetter(attempt=0){
+    const seenKey=seaBottleSeenKey();
+    if(Number(document.documentElement.dataset.resortDay||1)!==3||localStorage.getItem(seenKey)==='1')return;
+    if(!localStorage.getItem('spr-game-start-at')&&attempt<20){setTimeout(()=>showSeaBottleLetter(attempt+1),300);return;}
+    const overlay=document.createElement('div');
+    overlay.className='mystery-modal';
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','古びた航海日誌');
+    const dialog=document.createElement('div');dialog.className='mystery-dialog';dialog.style.maxWidth='720px';dialog.style.textAlign='left';
+    const title=document.createElement('div');title.className='mystery-kicker';title.textContent='OLD LOGBOOK';title.style.textAlign='center';
+    const text=document.createElement('p');text.style.maxHeight='62dvh';text.style.overflowY='auto';text.style.margin='8px 0 18px';
+    const choices=document.createElement('div');choices.className='mystery-choices';
+    const next=document.createElement('button');next.type='button';next.textContent='NEXT　›';
+    const pages=[
+      `ログインすると、シーボトルが流れ着いている。\n\n――${seaBottleDateLabel()}\n\nこれを読んでいる諸君へ。七日目を迎えた。……いや、正確には、どうにか七日目まで生き延びた、と書くべきだろう。何人が残ったのかは記さない。諸君がこれを読んでいる時点では、まだその結果は決まっていないはずだからな。\n\n私たちはリゾートを出た。あれほど眩しかった建物も、今では見る影もない。灯りは消え、窓は割れ、潮風に晒された建物だけが並んでいる。人の気配もない。波の音だけが、まるで何事もなかったように響いている。楽園などと呼べる場所ではない。……もっとも、最初からそんなものは存在していなかったのかもしれないが。\n\nそれでも私たちは船に乗った。七日間を生き延び、ようやく島から脱出できる。誰もがそう思っていた。私もだ。だが、間違いだった。船は島を離れたように見えた。けれど、どれほど進んでも陸地は遠ざからず、やがて海は私たちの行く手を閉ざした。私たちは、乗る場所を間違えた。船を間違え、時刻を間違え、行先を間違えたのだ。`,
+      `諸君、あの船には乗るな。まず行先を照らせ。正しい乗り場を見つけろ。正しい舟を選べ。そして、正しい時刻を逃すな。\n\n未来が間違っていたのなら、過去から計算をやり直せばいい。壊れた回路なら、原因を探し、正しい接続に組み直せばいい。私にはもう、それを確かめる時間が残されていない。この先を、諸君らに託す。\n\nルカ・バルサー`
+    ];
+    let page=0;
+    next.addEventListener('click',()=>{
+      if(page===0){page=1;text.textContent=pages[page];text.scrollTop=0;next.textContent='CLOSE　×';return;}
+      overlay.remove();
+    });
+    text.textContent=pages[0];choices.append(next);dialog.append(title,text,choices);overlay.append(dialog);
+    document.body.append(overlay);localStorage.setItem(seenKey,'1');
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(showSeaBottleLetter,1200),{once:true});
+  else setTimeout(showSeaBottleLetter,1200);
   const day3LighthouseStoryGuest=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
   const day3LighthouseStoryCountKey=`spr-day3-lighthouse-story-count:${day3LighthouseStoryGuest}`;
   const day3LighthouseStorySeenKey=`spr-day3-lighthouse-story-seen:${day3LighthouseStoryGuest}`;
