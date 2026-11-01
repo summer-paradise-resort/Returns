@@ -10788,6 +10788,7 @@ window.addEventListener('message',e=>{
       overlay.style.opacity='1';await new Promise(resolve=>setTimeout(resolve,780));
       await playExploreAudioToEnd(exploreFishingAudio,5000);
       await playExploreAudioToEnd(lucaTicketReelAudio);
+      await playExploreAudioToEnd(exploreWaterExitAudio);
       const caption=document.createElement('div');caption.textContent=config.text;
       caption.style.cssText='width:100%;text-align:center;font:clamp(16px,4vw,22px)/1.8 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.06em';
       const close=document.createElement('button');close.type='button';close.textContent='CLOSE';
