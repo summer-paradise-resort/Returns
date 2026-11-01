@@ -2115,7 +2115,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setTimeout(()=>void ready().catch(error=>console.warn('named history initialization',error)),0);
       window.addEventListener('focus',()=>void refresh().catch(()=>{}));
       window.addEventListener('spr:world-reset-completed',()=>{generation++;cache={};init=null;resetScope='';localStorage.removeItem(key)});
-      return {ready,remember,stage:id=>Number(cache[id])||0,seen:id=>Number(cache[id])>0,advance,claim:id=>advance(id,0,1),read};
+      return {ready,refresh:()=>refresh(),remember,stage:id=>Number(cache[id])||0,seen:id=>Number(cache[id])>0,advance,claim:id=>advance(id,0,1),read};
     })();
 
     const belongingsKey=`spr-belongings:${playerStorageId}`;
@@ -9688,13 +9688,25 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       animalReset.className='admin-world-reset';
       animalReset.textContent='異変動物の遭遇履歴だけリセット';
       animalReset.style.cssText='border-color:#8a6a32;color:#72551f;background:#fffaf0';
-      animalReset.addEventListener('click',()=>{
-        const who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
-        const prefix=`spr-anomaly-animal:${who}:`;
-        const keys=Object.keys(localStorage).filter(key=>key.startsWith(prefix)||key.startsWith('spr-anomaly-animal:device:'));
-        keys.forEach(key=>localStorage.removeItem(key));
-        localStorage.removeItem(`spr-story:${who}:fawn-acorn-given`);
-        if(adminPeriodState)adminPeriodState.textContent=`異変動物の遭遇履歴を${keys.length}件リセットしました。もう一度イベントを確認できます。`;
+      animalReset.addEventListener('click',async()=>{
+        if(!IS_ADMIN||animalReset.disabled)return;
+        animalReset.disabled=true;
+        try{
+          const playerId=String(localStorage.getItem('spr-player-id')||'').trim();
+          if(!playerId||!window.supabaseClientSpecial)throw new Error('オンライン接続を確認してください。');
+          const {data,error}=await window.supabaseClientSpecial.rpc('spr_admin_reset_anomaly_animals',{p_admin_player_id:playerId});
+          if(error)throw error;
+          const who=encodeURIComponent(localStorage.getItem('spr-guest-name')||'guest');
+          const prefixes=[`spr-anomaly-animal:name:${who}:`,`spr-anomaly-animal:${who}:`,'spr-anomaly-animal:device:'];
+          const keys=Object.keys(localStorage).filter(key=>prefixes.some(prefix=>key.startsWith(prefix)));
+          keys.forEach(key=>localStorage.removeItem(key));
+          localStorage.removeItem(`spr-story:${who}:fawn-acorn-given`);
+          await window.__sprNamedEvents.refresh();
+          if(adminPeriodState)adminPeriodState.textContent=`全7種類の遭遇履歴をリセットしました（保存記録 ${Number(data)||0}件）。もう一度イベントを確認できます。`;
+        }catch(error){
+          if(adminPeriodState)adminPeriodState.textContent='異変動物の遭遇履歴をリセットできませんでした。SQLの適用状況とオンライン接続を確認してください。';
+          console.warn('admin anomaly animal reset',error);
+        }finally{animalReset.disabled=false}
       });
       tools.append(animalReset);
 
@@ -12153,6 +12165,7 @@ window.addEventListener('message',e=>{
  // 体験履歴はブラウザ端末にのみ保存。Supabaseへアップロードせず、別端末を巻き込まない。
  const anomalyPrefix=`spr-anomaly-animal:name:${who}:`;
  const legacyAnimalPrefix=`spr-anomaly-animal:${who}:`;
+ // 遭遇履歴はプレイヤー名ごとにSupabaseで共有し、別のプレイヤーの体験を妨げない。
  const animalSeen=id=>window.__sprNamedEvents.stage('animal:'+id)>=(id==='black-horse'?3:1);
  const markAnimal=id=>localStorage.setItem(anomalyPrefix+id,'1');
  const animalStage=id=>window.__sprNamedEvents.stage('animal:'+id);
