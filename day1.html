@@ -801,6 +801,18 @@ body.night-theme #teaPartyList .tea-party-people{color:#c9d1d8}
 
 @media(max-width:520px){.hernando-secret-card{padding:26px 18px 20px}.hernando-secret-text{font-size:15px}.hernando-descent p{font-size:15px}.hernando-dialogue{left:12px;right:12px}.hernando-dialogue-text{font-size:14px}.hernando-dialogue-choices{grid-template-columns:1fr}.hernando-arena-blur{inset:-8%;width:116%;height:116%;filter:blur(16px) brightness(.46)}.hernando-arena-loop{top:10px;bottom:calc(246px + env(safe-area-inset-bottom));height:calc(100% - 256px - env(safe-area-inset-bottom));padding:0 2px}}
 
+
+    /* 本番初期化専用：5桁の数字を入力するモーダル（コード自体はHTMLに保存しない） */
+    .spr-reset-pin-dialog{width:min(370px,calc(100vw - 34px));max-width:calc(100vw - 34px);max-height:calc(100dvh - 40px);padding:0;border:1px solid #c5a76c;border-radius:3px;background:#fffcf6;color:#0d2743;box-shadow:0 22px 65px rgba(0,0,0,.36)}
+    .spr-reset-pin-dialog::backdrop{background:rgba(5,19,36,.72)}
+    .spr-reset-pin-form{display:grid;gap:14px;padding:25px 23px 21px}
+    .spr-reset-pin-heading{margin:0;font-size:17px;font-weight:500;text-align:center;letter-spacing:.08em}
+    .spr-reset-pin-description{margin:0;font-size:12px;line-height:1.9;text-align:center;color:#5a6572}
+    .spr-reset-pin-input{width:100%;min-height:54px;padding:8px 14px;border:1px solid #cbbd9f;border-radius:2px;background:#fff;color:#0d2743;outline-offset:2px;text-align:center;font:23px/1.3 system-ui,sans-serif;letter-spacing:.45em;font-variant-numeric:tabular-nums}
+    .spr-reset-pin-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .spr-reset-pin-actions button{min-height:44px;border:1px solid #cfb98e;background:#fff;color:#0d2743;font-size:12px}
+    .spr-reset-pin-actions button[type=submit]{border-color:#983b34;background:#983b34;color:#fff}
+
     .admin-master-panel{display:none;margin:10px 0 18px;border:1px solid rgba(13,39,67,.18);background:rgba(255,255,255,.82)}.spr-admin-mode .admin-master-panel{display:block}.admin-master-panel summary{padding:10px 12px;font:9px Georgia,serif;letter-spacing:.14em;color:#6b7480;cursor:pointer}.admin-master-inner{padding:0 12px 12px}.admin-current-day{font:10px Georgia,serif;letter-spacing:.12em;margin:4px 0 10px}.admin-current-day b{font-size:16px;color:var(--gold)}.admin-day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.admin-day-grid button{min-height:36px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font:9px Georgia,serif}.admin-day-grid button.active{background:var(--navy);color:#fff}.admin-world-reset{width:100%;min-height:42px;margin-top:10px;border:1px solid #9d332d;background:#fff7f6;color:#9d332d;font-size:11px;letter-spacing:.08em}.admin-master-status{min-height:1.5em;margin:8px 0 0;font-size:10px;line-height:1.6;color:#6b7480}.admin-test-tools{margin:12px 0 4px;padding:11px;border:1px solid rgba(13,39,67,.14);background:rgba(250,248,242,.8)}.admin-test-title{margin:0 0 7px;font:9px Georgia,serif;letter-spacing:.12em;color:#6b7480}.admin-test-note{margin:5px 0 9px;font-size:10px;line-height:1.6;color:#697583}.admin-test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.admin-test-grid.two{grid-template-columns:repeat(2,1fr)}.admin-test-grid button{min-height:36px;padding:5px;border:1px solid #d8cfbf;background:#fff;color:var(--navy);font-size:10px}.admin-test-grid button.active{background:var(--navy);border-color:var(--navy);color:#fff}.admin-test-state{font-size:10px;color:#31536f;margin:7px 0 0;line-height:1.6}@media(max-width:520px){.admin-day-grid{grid-template-columns:repeat(4,1fr)}}
 
     /* DAY1 / 探索イベント動画（灯台の望遠鏡・夜のダイビング） */
@@ -2024,6 +2036,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       </div>
     </section>
   </section>
+
+
+  <dialog id="adminResetPinDialog" class="spr-reset-pin-dialog" aria-labelledby="adminResetPinHeading">
+    <form id="adminResetPinForm" class="spr-reset-pin-form">
+      <h3 class="spr-reset-pin-heading" id="adminResetPinHeading">初期化の確認コード</h3>
+      <p class="spr-reset-pin-description">管理人専用の5桁の数字を入力してください。</p>
+      <input id="adminResetPinInput" class="spr-reset-pin-input" type="password" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" autocomplete="off" aria-label="5桁の数字の確認コード" required>
+      <div class="spr-reset-pin-actions"><button id="adminResetPinCancel" type="button">キャンセル</button><button type="submit">初期化する</button></div>
+    </form>
+  </dialog>
 
   <script>
     // SECURITY CHECKで登録した名前をDay1全体で共有
@@ -9936,58 +9958,73 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       clearLoginAndReturnToSecurity();return true;
     }catch(e){console.warn('world reset session check',e);return false}
   }
+  // 5桁PINはSupabaseの非公開スキーマで照合。公開HTMLに正解を埋め込まない。
+  const resetPinDialog=document.getElementById('adminResetPinDialog');
+  const resetPinInput=document.getElementById('adminResetPinInput');
+  const resetPinForm=document.getElementById('adminResetPinForm');
+  resetPinInput?.addEventListener('input',()=>{
+    resetPinInput.value=resetPinInput.value.replace(/[^0-9]/g,'').slice(0,5);
+  });
+  document.getElementById('adminResetPinCancel')?.addEventListener('click',()=>resetPinDialog?.close('cancel'));
+  resetPinForm?.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!/^[0-9]{5}$/.test(resetPinInput.value)){
+      resetPinInput.setCustomValidity('5桁の数字を入力してください。');
+      resetPinInput.reportValidity();
+      resetPinInput.setCustomValidity('');
+      return;
+    }
+    resetPinDialog?.close('confirm');
+  });
+  function requestAdminResetPin(){
+    if(!resetPinDialog||!resetPinInput||typeof resetPinDialog.showModal!=='function'){
+      const fallback=window.prompt('管理人専用の5桁の数字を入力してください。');
+      if(fallback===null)return Promise.resolve(null);
+      if(!/^[0-9]{5}$/.test(fallback)){
+        alert('確認コードは半角数字5桁で入力してください。');
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(fallback);
+    }
+    return new Promise(resolve=>{
+      resetPinInput.value='';
+      resetPinDialog.addEventListener('close',()=>{
+        const code=resetPinDialog.returnValue==='confirm'?resetPinInput.value:null;
+        resetPinInput.value='';
+        resolve(code);
+      },{once:true});
+      resetPinDialog.showModal();
+      requestAnimationFrame(()=>resetPinInput.focus());
+    });
+  }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
     if(!IS_ADMIN)return;
-    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・全参加者の所持品、CAFEコレクション、進行状態を初期化します\n・全参加者のCHIPは0になります\n・ミステリーボックスの抽選回数とヴィラ発行数を初期化します\n\nこの操作を実行しますか？'))return;
-    if(!confirm('最終確認です。\n管理人以外の参加者ログインもリセットします。よろしいですか？'))return;
+    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・過去に登録されたログアウト中の参加者も全員、所持品・CAFEコレクション・進行状態を初期化します\n・全参加者のCHIPは0になります\n・ミステリーボックスの抽選回数とヴィラ発行数を初期化します\n\nこの操作を実行しますか？'))return;
+    if(!confirm('最終確認です。\n現在ログインしていない人も含め、過去に登録された全プレイヤーの試運転データを削除・初期化します。\nプレイヤーIDと名前は残ります。本番用に実行しますか？'))return;
+    const resetCode=await requestAdminResetPin();
+    if(resetCode===null)return;
     try{
-      resetBtn.disabled=true;if(statusEl)statusEl.textContent='全ギミック＋参加者ログインを初期化中…';
+      resetBtn.disabled=true;if(statusEl)statusEl.textContent='登録済みの全プレイヤー（オフライン含む）をSupabase側で初期化中…';
       const adminId=await creator();if(!adminId)throw new Error('管理人のプレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');
-      // ミステリーボックスはSupabaseの抽選履歴を元に残回数を計算する。
-      // 端末の表示だけを7回に戻しても抽選RPCに拒否されるため、必ずサーバーで消去する。
-      // 先に実行し、追加SQL未導入の場合には参加者の強制ログアウトなどを開始しない。
-      const mysteryResetClient=client();
-      if(!mysteryResetClient)throw new Error('Supabaseに接続できません。');
-      const {error:mysteryResetError}=await mysteryResetClient.rpc('spr_admin_reset_mystery_box',{p_admin_player_id:adminId});
-      if(mysteryResetError)throw new Error('ミステリーボックスのリセットに失敗しました。付属のSQLをSupabaseで実行してください。\n'+mysteryResetError.message);
-      try{
-        const c=client();if(c){
-          await c.from('special_table_sessions').update({status:'finished',public_state:{phase:'reset',finished:true,message:'本番用リセット'}}).in('status',['countdown','open','playing']);
-          const {error:runtimeResetError}=await c.rpc('spr_reset_runtime_state');if(runtimeResetError)throw runtimeResetError;
-          // RPCの実装差にかかわらず、全プレイヤーの所持品・進行フラグ・コレクションを初期化する。
-          // 初期化通知はこれらの更新が終わってから配信し、他端末が古い状態を読み込む競合を避ける。
-          const resetInventoryAt=new Date().toISOString();
-          const {error:inventoryResetError}=await c.from('spr_player_inventory').update({quantity:0,updated_at:resetInventoryAt}).not('player_id','is',null);
-          if(inventoryResetError)throw new Error('全参加者の所持品リセットに失敗しました。'+inventoryResetError.message);
-          const {error:heartResetError}=await c.from('spr_player_inventory').update({quantity:3,updated_at:resetInventoryAt}).eq('item_key','lifeHearts').not('player_id','is',null);
-          if(heartResetError)throw new Error('全参加者のハート初期化に失敗しました。'+heartResetError.message);
-          const {error:flagResetError}=await c.from('spr_player_flags').delete().not('player_id','is',null);
-          if(flagResetError)throw new Error('全参加者の進行フラグ初期化に失敗しました。'+flagResetError.message);
-          const {error:coasterResetError}=await c.from('spr_cafe_coasters').delete().not('player_id','is',null);
-          if(coasterResetError)throw new Error('全参加者のCAFEコレクション初期化に失敗しました。'+coasterResetError.message);
-          const {error:barOrderResetError}=await c.from('spr_bar_orders').delete().not('player_id','is',null);
-          if(barOrderResetError)throw new Error('全参加者のBAR注文状態初期化に失敗しました。'+barOrderResetError.message);
-          // 本番用リセットでは、RPC側の初期値に関係なく全参加者のCHIPを必ず0にする。
-          const {error:chipResetError}=await c.from('players').update({chips:0}).not('id','is',null);
-          if(chipResetError)throw chipResetError;
-          // ROOM電話イベントも本番用リセット対象。これで同じ夜でも2分後に再テストできる。
-          const {error:roomPhoneResetError}=await c.from('spr_room_phone_events').delete().not('id','is',null);
-          if(roomPhoneResetError)throw roomPhoneResetError;
-          await deactivateOtherPlayers(adminId);
-        }
-      }catch(e){console.warn('special/runtime/login reset',e);throw e}
-      // keep ID を共有リセット通知に含め、全サーバー状態の初期化後に他端末をログアウトさせる。
-      await publishMarker(RESET_TYPE,'RESET:'+Date.now()+'|KEEP:'+encodeURIComponent(adminId));
-      await publishMarker(DAY_TYPE,'DAY:1');
-      await publishMarker(AUTO_DAY_TYPE,'AUTO:OFF|DAY:1');
+      // サーバー側の1トランザクションで、ログイン中かどうかに関係なく
+      // 全プレイヤーの所持品・フラグ・コースター・CHIP等を初期化する。
+      // RLSで他プレイヤーの更新が無言でスキップされるブラウザ一括更新は使用しない。
+      const c=client();
+      if(!c)throw new Error('Supabaseに接続できません。');
+      const {data:resetResult,error:resetError}=await c.rpc('spr_admin_reset_all_player_progress',{p_admin_player_id:adminId,p_admin_reset_code:resetCode});
+      if(resetError)throw new Error('全プレイヤーの一括初期化に失敗しました。先に付属SQLをSupabaseで実行してください。\n'+resetError.message);
+      if(resetResult?.ok===false)throw new Error(resetResult.message||'確認コードが違います。');
+      const resetPlayerCount=Number(resetResult?.players_reset);
+      if(!Number.isFinite(resetPlayerCount)||resetPlayerCount<1)throw new Error('サーバーから初期化人数を確認できませんでした。管理人に連絡してください。');
+      // リセット共有マーカー・DAY1・自動進行OFFは上記RPCで原子的に保存済み。
+      // ここでクライアントから二重発行するとリセット時刻がずれ、再入場判定が不安定になる。
       sessionStorage.removeItem(ADMIN_PREVIEW_KEY);adminPreviewDay=0;
       autoDayEnabled=false;autoDayAnchor=null;renderAutoDayButton();scheduleAutoDayCheck();
       clearLocalGimmicks();
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
-      try{const c=client();if(c)await c.from('players').update({last_seen_at:new Date().toISOString()}).eq('id',adminId)}catch(e){console.warn('admin last_seen restore',e)}
       window.dispatchEvent(new Event('spr:world-reset-completed'));
-      if(statusEl)statusEl.textContent='初期化完了。全参加者の所持品・CAFEコレクション・進行状態・CHIP、抽選回数・ヴィラ残数をリセットし、他の参加者はログアウトしました。DAY1へ戻ります。';
+      if(statusEl)statusEl.textContent=`初期化完了。ログアウト中を含む登録済み${resetPlayerCount}人の所持品・CAFEコレクション・進行状態・CHIP、抽選回数・ヴィラ残数をリセットし、他の参加者はログアウトしました。DAY1へ戻ります。`;
       setTimeout(()=>goDay(1),500);
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
