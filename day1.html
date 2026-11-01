@@ -1865,6 +1865,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <div id="specialOverlay" class="special-overlay" aria-hidden="true">
     <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="none"></audio>
     <audio id="royalTableBgm" src="royal_table_bgm.mp3" loop preload="none" playsinline></audio>
+    <audio id="royalSpectatorWaitingBgm" src="cafe_bgm.mp3" loop preload="none" playsinline></audio>
     <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">運のみぞ知る</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
   </div>
   <section id="specialTableScreen" class="special-table-screen hidden" aria-hidden="true"><div class="special-table-inner"><div id="specialTableName" class="special-speaker">SPECIAL TABLE</div><h2>ALL-IN GAME</h2><p id="specialTableRule" class="rule">ゲームをお選びください。</p><div id="specialGameChoice" class="special-choice"><button type="button" data-special-game="blackjack">BLACKJACK<br><small>ONE ROUND</small></button><button type="button" data-special-game="hilo">HIGH &amp; LOW<br><small>FIRST TO TWO WINS</small></button></div><div id="specialPlayArea"></div></div></section>
@@ -3207,7 +3208,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const specialBroadcast=document.getElementById('specialBroadcast'),specialBroadcastText=document.getElementById('specialBroadcastText'),specialBroadcastCount=document.getElementById('specialBroadcastCount'),specialBroadcastClose=document.getElementById('specialBroadcastClose'),specialBroadcastKicker=document.getElementById('specialBroadcastKicker');
     const spectatorScreen=document.getElementById('spectatorScreen'),spectatorStatus=document.getElementById('spectatorStatus'),spectatorStage=document.getElementById('spectatorStage'),spectatorClose=document.getElementById('spectatorClose'),spectatorBack=document.getElementById('spectatorBack'),casinoSpectatorMenu=document.getElementById('casinoSpectatorMenu');
     let activeSpectatorChallenger='';
-    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);clearInterval(spectatorStatePollTimer);spectatorPresenceTimer=null;spectatorStatePollTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorStatePollBusy=false;spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0}catch{};try{startCasinoMusic()}catch{}}
+    function closeSpectator(){clearInterval(window.__sprSpectatorCountdown);clearInterval(spectatorPresenceTimer);clearInterval(spectatorStatePollTimer);spectatorPresenceTimer=null;spectatorStatePollTimer=null;spectatorPresenceState=null;spectatorPresenceStatus='';spectatorPresenceSessionId='';spectatorStatePollBusy=false;spectatorScreen.classList.add('hidden');spectatorScreen.setAttribute('aria-hidden','true');document.body.classList.remove('spectator-watching');if(!document.body.classList.contains('special-table-playing'))specialCommentOverlay?.setAttribute('aria-hidden','true');document.querySelectorAll('.special-comment-lane').forEach(lane=>lane.replaceChildren());if(spectatorChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=null}try{stopRoyalAudio(specialBgm);stopRoyalAudio(royalSpectatorWaitingBgm);stopRoyalAudio(royalTableBgm);spectatorBgmMode=''}catch{};try{startCasinoMusic()}catch{}}
     if(spectatorBack)spectatorBack.onclick=closeSpectator;
     // 同じ SECURITY CHECK の名前について、2回目以降はplayers照会を繰り返さない。
     // 名前が変わったら自動的に別IDを取得し直す。
@@ -3238,7 +3239,18 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       specialSelectedGame=(st.game==='hilo'||st.game==='hilo-serious'||row.status==='playing'||row.status==='open')?'hilo':null;
       if(casinoSpectatorMenu){casinoSpectatorMenu.classList.add('hidden');casinoSpectatorMenu.dataset.sessionId='';casinoSpectatorMenu.dataset.challenger=''}
       try{stopCasinoMusic()}catch{}
-      try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
+      if(seriousEmilyMode){
+        stopRoyalAudio(specialBgm);
+        if(isRoyalMatchStarted(st))startRoyalTableBgm();
+        else if(st.phase==='royal-intro'||st.phase==='royal-countdown'){
+          stopRoyalAudio(royalTableBgm);
+        }else if(st.phase==='emily-dialogue'&&Number(st.round||0)===0){
+          stopRoyalAudio(royalTableBgm); // カウント前の台詞は無音
+        }else startCasinoMusic(); // ROYAL開卓待機中だけ通常カジノBGM
+      }else{
+        stopRoyalAudio(royalTableBgm);
+        try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
+      }
       if(specialSelectedGame){
         specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
         casinoGame.classList.remove('hidden');casinoGame.setAttribute('aria-hidden','false');
@@ -3360,6 +3372,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             }
             casinoSpectatorMenu.dataset.sessionId=row.id;
             casinoSpectatorMenu.dataset.challenger=row.challenger_name||'';
+            casinoSpectatorMenu.dataset.tableName=rowState.table_name||'SPECIAL TABLE';
             casinoSpectatorMenu.classList.remove('hidden');
             return;
           }
@@ -3386,7 +3399,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
       }
     }
-    if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'')};
+    if(casinoSpectatorMenu)casinoSpectatorMenu.onclick=()=>{const id=casinoSpectatorMenu.dataset.sessionId;if(id)openSpectator(id,casinoSpectatorMenu.dataset.challenger||'',casinoSpectatorMenu.dataset.tableName||'')};
     let activeSpecialSessionId=null,broadcastTimer=null,spectatorChannel=null,challengerCommentChannel=null,specialCommentLaneCursor=0;
     let specialBroadcastSessionId='',specialBroadcastDismissedSessionId='';
 
@@ -3441,7 +3454,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       stopSpecialHeartbeat();clearInterval(specialCountdownTimer);specialCountdownTimer=null;
       await restoreChipsAfterInterruptedSpecial(stake||specialStake||readSpecialPresenceMarker()?.stake||0);
       specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
-      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
+      specialActions.innerHTML='';specialLine.textContent='';specialPlayArea.innerHTML='';stopRoyalAudio(specialBgm);stopRoyalAudio(royalTableBgm);
       document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');
       if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null}
       localStorage.removeItem('spr-resort-announcement');normalResortAnnouncement();hideSpecialBroadcast('finished-current',id);
@@ -3482,7 +3495,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(specialBroadcastKicker)specialBroadcastKicker.textContent=`${m.table_name||'SPECIAL TABLE'} ANNOUNCEMENT`;
       specialBroadcast.classList.remove('hidden');
       specialBroadcast.dataset.userPending='1';
-      if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'');
+      if(activeSpecialSessionId)showSpectatorInvite(activeSpecialSessionId,m.challenger||'',m.table_name||'');
       const start=m.starts_at?new Date(m.starts_at).getTime():Date.now();
       clearInterval(broadcastTimer);
       const tick=()=>{const left=Math.max(0,Math.ceil((start-Date.now())/1000));specialBroadcastCount.textContent=left?`OPEN IN ${left}`:'SPECIAL TABLE OPEN';if(!left)clearInterval(broadcastTimer)};
@@ -3498,10 +3511,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       clearInterval(broadcastTimer);
       return true;
     }
-    function showSpectatorInvite(sessionId,challenger){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger)}
+    function showSpectatorInvite(sessionId,challenger,tableName=''){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger,tableName)}
     specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId||String(activeSpecialSessionId||'');hideSpecialBroadcast('user');};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
     function renderSpectatorState(state={}){
+      syncSpectatorBgmFromState(state);
       if(spectatorTableName)spectatorTableName.textContent=state.table_name||'SPECIAL TABLE';
       if(spectatorBack)spectatorBack.classList.toggle('hidden',!state.finished);
       spectatorStatus.textContent=state.challenger?`${state.challenger}様の勝負`:'SPECIAL TABLE';
@@ -3526,18 +3540,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         window.__sprSpectatorCountdown=setInterval(()=>{const el=spectatorStage.querySelector('[data-spectator-countdown]');if(!el){clearInterval(window.__sprSpectatorCountdown);return}const n=Math.max(0,Math.ceil((new Date(state.starts_at).getTime()-Date.now())/1000));el.textContent=n?`開卓まで ${n} 秒`:'開卓をお待ちください。';if(!n)clearInterval(window.__sprSpectatorCountdown)},500);
       }else spectatorStage.innerHTML=`${matchup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
-    async function openSpectator(sessionId,challenger=''){hideSpecialBroadcast('watch',sessionId);
+    async function openSpectator(sessionId,challenger='',tableName=''){hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
-      try{
-        const ok=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-        if(!ok){
-          const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
-          spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
-        }
-      }catch(e){
-        const unlockSpecialBgm=async()=>{try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}};
-        spectatorScreen.addEventListener('pointerdown',unlockSpecialBgm,{once:true});
-      }
+      spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');
+      // ボタンを押した瞬間（Safariのuser gesture内）に待機曲を開始する。
+      if(tableName==='ROYAL TABLE'||tableName==='ULTRA SPECIAL TABLE'){
+        prearmRoyalTableBgm();
+        syncSpectatorBgm('cafe');
+      }else syncSpectatorBgm('special');
       spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');document.body.classList.add('spectator-watching');specialCommentOverlay?.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpecialSessionId=sessionId;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';spectatorPresenceSessionId=String(sessionId);spectatorPresenceStatus=data.status;spectatorPresenceState={...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'};renderSpectatorState(spectatorPresenceState);clearInterval(spectatorStatePollTimer);spectatorStatePollTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorStatePollBusy||!window.supabaseClientSpecial)return;spectatorStatePollBusy=true;try{const {data:latest,error:pollError}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(pollError)throw pollError;if(!latest)return;const nextState={...(latest.public_state||{}),challenger:latest.challenger_name||activeSpectatorChallenger,finished:latest.status==='finished'};spectatorPresenceStatus=latest.status;if(JSON.stringify(nextState)!==JSON.stringify(spectatorPresenceState)){spectatorPresenceState=nextState;renderSpectatorState(spectatorPresenceState)}if(latest.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}catch(e){console.warn('spectator state poll',e)}finally{spectatorStatePollBusy=false}},1500);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorPresenceStatus==='finished'||!spectatorPresenceState)return;const hb=Date.parse(spectatorPresenceState.heartbeat_at||'');if(!Number.isFinite(hb)||Date.now()-hb<SPECIAL_PRESENCE_TIMEOUT_MS)return;clearInterval(spectatorPresenceTimer);spectatorPresenceState=await finishInterruptedSpecialSession(spectatorPresenceSessionId,spectatorPresenceState);spectatorPresenceStatus='finished';renderSpectatorState({...spectatorPresenceState,finished:true});refreshCasinoSpectatorMenu()},2000);if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{spectatorPresenceStatus=p.new.status;spectatorPresenceState={...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'};renderSpectatorState(spectatorPresenceState);if(p.new.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}).on('broadcast',{event:'gallery-comment'},({payload})=>{
         showSpecialCommentPayload(payload);
       }).subscribe()}
@@ -3899,7 +3909,79 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
     // SPECIAL TABLE / 140,000 CHIP EVENT + repeatable nighttime 50,000,000 CHIP challenge
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
-    const royalTableBgm=document.getElementById('royalTableBgm'),royalCountdownOverlay=document.getElementById('royalCountdownOverlay'),royalCountdownValue=document.getElementById('royalCountdownValue');
+    const royalTableBgm=document.getElementById('royalTableBgm'),royalSpectatorWaitingBgm=document.getElementById('royalSpectatorWaitingBgm'),royalCountdownOverlay=document.getElementById('royalCountdownOverlay'),royalCountdownValue=document.getElementById('royalCountdownValue');
+    // ROYAL TABLE：観戦待機はCAFE、3・2・1終了後は挑戦者・観戦者とも専用BGM。
+    // iOS Safari は時間経過後の自動playを拒否するため、入場／挑戦承諾のタップで
+    // 専用音源を音量0のまま先に再生（unlock）し、カウント終了後に先頭から可聴化する。
+    let spectatorBgmMode='';
+    function stopRoyalAudio(audio,{reset=true}={}){
+      if(!audio)return;
+      sprCancelGuardedAudioStart(audio);
+      audio.pause();
+      if(reset){try{audio.currentTime=0}catch{}}
+    }
+    function prearmRoyalTableBgm(){
+      if(!royalTableBgm||localStorage.getItem('spr-bgm-enabled')==='off')return;
+      if(!royalTableBgm.paused)return;
+      royalTableBgm.loop=true;
+      royalTableBgm.muted=false;
+      royalTableBgm.volume=0;
+      try{const p=royalTableBgm.play();if(p?.catch)p.catch(e=>console.warn('ROYAL BGM unlock',e))}
+      catch(e){console.warn('ROYAL BGM unlock',e)}
+    }
+    function startRoyalTableBgm(){
+      stopRoyalAudio(royalSpectatorWaitingBgm);
+      stopRoyalAudio(specialBgm);
+      casinoBgm.pause();
+      if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+      void sprStartAudioClean(royalTableBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+        if(!ok)console.warn('ROYAL TABLE BGM: playback requires a user tap');
+      });
+    }
+    function isRoyalSpectatorState(state={}){
+      return state.table_name==='ROYAL TABLE'||state.table_name==='ULTRA SPECIAL TABLE'||state.game==='hilo-serious';
+    }
+    function isRoyalMatchStarted(state={}){
+      // 開始前エミリーの台詞もphase=emily-dialogueになるので、round=0では切り替えない。
+      return ['guess','result'].includes(String(state.phase||'')) ||
+        (Number(state.round)>0&&state.phase!=='royal-countdown'&&state.phase!=='royal-intro');
+    }
+    function syncSpectatorBgm(mode,{force=false}={}){
+      if(spectatorScreen.classList.contains('hidden'))return;
+      const target=mode==='royal'?'royal':mode==='cafe'?'cafe':'special';
+      const same=spectatorBgmMode===target;
+      spectatorBgmMode=target;
+      casinoBgm.pause();
+      if(target==='royal'){
+        stopRoyalAudio(royalSpectatorWaitingBgm);
+        stopRoyalAudio(specialBgm);
+        if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+        if(!force&&same&&!royalTableBgm.paused&&royalTableBgm.volume>.05)return;
+        startRoyalTableBgm();
+      }else if(target==='cafe'){
+        stopRoyalAudio(specialBgm);
+        // Waiting中の音量0のRoyal事前再生は止めず、カウント後に使う。
+        if(royalTableBgm.volume>.05)stopRoyalAudio(royalTableBgm);
+        if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+        if(!force&&same&&!royalSpectatorWaitingBgm.paused)return;
+        void sprStartAudioClean(royalSpectatorWaitingBgm,{volume:.34,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
+      }else{
+        stopRoyalAudio(royalSpectatorWaitingBgm);
+        stopRoyalAudio(royalTableBgm);
+        if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+        if(!force&&same&&!specialBgm.paused)return;
+        void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
+      }
+    }
+    function syncSpectatorBgmFromState(state={}){
+      syncSpectatorBgm(isRoyalSpectatorState(state)?(isRoyalMatchStarted(state)?'royal':'cafe'):'special');
+    }
+    // サウンドがiOSでロックされた場合は観戦画面内の次のタップで再試行。
+    spectatorScreen.addEventListener('pointerdown',()=>{
+      if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+      const target=spectatorBgmMode==='royal'?royalTableBgm:spectatorBgmMode==='cafe'?royalSpectatorWaitingBgm:specialBgm;
+      if(target?.paused)syncSpectatorBgm(spectatorBgmMode,{force:true});
+    });
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule'),specialTableName=document.getElementById('specialTableName'),spectatorTableName=document.getElementById('spectatorTableName');
     const emilyOpeners=[
       '───あら。随分、運に愛されたのね。','───まあ。今日はずいぶん、女神に好かれているようね。','───あら。幸運って、本当に偏るものなのね。','───まあ……随分とたくさん、運を拾い集めたのね。','───おめでとう。ここまで辿り着ける方、そう多くないのよ。','───ふふ。まだ勝ち足りない、そんな顔をしているわ。','───あら……運の方から、あなたを追いかけているみたい。','───まあ。そんなに勝ってしまって……少し、退屈していない？','───ふふ。幸運の女神は、よほどあなたを手放したくないみたいね。'
@@ -4083,7 +4165,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       specialSpeaker.textContent=royalInvitation?'運のみぞ知る':'UNKNOWN';
       if(!royalInvitation)casinoBgm.pause();
       sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
-      specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
+      stopRoyalAudio(royalTableBgm);specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
       await sleep(1800);
       const lines=royalInvitation?seriousEmilyInvitations[Math.floor(Math.random()*seriousEmilyInvitations.length)]:[
@@ -4109,7 +4191,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         let decided=false;
         for(const [label,value] of [['オールインを受ける',true],['受けない',false]]){
           const button=document.createElement('button');button.type='button';button.textContent=label;
-          button.addEventListener('click',event=>{event.stopPropagation();if(decided)return;decided=true;specialActions.querySelectorAll('button').forEach(b=>b.disabled=true);resolve(value)});
+          button.addEventListener('click',event=>{event.stopPropagation();if(decided)return;decided=true;if(value&&royalInvitation)prearmRoyalTableBgm();specialActions.querySelectorAll('button').forEach(b=>b.disabled=true);resolve(value)});
           specialActions.append(button);
         }
       });
@@ -4465,7 +4547,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const id=String(activeSpecialSessionId||'');
       if(id&&window.supabaseClientSpecial){try{const {data:row}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state').eq('id',id).maybeSingle();await window.supabaseClientSpecial.from('special_table_sessions').update({status:'finished',public_state:{...(row?.public_state||{}),phase:'declined',finished:true,message:'挑戦者は辞退しました。'}}).eq('id',id).in('status',['countdown','open','playing'])}catch(e){console.warn('special reservation release',e)}}
       if(id===String(activeSpecialSessionId||'')){activeSpecialSessionId=null;stopSpecialHeartbeat();clearSpecialPresenceMarker()}
-      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');specialBgm.pause();startCasinoMusic();refreshCasinoSpectatorMenu()
+      specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');stopRoyalAudio(specialBgm);stopRoyalAudio(royalTableBgm);startCasinoMusic();refreshCasinoSpectatorMenu()
     }
     async function publishSpecialAnnouncement(message,metadata={}){
       try{if(!window.supabaseClientSpecial){return}const creatorId=await resolveSpecialPlayerId();if(!creatorId){console.warn('special announcement sync: player id missing');return}const {error}=await window.supabaseClientSpecial.from('resort_announcements').insert({announcement_type:'special-table',message,created_by:creatorId,expires_at:new Date(Date.now()+30*60*1000).toISOString(),metadata});if(error)throw error}catch(e){console.warn('special announcement sync',e)}
@@ -4605,7 +4687,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
         specialOverlay.classList.remove('reward-mode');specialOverlay.classList.remove('open');specialOverlay.setAttribute('aria-hidden','true');
       }
-      specialBgm.pause();specialBgm.currentTime=0;royalTableBgm?.pause();if(royalTableBgm)royalTableBgm.currentTime=0;startCasinoMusic();document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null;}
+      stopRoyalAudio(specialBgm);stopRoyalAudio(royalTableBgm);startCasinoMusic();document.body.classList.remove('special-table-playing');specialCommentOverlay?.setAttribute('aria-hidden','true');if(challengerCommentChannel&&window.supabaseClientSpecial){window.supabaseClientSpecial.removeChannel(challengerCommentChannel);challengerCommentChannel=null;}
       stopSpecialHeartbeat();clearSpecialPresenceMarker();activeSpecialSessionId=null;
       // Offer a direct way back to the casino hub and the rematch button after a result.
       for(const screen of [hiloScreen,blackjackScreen]){
@@ -4642,7 +4724,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           await sleep(1000);
         }
         royalCountdownOverlay?.classList.add('hidden');royalCountdownOverlay?.setAttribute('aria-hidden','true');
-        // ROYAL TABLE専用BGMは音源準備中のため、ここでは再生しない。
+        // 3・2・1 が終わった瞬間に専用BGMを先頭から再生（観戦者はSupabaseのphase=guessで切替）。
+        startRoyalTableBgm();
         royalIntroReady=true;royalIntroBusy=false;
         play();
       };
@@ -5261,6 +5344,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         // ♪ ON をサイト全体の音声マスターとして扱う。
         // このタップの最中に電話用 AudioContext も解除し、2分後まで生かしておく。
         armRoomPhoneAudioMaster();
+        if(!spectatorScreen.classList.contains('hidden')&&isRoyalSpectatorState(spectatorPresenceState||{})&&!isRoyalMatchStarted(spectatorPresenceState||{}))prearmRoyalTableBgm();
         startResortMusic();
         if(typeof resumeVillaPoolAudioAfterMasterOn==='function')resumeVillaPoolAudioAfterMasterOn();
         if(roomPhoneCallState==='ringing')evaluateRoomPhoneDeclineState();
@@ -5379,8 +5463,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         catch(e){console.warn('Sunset Terrace BGM start',e)}
       }
     }
-    function startResortMusic(){casinoBgm.pause();const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
-    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const terraceBgm=document.getElementById('sunsetTerraceBgm');if(terraceBgm){sprCancelGuardedAudioStart(terraceBgm);terraceBgm.pause()}const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
+    function startResortMusic(){casinoBgm.pause();if(!spectatorScreen.classList.contains('hidden')){syncSpectatorBgm(spectatorBgmMode||'special',{force:true});return}if(document.body.classList.contains('special-table-playing')&&seriousEmilyMode&&royalTableBgm.volume>.05){startRoyalTableBgm();return}const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
+    function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const terraceBgm=document.getElementById('sunsetTerraceBgm');if(terraceBgm){sprCancelGuardedAudioStart(terraceBgm);terraceBgm.pause()}const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}stopRoyalAudio(royalTableBgm,{reset:false});stopRoyalAudio(royalSpectatorWaitingBgm,{reset:false});const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
     function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
