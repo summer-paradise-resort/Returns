@@ -5585,10 +5585,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       text.style.opacity='1';
       await new Promise(resolve=>setTimeout(resolve,800));
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
-      returnFromCasinoElevatorToRoom();
-      await window.__sprWaitRoomReady?.();
-      scene.style.opacity='0';
-      await new Promise(resolve=>setTimeout(resolve,850));
+      await window.__sprQuickHeartReturnToRoom(scene,text,returnFromCasinoElevatorToRoom);
       scene.remove();
     }
     async function finishCasinoElevatorMovie(){
@@ -7861,10 +7858,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       scene.append(message);window.sprFitBlackoutLines(message);requestAnimationFrame(()=>{message.style.opacity='1'});
       await new Promise(resolve=>setTimeout(resolve,700));
       await new Promise(resolve=>scene.addEventListener('click',resolve,{once:true}));
-      const returned=window.__sprReturnToLastRoom?.();
-      if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
-      await window.__sprWaitRoomReady?.();
-      scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,680));scene.remove();await showPendingMermaidGuardNotice();
+      await window.__sprQuickHeartReturnToRoom(scene,message);
+      scene.remove();await showPendingMermaidGuardNotice();
     }
     function showHernandoArena(){
       clearHernandoDescentTimers();
@@ -8713,7 +8708,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       overlay.append(message);window.sprFitBlackoutLines(message);requestAnimationFrame(()=>{message.style.opacity='1'});
       await new Promise(resolve=>setTimeout(resolve,750));
       await new Promise(resolve=>overlay.addEventListener('click',resolve,{once:true}));
-      overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,1050));overlay.remove();
+      message.style.transition='opacity .18s ease';message.style.opacity='0';
+      overlay.style.transition='opacity .42s ease';overlay.style.opacity='0';
+      await new Promise(resolve=>setTimeout(resolve,440));overlay.remove();
     }
     let roomServiceNgAftermathRunning=false;
     async function finishRoomServiceNgVideo(){
@@ -9277,12 +9274,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           if(locked)return;
           if(index<pages.length-1){index++;message.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,200));showPage();return}
           locked=true;scene.removeEventListener('click',advance);
-          if(!blackoutFirst)scene.style.background='#000';
-          await new Promise(resolve=>setTimeout(resolve,600));
-          const returned=window.__sprReturnToLastRoom?.();
-          if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
-      await window.__sprWaitRoomReady?.();
-          scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,650));scene.remove();resolve();
+          if(blackoutFirst){
+            await window.__sprQuickHeartReturnToRoom(scene,message);
+          }else{
+            scene.style.background='#000';
+            await new Promise(resolve=>setTimeout(resolve,600));
+            const returned=window.__sprReturnToLastRoom?.();
+            if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+            await window.__sprWaitRoomReady?.();
+            scene.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,650));
+          }
+          scene.remove();resolve();
         };
         if(blackoutFirst){void scene.offsetWidth;scene.style.opacity='1';setTimeout(showPage,660)}else showPage();
         scene.addEventListener('click',advance);
@@ -9524,6 +9526,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         await Promise.race([roomPhoto.decode?.().catch(()=>{}),new Promise(r=>setTimeout(r,4000))]);
       }
       await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    };
+    // ハート減少演出：最後のタップで独白を即座に消し、黒幕の裏でROOMを復帰する。
+    // 描画準備は最大0.75秒のみ待ち、旧画面が見えないよう黒幕を残してから短くフェードアウト。
+    window.__sprQuickHeartReturnToRoom=async(overlay,message=null,returnAction=null)=>{
+      if(message){message.style.transition='opacity .18s ease';message.style.opacity='0'}
+      try{
+        if(typeof returnAction==='function')returnAction();
+        else{
+          const returned=window.__sprReturnToLastRoom?.();
+          if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
+        }
+      }catch(error){console.warn('quick heart room return',error)}
+      const ready=Promise.resolve().then(()=>window.__sprWaitRoomReady?.()).catch(error=>console.warn('quick heart room ready',error));
+      await Promise.race([ready,new Promise(resolve=>setTimeout(resolve,750))]);
+      if(overlay){overlay.style.transition='opacity .42s ease';overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,440))}
     };
     window.__sprSendArthurChat=async(room,body)=>{const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(room),player_id:playerId,display_name:'Arthur Grey',body:String(body)});if(error){console.warn('Arthur chat event',error);return false}return true};
     document.getElementById('chatForm').addEventListener('submit',async event=>{
@@ -11126,11 +11143,7 @@ window.addEventListener('message',e=>{
       try{await window.sprApplyNgGimmick?.('夕方の灯台の望遠鏡')}catch(error){console.warn('lighthouse anomaly life sync',error)}
       await showLighthouseAftermathPage('気がつくと部屋にいた。');
       await showLighthouseAftermathPage('どうやってここに戻ってきたのか、覚えていない。');
-      lighthouseAftermathText.style.opacity='0';await lighthouseAftermathWait(900);
-      const returned=window.__sprReturnToLastRoom?.();
-      if(returned===false&&!document.getElementById('roomView')?.classList.contains('open'))window.__sprShowView?.('roomView');
-      await window.__sprWaitRoomReady?.();
-      lighthouseAftermathScene.style.opacity='0';await lighthouseAftermathWait(900);
+      await window.__sprQuickHeartReturnToRoom(lighthouseAftermathScene,lighthouseAftermathText);
     }catch(error){
       console.error('lighthouse evening anomaly aftermath:',error);
     }finally{
@@ -11792,13 +11805,16 @@ window.addEventListener('message',e=>{
    modal.style.display='flex';
  }
  const close=()=>{if(arthurArrivalDismissTimer){clearTimeout(arthurArrivalDismissTimer);arthurArrivalDismissTimer=null}modal.classList.remove('arthur-arrival-only');hideOtterAnimation();modal.style.display='none';};modal.querySelector('#storyClose').onclick=close;
- function openArthurArrivalNotice(){
+ // 入室・退室の通知は同じ白いシンプルな表示に統一する。
+ function showArthurPresenceNotice(message){
    if(arthurArrivalDismissTimer){clearTimeout(arthurArrivalDismissTimer);arthurArrivalDismissTimer=null}
-   title.textContent='';body.textContent='Arthur Greyが入室しました。';choices.replaceChildren();hideOtterAnimation();
+   title.textContent='';body.textContent=message;choices.replaceChildren();hideOtterAnimation();
    storyImage.hidden=true;storyImage.style.display='none';storyImage.removeAttribute('src');storyImage.alt='';
    modal.classList.add('arthur-arrival-only');modal.style.display='flex';
    arthurArrivalDismissTimer=setTimeout(close,3600);
  }
+ function openArthurArrivalNotice(){showArthurPresenceNotice('Arthur Greyが入室しました。')}
+ function openArthurDepartureNotice(){showArthurPresenceNotice('Arthur Greyが退室しました。')}
 
  // 異変動物のうち、全身画像を出さない場面に使う暗転演出。
  const anomalyScene=document.createElement('div');anomalyScene.id='anomalyAnimalScene';anomalyScene.setAttribute('aria-hidden','true');anomalyScene.style.cssText='position:fixed;inset:0;z-index:620;display:flex;align-items:center;justify-content:center;padding:28px;background:#02070c;color:#fff;opacity:0;visibility:hidden;transition:opacity .75s ease,visibility .75s;pointer-events:none';
@@ -12828,12 +12844,12 @@ window.addEventListener('message',e=>{
    await horseFade(900);
    close();
  }
- async function horseEnd(){
+ async function horseEnd(instant=false){
    horseSetCenteredMonologue(false);
    blackHorseNext.style.opacity='0';blackHorseText.style.opacity='0';blackHorseViewport.style.opacity='0';blackHorseSea.style.opacity='0';
-   await horseFade(900);
+   if(!instant)await horseFade(900);
    blackHorseScene.style.opacity='0';
-   await horseFade(900);
+   if(!instant)await horseFade(900);
    blackHorseScene.style.visibility='hidden';blackHorseScene.style.pointerEvents='none';
    blackHorseScene.setAttribute('aria-hidden','true');
    blackHorseNext.style.display='none';blackHorseText.textContent='';
@@ -12945,16 +12961,9 @@ window.addEventListener('message',e=>{
      await horseFadeOutExploreWave(4200);
      horseSetCenteredMonologue(true);
      await horseTapTextPage('気がつくとホテルの部屋にいた。\n何があったのか、思い出せない。');
-     blackHorseText.style.opacity='0';
-     await horseFade(950);
-     // 黒背景の背後でROOMを再開。最後に黒い幕をフェードアウトする。
-     const returned=window.__sprReturnToLastRoom?.();
-     if(returned===false&&!document.getElementById('roomView')?.classList.contains('open')){
-       window.__sprShowView?.('roomView');
-     }
-     await window.__sprWaitRoomReady?.();
-     await horseFade(650);
-     await horseEnd();
+     // 最後のタップで独白を即フェードし、黒幕の下でROOMを開く。
+     await window.__sprQuickHeartReturnToRoom(blackHorseScene,blackHorseText);
+     await horseEnd(true);
      await window.sprShowPendingMermaidGuardNotice?.();
    }catch(error){
      console.error('black horse story:',error);
@@ -12996,7 +13005,8 @@ window.addEventListener('message',e=>{
    if(kind==='black-horse')return encounterBlackHorse();
    if(kind==='glass-fawn')return encounterFawn();
  }
- // DAY4〜6: 夜に「ラストゲスト」を飲み、ROOMに4分滞在するとArthur Greyが入室する。
+ // DAY4限定：夜の「ラストゲスト」飲用とROOM滞在4分でArthur Greyが一人一度だけ入室。
+ // オムライス以外の注文、または入室から5分間未注文なら座標を教えず退室する。
  const ARTHUR_LINES=[
    "I paid for paradise. Not for this.",
    "You shouldn't be here.",
@@ -13009,12 +13019,14 @@ window.addEventListener('message',e=>{
    "It's still sleeping beneath us.",
    "Please... don't let it wake."
  ];
+ const ARTHUR_TIMEOUT_MS=5*60*1000;
  let arthurArrived=false,arthurConversationStarted=false,arthurOrderPlaced=false,arthurMealGalleryPending=false,arthurRoom='',arthurDay=0;
- let arthurChatTimers=[];
+ let arthurChatTimers=[],arthurDepartureTimer=null,arthurArrivalAt=0,arthurClaimPending=false;
  function arthurPlayerKey(){return encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest')}
  function arthurDayKey(kind,targetDay=day){return `spr-arthur-${kind}:${arthurPlayerKey()}:day${targetDay}`}
  function clearArthurChatTimers(){arthurChatTimers.forEach(timer=>clearTimeout(timer));arthurChatTimers=[]}
- function resetArthurRuntimeForDay(){clearArthurChatTimers();arthurArrived=false;arthurConversationStarted=false;arthurOrderPlaced=false;arthurMealGalleryPending=false;arthurRoom='';window.__sprArthurRoom='';arthurDay=day}
+ function clearArthurDepartureTimer(){if(arthurDepartureTimer!==null){clearTimeout(arthurDepartureTimer);arthurDepartureTimer=null}}
+ function resetArthurRuntimeForDay(){clearArthurChatTimers();clearArthurDepartureTimer();arthurArrived=false;arthurConversationStarted=false;arthurOrderPlaced=false;arthurMealGalleryPending=false;arthurRoom='';arthurArrivalAt=0;arthurClaimPending=false;window.__sprArthurRoom='';arthurDay=day}
  function removeArthurOccupancy(){
    const list=document.getElementById('roomOccupancyNames');
    const row=[...(list?.querySelectorAll('.room-occupancy-person')||[])].find(item=>item.textContent==='Arthur Grey');
@@ -13023,45 +13035,86 @@ window.addEventListener('message',e=>{
    const label=document.getElementById('roomOccupancyText');
    if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${Math.max(1,n-1)}名が滞在中`}
  }
- function checkArthur(){
+ // 間違った料理・5分経過での退室。プレイヤー固有の完了記録を先に保存し、再入室を防ぐ。
+ function finishArthurWithoutCoordinates(){
+   if(!arthurArrived||arthurOrderPlaced||day!==4)return false;
+   const room=arthurRoom;
+   clearArthurChatTimers();clearArthurDepartureTimer();
+   localStorage.setItem(arthurDayKey('ended'),'1');
+   removeArthurOccupancy();
+   arthurArrived=false;arthurConversationStarted=false;arthurMealGalleryPending=false;arthurArrivalAt=0;
+   arthurRoom='';window.__sprArthurRoom='';
+   if(room&&String(window.__sprActiveRoom)===room){
+     window.__sprPlayRoomDoorCloseSound?.();
+     openArthurDepartureNotice();
+   }
+   return true;
+ }
+ async function checkArthur(){
    if(day!==arthurDay)resetArthurRuntimeForDay();
-   if(day<4||day>6||arthurArrived||localStorage.getItem(arthurDayKey('ended'))==='1'||localStorage.getItem(arthurDayKey('ordered'))==='1'||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;
+   if(arthurArrived){
+     // 背景タブでタイマーが遅延した場合も、実際の経過時刻で退室させる。
+     if(!arthurOrderPlaced&&arthurArrivalAt&&Date.now()-arthurArrivalAt>=ARTHUR_TIMEOUT_MS)finishArthurWithoutCoordinates();
+     return;
+   }
+   if(day!==4||arthurClaimPending||localStorage.getItem(arthurDayKey('ended'))==='1'||localStorage.getItem(arthurDayKey('ordered'))==='1'||!window.__sprActiveRoom||!window.__sprRoomEntryTime)return;
    if(Date.now()-window.__sprRoomEntryTime<240000)return;
    const drink=window.__sprGetActiveHorrorDrink?.();
    if(drink?.name!=='ラストゲスト')return;
-   arthurArrived=true;arthurRoom=String(window.__sprActiveRoom);window.__sprArthurRoom=arthurRoom;
-   const label=document.getElementById('roomOccupancyText');
-   if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
-   const list=document.getElementById('roomOccupancyNames');
-   if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
-   window.__sprPlayRoomDoorOpenSound?.();
-   openArthurArrivalNotice();
-   setTimeout(()=>{if(arthurArrived&&arthurRoom===String(window.__sprActiveRoom))window.__sprSendArthurChat?.(arthurRoom,'How did you get to this resort?')},900);
+   const room=String(window.__sprActiveRoom),enteredAt=window.__sprRoomEntryTime;
+   // 共有の閲覧記録を利用し、別端末でも同じプレイヤーに再度発生しないようにする。
+   arthurClaimPending=true;
+   try{
+     if(!await window.__sprNamedEvents.claim('arthur:day4'))return;
+     if(day!==4||arthurArrived||String(window.__sprActiveRoom)!==room||window.__sprRoomEntryTime!==enteredAt){
+       localStorage.setItem(arthurDayKey('ended'),'1');return;
+     }
+     arthurArrived=true;arthurRoom=room;window.__sprArthurRoom=arthurRoom;
+     arthurArrivalAt=Date.now();
+     arthurDepartureTimer=setTimeout(()=>{if(arthurArrived&&!arthurOrderPlaced&&Date.now()-arthurArrivalAt>=ARTHUR_TIMEOUT_MS)finishArthurWithoutCoordinates()},ARTHUR_TIMEOUT_MS);
+     const label=document.getElementById('roomOccupancyText');
+     if(label){const n=+(label.textContent.match(/\d+/)||[1])[0];label.textContent=`${n+1}名が滞在中`}
+     const list=document.getElementById('roomOccupancyNames');
+     if(list){const row=document.createElement('div');row.className='room-occupancy-person';row.textContent='Arthur Grey';list.append(row)}
+     window.__sprPlayRoomDoorOpenSound?.();
+     openArthurArrivalNotice();
+     const firstMessageTimer=setTimeout(()=>{if(arthurArrived&&arthurRoom===String(window.__sprActiveRoom))window.__sprSendArthurChat?.(arthurRoom,'How did you get to this resort?')},900);
+     arthurChatTimers.push(firstMessageTimer);
+   }finally{arthurClaimPending=false}
  }
  setInterval(checkArthur,1500);
  function beginArthurConversation(message){
-   if(!arthurArrived||arthurConversationStarted||day<4||day>6||String(window.__sprActiveRoom)!==arthurRoom)return;
+   if(!arthurArrived||arthurConversationStarted||day!==4||String(window.__sprActiveRoom)!==arthurRoom)return;
    if(!/(アーサー|あーさー|グレイ|ぐれい|arthur|gray|grey)/i.test(message))return;
    arthurConversationStarted=true;localStorage.setItem(arthurDayKey('conversation'),'1');
    ARTHUR_LINES.forEach((line,index)=>{const timer=setTimeout(()=>{if(arthurArrived&&String(window.__sprActiveRoom)===arthurRoom)window.__sprSendArthurChat?.(arthurRoom,line)},1300+index*2300);arthurChatTimers.push(timer)});
  }
  window.__sprArthurOrderPlaced=(room,items,playerId)=>{
-   if(!arthurArrived||String(room)!==arthurRoom||String(window.__sprActiveRoom)!==arthurRoom)return false;
+   if(day!==4||!arthurArrived||String(room)!==arthurRoom||String(window.__sprActiveRoom)!==arthurRoom)return false;
    const orderedBy=String(localStorage.getItem('spr-player-id')||'');
    if(orderedBy&&String(playerId)!==orderedBy)return false;
-   if(!Array.isArray(items)||!items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0))return false;
-   arthurOrderPlaced=true;localStorage.setItem(arthurDayKey('ordered'),'1');return true;
+   if(!Array.isArray(items)||!items.some(item=>Number(item?.qty||0)>0))return false;
+   // オムライスをすでに正しく注文済みなら、追加の注文で結果は変わらない。
+   if(arthurOrderPlaced)return false;
+   if(arthurArrivalAt&&Date.now()-arthurArrivalAt>=ARTHUR_TIMEOUT_MS){finishArthurWithoutCoordinates();return false}
+   if(!items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0)){
+     finishArthurWithoutCoordinates();return true;
+   }
+   // 正しい料理なら注文完了時点で5分タイマーを解除。配膳後の既存演出へつなぐ。
+   arthurOrderPlaced=true;clearArthurDepartureTimer();
+   localStorage.setItem(arthurDayKey('ordered'),'1');return true;
  };
  window.__sprArthurMealReceived=orders=>{
    const playerId=String(localStorage.getItem('spr-player-id')||'');
-   if(day<4||day>6||localStorage.getItem(arthurDayKey('ended'))==='1'||!Array.isArray(orders))return;
+   if(day!==4||localStorage.getItem(arthurDayKey('ended'))==='1'||!Array.isArray(orders))return;
    const received=orders.find(order=>String(order?.room||'')===String(arthurRoom||order?.room||'')&&(!playerId||String(order?.playerId||'')===playerId)&&Array.isArray(order?.items)&&order.items.some(item=>String(item?.name||'').includes('デミグラスオムライス')&&Number(item?.qty||0)>0));
    if(!received||(!arthurOrderPlaced&&localStorage.getItem(arthurDayKey('ordered'))!=='1'))return;
    if(!arthurRoom){arthurRoom=String(received.room);window.__sprArthurRoom=arthurRoom}
    arthurArrived=true;arthurOrderPlaced=true;arthurMealGalleryPending=true;
+   clearArthurDepartureTimer();
  };
  window.__sprArthurMealGalleryClosed=()=>{
-   if(!arthurMealGalleryPending)return;
+   if(day!==4||!arthurMealGalleryPending)return;
    arthurMealGalleryPending=false;
    const room=arthurRoom||window.__sprActiveRoom;if(!room||String(window.__sprActiveRoom)!==String(room))return;
    localStorage.setItem(arthurDayKey('ended'),'1');
@@ -13069,17 +13122,17 @@ window.addEventListener('message',e=>{
    const coordinatesTimer=setTimeout(()=>{if(String(window.__sprActiveRoom)===String(room))window.__sprSendArthurChat?.(room,'46 38 125 57')},4200);
    const departureTimer=setTimeout(()=>{
      if(String(window.__sprActiveRoom)===String(room))window.__sprPlayRoomDoorCloseSound?.();
-     removeArthurOccupancy();arthurArrived=false;arthurRoom='';window.__sprArthurRoom='';
+     removeArthurOccupancy();arthurArrived=false;arthurArrivalAt=0;arthurRoom='';window.__sprArthurRoom='';
    },6500);
    arthurChatTimers.push(thanksTimer,coordinatesTimer,departureTimer);
  };
  window.__sprArthurOnRoomLeave=room=>{
    if(!arthurArrived||String(room)!==arthurRoom)return;
-   clearArthurChatTimers();
+   clearArthurChatTimers();clearArthurDepartureTimer();
    if(!arthurOrderPlaced){
      localStorage.setItem(arthurDayKey('ended'),'1');
      removeArthurOccupancy();
-     arthurArrived=false;arthurConversationStarted=false;arthurRoom='';window.__sprArthurRoom='';
+     arthurArrived=false;arthurConversationStarted=false;arthurArrivalAt=0;arthurRoom='';window.__sprArthurRoom='';
    }
  };
  document.getElementById('chatForm')?.addEventListener('submit',()=>{const msg=document.getElementById('chatInput')?.value||'';beginArthurConversation(msg)},{capture:true});
