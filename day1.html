@@ -1865,7 +1865,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   <div id="specialOverlay" class="special-overlay" aria-hidden="true">
     <audio id="specialBgm" src="fortuna_knows.mp3" loop preload="none"></audio>
     <audio id="royalTableBgm" src="royal_table_bgm.mp3" loop preload="none" playsinline></audio>
-    <audio id="royalSpectatorWaitingBgm" src="cafe_bgm.mp3" loop preload="none" playsinline></audio>
+    <audio id="royalSpectatorWaitingBgm" src="casino_bgm.mp3" loop preload="none" playsinline></audio>
     <div class="special-dialog"><div id="specialSpeaker" class="special-speaker">運のみぞ知る</div><div id="specialLine" class="special-line"></div><div id="specialActions" class="special-actions"></div></div>
   </div>
   <section id="specialTableScreen" class="special-table-screen hidden" aria-hidden="true"><div class="special-table-inner"><div id="specialTableName" class="special-speaker">SPECIAL TABLE</div><h2>ALL-IN GAME</h2><p id="specialTableRule" class="rule">ゲームをお選びください。</p><div id="specialGameChoice" class="special-choice"><button type="button" data-special-game="blackjack">BLACKJACK<br><small>ONE ROUND</small></button><button type="button" data-special-game="hilo">HIGH &amp; LOW<br><small>FIRST TO TWO WINS</small></button></div><div id="specialPlayArea"></div></div></section>
@@ -3554,7 +3554,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // ボタンを押した瞬間（Safariのuser gesture内）に待機曲を開始する。
       if(tableName==='ROYAL TABLE'||tableName==='ULTRA SPECIAL TABLE'){
         prearmRoyalTableBgm();
-        syncSpectatorBgm('cafe');
+        syncSpectatorBgm('casino');
       }else syncSpectatorBgm('special');
       spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');document.body.classList.add('spectator-watching');specialCommentOverlay?.setAttribute('aria-hidden','false');spectatorStatus.textContent=`${challenger||''}様の勝負`;activeSpectatorChallenger=challenger||'';if(spectatorBack)spectatorBack.classList.add('hidden');if(!window.supabaseClientSpecial){spectatorStage.innerHTML='<div class="special-result">観戦情報に接続できません。</div>';return}const {data,error}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(error||!data){spectatorStage.innerHTML='<div class="special-result">観戦先を確認できませんでした。カジノ画面から「観戦席に着く」をもう一度お試しください。</div>';if(spectatorBack)spectatorBack.classList.remove('hidden');return}activeSpectatorChallenger=data.challenger_name||challenger||'';spectatorPresenceSessionId=String(sessionId);spectatorPresenceStatus=data.status;spectatorPresenceState={...data.public_state,challenger:activeSpectatorChallenger,finished:data.status==='finished'};renderSpectatorState(spectatorPresenceState);clearInterval(spectatorStatePollTimer);spectatorStatePollTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorStatePollBusy||!window.supabaseClientSpecial)return;spectatorStatePollBusy=true;try{const {data:latest,error:pollError}=await window.supabaseClientSpecial.from('special_table_sessions').select('public_state,status,challenger_name').eq('id',sessionId).maybeSingle();if(pollError)throw pollError;if(!latest)return;const nextState={...(latest.public_state||{}),challenger:latest.challenger_name||activeSpectatorChallenger,finished:latest.status==='finished'};spectatorPresenceStatus=latest.status;if(JSON.stringify(nextState)!==JSON.stringify(spectatorPresenceState)){spectatorPresenceState=nextState;renderSpectatorState(spectatorPresenceState)}if(latest.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}catch(e){console.warn('spectator state poll',e)}finally{spectatorStatePollBusy=false}},1500);clearInterval(spectatorPresenceTimer);spectatorPresenceTimer=setInterval(async()=>{if(spectatorScreen.classList.contains('hidden')||spectatorPresenceStatus==='finished'||!spectatorPresenceState)return;const hb=Date.parse(spectatorPresenceState.heartbeat_at||'');if(!Number.isFinite(hb)||Date.now()-hb<SPECIAL_PRESENCE_TIMEOUT_MS)return;clearInterval(spectatorPresenceTimer);spectatorPresenceState=await finishInterruptedSpecialSession(spectatorPresenceSessionId,spectatorPresenceState);spectatorPresenceStatus='finished';renderSpectatorState({...spectatorPresenceState,finished:true});refreshCasinoSpectatorMenu()},2000);if(spectatorChannel)window.supabaseClientSpecial.removeChannel(spectatorChannel);spectatorChannel=window.supabaseClientSpecial.channel(`special-comments-challenger-${sessionId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'special_table_sessions',filter:`id=eq.${sessionId}`},p=>{spectatorPresenceStatus=p.new.status;spectatorPresenceState={...p.new.public_state,challenger:p.new.challenger_name,finished:p.new.status==='finished'};renderSpectatorState(spectatorPresenceState);if(p.new.status==='finished'){clearInterval(spectatorPresenceTimer);refreshCasinoSpectatorMenu()}}).on('broadcast',{event:'gallery-comment'},({payload})=>{
         showSpecialCommentPayload(payload);
@@ -3918,7 +3918,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // SPECIAL TABLE / 140,000 CHIP EVENT + repeatable nighttime 50,000,000 CHIP challenge
     const specialOverlay=document.getElementById('specialOverlay'),specialSpeaker=document.getElementById('specialSpeaker'),specialLine=document.getElementById('specialLine'),specialActions=document.getElementById('specialActions'),specialBgm=document.getElementById('specialBgm');
     const royalTableBgm=document.getElementById('royalTableBgm'),royalSpectatorWaitingBgm=document.getElementById('royalSpectatorWaitingBgm'),royalCountdownOverlay=document.getElementById('royalCountdownOverlay'),royalCountdownValue=document.getElementById('royalCountdownValue');
-    // ROYAL TABLE：観戦待機はCAFE、3・2・1終了後は挑戦者・観戦者とも専用BGM。
+    // ROYAL TABLE：招待・観戦待機はCASINO、3・2・1終了後は挑戦者・観戦者とも専用BGM。
     // ROYAL専用曲はカウント終了フラグが立つまで絶対に可聴化しない。
     // iOSではvolume=0が無効になることがあるため、事前unlockは必ずmuted=trueにする。
     let spectatorBgmMode='';
@@ -3962,7 +3962,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function syncSpectatorBgm(mode,{force=false}={}){
       if(spectatorScreen.classList.contains('hidden'))return;
-      const target=mode==='royal'?'royal':mode==='cafe'?'cafe':'special';
+      const target=mode==='royal'?'royal':mode==='casino'?'casino':'special';
       const same=spectatorBgmMode===target;
       spectatorBgmMode=target;
       casinoBgm.pause();
@@ -3972,7 +3972,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(localStorage.getItem('spr-bgm-enabled')==='off')return;
         if(!force&&same&&!royalTableBgm.paused&&royalTableBgm.volume>.05)return;
         startRoyalTableBgm();
-      }else if(target==='cafe'){
+      }else if(target==='casino'){
         stopRoyalAudio(specialBgm);
         // Waiting中はROYALを決して可聴化しない。音量ではなくmutedを使用。
         // 事前にミュートで権限解除した音源は止めず、カウント後に利用する。
@@ -3990,12 +3990,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
     }
     function syncSpectatorBgmFromState(state={}){
-      syncSpectatorBgm(isRoyalSpectatorState(state)?(isRoyalMatchStarted(state)?'royal':'cafe'):'special');
+      syncSpectatorBgm(isRoyalSpectatorState(state)?(isRoyalMatchStarted(state)?'royal':'casino'):'special');
     }
     // サウンドがiOSでロックされた場合は観戦画面内の次のタップで再試行。
     spectatorScreen.addEventListener('pointerdown',()=>{
       if(localStorage.getItem('spr-bgm-enabled')==='off')return;
-      const target=spectatorBgmMode==='royal'?royalTableBgm:spectatorBgmMode==='cafe'?royalSpectatorWaitingBgm:specialBgm;
+      const target=spectatorBgmMode==='royal'?royalTableBgm:spectatorBgmMode==='casino'?royalSpectatorWaitingBgm:specialBgm;
       if(target?.paused)syncSpectatorBgm(spectatorBgmMode,{force:true});
     });
     const specialTableScreen=document.getElementById('specialTableScreen'),specialGameChoice=document.getElementById('specialGameChoice'),specialPlayArea=document.getElementById('specialPlayArea'),specialTableRule=document.getElementById('specialTableRule'),specialTableName=document.getElementById('specialTableName'),spectatorTableName=document.getElementById('spectatorTableName');
@@ -4184,8 +4184,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!specialOverlay){specialInvitationDecisionPending=false;return}
       seriousEmilyMode=royalInvitation;
       specialSpeaker.textContent=royalInvitation?'運のみぞ知る':'UNKNOWN';
-      if(!royalInvitation)casinoBgm.pause();
-      royalBgmAuthorized=false; // 招待会話中は未解禁
+      if(royalInvitation){
+        // ROYALの招待会話中とオールイン承諾後はcasino_bgm.mp3。
+        // CAFE音源や観戦待機音が残っていても混ざらないようにする。
+        stopRoyalAudio(royalSpectatorWaitingBgm);
+        document.getElementById('integratedCafeBgm')?.pause();
+        startCasinoMusic();
+      }else casinoBgm.pause();
+      royalBgmAuthorized=false; // 3・2・1終了までは専用曲を解禁しない
       sprCancelGuardedAudioStart(specialBgm);specialBgm.pause();specialBgm.currentTime=0;
       stopRoyalAudio(royalTableBgm);specialOverlay.classList.add('open','invitation-mode');specialOverlay.setAttribute('aria-hidden','false');
       specialActions.replaceChildren();specialLine.textContent='';specialPlayArea.innerHTML='';
@@ -5404,6 +5410,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function syncExploreMusicForTime({force=false}={}){
       if(!exploreBgm)return;
+      // DAY7脱出ENDでは、1秒ごとの探索BGM再開が専用音楽に重ならないよう停止する。
+      if(window.__sprDay7EndingActive){pauseExploreMusic();return;}
       // 小鹿の草むら効果音中と、海鳥が名前を呼ぶ間は、1秒ごとのBGM同期でも再開しない。
       if(window.__sprFawnGrassSoundActive||window.__sprSeabirdBgmSuppressed||window.__sprBlackHorseBgmSuppressed||window.__sprGiantShadowBgmSuppressed||window.__sprLighthouseDiveBgmSuppressed){pauseExploreMusic();return;}
       const view=document.getElementById('exploreView');
@@ -13503,6 +13511,83 @@ window.addEventListener('message',e=>{
    if(await hasDay7Announcement(day7SuccessType))return true;
    try{const {error}=await c.from('resort_announcements').insert({announcement_type:day7SuccessType,message:'DAY7_ESCAPE_SUCCESS',created_by:id,expires_at:'2099-12-31T23:59:59Z'});if(error)throw error;return true}catch(e){console.warn('day7 success state save',e);return false}
  }
+ // DAY7脱出専用BGM: iOS Safariでは汽笛終了後の new Audio().play() が
+ // ユーザー操作から離れているため拒否される。先に画面のタップでWeb Audioを解除し、
+ // 汽笛が完全に止まってから解放済みAudioContextでBGMを開始する。
+ const day7EndingBgmPath='day7_escape_ending_bgm.mp3';
+ let day7EndingAudioContext=null,day7EndingBgmBufferPromise=null;
+ let day7EndingBgmSource=null,day7EndingBgmGain=null,day7EndingFallbackAudio=null;
+ let day7EndingBgmWanted=false,day7EndingBgmStarted=false,day7EndingBgmStartPromise=null;
+ function day7EndingMusicEnabled(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
+ function prepareDay7EndingAudio(){
+   if(Number(document.documentElement.dataset.resortDay||1)!==7||!day7EndingMusicEnabled())return;
+   const AudioCtx=window.AudioContext||window.webkitAudioContext;
+   if(AudioCtx){
+     try{
+       if(!day7EndingAudioContext)day7EndingAudioContext=new AudioCtx();
+       if(day7EndingAudioContext.state!=='running'){
+         // resumeを必ずタップ/キー操作の同期コールスタック中に呼ぶ。
+         void day7EndingAudioContext.resume().catch(error=>console.warn('day7 audio unlock',error));
+       }
+       if(!day7EndingBgmBufferPromise){
+         const ctx=day7EndingAudioContext;
+         day7EndingBgmBufferPromise=fetch(day7EndingBgmPath)
+           .then(response=>{if(!response.ok)throw new Error('DAY7 BGM file HTTP '+response.status);return response.arrayBuffer()})
+           .then(bytes=>ctx.decodeAudioData(bytes))
+           .catch(error=>{console.warn('day7 BGM decode/load',error);return null});
+       }
+     }catch(error){console.warn('day7 audio prepare',error)}
+   }
+   // 共有END通知によって遅れて再生許可が必要になった端末は、次のタップで復帰。
+   if(day7EndingBgmWanted&&!day7EndingBgmStarted)void startDay7EndingBgm();
+ }
+ document.addEventListener('pointerdown',prepareDay7EndingAudio,{capture:true,passive:true});
+ document.addEventListener('click',prepareDay7EndingAudio,true);
+ document.addEventListener('keydown',prepareDay7EndingAudio,true);
+ async function startDay7EndingBgm(){
+   if(!day7EndingBgmWanted||day7EndingBgmStarted||!day7EndingMusicEnabled())return false;
+   if(day7EndingBgmStartPromise)return day7EndingBgmStartPromise;
+   day7EndingBgmStartPromise=(async()=>{
+     // Web Audioがタップですでにunlockedなら、遅延したplay()なしで開始できる。
+     if(day7EndingAudioContext?.state==='running'&&day7EndingBgmBufferPromise){
+       const buffer=await day7EndingBgmBufferPromise;
+       if(!day7EndingBgmWanted||day7EndingBgmStarted)return day7EndingBgmStarted;
+       if(buffer&&day7EndingAudioContext.state==='running'){
+         try{
+           const ctx=day7EndingAudioContext;
+           const source=ctx.createBufferSource(),gain=ctx.createGain();
+           source.buffer=buffer;source.loop=true;gain.gain.value=.72;
+           source.connect(gain);gain.connect(ctx.destination);
+           source.start(0);
+           day7EndingBgmSource=source;day7EndingBgmGain=gain;day7EndingBgmStarted=true;
+           return true;
+         }catch(error){console.warn('day7 Web Audio BGM start',error)}
+       }
+     }
+     // Web Audioが無い/未解除の端末向け。許可されなければ次のタップで再試行。
+     try{
+       if(!day7EndingFallbackAudio){
+         day7EndingFallbackAudio=new Audio(day7EndingBgmPath);
+         day7EndingFallbackAudio.loop=true;
+         day7EndingFallbackAudio.preload='auto';
+       }
+       day7EndingFallbackAudio.volume=.72;
+       const playing=day7EndingFallbackAudio.play();
+       if(playing?.then)await playing;
+       if(!day7EndingBgmWanted){day7EndingFallbackAudio.pause();return false}
+       day7EndingBgmStarted=true;
+       return true;
+     }catch(error){console.warn('day7 ending BGM blocked or unavailable; retry on tap',error);return false}
+   })().finally(()=>{day7EndingBgmStartPromise=null});
+   return day7EndingBgmStartPromise;
+ }
+ function stopDay7EndingBgm(){
+   day7EndingBgmWanted=false;
+   day7EndingBgmStarted=false;
+   if(day7EndingBgmSource){try{day7EndingBgmSource.stop()}catch{}try{day7EndingBgmSource.disconnect()}catch{}day7EndingBgmSource=null}
+   if(day7EndingBgmGain){try{day7EndingBgmGain.disconnect()}catch{}day7EndingBgmGain=null}
+   if(day7EndingFallbackAudio){day7EndingFallbackAudio.pause();try{day7EndingFallbackAudio.currentTime=0}catch{}}
+ }
  async function showDay7BlackoutPages(lines,{ending=false}={}){
    const layer=document.createElement('div');layer.setAttribute('role','dialog');layer.setAttribute('aria-modal','true');
    layer.style.cssText='position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:28px 5vw;background:#000;color:#fff;opacity:0;transition:opacity .8s ease;cursor:pointer';
@@ -13510,13 +13595,21 @@ window.addEventListener('message',e=>{
    if(ending)text.style.cssText='width:min(24em,100%);text-align:center;white-space:pre-line;overflow-wrap:anywhere;font:clamp(22px,5.8vw,29px)/1.85 "Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:.045em;text-shadow:0 2px 12px #000';
    const endButton=document.createElement('button');endButton.type='button';endButton.textContent='END';endButton.style.cssText='position:absolute;bottom:max(28px,env(safe-area-inset-bottom));right:6vw;padding:12px 18px;border:0;background:transparent;color:#fff;font:12px Georgia,serif;letter-spacing:.2em;cursor:pointer;display:none';
    layer.append(text,endButton);document.body.append(layer);void layer.offsetWidth;layer.style.opacity='1';await wait(850);
-   let bgm=null;
    if(ending){
      document.querySelectorAll('audio,video').forEach(media=>{try{media.pause()}catch{}});
      const horn=new Audio('day7_escape_ship_horn.mp3');horn.preload='auto';horn.volume=.9;
-     try{await horn.play();await Promise.race([new Promise(resolve=>horn.addEventListener('ended',resolve,{once:true})),wait(7000)])}catch(e){console.warn('day7 ship horn playback',e)}
-     bgm=new Audio('day7_escape_ending_bgm.mp3');bgm.loop=true;bgm.volume=.72;
-     try{const playing=bgm.play();if(playing?.catch)await playing}catch(e){console.warn('day7 ending BGM playback',e)}
+     try{
+       await horn.play();
+       // 途中の固定秒数では切らず、汽笛が本当に終わるまで待つ。
+       await Promise.race([
+         new Promise(resolve=>{horn.addEventListener('ended',resolve,{once:true});horn.addEventListener('error',resolve,{once:true})}),
+         wait(30000) // ファイルの読み込み失敗等でENDが永久停止しないための保険
+       ]);
+     }catch(error){console.warn('day7 ship horn playback',error)}
+     finally{horn.pause();try{horn.currentTime=0}catch{}}
+     // 汽笛終了後にだけBGMを開始。すでに解除したWeb Audioを優先する。
+     day7EndingBgmWanted=true;
+     void startDay7EndingBgm();
      await wait(250);
    }
    for(const line of lines){
@@ -13528,7 +13621,7 @@ window.addEventListener('message',e=>{
      }
      await new Promise(resolve=>layer.addEventListener('click',resolve,{once:true}));
    }
-   if(bgm){bgm.pause();try{bgm.currentTime=0}catch{}}
+   if(ending)stopDay7EndingBgm();
    layer.style.opacity='0';await wait(850);layer.remove();
    if(ending){
      // ENDを一度見た記録とログイン情報は保持し、再ログイン時の再生と強制ログアウトを防ぐ。
@@ -13568,7 +13661,9 @@ window.addEventListener('message',e=>{
  async function playDay7EscapeEnding(){
    if(day7EndingRunning||localStorage.getItem(day7EndingSeenKey)==='1')return;
    day7EndingRunning=true;
-   try{await showDay7BlackoutPages(day7EscapeEndingLines,{ending:true});localStorage.setItem(day7EndingSeenKey,'1')}finally{day7EndingRunning=false}
+   window.__sprDay7EndingActive=true;
+   try{await showDay7BlackoutPages(day7EscapeEndingLines,{ending:true});localStorage.setItem(day7EndingSeenKey,'1')}
+   finally{stopDay7EndingBgm();window.__sprDay7EndingActive=false;day7EndingRunning=false}
  }
  async function gate(t,b,opts,required='unused'){
    if(!timeOK()){open(t,'この手順は最終日の22:00〜23:59にしか選べない。');return}
