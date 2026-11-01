@@ -3650,9 +3650,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function activeOminousDrinkEffect(){
       const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];
-      return record&&record.effectKey==='room-service:ominous'&&Date.now()<Number(record.expiresAt||0)?record:null;
+      return record&&record.effectKey==='room-service:ominous'&&isBarDrinkActiveForCurrentPeriod(record,info)?record:null;
     }
-    function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return record&&Date.now()<Number(record.expiresAt||0)?record:null}
+    function isBarDrinkActiveForCurrentPeriod(record,info=barPeriodInfo()){
+      if(!record)return false;
+      const adminPeriod=window.__sprIsAdminMode===true?window.__sprAdminPeriodOverride:'';
+      const matchesForcedPeriod=adminPeriod===info.id&&record.period===info.id&&
+        String(record.serviceDate||'')===info.serviceDate&&
+        Number(record.resortDay||resortDayNumber())===resortDayNumber();
+      // 管理用の時間帯固定中は、その時間帯に紐づくドリンク期限も固定する。
+      // 固定解除後は通常どおり実時間のexpiresAtで判定する。
+      return matchesForcedPeriod||Date.now()<Number(record.expiresAt||0);
+    }
+    window.__sprIsBarDrinkActiveForCurrentPeriod=record=>isBarDrinkActiveForCurrentPeriod(record);
+    function currentBarDrink(){const info=barPeriodInfo(),record=loadBarDrinkState()[info.token];return isBarDrinkActiveForCurrentPeriod(record,info)?record:null}
     window.getCurrentBarDrinkEffect=currentBarDrink;
     window.__sprHasRegularBarDrinkForCurrentServiceDay=()=>{
       const info=barPeriodInfo(),currentDay=resortDayNumber();
@@ -4897,7 +4908,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!terraceMealUsed())return;
       terraceOrderBusy=true;sunsetTerraceOrder.disabled=true;
       const barRecord=window.getCurrentBarDrinkEffect?.();
-      pendingSunsetMermaid=barPeriodInfo().id==='sunset'&&barRecord?.period==='sunset'&&barRecord?.name==='サンセットパラダイス'&&Date.now()<Number(barRecord.expiresAt||0);
+      pendingSunsetMermaid=barPeriodInfo().id==='sunset'&&barRecord?.period==='sunset'&&barRecord?.name==='サンセットパラダイス'&&window.__sprIsBarDrinkActiveForCurrentPeriod?.(barRecord);
       const meal=selectedSunsetFood.dataset.meal;
       const foodName=selectedSunsetFood.querySelector('strong')?.textContent||meal;
       const drinkName=selectedSunsetDrink.dataset.drink;
@@ -8464,7 +8475,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function activeRoomServiceHorrorDrink(){
       if(!roomServiceHorrorEnabled())return null;
       const drink=window.getCurrentBarDrinkEffect?.();
-      if(!drink||drink.period!=='night'||Date.now()>=Number(drink.expiresAt||0))return null;
+      if(!drink||drink.period!=='night'||!window.__sprIsBarDrinkActiveForCurrentPeriod?.(drink))return null;
       return {...drink,horrorCategory:roomServiceHorrorCategory(drink.name)||'regular'};
     }
     function roomServiceHorrorToken(){return `day${roomPhoneResortDay()}:night`}
@@ -10753,7 +10764,7 @@ window.addEventListener('message',e=>{
     const drink=window.getCurrentBarDrinkEffect?.();
     if(!drink||drink.period!=='day'||!clothFishingDrinks.has(drink.name)||
       ['room-service:ng','room-service:ominous'].includes(drink.effectKey)||
-      Date.now()>=Number(drink.expiresAt||0)||Number(drink.resortDay||day)!==day)return null;
+      !window.__sprIsBarDrinkActiveForCurrentPeriod?.(drink)||Number(drink.resortDay||day)!==day)return null;
     const config=clothFishingPlaces[document.getElementById('exploreLocationBg')?.dataset.spot];
     return config&&!window.__sprNamedEvents.seen(config.key)?config:null;
   }
@@ -10880,7 +10891,7 @@ window.addEventListener('message',e=>{
     if(currentDay<1||currentDay>6)return null;
     const period=explorePeriod();
     const drink=typeof window.getCurrentBarDrinkEffect==='function'?window.getCurrentBarDrinkEffect():null;
-    if(!drink||drink.period!==period||Date.now()>=Number(drink.expiresAt||0))return null;
+    if(!drink||drink.period!==period||!window.__sprIsBarDrinkActiveForCurrentPeriod?.(drink))return null;
     const event=DAY1_EXPLORE_VIDEO_EVENTS.find(item=>item.spot===spotKey&&item.period===period&&item.action===actionKey&&item.drinks.includes(drink.name));
     if(!event)return null;
     const playerKey=encodeURIComponent(localStorage.getItem('spr-player-id')||localStorage.getItem('spr-guest-name')||'guest');
