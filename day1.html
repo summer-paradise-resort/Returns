@@ -706,6 +706,10 @@
     /* spectator: show the same HIGH & LOW table design as the challenger */
     .spectator-stage{position:relative}
     .spectator-emily-line{margin:8px auto 16px;padding:14px 16px;width:min(520px,90%);border:1px solid rgba(227,194,125,.68);background:rgba(2,7,13,.92);box-shadow:0 12px 40px rgba(0,0,0,.42);color:#fff;font:14px/1.9 'Yu Mincho','Hiragino Mincho ProN',serif;letter-spacing:.045em;white-space:pre-wrap}.spectator-emily-line strong{display:block;margin-bottom:7px;color:#e3c27d;font:10px Georgia,'Yu Mincho',serif;letter-spacing:.2em}
+    /* ROYAL GALLERY: reuse the challenger's full-screen centered conversation styling.
+       The BACK button remains available; this overlay never changes the game state. */
+    .spectator-screen .spectator-royal-dialogue{z-index:8;pointer-events:none}
+    .spectator-screen .spectator-close{z-index:9}
     .spectator-royal-count span{font:84px/1 Georgia,serif;color:#f4e2b0;text-shadow:0 0 28px rgba(236,204,127,.5)}
     .spectator-stage{padding:0;border:0;background:transparent}.spectator-matchup{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;margin:22px 0 18px}.spectator-matchup strong{display:block;font:20px Georgia,'Yu Mincho',serif}.spectator-matchup small{display:block;margin-top:6px;font:12px Georgia,serif;letter-spacing:.08em;opacity:.82}.spectator-vs{font:20px Georgia,serif;opacity:.65}.spectator-hilo-table{margin:0 auto;width:100%;min-height:570px}.spectator-waiting-table .hand-zone{min-height:155px}.spectator-waiting-center{padding:28px 14px}.spectator-waiting-center .casino-status{font-size:18px}.spectator-waiting-center .casino-bet-indicator{margin-top:18px;font-size:15px}
 
@@ -1877,7 +1881,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   </div>
   <section id="specialTableScreen" class="special-table-screen hidden" aria-hidden="true"><div class="special-table-inner"><div id="specialTableName" class="special-speaker">SPECIAL TABLE</div><h2>ALL-IN GAME</h2><p id="specialTableRule" class="rule">ゲームをお選びください。</p><div id="specialGameChoice" class="special-choice"><button type="button" data-special-game="blackjack">BLACKJACK<br><small>ONE ROUND</small></button><button type="button" data-special-game="hilo">HIGH &amp; LOW<br><small>FIRST TO TWO WINS</small></button></div><div id="specialPlayArea"></div></div></section>
   <div id="specialCommentOverlay" class="special-comment-overlay" aria-hidden="true"><div class="special-comment-lane"></div><div class="special-comment-lane"></div><div class="special-comment-lane"></div></div>
-  <section id="spectatorScreen" class="spectator-screen hidden" aria-hidden="true"><button id="spectatorClose" class="spectator-close" type="button" aria-label="観戦を終了してリゾートのトップページに戻る">← BACK</button><div class="spectator-inner"><div class="special-speaker">GALLERY</div><h2 id="spectatorTableName">SPECIAL TABLE</h2><p id="spectatorStatus" class="spectator-status">開卓をお待ちください。</p><div id="spectatorMatchInfo" class="spectator-match-info" aria-label="観戦中のテーブル情報"><div class="spectator-match-meta"><span>CHALLENGER ALL-IN</span><strong id="spectatorAllInAmount">確認中</strong></div><div class="spectator-match-meta"><span id="spectatorOpeningLabel">開卓まで</span><strong id="spectatorOpeningValue">確認中</strong></div></div><div id="spectatorStage" class="spectator-stage"></div><div class="spectator-comment-box"><label for="spectatorCommentInput">GALLERY COMMENT</label><div class="spectator-comment-compose"><input id="spectatorCommentInput" maxlength="60" autocomplete="off" placeholder="挑戦者へコメントを送る"><button id="spectatorCommentSend" type="button">送信</button></div><p class="spectator-comment-note">コメントは挑戦者・観戦者全員のテーブル上を右から左へ流れます。</p></div></div></section>
+  <section id="spectatorScreen" class="spectator-screen hidden" aria-hidden="true"><button id="spectatorClose" class="spectator-close" type="button" aria-label="観戦を終了してリゾートのトップページに戻る">← BACK</button><div class="spectator-inner"><div class="special-speaker">GALLERY</div><h2 id="spectatorTableName">SPECIAL TABLE</h2><p id="spectatorStatus" class="spectator-status">開卓をお待ちください。</p><div id="spectatorMatchInfo" class="spectator-match-info" aria-label="観戦中のテーブル情報"><div class="spectator-match-meta"><span>CHALLENGER ALL-IN</span><strong id="spectatorAllInAmount">確認中</strong></div><div class="spectator-match-meta"><span id="spectatorOpeningLabel">開卓まで</span><strong id="spectatorOpeningValue">確認中</strong></div></div><div id="spectatorStage" class="spectator-stage"></div><div class="spectator-comment-box"><label for="spectatorCommentInput">GALLERY COMMENT</label><div class="spectator-comment-compose"><input id="spectatorCommentInput" maxlength="60" autocomplete="off" placeholder="挑戦者へコメントを送る"><button id="spectatorCommentSend" type="button">送信</button></div><p class="spectator-comment-note">コメントは挑戦者・観戦者全員のテーブル上を右から左へ流れます。</p></div></div><div id="spectatorRoyalDialogue" class="casino-emily-conversation royal-emily-dialogue-center spectator-royal-dialogue hidden" aria-hidden="true"><div class="casino-emily-dialogue"><div class="casino-emily-dialogue-name">運のみぞ知る</div><div id="spectatorRoyalDialogueText" class="casino-emily-dialogue-text"></div></div></div></section>
 
   <div id="barMenuLightbox" class="bar-menu-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="ドリンクメニュー拡大表示">
     <button id="barMenuLightboxClose" class="bar-menu-lightbox-close" type="button" aria-label="拡大表示を閉じる">×</button>
@@ -3620,42 +3624,70 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function showSpectatorInvite(sessionId,challenger,tableName=''){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger,tableName)}
     specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId;hideSpecialBroadcast('user');};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
-    let spectatorDialogueTimer=null,spectatorDialogueKey='',spectatorDialogueLocalStart=0;
+    // ROYAL観戦者: 挑戦者と同じ会話枠と casino-emily-char の柔らかな文字出現を使う。
+    // テーブル内の別枠ではなく、画面中央の暗転会話を一つだけ描画する。
+    const spectatorRoyalDialogue=document.getElementById('spectatorRoyalDialogue');
+    const spectatorRoyalDialogueText=document.getElementById('spectatorRoyalDialogueText');
+    let spectatorDialogueTimer=null,spectatorDialogueKey='',spectatorDialogueCompletedKey='',spectatorDialogueLocalStart=0;
     function stopSpectatorDialogueTyping(){
       if(spectatorDialogueTimer!==null)clearTimeout(spectatorDialogueTimer);
-      spectatorDialogueTimer=null;spectatorDialogueKey='';spectatorDialogueLocalStart=0;
+      spectatorDialogueTimer=null;spectatorDialogueKey='';spectatorDialogueCompletedKey='';spectatorDialogueLocalStart=0;
+      spectatorRoyalDialogue?.classList.add('hidden');
+      spectatorRoyalDialogue?.setAttribute('aria-hidden','true');
+      spectatorRoyalDialogueText?.replaceChildren();
     }
     function typeSpectatorRoyalDialogue(state){
-      if(spectatorDialogueTimer!==null){clearTimeout(spectatorDialogueTimer);spectatorDialogueTimer=null}
       const line=String(state.emily_line||'');
-      const textEl=spectatorStage.querySelector('.spectator-emily-line:not(.spectator-royal-count) span');
-      if(!line||!textEl){stopSpectatorDialogueTyping();return}
+      if(!line||!spectatorRoyalDialogue||!spectatorRoyalDialogueText){stopSpectatorDialogueTyping();return}
       const key=`${spectatorPresenceSessionId}:${state.emily_line_started_at||`${state.round||0}:${line}`}`;
-      if(key!==spectatorDialogueKey){spectatorDialogueKey=key;spectatorDialogueLocalStart=Date.now()}
-      // 最初にセリフを受信した瞬間から文字送りを開始。通信遅延で全文が瞬時に出るのを防ぐ。
-      // 同じセリフの再受信時は最初の開始時刻を維持する。
-      const startedAt=spectatorDialogueLocalStart;
+      // 一度表示が終わった同じセリフを1.5秒ごとの取得で再表示しない。
+      if(key===spectatorDialogueCompletedKey)return;
+      if(key!==spectatorDialogueKey){
+        if(spectatorDialogueTimer!==null)clearTimeout(spectatorDialogueTimer);
+        spectatorDialogueTimer=null;
+        spectatorDialogueKey=key;
+        spectatorDialogueLocalStart=Date.now();
+        spectatorRoyalDialogueText.replaceChildren();
+        for(const char of Array.from(line)){
+          const span=document.createElement('span');
+          span.className='casino-emily-char';
+          span.textContent=char;
+          spectatorRoyalDialogueText.appendChild(span);
+        }
+      }else if(spectatorDialogueTimer!==null){
+        // Realtimeやポーリングでは開始時刻も文字のDOMも維持する。
+        clearTimeout(spectatorDialogueTimer);spectatorDialogueTimer=null;
+      }
+      spectatorRoyalDialogue.classList.remove('hidden');
+      spectatorRoyalDialogue.setAttribute('aria-hidden','false');
       const chars=Array.from(line);
-      const waitAfter=char=>char==='。'||char==='？'||char==='！'?230:char==='、'||char==='…'?140:45;
+      const spans=Array.from(spectatorRoyalDialogueText.children);
+      const charWait=char=>char==='。'||char==='？'||char==='！'?230:char==='、'||char==='…'?140:45;
       const tick=()=>{
         if(spectatorScreen.classList.contains('hidden')||spectatorDialogueKey!==key)return;
-        const target=spectatorStage.querySelector('.spectator-emily-line:not(.spectator-royal-count) span');
-        if(!target)return;
-        const elapsed=Math.max(0,Date.now()-startedAt);
-        let count=0,scheduled=0;
-        for(const char of chars){
-          if(scheduled>elapsed)break;
-          count++;
-          scheduled+=waitAfter(char);
+        const elapsed=Math.max(0,Date.now()-spectatorDialogueLocalStart);
+        let visible=0,nextAt=0;
+        for(const char of chars){if(nextAt>elapsed)break;visible++;nextAt+=charWait(char)}
+        for(let i=0;i<visible;i++)spans[i]?.classList.add('in');
+        if(visible<chars.length){
+          spectatorDialogueTimer=setTimeout(tick,Math.max(15,Math.min(60,nextAt-elapsed)));
+        }else{
+          // 挑戦者同様、文字が最後まで浮かんだら会話画面を閉じる。
+          // 次のセリフの受信・画面退出時はこのタイマーをキャンセルする。
+          spectatorDialogueTimer=setTimeout(()=>{
+            spectatorDialogueTimer=null;
+            if(spectatorDialogueKey!==key)return;
+            spectatorDialogueCompletedKey=key;
+            spectatorRoyalDialogue.classList.add('hidden');
+            spectatorRoyalDialogue.setAttribute('aria-hidden','true');
+          },380);
         }
-        target.textContent=chars.slice(0,count).join('');
-        if(count<chars.length)spectatorDialogueTimer=setTimeout(tick,Math.max(16,Math.min(60,scheduled-elapsed)));
-        else spectatorDialogueTimer=null;
       };
       tick();
     }
     function renderSpectatorState(state={}){
-      if(!state.emily_line||!(state.game==='hilo-serious'||state.table_name==='ROYAL TABLE'||state.table_name==='ULTRA SPECIAL TABLE'))stopSpectatorDialogueTyping();
+      if(state.emily_line&&(state.game==='hilo-serious'||state.table_name==='ROYAL TABLE'||state.table_name==='ULTRA SPECIAL TABLE'))typeSpectatorRoyalDialogue(state);
+      else stopSpectatorDialogueTyping();
       syncSpectatorBgmFromState(state);
       updateSpectatorMatchInfo();
       if(spectatorTableName)spectatorTableName.textContent=state.table_name||'SPECIAL TABLE';
@@ -3674,11 +3706,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const playerCard=state.player_card||state.visible_card||null;
         const houseCard=state.house_card||state.revealed_card||null;
         const houseCardHidden=state.house_card_revealed===false||(!houseCard&&state.phase!=='result');
-        const emilyLineMarkup=state.emily_line?'<div class="spectator-emily-line"><strong>運のみぞ知る</strong><span></span></div>':'';
+
         const royalCount=state.phase==='royal-countdown'?'<div class="spectator-emily-line spectator-royal-count"><span></span></div>':'';
-        spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table"><div class="hand-zone"><h3>CHALLENGER CARD</h3><div class="cards-hand">${spectatorCard(playerCard)}</div></div><div class="casino-center">${emilyLineMarkup}${royalCount}<div class="casino-status">${state.message||'挑戦者の選択をお待ちください。'}</div><div class="casino-bet-indicator">ROUND ${state.round||1}　｜　${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る</div></div><div class="hand-zone"><h3>運のみぞ知る CARD</h3><div class="hilo-versus">${houseCardHidden?'HIGH OR LOW ?':(houseCard?'勝負カード公開':'')}</div><div class="cards-hand">${houseCardHidden?spectatorCard(null):spectatorCard(houseCard)}</div></div></div>`;
-        // 対戦者と同じ文字間隔で流す。通知や1.5秒ポーリングで再描画されても途中から再開。
-        typeSpectatorRoyalDialogue(state);
+        spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table"><div class="hand-zone"><h3>CHALLENGER CARD</h3><div class="cards-hand">${spectatorCard(playerCard)}</div></div><div class="casino-center">${royalCount}<div class="casino-status">${state.message||'挑戦者の選択をお待ちください。'}</div><div class="casino-bet-indicator">ROUND ${state.round||1}　｜　${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る</div></div><div class="hand-zone"><h3>運のみぞ知る CARD</h3><div class="hilo-versus">${houseCardHidden?'HIGH OR LOW ?':(houseCard?'勝負カード公開':'')}</div><div class="cards-hand">${houseCardHidden?spectatorCard(null):spectatorCard(houseCard)}</div></div></div>`;
         const royalCountText=spectatorStage.querySelector('.spectator-royal-count span');if(royalCountText)royalCountText.textContent=String(Math.max(1,Math.min(3,Number(state.countdown)||1)));
       }else spectatorStage.innerHTML=`${matchup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
