@@ -3266,6 +3266,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // カジノへ戻して音楽を鳴らす旧動作は廃止。
     let spectatorOpenEpoch=0;
     function closeSpectator(){
+      stopSpectatorDialogueTyping();
       ++spectatorOpenEpoch; // 観戦接続中の非同期返信による再表示を防ぐ。
       clearInterval(window.__sprSpectatorCountdown);
       clearInterval(spectatorPresenceTimer);
@@ -3619,7 +3620,42 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function showSpectatorInvite(sessionId,challenger,tableName=''){specialBroadcastCount.textContent='SPECIAL TABLE OPEN';const isChallenger=String(storedGuestName||'').trim()===String(challenger||'').trim();let b=document.getElementById('watchSpecialTable');if(isChallenger){if(b)b.remove();return}if(!b){b=document.createElement('button');b.id='watchSpecialTable';b.type='button';b.textContent='観客席へ';specialBroadcast.querySelector('.special-broadcast-actions').prepend(b)}b.onclick=()=>openSpectator(sessionId,challenger,tableName)}
     specialBroadcastClose.onclick=()=>{specialBroadcastDismissedSessionId=specialBroadcastSessionId;hideSpecialBroadcast('user');};spectatorClose.onclick=closeSpectator;
     function spectatorCard(c){return c?cardHtml(c):'<span class="playing-card back"></span>'}
+    let spectatorDialogueTimer=null,spectatorDialogueKey='',spectatorDialogueLocalStart=0;
+    function stopSpectatorDialogueTyping(){
+      if(spectatorDialogueTimer!==null)clearTimeout(spectatorDialogueTimer);
+      spectatorDialogueTimer=null;spectatorDialogueKey='';spectatorDialogueLocalStart=0;
+    }
+    function typeSpectatorRoyalDialogue(state){
+      if(spectatorDialogueTimer!==null){clearTimeout(spectatorDialogueTimer);spectatorDialogueTimer=null}
+      const line=String(state.emily_line||'');
+      const textEl=spectatorStage.querySelector('.spectator-emily-line:not(.spectator-royal-count) span');
+      if(!line||!textEl){stopSpectatorDialogueTyping();return}
+      const key=`${spectatorPresenceSessionId}:${state.emily_line_started_at||`${state.round||0}:${line}`}`;
+      if(key!==spectatorDialogueKey){spectatorDialogueKey=key;spectatorDialogueLocalStart=Date.now()}
+      // 最初にセリフを受信した瞬間から文字送りを開始。通信遅延で全文が瞬時に出るのを防ぐ。
+      // 同じセリフの再受信時は最初の開始時刻を維持する。
+      const startedAt=spectatorDialogueLocalStart;
+      const chars=Array.from(line);
+      const waitAfter=char=>char==='。'||char==='？'||char==='！'?230:char==='、'||char==='…'?140:45;
+      const tick=()=>{
+        if(spectatorScreen.classList.contains('hidden')||spectatorDialogueKey!==key)return;
+        const target=spectatorStage.querySelector('.spectator-emily-line:not(.spectator-royal-count) span');
+        if(!target)return;
+        const elapsed=Math.max(0,Date.now()-startedAt);
+        let count=0,scheduled=0;
+        for(const char of chars){
+          if(scheduled>elapsed)break;
+          count++;
+          scheduled+=waitAfter(char);
+        }
+        target.textContent=chars.slice(0,count).join('');
+        if(count<chars.length)spectatorDialogueTimer=setTimeout(tick,Math.max(16,Math.min(60,scheduled-elapsed)));
+        else spectatorDialogueTimer=null;
+      };
+      tick();
+    }
     function renderSpectatorState(state={}){
+      if(!state.emily_line||!(state.game==='hilo-serious'||state.table_name==='ROYAL TABLE'||state.table_name==='ULTRA SPECIAL TABLE'))stopSpectatorDialogueTyping();
       syncSpectatorBgmFromState(state);
       updateSpectatorMatchInfo();
       if(spectatorTableName)spectatorTableName.textContent=state.table_name||'SPECIAL TABLE';
@@ -3641,11 +3677,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const emilyLineMarkup=state.emily_line?'<div class="spectator-emily-line"><strong>運のみぞ知る</strong><span></span></div>':'';
         const royalCount=state.phase==='royal-countdown'?'<div class="spectator-emily-line spectator-royal-count"><span></span></div>':'';
         spectatorStage.innerHTML=`${matchup}<div class="casino-table hilo-table spectator-hilo-table"><div class="hand-zone"><h3>CHALLENGER CARD</h3><div class="cards-hand">${spectatorCard(playerCard)}</div></div><div class="casino-center">${emilyLineMarkup}${royalCount}<div class="casino-status">${state.message||'挑戦者の選択をお待ちください。'}</div><div class="casino-bet-indicator">ROUND ${state.round||1}　｜　${state.challenger||'CHALLENGER'} ${state.player_wins||0} - ${state.enemy_wins||0} 運のみぞ知る</div></div><div class="hand-zone"><h3>運のみぞ知る CARD</h3><div class="hilo-versus">${houseCardHidden?'HIGH OR LOW ?':(houseCard?'勝負カード公開':'')}</div><div class="cards-hand">${houseCardHidden?spectatorCard(null):spectatorCard(houseCard)}</div></div></div>`;
-        const emilyLineText=spectatorStage.querySelector('.spectator-emily-line:not(.spectator-royal-count) span');if(emilyLineText&&state.emily_line)emilyLineText.textContent=state.emily_line;
+        // 対戦者と同じ文字間隔で流す。通知や1.5秒ポーリングで再描画されても途中から再開。
+        typeSpectatorRoyalDialogue(state);
         const royalCountText=spectatorStage.querySelector('.spectator-royal-count span');if(royalCountText)royalCountText.textContent=String(Math.max(1,Math.min(3,Number(state.countdown)||1)));
       }else spectatorStage.innerHTML=`${matchup}<div class="special-result">${state.message||'開卓をお待ちください。'}</div>`;
     }
-    async function openSpectator(sessionId,challenger='',tableName=''){const openEpoch=++spectatorOpenEpoch;hideSpecialBroadcast('watch',sessionId);
+    async function openSpectator(sessionId,challenger='',tableName=''){stopSpectatorDialogueTyping();const openEpoch=++spectatorOpenEpoch;hideSpecialBroadcast('watch',sessionId);
       try{stopCasinoMusic()}catch{}
       spectatorScreen.classList.remove('hidden');spectatorScreen.setAttribute('aria-hidden','false');
       // ボタンを押した瞬間（Safariのuser gesture内）に待機曲を開始する。
@@ -4409,7 +4446,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       emilyCasualOverlay.classList.add('royal-emily-dialogue-center');
       emilyCasualOverlay.classList.remove('hidden');emilyCasualOverlay.setAttribute('aria-hidden','false');
       for(const line of lines){
-        if(statePatch)await pushSpecialState({...statePatch,phase:'emily-dialogue',emily_line:line,message:'運のみぞ知るが語りかけている。'},publishStatus);
+        // 観戦側はこの時刻を起点に表示する。heartbeat等の再描画でも最初からやり直さない。
+        if(statePatch)await pushSpecialState({...statePatch,phase:'emily-dialogue',emily_line:line,emily_line_started_at:new Date().toISOString(),message:'運のみぞ知るが語りかけている。'},publishStatus);
         await new Promise(resolve=>emilyCasualSay(line,resolve,{speaker,showNext:false}));
       }
       closeEmilyCasualDialogue();emilyCasualOverlay.classList.remove('royal-emily-dialogue-center');
@@ -4760,9 +4798,33 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         hiloScreen.querySelector('.casino-return').classList.add('hidden');
       }
     }
+    // オールイン決着は残高を完全確定し、Supabaseへ保存・照合する。
+    // 通常のBET最低額（VIP 100,000 CHIP）や表示用キャッシュを補填には使わない。
+    async function saveSpecialAllInResult(targetChips){
+      const target=Math.max(0,Math.round(Number(targetChips)||0));
+      casinoChips=target;previousCasinoChips=target;
+      localStorage.setItem(casinoChipKey,String(target));syncCasinoBalances();
+      await queueCasinoChipSync(target);
+      if(!window.supabaseClientSpecial)return false;
+      try{
+        const playerId=await ensureStoredPlayerId();
+        if(!playerId)return false;
+        for(let attempt=0;attempt<3;attempt++){
+          const {data,error}=await window.supabaseClientSpecial.from('players').select('chips').eq('id',playerId).maybeSingle();
+          if(!error&&data&&Number(data.chips)===target)return true;
+          const {error:writeError}=await window.supabaseClientSpecial.from('players')
+            .update({chips:target,last_seen_at:new Date().toISOString()}).eq('id',playerId);
+          if(writeError)console.warn('all-in settlement retry',writeError);
+        }
+      }catch(error){console.warn('all-in settlement verification',error)}
+      return false;
+    }
     async function finishSpecial(win,score={}){
-      const stake=specialStake;if(win){casinoChips=stake*2}else{casinoChips=0}
-      casinoSave();syncCasinoBalances();
+      if(specialAllInSettlementInProgress)return;
+      specialAllInSettlementInProgress=true;
+      const stake=specialStake;
+      const finalChips=win?Math.max(0,Math.round(stake*2)):0;
+      let allInSaved=await saveSpecialAllInResult(finalChips);
       if(specialSelectedGame==='blackjack'){actionPanel.classList.add('hidden');betPanel.classList.add('hidden');setCasinoStatus(win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。')}
       else{hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.add('hidden');hiloStatus.textContent=win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。'}
 
@@ -4820,6 +4882,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const back=screen.querySelector('.casino-return');
         if(back){back.classList.remove('hidden');back.textContent='カジノホールへ戻る';back.dataset.casinoReturn='hub'}
       }
+      // 会話中の遅延通信で残高を戻された場合も、決着額を最後に再確定する。
+      allInSaved=await saveSpecialAllInResult(finalChips)||allInSaved;
+      specialAllInSettlementInProgress=false;
+      if(!allInSaved&&window.supabaseClientSpecial){
+        console.warn('SPECIAL TABLE: final chip balance was not verified in Supabase');
+        alert('オールイン後のチップ残高をサーバーに保存できませんでした。通信状況を確認してください。');
+      }
       specialSelectedGame=null;seriousEmilyMode=false;royalBgmAuthorized=false;
       refreshCasinoSpectatorMenu();
     }
@@ -4837,10 +4906,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const royalState=(extra={})=>({game:'hilo-serious',challenger:storedGuestName,round,player_wins:pw,enemy_wins:ew,royal_bgm_started:royalBgmAuthorized,...extra});
       const beginRoyalTable=async()=>{
         royalIntroBusy=true;
-        // カジノBGMは卓の準備中まで流し、開始前のエミリーの台詞に入る時点で止める。
+        // カジノBGMは卓の準備中まで流し、開始前の『運のみぞ知る』の台詞に入る時点で止める。
         casinoBgm.pause();
         await royalEmilySaySequence([`互いの運に全てを委ねましょう、${storedGuestName}さん。`],{
-          speaker:'エミリー',
+          speaker:'運のみぞ知る',
           statePatch:royalState({visible_card:null,player_card:null,house_card:null,house_card_revealed:false,phase:'royal-intro',message:'ロイヤルテーブルが始まる。'})
         });
         royalCountdownOverlay?.classList.remove('hidden');royalCountdownOverlay?.setAttribute('aria-hidden','false');
@@ -4880,15 +4949,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             else if(Math.random()<.5)dialogueLines=[royalEmilyGarble,royalEmilyApologies[Math.floor(Math.random()*royalEmilyApologies.length)]];
             else if(Math.random()<.5)dialogueLines=[royalEmilyDevotion[Math.floor(Math.random()*royalEmilyDevotion.length)]];
             else dialogueLines=[royalEmilyTaunts[Math.floor(Math.random()*royalEmilyTaunts.length)]];
-            await royalEmilySaySequence(dialogueLines,{speaker:'エミリー',statePatch:royalState({visible_card:a,player_card:a,house_card:null,house_card_revealed:false,phase:'emily-dialogue',selection:c,emily_line:null,message:'エミリーの言葉が響いている。'})});
+            await royalEmilySaySequence(dialogueLines,{speaker:'運のみぞ知る',statePatch:royalState({visible_card:a,player_card:a,house_card:null,house_card_revealed:false,phase:'emily-dialogue',selection:c,emily_line:null,message:'運のみぞ知るの言葉が響いている。'})});
             hiloSecond=b;hiloNextCard.innerHTML=cardHtml(b);pw=nextPw;ew=nextEw;
             hiloBetIndicator.textContent=`ALL-IN ${casinoMoney(specialStake)}　｜　YOU ${pw} - ${ew} ROYAL TABLE`;
-            hiloStatus.textContent=win?'YOU WIN':'EMILY WINS';
-            const revealedState=royalState({visible_card:a,player_card:a,house_card:b,house_card_revealed:true,phase:'result',selection:c,emily_line:null,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'エミリーがこのラウンドを取りました。'});
+            hiloStatus.textContent=win?'YOU WIN':'運のみぞ知る WIN';
+            const revealedState=royalState({visible_card:a,player_card:a,house_card:b,house_card_revealed:true,phase:'result',selection:c,emily_line:null,reversed:reverse,message:win?'挑戦者がこのラウンドを取りました。':'運のみぞ知るがこのラウンドを取りました。'});
             await pushSpecialState(revealedState);
             if(!win&&ew===3){
               const ecstatic=royalEmilyEcstatic[Math.floor(Math.random()*royalEmilyEcstatic.length)];
-              await royalEmilySaySequence([ecstatic],{speaker:'エミリー',statePatch:revealedState});
+              await royalEmilySaySequence([ecstatic],{speaker:'運のみぞ知る',statePatch:revealedState});
             }
             if(pw>=4||ew>=4)setTimeout(()=>finishSpecial(pw>=4,{playerWins:pw,enemyWins:ew}),850);else setTimeout(play,1100);
           };
@@ -5209,6 +5278,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let previousCasinoChips=casinoChips;
     let casinoChipSyncChain=Promise.resolve();
     let casinoChipRefreshPromise=null;
+    let specialAllInSettlementInProgress=false;
     let casinoLevel='hub', casinoVipMode=false;
     let blackjackBet=100, blackjackBetStep=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
     let hiloBet=100, hiloBetStep=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
@@ -5233,6 +5303,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return casinoChipSyncChain;
     }
     async function refreshCasinoChipsFromSupabase(){
+      // 決着後の確定残高を古いリモート読込が上書きしない。
+      if(specialAllInSettlementInProgress)return casinoChips;
       if(casinoChipRefreshPromise)return casinoChipRefreshPromise;
       casinoChipRefreshPromise=(async()=>{
         if(!window.supabaseClientSpecial)return casinoChips;
@@ -5247,6 +5319,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           .maybeSingle();
         if(error)throw error;
         const remote=Number(data?.chips);
+        if(specialAllInSettlementInProgress)return casinoChips;
         if(Number.isFinite(remote)&&remote>=0){
           casinoChips=Math.round(remote);
           previousCasinoChips=casinoChips;
