@@ -4,28 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Summer Paradise Resort Returns</title>
-  <meta name="summer-paradise-build" content="2026-09-28-1830">
+  <meta name="summer-paradise-build" content="2026-09-28-1524">
   <!-- BUILD: 2026-09-28 15:05 JST / EXPERIENCE AND BAR LOUNGE UPDATED -->
-  <script>
-    // 日本時間に合わせて、ページを開いたままでもトップ画像を更新する。
-    function updateHeroImage(){
-      const hour = Number(new Intl.DateTimeFormat('en-US', {
-        timeZone:'Asia/Tokyo', hour:'numeric', hourCycle:'h23'
-      }).format(new Date()));
-      const image = hour >= 7 && hour < 16
-        ? 'summer_paradise_noon.jpg'
-        : hour >= 16 && hour < 20
-          ? 'summer_paradise_sunset.jpg'
-          : 'summer_paradise_night.jpg';
-      document.documentElement.style.setProperty('--hero-image', `url("${image}")`);
-      document.documentElement.classList.toggle('night-hero', hour >= 20 || hour < 7);
-    }
-    updateHeroImage();
-    setInterval(updateHeroImage, 15000);
-    document.addEventListener('visibilitychange', () => {
-      if(!document.hidden) updateHeroImage();
-    });
-  </script>
   <style>
     :root{
       --navy:#0d2743;
@@ -35,7 +15,6 @@
       --white:#fff;
       --line:#ddd3c3;
       --muted:#6d6a64;
-      --hero-image:url("summer_paradise_noon.jpg");
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
@@ -68,7 +47,7 @@
       position:absolute; inset:-4%;
       background:
         linear-gradient(rgba(5,15,28,.28),rgba(5,15,28,.44)),
-        url("summer_paradise_noon0.jpg?v=202609281830") center/cover no-repeat;
+        url("summer_paradise_noon0.JPEG?v=202609281524") center/cover no-repeat;
       transform:scale(1.03);
       animation:introZoom 6s ease-out forwards;
     }
@@ -115,9 +94,15 @@
     }
     .brand{display:flex;align-items:center;gap:11px;min-width:0}
     .shell{
-      display:block;width:48px;height:48px;flex:0 0 48px;
-      object-fit:contain;border:0;
+      width:36px;height:36px;border:2px solid var(--gold);
+      border-radius:50% 50% 45% 45%; position:relative;
     }
+    .shell::before,.shell::after{
+      content:"";position:absolute;left:50%;top:5px;width:1px;height:25px;background:var(--gold);
+      transform-origin:bottom;
+    }
+    .shell::before{transform:translateX(-50%) rotate(-26deg)}
+    .shell::after{transform:translateX(-50%) rotate(26deg)}
     .brand-name{
       color:var(--gold);font-family:Georgia,serif;font-size:20px;
       line-height:1;white-space:nowrap;
@@ -133,77 +118,33 @@
     .burger::before,.burger::after{content:"";position:absolute;left:0}
     .burger::before{top:-8px}.burger::after{top:8px}
 
-    /* STORY MENU */
-    body.menu-open{overflow:hidden}
-    #siteMenu{
-      position:fixed;inset:0;z-index:500;
-      color:#fff;
-      background:
-        linear-gradient(180deg,rgba(6,25,45,.48),rgba(6,25,45,.84)),
-        url("summer_paradise_noon.jpg?v=202609281830") center 38%/cover no-repeat;
-      opacity:0;visibility:hidden;transform:translateY(-12px);
-      transition:opacity .4s ease,visibility .4s ease,transform .4s ease;
-      overflow-y:auto;
-    }
-    #siteMenu.open{opacity:1;visibility:visible;transform:none}
-    .menu-top{
-      height:76px;display:flex;align-items:center;justify-content:space-between;
-      padding:0 22px;border-bottom:1px solid rgba(255,255,255,.24);
-      background:rgba(5,23,41,.26);backdrop-filter:blur(8px);
-    }
-    .menu-brand{font-family:Georgia,serif;color:#f0d89d;font-size:19px;letter-spacing:.06em}
-    .menu-brand small{display:block;font-size:8px;letter-spacing:.42em;text-align:center;margin-top:6px}
-    .menu-close{
-      width:48px;height:48px;border:0;background:transparent;color:#fff;
-      font-size:34px;font-weight:200;line-height:1;
-    }
-    .menu-content{padding:47px 27px max(58px,env(safe-area-inset-bottom))}
-    .menu-kicker{font-family:Georgia,serif;color:#e1c47e;font-size:10px;letter-spacing:.3em;margin-bottom:11px}
-    .menu-content h2{font-size:26px;font-weight:500;letter-spacing:.11em;margin:0 0 27px}
-    .story-list{border-top:1px solid rgba(255,255,255,.4)}
-    .story-item{border-bottom:1px solid rgba(255,255,255,.34)}
-    .story-toggle{
-      width:100%;border:0;background:transparent;color:#fff;padding:19px 2px;
-      display:flex;align-items:center;justify-content:space-between;text-align:left;
-      font-size:16px;letter-spacing:.12em;
-    }
-    .story-toggle span{color:#e1c47e;font-size:23px;font-weight:300;transition:transform .25s ease}
-    .story-toggle[aria-expanded="true"] span{transform:rotate(45deg)}
-    .story-copy{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s ease}
-    .story-copy.open{max-height:330px;opacity:1}
-    .story-copy p{
-      margin:0;padding:0 3px 21px;color:rgba(255,255,255,.91);
-      font-size:13px;line-height:2;letter-spacing:.055em;text-shadow:0 1px 5px rgba(0,0,0,.35);
-    }
-
     /* HERO */
     .hero{
       min-height:670px;
       position:relative;
       background:
         linear-gradient(180deg,rgba(255,255,255,.02) 50%,rgba(5,18,32,.18) 100%),
-        var(--hero-image) center 38%/cover no-repeat;
+        url("summer_paradise_noon.jpg?v=202609281524") center 38%/cover no-repeat;
       display:flex;align-items:flex-start;
       padding:56px 24px 170px;
     }
     .hero-copy{
-      max-width:390px;
-      text-shadow:0 1px 10px rgba(255,255,255,.52);
+      width:100%;max-width:440px;
+      text-shadow:0 2px 6px rgba(5,24,42,.85),0 0 18px rgba(5,24,42,.5);
     }
     .hero h1{
-      font-size:clamp(28px,8.4vw,42px);font-weight:500;white-space:nowrap;
-      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);
+      font-size:clamp(28px,8.5vw,52px);font-weight:500;white-space:nowrap;
+      letter-spacing:.05em;line-height:1.24;margin:0 0 20px;color:var(--navy);text-shadow:0 1px 10px rgba(255,255,255,.52);
     }
-    .night-hero .hero h1{color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.65)}
-    .hero p{font-size:15px;line-height:2;letter-spacing:.08em;margin:0;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.65),0 2px 12px rgba(0,0,0,.35)}
+    .hero p{color:#fff;font-size:15px;line-height:2;letter-spacing:.08em;margin:0}
     .engline{
-      margin-top:24px;color:#8d6a35;letter-spacing:.28em;font-family:Georgia,serif;
+      margin-top:24px;color:#fff0ca;letter-spacing:.28em;font-family:Georgia,serif;
       font-size:11px;line-height:1.7;
     }
 
     /* BOOKING */
     .booking-wrap{
-      margin:-48px 18px 0;position:relative;z-index:10;
+      margin:-118px 18px 0;position:relative;z-index:10;
     }
     .booking{
       background:rgba(255,255,255,.97);
@@ -222,13 +163,6 @@
       width:100%;border:0;background:transparent;
       color:var(--navy);font-size:15px;padding:5px 0;outline:none;
       min-width:0;
-    }
-    .room-choice{margin-top:15px;padding:12px 10px 9px;border-top:1px solid var(--line)}
-    .room-choice label{display:block;font-size:10px;letter-spacing:.1em;margin-bottom:7px;color:#33465a}
-    .room-choice select{
-      appearance:none;-webkit-appearance:none;width:100%;border:0;border-bottom:1px solid #cdbb9e;
-      border-radius:0;background:linear-gradient(45deg,transparent 50%,#8b682f 50%) right 7px center/6px 6px no-repeat;
-      color:var(--navy);font-size:14px;padding:7px 24px 9px 0;outline:none;
     }
     .search-btn{
       width:100%;border:0;margin-top:17px;padding:16px;
@@ -259,11 +193,11 @@
     .view{margin-top:16px;color:#8b682f;font-size:10px;letter-spacing:.28em}
 
     /* ROOM GALLERY */
-    #roomView,#deluxeRoomView,#familyRoomView,#lagoonRoomView,#suiteRoomView,#royalRoomView,#restaurantView,#barView,#experienceView{
+    #roomView,#restaurantView,#barView{
       position:fixed;inset:0;z-index:200;background:#fff;
       overflow-y:auto;opacity:0;visibility:hidden;transition:.55s ease;
     }
-    #roomView.open,#deluxeRoomView.open,#familyRoomView.open,#lagoonRoomView.open,#suiteRoomView.open,#royalRoomView.open,#restaurantView.open,#barView.open,#experienceView.open{opacity:1;visibility:visible}
+    #roomView.open,#restaurantView.open,#barView.open{opacity:1;visibility:visible}
     .room-top{
       height:70px;display:flex;align-items:center;justify-content:space-between;
       padding:0 20px;border-bottom:1px solid #eee;
@@ -271,26 +205,21 @@
     }
     .back-btn{border:0;background:transparent;color:var(--navy);font-size:13px;letter-spacing:.12em}
     .room-label{font-family:Georgia,serif;color:#8e6b31;font-size:12px;letter-spacing:.22em}
-    .gallery{overflow:hidden;touch-action:pan-y;position:relative}
-    .gallery-track{display:flex;transition:transform .45s cubic-bezier(.22,.61,.36,1)}
-    .gallery-slide{flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
-    .gallery-slide img{width:100%;height:100%;object-fit:contain}
+    .gallery{overflow-x:auto;overflow-y:hidden;position:relative;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto}
+    .gallery::-webkit-scrollbar{display:none}
+    .gallery-track{display:flex;width:100%}
+    .gallery-slide{scroll-snap-align:start;scroll-snap-stop:always;flex:0 0 100%;aspect-ratio:16/9;min-height:0;background:#fff;display:flex;align-items:center;justify-content:center}
+    .gallery-slide img{width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
     .dots{text-align:center;padding:15px 0 4px}
-    .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#d3ccbf;margin:0 5px}
-    .dot.active{background:#9b7536}
-    #experienceDots .dot{border:0;padding:0;cursor:pointer}
+    .dot{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;background:transparent;vertical-align:middle;cursor:pointer;touch-action:manipulation}
+    .dot::before{content:"";width:6px;height:6px;border-radius:50%;background:#d3ccbf}
+    .dot.active::before{background:#9b7536}
+    .dot:focus-visible{outline:2px solid #9b7536;outline-offset:1px}
     .room-info{padding:18px 25px 42px}
     .room-info h2{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0 0 8px;letter-spacing:.04em}
     .room-info .jp{font-size:13px;letter-spacing:.12em;color:#6d6357}
     .room-meta{font-size:11px;letter-spacing:.12em;color:#a17d43;margin:16px 0}
     .room-info p{font-size:13px;line-height:2;color:#4e5660;margin:0}
-    .other-room-card{display:block;width:100%;margin-top:30px;padding:0;border:1px solid #e1d6c4;background:#fff;text-align:left;color:var(--navy)}
-    .other-room-card img{aspect-ratio:16/9;object-fit:cover}
-    .other-room-copy{padding:16px 17px 18px}
-    .other-room-copy small{display:block;color:#9a7539;letter-spacing:.2em;margin-bottom:7px}
-    .other-room-copy strong{font-family:Georgia,serif;font-size:18px;font-weight:500;letter-spacing:.04em}
-    .other-room-desc{font-size:12px;line-height:1.8;color:#56616d;margin:9px 0 0}
-    .other-room-copy span{display:block;margin-top:8px;color:#8b682f;font-size:10px;letter-spacing:.2em}
     .hours-panel{margin-top:26px;padding:20px 18px;background:var(--cream);border:1px solid var(--line)}
     .hours-panel h3{margin:0 0 13px;font-size:15px;font-weight:500;letter-spacing:.1em}
     .hours-item{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:12px 0;border-top:1px solid rgba(168,123,47,.2)}
@@ -298,35 +227,31 @@
     .hours-time{font-family:Georgia,serif;font-size:13px;color:#765a2c;white-space:nowrap}
     .hours-note{grid-column:1/-1;font-size:11px;line-height:1.7;color:#715f48}
 
-    /* RESERVATION FLOW */
-    #reservationView,#confirmationView{
-      position:fixed;inset:0;z-index:310;background:#fff;overflow-y:auto;
-      opacity:0;visibility:hidden;transform:translateY(16px);transition:.35s ease;
+    /* RESULT SHEET */
+    #resultSheet{
+      position:fixed;inset:0;z-index:300;background:rgba(6,18,31,.42);
+      display:flex;align-items:flex-end;opacity:0;visibility:hidden;transition:.3s;
     }
-    #confirmationView{z-index:320;background:linear-gradient(165deg,#fff 0 58%,#f5eee1 100%)}
-    #reservationView.open,#confirmationView.open{opacity:1;visibility:visible;transform:none}
-    .reserve-content{padding:35px 22px max(46px,env(safe-area-inset-bottom))}
-    .reserve-kicker{font-family:Georgia,serif;color:#a17d43;font-size:10px;letter-spacing:.28em;margin-bottom:9px}
-    .reserve-content h2{margin:0 0 24px;font-size:25px;font-weight:500;letter-spacing:.08em}
-    .reserve-summary{border:1px solid #dfd4c1;background:var(--cream);padding:15px;margin-bottom:27px}
-    .reserve-summary img{aspect-ratio:16/9;object-fit:cover;margin-bottom:15px}
-    .reserve-room-name{font-family:Georgia,serif;font-size:17px;letter-spacing:.04em;margin-bottom:9px}
-    .reserve-detail{font-size:13px;color:#526070;line-height:1.8}
-    .form-field{margin:0 0 21px}
-    .form-field label{display:block;margin-bottom:8px;font-size:12px;letter-spacing:.09em}
-    .form-field input{width:100%;border:1px solid #d8cbb7;background:#fff;padding:14px 12px;color:var(--navy);font-size:16px;outline:none}
-    .form-field input:focus{border-color:#a87b2f;box-shadow:0 0 0 2px rgba(168,123,47,.1)}
-    .reserve-button{width:100%;border:0;background:linear-gradient(90deg,#b78a41,#89631f);color:#fff;padding:17px;font-size:16px;letter-spacing:.18em}
-    .reserve-note{margin:12px 0 0;text-align:center;color:#7b756c;font-size:10px;line-height:1.7}
-    .confirmation-content{min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:52px 24px max(45px,env(safe-area-inset-bottom))}
-    .confirmation-mark{width:62px;height:62px;margin:0 auto 22px;border:1px solid #b38a47;border-radius:50%;display:grid;place-items:center;color:#a87b2f;font-size:28px}
-    .confirmation-content h2{margin:0 0 10px;font-size:25px;font-weight:500;letter-spacing:.08em}
-    .confirmation-lead{font-size:13px;color:#66717c;line-height:1.9;margin:0 0 29px}
-    .code-card{border:1px solid #d9c7a9;background:rgba(255,255,255,.82);padding:24px 16px;margin-bottom:22px}
-    .code-label{font-family:Georgia,serif;color:#9b763a;font-size:9px;letter-spacing:.28em}
-    #bookingCode{font-family:Georgia,serif;font-size:27px;letter-spacing:.12em;margin:12px 0 17px;word-break:break-all}
-    #confirmationSummary{font-size:12px;line-height:1.9;color:#465465;white-space:pre-line;overflow-wrap:anywhere}
-    .screenshot-note{margin:0 0 25px;font-size:13px;line-height:1.8;color:#5d5549}
+    #resultSheet.open{opacity:1;visibility:visible}
+    .sheet{
+      width:100%;background:#fff;padding:26px 22px max(30px,env(safe-area-inset-bottom));
+      border-radius:22px 22px 0 0;transform:translateY(30px);transition:.35s;
+    }
+    #resultSheet.open .sheet{transform:none}
+    .sheet h3{margin:0 0 10px;font-size:20px;font-weight:500}
+    .sheet p{font-size:13px;line-height:1.8;color:#59616a}
+    .sheet-room{
+      margin-top:18px;border-top:1px solid #eee;border-bottom:1px solid #eee;padding:18px 0;
+      display:flex;gap:15px;align-items:center;
+    }
+    .sheet-room img{width:38%;aspect-ratio:16/9;object-fit:cover}
+    .sheet-room strong{display:block;font-family:Georgia,serif;font-size:14px;letter-spacing:.04em}
+    .sheet-room .room-meta-mini{display:block;margin-top:6px;font-size:11px;letter-spacing:.08em;color:#8b6f44}
+    .sheet-room .room-status{margin:8px 0 0;font-size:12px;line-height:1.75;color:#59616a}
+    .sheet-room.unavailable{opacity:.9}
+    .sheet-room.unavailable img{filter:saturate(.72) brightness(.92)}
+    .sheet-room.unavailable .room-status{color:#9a4d3f;font-weight:500}
+    .sheet-close{width:100%;margin-top:18px;border:1px solid #b18a49;background:#fff;color:#8b672e;padding:13px}
 
     footer{text-align:center;padding:45px 20px 55px;background:#f7f3eb;color:#8d7b60}
     footer .fbrand{font-family:Georgia,serif;font-size:18px;letter-spacing:.08em}
@@ -350,44 +275,11 @@
 
   <header>
     <div class="brand">
-      <img class="shell" src="LOG.PNG" alt="" width="48" height="48">
+      <div class="shell" aria-hidden="true"></div>
       <div class="brand-name">Summer Paradise<small>RESORT</small></div>
     </div>
     <button class="menu-btn" aria-label="メニュー"><span class="burger"></span></button>
   </header>
-
-  <section id="siteMenu" aria-hidden="true" aria-label="リゾート案内">
-    <div class="menu-top">
-      <div class="menu-brand">Summer Paradise<small>RESORT</small></div>
-      <button class="menu-close" id="menuClose" type="button" aria-label="メニューを閉じる">×</button>
-    </div>
-    <div class="menu-content">
-      <div class="menu-kicker">DISCOVER OUR STORY</div>
-      <h2>楽園を知る</h2>
-      <div class="story-list">
-        <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">リゾートについて<span>＋</span></button>
-          <div class="story-copy"><p>青い海と空に抱かれたサマーパラダイスリゾートは、日常を離れ、心ほどける時間をお過ごしいただくための滞在地です。海を望む客室、この土地の恵みを味わうレストラン、島の景色と物語に触れる散策など、多彩な体験をご用意しています。移ろう光や潮風を感じながら、ここでしか出会えないひとときをお楽しみください。</p></div>
-        </div>
-        <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">島の歴史<span>＋</span></button>
-          <div class="story-copy"><p>この島は古くから、長い航海を続ける人々が風と波の静まる時を待つ、ささやかな休息地として知られてきました。海とともに暮らした島民たちは、入り江や灯台を大切に守り、訪れた旅人を迎えてきたといわれています。石造りの小径や古い建物、島の各所に残る言い伝えの中には、今も当時の面影が息づいています。</p></div>
-        </div>
-        <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">リゾート開発まで<span>＋</span></button>
-          <div class="story-copy"><p>島の豊かな自然と美しい眺望を、より多くの方に楽しんでいただきたい。その思いから、景観と歴史を受け継ぎながら新たな滞在地を築く計画が始まりました。海岸線や古い建物を可能な限り残し、島の暮らしと調和するよう、長い年月をかけて整備が進められています。この計画を資金面から支え、実現へ導いたのが出資者アーサー・グレイです。</p></div>
-        </div>
-        <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">アーサー・グレイ<span>＋</span></button>
-          <div class="story-copy"><p>アーサー・グレイは、島の景色と古くから伝わる物語に深く魅せられ、リゾート開発を支えた中心人物です。美しい場所を限られた人だけのものにせず、訪れる誰もが島の魅力に触れられる滞在地をつくることを望みました。その意志は建物や庭園、散策路の随所に受け継がれ、現在のサマーパラダイスリゾートの礎となっています。</p></div>
-        </div>
-        <div class="story-item">
-          <button class="story-toggle" type="button" aria-expanded="false">人魚の祝福伝説<span>＋</span></button>
-          <div class="story-copy"><p>この島には古くから、人魚の姿を見た者には海の祝福が授けられるという伝説があります。その祝福を受けた旅人は、穏やかな航海と大切な人との再会に恵まれ、いつの日か再び島へ導かれると語り継がれてきました。夕暮れ時のサンセットテラスでは、波音と潮風の向こうから、人魚の歌声が聞こえてくるかもしれません。</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <main>
     <section class="hero">
@@ -419,25 +311,7 @@
             </select>
           </div>
         </div>
-        <div class="room-choice">
-          <label for="roomChoice">客室</label>
-          <select id="roomChoice">
-            <option value="deluxe">DELUXE OCEAN VIEW（1〜2名）</option>
-            <option value="family">FAMILY OCEAN SUITE（3〜4名）</option>
-            <option value="lagoon">OCEAN LAGOON（1〜2名）</option>
-            <option value="suite">OCEAN GRAND SUITE（2名限定）</option>
-            <option value="royal">ROYAL OCEAN VILLA（1〜2名）</option>
-          </select>
-        </div>
-        <div class="room-choice" id="deluxeBedChoice">
-          <label for="bedChoice">デラックス オーシャンビューのベッドタイプ</label>
-          <select id="bedChoice" required>
-            <option value="">ベッドタイプを選択してください</option>
-            <option value="double">ダブルベッド</option>
-            <option value="twin">ツインベッド</option>
-          </select>
-        </div>
-        <button class="search-btn" id="searchBtn">予約内容を決定する<small>CONFIRM YOUR STAY</small></button>
+        <button class="search-btn" id="searchBtn">宿泊を検索する<small>RESERVE NOW</small></button>
       </div>
     </div>
 
@@ -449,7 +323,7 @@
 
       <div class="cards">
         <button class="card" id="roomCard">
-          <img src="ocean_view_room.jpg?v=202609281830" alt="オーシャンビュー客室">
+          <img src="ocean_view_room.JPG?v=202609281524" alt="オーシャンビュー客室">
           <div class="card-body">
             <h3 class="card-title">客室</h3>
             <div class="card-en">ROOMS</div>
@@ -459,7 +333,7 @@
         </button>
 
         <button class="card" id="restaurantCard" type="button">
-          <img src="the_pearl_terrace_e.jpg?v=202609281830" alt="レストラン＆カフェ">
+          <img src="the_pearl_terrace_e.jpg?v=202609281524" alt="レストラン＆カフェ">
           <div class="card-body">
             <h3 class="card-title">レストラン＆カフェ</h3>
             <div class="card-en">RESTAURANT &amp; CAFÉ</div>
@@ -468,18 +342,18 @@
           </div>
         </button>
 
-        <button class="card" id="experienceCard" type="button" aria-controls="experienceView">
-          <img src="mermaids_cove.jpg?v=202609281830" alt="マーメイドの入り江">
+        <div class="card">
+          <img src="mermaids_cove.jpg?v=202609281524" alt="マーメイドの入り江">
           <div class="card-body">
             <h3 class="card-title">体験</h3>
             <div class="card-en">EXPERIENCE</div>
             <div class="card-desc">美しい入り江で、ここにしかないひとときをお楽しみください。</div>
-            <div class="view">VIEW MORE　›</div>
+            <div class="view">COMING SOON</div>
           </div>
-        </button>
+        </div>
 
         <button class="card" id="barCard" type="button" aria-controls="barView">
-          <img src="seaside_bar.jpg?v=202609281830" alt="シーサイドバー">
+          <img src="seaside_bar.jpg?v=202609281524" alt="シーサイドバー">
           <div class="card-body">
             <h3 class="card-title">Bar &amp; ラウンジ</h3>
             <div class="card-en">BAR &amp; LOUNGE</div>
@@ -501,167 +375,21 @@
       <div class="room-label">ROOMS & SUITES</div>
       <div style="width:46px"></div>
     </div>
-    <div class="room-info">
-      <button class="other-room-card" id="deluxeRoomCard" type="button">
-        <img src="ocean_view_room.jpg?v=202609281830" alt="デラックス オーシャンビューの客室">
-        <div class="other-room-copy">
-          <small>FOR 1–2 GUESTS</small>
-          <strong>DELUXE OCEAN VIEW</strong>
-          <p class="other-room-desc">大きな窓から海を望み、穏やかな波音に包まれる客室。</p>
-          <span>客室を見る　›</span>
-        </div>
-      </button>
-      <button class="other-room-card" id="familyRoomCard" type="button">
-        <img src="family_01.jpg" alt="ファミリー オーシャンスイートの客室">
-        <div class="other-room-copy">
-          <small>FOR 3–4 GUESTS</small>
-          <strong>FAMILY OCEAN SUITE</strong>
-          <p class="other-room-desc">海を望むリビングを囲み、ご家族でくつろぐゆとりの一室。</p>
-          <span>客室を見る　›</span>
-        </div>
-      </button>
-      <button class="other-room-card" id="lagoonRoomCard" type="button">
-        <img data-lagoon-image="0" alt="オーシャンラグーンの客室">
-        <div class="other-room-copy">
-          <small>FOR 1–2 GUESTS</small>
-          <strong>OCEAN LAGOON</strong>
-          <p class="other-room-desc">専用プールと開放的なリビングで、海とともにくつろぐ贅沢な一室。</p>
-          <span>客室を見る　›</span>
-        </div>
-      </button>
-      <button class="other-room-card" id="suiteRoomCard" type="button">
-        <img src="suite_01.jpg" alt="夕景を望むオーシャン グランドスイートのテラス">
-        <div class="other-room-copy">
-          <small>SUITE FOR 2 GUESTS</small>
-          <strong>OCEAN GRAND SUITE</strong>
-          <p class="other-room-desc">夕景を眺めるテラスと上質なリビングを備えたスイート。</p>
-          <span>客室を見る　›</span>
-        </div>
-      </button>
-      <button class="other-room-card" id="royalRoomCard" type="button">
-        <img src="villa_01.jpg" alt="専用プール付きのロイヤル オーシャンヴィラ">
-        <div class="other-room-copy">
-          <small>TOP-FLOOR POOL VILLA</small>
-          <strong>ROYAL OCEAN VILLA</strong>
-          <p class="other-room-desc">専用プールと海の眺望を楽しむ最上階のヴィラ。</p>
-          <span>客室を見る　›</span>
-        </div>
-      </button>
-    </div>
-  </section>
-
-  <section id="deluxeRoomView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="deluxeRoomBack">← BACK</button>
-      <div class="room-label">ROOMS & SUITES</div>
-      <div style="width:46px"></div>
-    </div>
     <div class="gallery" id="gallery">
       <div class="gallery-track" id="galleryTrack">
-        <div class="gallery-slide"><img src="ocean_view_room.jpg?v=202609281830" alt="客室全景"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom.jpg?v=202609281830" alt="ダブルベッドの客室"></div>
-        <div class="gallery-slide"><img src="ocean_view_bedroom01.jpg" alt="ツインベッドの客室"></div>
-        <div class="gallery-slide"><img src="ocean_view_bathroom.jpg?v=202609281830" alt="バスルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_room.JPG?v=202609281524" alt="客室全景"></div>
+        <div class="gallery-slide"><img src="ocean_view_bedroom.JPG?v=202609281524" alt="ベッドルーム"></div>
+        <div class="gallery-slide"><img src="ocean_view_bathroom.JPG?v=202609281524" alt="バスルーム"></div>
       </div>
     </div>
     <div class="dots" id="dots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
     </div>
     <div class="room-info">
       <h2>DELUXE OCEAN VIEW</h2>
       <div class="jp">デラックス オーシャンビュー</div>
       <div class="room-meta">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</div>
-      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。ベッドはダブルベッドまたはツインベッドからお選びいただけます。</p>
-    </div>
-  </section>
-
-  <section id="lagoonRoomView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="lagoonRoomBack">← BACK</button>
-      <div class="room-label">ROOMS &amp; SUITES</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="gallery" id="lagoonGallery">
-      <div class="gallery-track" id="lagoonGalleryTrack">
-        <div class="gallery-slide"><img data-lagoon-image="0" alt="オーシャンラグーンの寝室と専用プール"></div>
-        <div class="gallery-slide"><img data-lagoon-image="1" alt="オーシャンラグーンの客室写真2"></div>
-        <div class="gallery-slide"><img data-lagoon-image="2" alt="オーシャンラグーンの客室写真3"></div>
-      </div>
-    </div>
-    <div class="dots" id="lagoonDots"><button type="button" class="dot active" aria-label="寝室と専用プール" style="border:0;padding:0"></button><button type="button" class="dot" aria-label="客室写真2" style="border:0;padding:0"></button><button type="button" class="dot" aria-label="客室写真3" style="border:0;padding:0"></button></div>
-    <div class="room-info">
-      <h2>OCEAN LAGOON</h2>
-      <div class="jp">オーシャンラグーン</div>
-      <div class="room-meta">1–2 GUESTS　/　KING BED　/　PRIVATE POOL</div>
-      <p>青く澄んだ海を望む寝室と、テラスへ続く開放的なリビング。専用プールで過ごすひとときも、海風を感じながらくつろぐ時間も、心ゆくまでお楽しみいただけます。キングベッドを備えた上質な一室で、おひとりでも、おふたりでも、ゆとりある滞在を。</p>
-    </div>
-  </section>
-
-  <section id="suiteRoomView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="suiteRoomBack">← BACK</button>
-      <div class="room-label">ROOMS &amp; SUITES</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="gallery" id="suiteGallery">
-      <div class="gallery-track" id="suiteGalleryTrack">
-        <div class="gallery-slide"><img src="suite_01.jpg" alt="夕日を望むスイートのテラスとリビング"></div>
-        <div class="gallery-slide"><img src="suite_02.jpg" alt="オーシャン グランドスイートの客室"></div>
-        <div class="gallery-slide"><img src="suite_03.jpg" alt="海を望むスイートのバスルーム"></div>
-      </div>
-    </div>
-    <div class="dots" id="suiteDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
-    <div class="room-info">
-      <h2>OCEAN GRAND SUITE</h2>
-      <div class="jp">オーシャン グランドスイート</div>
-      <div class="room-meta">62㎡　/　2 GUESTS　/　OCEAN VIEW</div>
-      <p>広々としたリビングとベッドルームがひとつながりになったスイート。夕日に染まる海を望むテラスには、くつろぎの席とダイニングをご用意しました。大きな窓から海を眺めるバスルームで、滞在の時間をゆっくりとお楽しみください。</p>
-    </div>
-  </section>
-
-  <section id="royalRoomView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="royalRoomBack">← BACK</button>
-      <div class="room-label">PENTHOUSE VILLA</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="gallery" id="royalGallery">
-      <div class="gallery-track" id="royalGalleryTrack">
-        <div class="gallery-slide"><img src="villa_01.jpg" alt="海を見下ろす専用インフィニティプールとテラス"></div>
-        <div class="gallery-slide"><img src="villa_02.jpg" alt="最上階ロイヤル オーシャンヴィラの客室"></div>
-        <div class="gallery-slide"><img src="villa_03.jpg" alt="最上階の景色を望むスパバスルーム"></div>
-      </div>
-    </div>
-    <div class="dots" id="royalDots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
-    <div class="room-info">
-      <h2>ROYAL OCEAN VILLA</h2>
-      <div class="jp">最上階 ロイヤル オーシャンヴィラ</div>
-      <div class="room-meta">120㎡　/　1–2 GUESTS　/　TOP FLOOR PRIVATE POOL</div>
-      <p>ホテル最上階に広がるロイヤルヴィラ。海と海岸線を見晴らす専用インフィニティプール、屋根付きのパビリオン、ゆったりとしたベッドルームとリビングを備えています。開放的なスパバスルームまで続く上質な空間で、特別な滞在をお楽しみください。</p>
-    </div>
-  </section>
-
-  <section id="familyRoomView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="familyRoomBack">← BACK</button>
-      <div class="room-label">ROOMS &amp; SUITES</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="gallery" id="familyGallery">
-      <div class="gallery-track" id="familyGalleryTrack">
-        <div class="gallery-slide"><img src="family_01.jpg" alt="海を望むファミリー用の客室とリビング"></div>
-        <div class="gallery-slide"><img src="family_02.jpg" alt="ファミリー用客室のバスルーム"></div>
-        <div class="gallery-slide"><img src="family_03.jpg" alt="ファミリー用客室のテラスから望む海の景色"></div>
-      </div>
-    </div>
-    <div class="dots" id="familyDots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
-    </div>
-    <div class="room-info">
-      <h2>FAMILY OCEAN SUITE</h2>
-      <div class="jp">ファミリー オーシャンスイート</div>
-      <div class="room-meta">62㎡　/　3–4 GUESTS　/　OCEAN VIEW</div>
-      <p>大きな窓の向こうに海が広がり、ベッドスペースとリビング・ダイニングをゆったりと配置したファミリー向けの客室。明るいバスルームまでやわらかな色合いで揃え、ご家族やご友人とくつろいでお過ごしいただけます。</p>
+      <p>海に向かって大きく開いた窓と、やわらかな光に包まれる客室。穏やかな波音とともに、静かな時間をお過ごしいただけます。</p>
     </div>
   </section>
 
@@ -673,13 +401,13 @@
     </div>
     <div class="gallery" id="restaurantGallery">
       <div class="gallery-track" id="restaurantGalleryTrack">
-        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281830" alt="サンセットテラス"></div>
-        <div class="gallery-slide"><img src="sunset_terrace1.jpg?v=202609281830" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="sunset_terrace2.jpg?v=202609281830" alt="サンセットテラスの料理"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281830" alt="The Pearl Terrace 店内"></div>
-        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281830" alt="The Pearl Terrace 外観"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281830" alt="Marine Bloom Cafe 店内"></div>
-        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281830" alt="Marine Bloom Cafe ティーセット"></div>
+        <div class="gallery-slide"><img src="sunset_terrace.jpg?v=202609281524" alt="サンセットテラス"></div>
+        <div class="gallery-slide"><img src="sunset_terrace1.PNG?v=202609281524" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="sunset_terrace2.PNG?v=202609281524" alt="サンセットテラスの料理"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_i.jpg?v=202609281524" alt="The Pearl Terrace 店内"></div>
+        <div class="gallery-slide"><img src="the_pearl_terrace_e.jpg?v=202609281524" alt="The Pearl Terrace 外観"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_i.jpg?v=202609281524" alt="Marine Bloom Cafe 店内"></div>
+        <div class="gallery-slide"><img src="marine_bloom_cafe_t.jpg?v=202609281524" alt="Marine Bloom Cafe ティーセット"></div>
       </div>
     </div>
     <div class="dots" id="restaurantDots">
@@ -694,46 +422,19 @@
         <h3>営業時間・ご予約</h3>
         <div class="hours-item">
           <span class="hours-name">サンセットテラス</span>
-          <span class="hours-time">11:00〜22:00</span>
+          <span class="hours-time">11:00〜23:00</span>
         </div>
         <div class="hours-item">
           <span class="hours-name">The Pearl Terrace</span>
-          <span class="hours-time">10:00〜翌3:00</span>
+          <span class="hours-time">9:00〜22:00</span>
           <span class="hours-note">アフタヌーンティーは予約制です。</span>
         </div>
         <div class="hours-item">
           <span class="hours-name">Marine Bloom Cafe</span>
-          <span class="hours-time">10:00〜翌3:00</span>
+          <span class="hours-time">10:00〜3:00</span>
           <span class="hours-note">アフタヌーンティーは予約制です。</span>
         </div>
       </div>
-    </div>
-  </section>
-
-  <section id="experienceView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="experienceBack">← BACK</button>
-      <div class="room-label">EXPERIENCE</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="gallery" id="experienceGallery">
-      <div class="gallery-track" id="experienceGalleryTrack">
-        <div class="gallery-slide"><img src="summer_paradise_beach.jpg?v=202609281830" alt="海と砂浜"></div>
-        <div class="gallery-slide"><img src="lighthouse.jpg?v=202609281830" alt="海を望む灯台"></div>
-        <div class="gallery-slide"><img src="mermaids_cove.jpg?v=202609281830" alt="マーメイドの入り江"></div>
-        <div class="gallery-slide"><img src="blue_shell_casino.jpg?v=202609281830" alt="カジノ・ブルーシェルの外観"></div>
-        <div class="gallery-slide"><img src="blue_shell_casino_e.jpg?v=202609281830" alt="カジノ・ブルーシェルの入口"></div>
-        <div class="gallery-slide"><img src="blue_shell_casino_t.jpg?v=202609281830" alt="カジノのゲームテーブル"></div>
-      </div>
-    </div>
-    <div class="dots" id="experienceDots" aria-label="体験の写真">
-      <button class="dot active" type="button" aria-label="海の写真"></button><button class="dot" type="button" aria-label="灯台の写真"></button><button class="dot" type="button" aria-label="入り江の写真"></button><button class="dot" type="button" aria-label="カジノ外観の写真"></button><button class="dot" type="button" aria-label="カジノ入口の写真"></button><button class="dot" type="button" aria-label="ゲームテーブルの写真"></button>
-    </div>
-    <div class="room-info">
-      <h2>EXPERIENCE</h2>
-      <div class="jp">体験</div>
-      <div class="room-meta">BEACH　/　LIGHTHOUSE　/　MERMAID'S COVE　/　CASINO BLUE SHELL</div>
-      <p>海辺の散策から灯台、入り江、カジノまで。島で過ごすひとときを、思い思いにお楽しみください。</p>
     </div>
   </section>
 
@@ -745,9 +446,9 @@
     </div>
     <div class="gallery" id="barGallery">
       <div class="gallery-track" id="barGalleryTrack">
-        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281830" alt="海に面したシーサイドバー"></div>
-        <div class="gallery-slide"><img src="seaside_lounge.jpg?v=202609281830" alt="屋外バーとつながるホテルのラウンジ"></div>
-        <div class="gallery-slide"><img src="seaside1.jpg?v=202609281830" alt="シーサイドバーの青いカクテル"></div>
+        <div class="gallery-slide"><img src="seaside_bar.jpg?v=202609281524" alt="海に面したシーサイドバー"></div>
+        <div class="gallery-slide"><img src="seaside_lounge.jpg?v=202609281524" alt="屋外バーとつながるホテルのラウンジ"></div>
+        <div class="gallery-slide"><img src="seaside1.jpeg?v=202609281524" alt="シーサイドバーの青いカクテル"></div>
       </div>
     </div>
     <div class="dots" id="barDots" aria-label="バーとラウンジの写真">
@@ -768,82 +469,55 @@
     </div>
   </section>
 
-  <section id="reservationView" aria-hidden="true">
-    <div class="room-top">
-      <button class="back-btn" id="reservationBack" type="button">← BACK</button>
-      <div class="room-label">RESERVATION</div>
-      <div style="width:46px"></div>
-    </div>
-    <div class="reserve-content">
-      <div class="reserve-kicker">YOUR STAY</div>
-      <h2>ご予約内容の確認</h2>
-      <div class="reserve-summary">
-        <img id="reservationImage" src="ocean_view_room.jpg?v=202609281830" alt="選択した客室">
-        <div class="reserve-room-name" id="reservationRoomName"></div>
-        <div class="reserve-detail" id="reservationSummary"></div>
-      </div>
-      <div class="form-field">
-        <label for="guestName">代表者様のお名前</label>
-        <input id="guestName" type="text" autocomplete="name" placeholder="例：サマー パラダイス">
-      </div>
-      <div id="companionFields"></div>
-      <div class="form-field">
-        <label for="guestAddress">代表者様のメールアドレス</label>
-        <input id="guestAddress" type="text" autocomplete="email" placeholder="例：guest@example.com">
-      </div>
-      <button class="reserve-button" id="reserveBtn" type="button">予約する</button>
-      <p class="reserve-note">入力した内容が外部へ送信されることはありません。</p>
-    </div>
-  </section>
+  <div id="resultSheet">
+    <div class="sheet">
+      <h3>空室検索</h3>
+      <p id="searchSummary"></p>
 
-  <section id="confirmationView" aria-hidden="true">
-    <div class="confirmation-content">
-      <div class="confirmation-mark">✓</div>
-      <div class="reserve-kicker">RESERVATION COMPLETE</div>
-      <h2>ご予約を承りました</h2>
-      <p class="confirmation-lead">サマーパラダイスリゾートで<br>お会いできることを楽しみにしています。</p>
-      <div class="code-card">
-        <div class="code-label">RESERVATION NUMBER</div>
-        <div id="bookingCode"></div>
-        <div id="confirmationSummary"></div>
+      <div class="sheet-room">
+        <img src="ocean_view_room.JPG?v=202609281524" alt="デラックス オーシャンビュー">
+        <div>
+          <strong>DELUXE OCEAN VIEW</strong>
+          <span class="room-meta-mini">38㎡　/　1–2 GUESTS　/　OCEAN VIEW</span>
+          <p class="room-status">ご指定の条件でご案内可能です。</p>
+        </div>
       </div>
-      <p class="screenshot-note">予約番号と宿泊者全員のお名前が見えるように、この画面をスクリーンショットして掲示してください。</p>
-      <button class="reserve-button" id="confirmationClose" type="button">トップへ戻る</button>
+
+      <div class="sheet-room">
+        <img src="ocean_view_room.JPG?v=202609281524" alt="オーシャンラグーン">
+        <div>
+          <strong>OCEAN LAGOON</strong>
+          <span class="room-meta-mini">76㎡　/　1–4 GUESTS　/　LAGOON VIEW</span>
+          <p class="room-status">ご指定の条件でご案内可能です。</p>
+        </div>
+      </div>
+
+      <div class="sheet-room">
+        <img src="ocean_view_room.JPG?v=202609281524" alt="オーシャンスイート">
+        <div>
+          <strong>OCEAN SUITE</strong>
+          <span class="room-meta-mini">76㎡　/　1–4 GUESTS　/　OCEAN VIEW</span>
+          <p class="room-status">ご指定の条件でご案内可能です。</p>
+        </div>
+      </div>
+
+      <div class="sheet-room unavailable">
+        <img src="ocean_view_room.JPG?v=202609281524" alt="プライベートヴィラ">
+        <div>
+          <strong>PRIVATE VILLA</strong>
+          <span class="room-meta-mini">110㎡　/　1–4 GUESTS　/　PRIVATE POOL</span>
+          <p class="room-status">現在ご予約が埋まっているため、ご案内できません。</p>
+        </div>
+      </div>
+
+      <button class="sheet-close" id="sheetClose">閉じる</button>
     </div>
-  </section>
+  </div>
 
   <script>
     const intro = document.getElementById('intro');
     setTimeout(() => intro.classList.add('leave'), 3800);
     setTimeout(() => intro.remove(), 5200);
-
-    const siteMenu = document.getElementById('siteMenu');
-    const menuButton = document.querySelector('.menu-btn');
-    const menuClose = document.getElementById('menuClose');
-    function openMenu(){
-      siteMenu.classList.add('open');
-      siteMenu.setAttribute('aria-hidden','false');
-      menuButton.setAttribute('aria-expanded','true');
-      document.body.classList.add('menu-open');
-    }
-    function closeMenu(){
-      siteMenu.classList.remove('open');
-      siteMenu.setAttribute('aria-hidden','true');
-      menuButton.setAttribute('aria-expanded','false');
-      document.body.classList.remove('menu-open');
-    }
-    menuButton.setAttribute('aria-controls','siteMenu');
-    menuButton.setAttribute('aria-expanded','false');
-    menuButton.addEventListener('click',openMenu);
-    menuClose.addEventListener('click',closeMenu);
-    document.querySelectorAll('.story-toggle').forEach(button => {
-      button.addEventListener('click',() => {
-        const copy = button.nextElementSibling;
-        const willOpen = button.getAttribute('aria-expanded') !== 'true';
-        button.setAttribute('aria-expanded',String(willOpen));
-        copy.classList.toggle('open',willOpen);
-      });
-    });
 
     const today = new Date();
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
@@ -855,177 +529,26 @@
     document.getElementById('checkin').value = fmt(tomorrow);
     document.getElementById('checkout').value = fmt(dayAfter);
 
-    const guestsSelect = document.getElementById('guests');
-    const roomChoice = document.getElementById('roomChoice');
-    const deluxeBedChoice = document.getElementById('deluxeBedChoice');
-    const bedChoice = document.getElementById('bedChoice');
-    const reservationView = document.getElementById('reservationView');
-    const confirmationView = document.getElementById('confirmationView');
-    const lagoonImages = ['Ocean_Lagoon01.jpg','Ocean_Lagoon02.jpg','Ocean_Lagoon03.jpg'];
-    document.querySelectorAll("[data-lagoon-image]").forEach(img => { img.src = lagoonImages[Number(img.dataset.lagoonImage)]; });
-    const rooms = {
-      deluxe:{name:'DELUXE OCEAN VIEW',jp:'デラックス オーシャンビュー',image:'ocean_view_room.jpg?v=202609281830',min:1,max:2},
-      family:{name:'FAMILY OCEAN SUITE',jp:'ファミリー オーシャンスイート',image:'family_01.jpg',min:3,max:4},
-      lagoon:{name:'OCEAN LAGOON',jp:'オーシャンラグーン',image:lagoonImages[0],min:1,max:2},
-      suite:{name:'OCEAN GRAND SUITE',jp:'オーシャン グランドスイート',image:'suite_01.jpg',min:2,max:2},
-      royal:{name:'ROYAL OCEAN VILLA',jp:'ロイヤル オーシャンヴィラ',image:'villa_01.jpg',min:1,max:2}
-    };
-    let currentReservation = null;
-
-    function updateBedChoice(){
-      const isDeluxe = roomChoice.value === 'deluxe';
-      deluxeBedChoice.hidden = !isDeluxe;
-      bedChoice.disabled = !isDeluxe;
-    }
-    roomChoice.addEventListener('change', updateBedChoice);
-    guestsSelect.addEventListener('change', () => {
-      const count = Number(guestsSelect.value);
-      const selectedRoom = rooms[roomChoice.value];
-      if(count < selectedRoom.min || count > selectedRoom.max){
-        roomChoice.value = count >= 3 ? 'family' : 'deluxe';
-      }
-      updateBedChoice();
-    });
-    updateBedChoice();
-
-    function setOverlay(view,isOpen){
-      view.classList.toggle('open',isOpen);
-      view.setAttribute('aria-hidden',String(!isOpen));
-      document.body.classList.toggle('menu-open',isOpen);
-      if(isOpen) view.scrollTop = 0;
-    }
-
-    const companionFields = document.getElementById('companionFields');
-    function renderCompanionFields(guestCount){
-      const previous = [...companionFields.querySelectorAll('input')].map(input => input.value);
-      companionFields.replaceChildren();
-      for(let i = 1; i < guestCount; i++){
-        const field = document.createElement('div');
-        field.className = 'form-field';
-        const label = document.createElement('label');
-        label.htmlFor = `companionName${i}`;
-        label.textContent = `お連れ様${i}のお名前`;
-        const input = document.createElement('input');
-        input.id = `companionName${i}`;
-        input.type = 'text';
-        input.autocomplete = 'off';
-        input.placeholder = 'お名前を入力してください';
-        input.value = previous[i - 1] || '';
-        field.append(label,input);
-        companionFields.append(field);
-      }
-    }
-
     document.getElementById('searchBtn').addEventListener('click', () => {
       const ci = document.getElementById('checkin').value;
       const co = document.getElementById('checkout').value;
-      const guests = Number(guestsSelect.value);
-      const room = rooms[roomChoice.value];
+      const g = document.getElementById('guests').value;
       if(!ci || !co){ alert('チェックイン日とチェックアウト日を選択してください。'); return; }
       if(new Date(co) <= new Date(ci)){ alert('チェックアウト日はチェックイン日より後の日付を選択してください。'); return; }
-      if(guests < room.min || guests > room.max){
-        alert(room.min === room.max
-          ? `${room.name}は${room.min}名様限定です。宿泊人数を変更してください。`
-          : `${room.name}は${room.min}〜${room.max}名様用です。人数に合う客室を選択してください。`); return;
-      }
-      if(roomChoice.value === 'deluxe' && !bedChoice.value){
-        alert('ダブルベッドまたはツインベッドを選択してください。');
-        bedChoice.focus(); return;
-      }
-      const bedType = roomChoice.value === 'deluxe' ? bedChoice.selectedOptions[0].textContent : '';
-      currentReservation = {ci,co,guests,room,bedType};
-      document.getElementById('reservationImage').src = room.image;
-      document.getElementById('reservationRoomName').textContent = room.name;
-      document.getElementById('reservationSummary').textContent =
-        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　／　${guests}名${bedType ? '　／　' + bedType : ''}`;
-      renderCompanionFields(guests);
-      setOverlay(reservationView,true);
+      document.getElementById('searchSummary').textContent =
+        `${ci.replaceAll('-','/')} 〜 ${co.replaceAll('-','/')}　${g}名`;
+      document.getElementById('resultSheet').classList.add('open');
     });
-    document.getElementById('reservationBack').addEventListener('click', () => setOverlay(reservationView,false));
-
-    function makeBookingCode(){
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      const values = new Uint32Array(8);
-      if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(values);
-      else values.forEach((_,i) => values[i] = Math.floor(Math.random()*chars.length));
-      let code = '';
-      values.forEach(value => code += chars[value % chars.length]);
-      return `SPR-${code.slice(0,4)}-${code.slice(4)}`;
-    }
-
-    document.getElementById('reserveBtn').addEventListener('click', () => {
-      const name = document.getElementById('guestName').value.trim();
-      const address = document.getElementById('guestAddress').value.trim();
-      if(!name){ alert('代表者様のお名前を入力してください。'); document.getElementById('guestName').focus(); return; }
-      const companionNames = [];
-      for(const [index,input] of [...companionFields.querySelectorAll('input')].entries()){
-        const companionName = input.value.trim();
-        if(!companionName){ alert(`お連れ様${index + 1}のお名前を入力してください。`); input.focus(); return; }
-        companionNames.push(companionName);
-      }
-      if(!address){ alert('代表者様のメールアドレスを入力してください。'); document.getElementById('guestAddress').focus(); return; }
-      document.getElementById('bookingCode').textContent = makeBookingCode();
-      const guestList = [`代表者様：${name}`, ...companionNames.map((companionName,index) => `お連れ様${index + 1}：${companionName}`)].join('\n');
-      document.getElementById('confirmationSummary').textContent =
-        `${currentReservation.room.name}\n${currentReservation.ci.replaceAll('-','/')} 〜 ${currentReservation.co.replaceAll('-','/')}　／　${currentReservation.guests}名${currentReservation.bedType ? '　／　' + currentReservation.bedType : ''}\n宿泊者のお名前\n${guestList}`;
-      reservationView.classList.remove('open');
-      reservationView.setAttribute('aria-hidden','true');
-      setOverlay(confirmationView,true);
-    });
-    document.getElementById('confirmationClose').addEventListener('click', () => {
-      setOverlay(confirmationView,false);
-      document.getElementById('guestName').value = '';
-      document.getElementById('guestAddress').value = '';
-      companionFields.replaceChildren();
-      window.scrollTo({top:0,behavior:'smooth'});
+    document.getElementById('sheetClose').addEventListener('click', () => {
+      document.getElementById('resultSheet').classList.remove('open');
     });
 
     const roomView = document.getElementById('roomView');
     document.getElementById('roomCard').addEventListener('click', () => {
-      roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
+      showSlide(0); roomView.classList.add('open'); roomView.setAttribute('aria-hidden','false');
     });
     document.getElementById('roomBack').addEventListener('click', () => {
       roomView.classList.remove('open'); roomView.setAttribute('aria-hidden','true');
-    });
-
-    const deluxeRoomView = document.getElementById('deluxeRoomView');
-    document.getElementById('deluxeRoomCard').addEventListener('click', () => {
-      showSlide(0); deluxeRoomView.classList.add('open'); deluxeRoomView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('deluxeRoomBack').addEventListener('click', () => {
-      deluxeRoomView.classList.remove('open'); deluxeRoomView.setAttribute('aria-hidden','true');
-    });
-
-    const familyRoomView = document.getElementById('familyRoomView');
-    document.getElementById('familyRoomCard').addEventListener('click', () => {
-      showFamilySlide(0); familyRoomView.classList.add('open'); familyRoomView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('familyRoomBack').addEventListener('click', () => {
-      familyRoomView.classList.remove('open'); familyRoomView.setAttribute('aria-hidden','true');
-    });
-
-    const lagoonRoomView = document.getElementById('lagoonRoomView');
-    document.getElementById('lagoonRoomCard').addEventListener('click', () => {
-      showLagoonSlide(0); lagoonRoomView.classList.add('open'); lagoonRoomView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('lagoonRoomBack').addEventListener('click', () => {
-      lagoonRoomView.classList.remove('open'); lagoonRoomView.setAttribute('aria-hidden','true');
-    });
-
-    const suiteRoomView = document.getElementById('suiteRoomView');
-    document.getElementById('suiteRoomCard').addEventListener('click', () => {
-      showSuiteSlide(0); suiteRoomView.classList.add('open'); suiteRoomView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('suiteRoomBack').addEventListener('click', () => {
-      suiteRoomView.classList.remove('open'); suiteRoomView.setAttribute('aria-hidden','true');
-    });
-
-    const royalRoomView = document.getElementById('royalRoomView');
-    document.getElementById('royalRoomCard').addEventListener('click', () => {
-      showRoyalSlide(0); royalRoomView.classList.add('open'); royalRoomView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('royalRoomBack').addEventListener('click', () => {
-      royalRoomView.classList.remove('open'); royalRoomView.setAttribute('aria-hidden','true');
     });
 
     const restaurantView = document.getElementById('restaurantView');
@@ -1036,31 +559,6 @@
       restaurantView.classList.remove('open'); restaurantView.setAttribute('aria-hidden','true');
     });
 
-    const experienceView = document.getElementById('experienceView');
-    document.getElementById('experienceCard').addEventListener('click', () => {
-      showExperienceSlide(0);
-      experienceView.classList.add('open'); experienceView.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('experienceBack').addEventListener('click', () => {
-      experienceView.classList.remove('open'); experienceView.setAttribute('aria-hidden','true');
-    });
-    let experienceSlide = 0, experienceStartX = 0;
-    const experienceTrack = document.getElementById('experienceGalleryTrack');
-    const experienceDots = [...document.querySelectorAll('#experienceDots .dot')];
-    function showExperienceSlide(n){
-      experienceSlide = Math.max(0, Math.min(experienceDots.length - 1, n));
-      experienceTrack.style.transform = `translateX(-${experienceSlide*100}%)`;
-      experienceDots.forEach((d,i)=>d.classList.toggle('active',i===experienceSlide));
-    }
-    const experienceGallery = document.getElementById('experienceGallery');
-    experienceGallery.addEventListener('touchstart',e=>experienceStartX=e.changedTouches[0].screenX,{passive:true});
-    experienceGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - experienceStartX;
-      if(distance < -45) showExperienceSlide(experienceSlide + 1);
-      if(distance > 45) showExperienceSlide(experienceSlide - 1);
-    },{passive:true});
-    experienceDots.forEach((dot,i)=>dot.addEventListener('click',()=>showExperienceSlide(i)));
-
     const barView = document.getElementById('barView');
     document.getElementById('barCard').addEventListener('click', () => {
       showBarSlide(0);
@@ -1070,120 +568,45 @@
       barView.classList.remove('open'); barView.setAttribute('aria-hidden','true');
     });
 
-    let barSlide = 0, barStartX = 0;
-    const barTrack = document.getElementById('barGalleryTrack');
-    const barDots = [...document.querySelectorAll('#barDots .dot')];
-    function showBarSlide(n){
-      barSlide = Math.max(0, Math.min(barDots.length - 1, n));
-      barTrack.style.transform = `translateX(-${barSlide*100}%)`;
-      barDots.forEach((d,i)=>d.classList.toggle('active',i===barSlide));
+    // Native scrolling follows the finger and keeps vertical page scrolling available.
+    function setupGallery(galleryId, dotsId){
+      const gallery = document.getElementById(galleryId);
+      const slides = [...gallery.querySelectorAll('.gallery-slide')];
+      const dots = [...document.querySelectorAll('#' + dotsId + ' .dot')].map((old, i) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = old.className;
+        button.setAttribute('aria-label', `${i + 1}枚目の写真を表示`);
+        old.replaceWith(button);
+        button.addEventListener('click', () => show(i, true));
+        return button;
+      });
+      function update(){
+        const index = Math.round(gallery.scrollLeft / (gallery.clientWidth || 1));
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === index);
+          dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+      function show(n, animate = false){
+        const index = Math.max(0, Math.min(slides.length - 1, n));
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        gallery.scrollTo({left: index * gallery.clientWidth, behavior: animate && !reduced ? 'smooth' : 'auto'});
+        update();
+      }
+      let pending = false;
+      gallery.addEventListener('scroll', () => {
+        if(pending) return;
+        pending = true;
+        requestAnimationFrame(() => { pending = false; update(); });
+      }, {passive:true});
+      slides.forEach(slide => slide.querySelectorAll('img').forEach(img => img.draggable = false));
+      update();
+      return show;
     }
-    const barGallery = document.getElementById('barGallery');
-    barGallery.addEventListener('touchstart',e=>barStartX=e.changedTouches[0].screenX,{passive:true});
-    barGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - barStartX;
-      if(distance < -45) showBarSlide(barSlide + 1);
-      if(distance > 45) showBarSlide(barSlide - 1);
-    },{passive:true});
-    barDots.forEach((dot,i)=>dot.addEventListener('click',()=>showBarSlide(i)));
-
-    let restaurantSlide = 0, restaurantStartX = 0;
-    const restaurantTrack = document.getElementById('restaurantGalleryTrack');
-    const restaurantDots = [...document.querySelectorAll('#restaurantDots .dot')];
-    function showRestaurantSlide(n){
-      restaurantSlide = Math.max(0, Math.min(restaurantDots.length - 1, n));
-      restaurantTrack.style.transform = `translateX(-${restaurantSlide*100}%)`;
-      restaurantDots.forEach((d,i)=>d.classList.toggle('active',i===restaurantSlide));
-    }
-    const restaurantGallery = document.getElementById('restaurantGallery');
-    restaurantGallery.addEventListener('touchstart',e=>restaurantStartX=e.changedTouches[0].screenX,{passive:true});
-    restaurantGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - restaurantStartX;
-      if(distance < -45) showRestaurantSlide(restaurantSlide + 1);
-      if(distance > 45) showRestaurantSlide(restaurantSlide - 1);
-    },{passive:true});
-
-    let slide = 0, startX = 0, endX = 0;
-    const track = document.getElementById('galleryTrack');
-    const dots = [...document.querySelectorAll('#dots .dot')];
-    function showSlide(n){
-      slide = Math.max(0, Math.min(dots.length - 1, n));
-      track.style.transform = `translateX(-${slide*100}%)`;
-      dots.forEach((d,i)=>d.classList.toggle('active',i===slide));
-    }
-    const gallery = document.getElementById('gallery');
-    gallery.addEventListener('touchstart',e=>startX=e.changedTouches[0].screenX,{passive:true});
-    gallery.addEventListener('touchend',e=>{
-      endX=e.changedTouches[0].screenX;
-      if(startX-endX>45) showSlide(slide+1);
-      if(endX-startX>45) showSlide(slide-1);
-    },{passive:true});
-
-    let familySlide = 0, familyStartX = 0;
-    const familyTrack = document.getElementById('familyGalleryTrack');
-    const familyDots = [...document.querySelectorAll('#familyDots .dot')];
-    function showFamilySlide(n){
-      familySlide = Math.max(0, Math.min(familyDots.length - 1, n));
-      familyTrack.style.transform = `translateX(-${familySlide*100}%)`;
-      familyDots.forEach((d,i)=>d.classList.toggle('active',i===familySlide));
-    }
-    const familyGallery = document.getElementById('familyGallery');
-    familyGallery.addEventListener('touchstart',e=>familyStartX=e.changedTouches[0].screenX,{passive:true});
-    familyGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - familyStartX;
-      if(distance < -45) showFamilySlide(familySlide + 1);
-      if(distance > 45) showFamilySlide(familySlide - 1);
-    },{passive:true});
-
-    let lagoonSlide = 0, lagoonStartX = 0;
-    const lagoonTrack = document.getElementById('lagoonGalleryTrack');
-    const lagoonDots = [...document.querySelectorAll('#lagoonDots .dot')];
-    function showLagoonSlide(n){
-      lagoonSlide = Math.max(0, Math.min(lagoonDots.length - 1, n));
-      lagoonTrack.style.transform = `translateX(-${lagoonSlide*100}%)`;
-      lagoonDots.forEach((d,i)=>d.classList.toggle('active',i===lagoonSlide));
-    }
-    const lagoonGallery = document.getElementById('lagoonGallery');
-    lagoonGallery.addEventListener('touchstart',e=>lagoonStartX=e.changedTouches[0].screenX,{passive:true});
-    lagoonGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - lagoonStartX;
-      if(distance < -45) showLagoonSlide(lagoonSlide + 1);
-      if(distance > 45) showLagoonSlide(lagoonSlide - 1);
-    },{passive:true});
-
-    lagoonDots.forEach((dot,i)=>dot.addEventListener('click',()=>showLagoonSlide(i)));
-
-    let suiteSlide = 0, suiteStartX = 0;
-    const suiteTrack = document.getElementById('suiteGalleryTrack');
-    const suiteDots = [...document.querySelectorAll('#suiteDots .dot')];
-    function showSuiteSlide(n){
-      suiteSlide = Math.max(0, Math.min(suiteDots.length - 1, n));
-      suiteTrack.style.transform = `translateX(-${suiteSlide*100}%)`;
-      suiteDots.forEach((d,i)=>d.classList.toggle('active',i===suiteSlide));
-    }
-    const suiteGallery = document.getElementById('suiteGallery');
-    suiteGallery.addEventListener('touchstart',e=>suiteStartX=e.changedTouches[0].screenX,{passive:true});
-    suiteGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - suiteStartX;
-      if(distance < -45) showSuiteSlide(suiteSlide + 1);
-      if(distance > 45) showSuiteSlide(suiteSlide - 1);
-    },{passive:true});
-
-    let royalSlide = 0, royalStartX = 0;
-    const royalTrack = document.getElementById('royalGalleryTrack');
-    const royalDots = [...document.querySelectorAll('#royalDots .dot')];
-    function showRoyalSlide(n){
-      royalSlide = Math.max(0, Math.min(royalDots.length - 1, n));
-      royalTrack.style.transform = `translateX(-${royalSlide*100}%)`;
-      royalDots.forEach((d,i)=>d.classList.toggle('active',i===royalSlide));
-    }
-    const royalGallery = document.getElementById('royalGallery');
-    royalGallery.addEventListener('touchstart',e=>royalStartX=e.changedTouches[0].screenX,{passive:true});
-    royalGallery.addEventListener('touchend',e=>{
-      const distance = e.changedTouches[0].screenX - royalStartX;
-      if(distance < -45) showRoyalSlide(royalSlide + 1);
-      if(distance > 45) showRoyalSlide(royalSlide - 1);
-    },{passive:true});
+    const showBarSlide = setupGallery('barGallery', 'barDots');
+    const showRestaurantSlide = setupGallery('restaurantGallery', 'restaurantDots');
+    const showSlide = setupGallery('gallery', 'dots');
   </script>
 </body>
 </html>
