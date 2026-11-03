@@ -1727,17 +1727,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       <div class="slide"><img data-tea-scene="pearl_terrace_afternoon_tea" data-deferred-src="pearl_terrace_afternoon_tea_day.jpg" alt="The Pearl Terraceのアフタヌーンティー" loading="lazy" decoding="async"></div>
       <div class="slide"><img data-tea-scene="marine_bloom_afternoon_tea" data-deferred-src="marine_bloom_afternoon_tea_day.jpg" alt="Marine Bloom Cafeのアフタヌーンティー" loading="lazy" decoding="async"></div>
     </div></div><div class="dots" data-dots="teaSalon"></div>
-    <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">入場チケットをお持ちのお客様</div><div class="meta">PRIVATE CHAT ROOM / 2 GUESTS</div>
-      <p>チケットを使用して、各カフェのチャットルームにご入室いただけます。各ルーム2名様まで、時間制限はございません。退室後の再入室はできません。</p>
+    <div class="info"><h2>AFTERNOON TEA SALON</h2><div class="jp">入場チケットをお持ちのお客様</div><div class="meta">PRIVATE TEA SALON / 2 GUESTS</div>
+      <p>チケットをご利用いただくと、各カフェにて、お客様同士の語らいをお楽しみいただけるお席へご案内いたします。各お席は2名様まで、20分間ご利用いただけます。なお、一度お席を離れますと、再度のご案内はいたしかねます。</p>
       <div class="panel"><h3>ご利用案内</h3>
         <div id="teaSalonTicketStatus" class="bar-selection"></div>
         <div class="menu-list">
-          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="The Pearl Terrace" data-salon-key="tea:pearl-terrace">The Pearl Terrace<small>CHAT ROOM　｜　定員2名</small></button>
-          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="Marine Bloom Cafe" data-salon-key="tea:marine-bloom">Marine Bloom Cafe<small>CHAT ROOM　｜　定員2名</small></button>
+          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="The Pearl Terrace" data-salon-key="tea:pearl-terrace">The Pearl Terrace<small>PRIVATE SEATING　｜　2名様まで</small></button>
+          <button class="menu-item tea-salon-venue" type="button" data-salon-venue="Marine Bloom Cafe" data-salon-key="tea:marine-bloom">Marine Bloom Cafe<small>PRIVATE SEATING　｜　2名様まで</small></button>
         </div>
         <p id="teaSalonMessage" class="bar-selection" aria-live="polite">会場をお選びください。</p>
         <div class="tea-exchange"><h4>COASTER EXCHANGE</h4><div class="tea-exchange-note">交換に出せるのは、同じ絵柄を2枚以上持っている場合の余剰分のみです。</div><div id="teaExchangeList" class="tea-exchange-list"></div></div><div id="teaPartyBox" class="tea-party-box">
-          <h3>チャットルーム</h3>
+          <h3>お席のご案内</h3>
           <div id="teaPartyPublicStatus" class="tea-party-note">お茶会を読み込んでいます。</div>
           <div id="teaPartyList"></div>
 
@@ -1747,13 +1747,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   </section>
 
   <section class="subview" id="teaPartyRoomView" aria-hidden="true">
-    <div class="subhead"><button id="teaPartyRoomBack" class="back" type="button">← BACK</button><div id="teaPartyRoomTitle" class="subhead-title">CHAT ROOM</div><div></div></div>
+    <div class="subhead"><button id="teaPartyRoomBack" class="back" type="button">← BACK</button><div id="teaPartyRoomTitle" class="subhead-title">TEA SALON</div><div></div></div>
     <div class="info" style="max-width:760px;padding-top:28px">
-      <h2>PRIVATE CHAT ROOM</h2>
+      <h2>PRIVATE TEA SALON</h2>
       <div class="jp">COASTER EXCHANGE SALON</div>
-      <p>このルームの参加者だけで会話とコースター交換をお楽しみいただけます。</p>
+      <p>こちらのお席では、お客様同士の語らいやコースターの交換をお楽しみいただけます。</p>
           <div id="teaPartyChat" class="hidden">
-            <div id="teaPartyChatMeta" class="tea-party-note"></div><button id="teaPartyExit" type="button" style="margin:10px 0">退室する</button>
+            <div id="teaPartyChatMeta" class="tea-party-note"></div><button id="teaPartyExit" type="button" style="margin:10px 0">お席を離れる</button>
             <div id="teaPartyLog" class="tea-party-log"></div>
             <div id="teaPartyCompose" class="tea-party-compose hidden">
               <input id="teaPartyInput" maxlength="300" placeholder="メッセージ">
@@ -1766,7 +1766,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               <div class="tea-exchange-note" style="margin-top:10px">差し出したいコースターを選び、「このコースターを差し出す」を押してください。</div><label style="display:block;margin-top:10px;font-weight:600">差し出すコースター</label><select id="teaTradeGive" hidden></select><div id="teaTradeGiveChoices" class="tea-trade-choice-list" aria-label="差し出すコースターを選択"></div><button id="teaTradeConfirm" class="primary-btn" type="button" style="margin-top:9px" disabled>このコースターを差し出す</button><div id="teaTradePrompt"></div>
               <p id="teaTradeStatus" class="tea-party-note" aria-live="polite" style="margin:10px 0 0"></p>
             </div>
-            <div id="teaPartyReadOnly" class="tea-party-note hidden">このお茶会の会話は、参加者だけに表示されます。</div>
+            <div id="teaPartyReadOnly" class="tea-party-note hidden">こちらでの語らいは、お席をご利用のお客様のみがお楽しみいただけます。</div>
           </div>
     </div>
   </section>
@@ -1977,7 +1977,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             </div>
             <div class="prize-item"><div><strong>酔い覚まし</strong><small>毒のように強すぎるお酒には、これが一番効きます。</small></div><div class="prize-item-side"><b>5,000 CHIP</b><span id="antidoteOwned">所持 0</span><button id="buyAntidote" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item">
-              <div><strong>アフタヌーンティールーム入場チケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE のチャットルームに入室できます。各ルーム2名様まで。退室後の再入室はできません。</small></div>
+              <div><strong>アフタヌーンティールーム入場チケット</strong><small>THE PEARL TERRACE／MARINE BLOOM CAFEにて、2名様までご利用いただける特別なお席へご案内いたします。ご利用時間は20分間です。一度お席を離れますと、再度のご利用はいたしかねます。</small></div>
               <div class="prize-item-side"><b>20,000 CHIP</b><span id="afternoonTea2Owned">所持 0</span><button id="buyAfternoonTea2Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
@@ -2160,7 +2160,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // Keep it only for one-way cleanup; it is no longer a playable reward.
     const retiredInventoryItemKey='mysteryGuestFoodList';
     const belongingsCatalog={
-      afternoonTeaTicket2:{label:'アフタヌーンティールーム入場チケット',detail:'The Pearl Terrace / Marine Bloom Cafe のチャットルームに入室できます。各ルーム2名様まで。退室後は再入室できません。',max:Infinity},
+      afternoonTeaTicket2:{label:'アフタヌーンティールーム入場チケット',detail:'THE PEARL TERRACE／MARINE BLOOM CAFEにて、2名様までご利用いただける特別なお席へご案内いたします。ご利用時間は20分間です。一度お席を離れますと、再度のご利用はいたしかねます。',max:Infinity},
       
       extraDrinkTicket:{label:'BARドリンクチケット',detail:'バーテンダーに渡すと、同じ時間帯にもう一杯だけ注文を受けてくれます。',max:Infinity},cafeDrinkTicket:{label:'CAFEドリンクチケット',detail:'CAFEで1日1回、ドリンクのみ10杯を注文できます。ランダムコースター10枚付き。',max:Infinity},
         jokerCard:{label:'JOKER CARD',detail:'カジノのスペシャルテーブルで手に入る特別なカード。',max:1,image:'casino.joker.PNG'},
@@ -2783,7 +2783,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(error)throw error;
         if(id!==activeTeaPartyId)return;
         if(data?.left_at){
-          closeTeaRoomView('入室から20分が経過したため、自動的に退室しました。このルームには再入室できません。');
+          closeTeaRoomView('ご利用時間の20分が経過いたしました。お席のご利用は終了となります。再度のご案内はいたしかねます。');
           await loadTeaParties();
         }else{scheduleTeaRoomExpiry({entered_at:new Date(Date.now()-TEA_ROOM_DURATION_MS+15000).toISOString()})}
       }catch(error){console.warn('tea room expiry',error);teaRoomExpiryTimer=setTimeout(()=>void expireActiveTeaRoom(),15000)}
@@ -2952,27 +2952,27 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!window.supabaseClientSpecial||!storedPlayerId){teaSalonMessage.textContent='ログイン情報を確認できません。SECURITY CHECKから入り直してください。';return}
       try{await expireTeaParties()}catch(error){console.error('tea room expiry check',error);teaSalonMessage.textContent='ルームの利用時間を確認できませんでした。';return}
       const {data:existing,error:findError}=await window.supabaseClientSpecial.from('tea_parties').select('id').eq('venue',venue).is('ends_at',null).maybeSingle();
-      if(findError){console.error(findError);teaSalonMessage.textContent='チャットルームを確認できませんでした。';return}
+      if(findError){console.error(findError);teaSalonMessage.textContent='お席のご利用状況を確認できませんでした。';return}
       if(existing){
         const {data:membership,error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').select('left_at').eq('party_id',existing.id).eq('player_id',storedPlayerId).maybeSingle();
         if(memberError){console.error(memberError);teaSalonMessage.textContent='入室履歴を確認できませんでした。';return}
-        if(membership?.left_at){teaSalonMessage.textContent='退室済みのため、このチャットルームには再入室できません。';return}
+        if(membership?.left_at){teaSalonMessage.textContent='一度お席を離れますと、再度のご案内はいたしかねます。';return}
         if(membership){await openTeaParty(existing.id);return}
       }
-      if(belongingCount('afternoonTeaTicket2')<1){teaSalonMessage.textContent='入室にはアフタヌーンティールーム入場チケットが必要です。';return}
+      if(belongingCount('afternoonTeaTicket2')<1){teaSalonMessage.textContent='お席のご利用にはアフタヌーンティールーム入場チケットが必要です。';return}
       let remaining;
       try{remaining=await remoteInventoryAdjust('afternoonTeaTicket2',-1)}catch(e){console.warn('tea ticket consume sync',e);teaSalonMessage.textContent='チケットを確認できませんでした。';await hydratePersistentState();return}
       const belongings=loadBelongings();belongings.afternoonTeaTicket2=remaining;localStorage.setItem(belongingsKey,JSON.stringify(belongings));
       const {data:partyId,error}=await window.supabaseClientSpecial.rpc('enter_tea_party',{p_venue:venue,p_player_id:storedPlayerId,p_display_name:storedGuestName});
-      if(error||!partyId){console.error('tea room entry failed',error);await remoteInventoryAdjust('afternoonTeaTicket2',1).catch(()=>{});teaSalonMessage.textContent=error?.message?.includes('room_full')?'このチャットルームは満室です。チケットを返却しました。':error?.message?.includes('already_left')?'退室済みのため、このチャットルームには再入室できません。チケットを返却しました。':'チャットルームに入室できませんでした。チケットを返却しました。';await hydratePersistentState();return}
+      if(error||!partyId){console.error('tea room entry failed',error);await remoteInventoryAdjust('afternoonTeaTicket2',1).catch(()=>{});teaSalonMessage.textContent=error?.message?.includes('room_full')?'こちらのお席は満席でございます。チケットを返却いたしました。':error?.message?.includes('already_left')?'一度お席を離れますと、再度のご案内はいたしかねます。チケットを返却いたしました。':'お席にご案内できませんでした。チケットを返却いたしました。';await hydratePersistentState();return}
       refreshTeaSalonStatus();if(typeof renderBelongings==='function')renderBelongings();if(typeof renderPrizeCounter==='function')renderPrizeCounter();
       await loadTeaParties();await openTeaParty(partyId);
     }
     async function leaveTeaRoom(){
-      const id=activeTeaPartyId;if(!id)return;if(!window.confirm('退室すると、このチャットルームには再入室できません。退室しますか？'))return;
+      const id=activeTeaPartyId;if(!id)return;if(!window.confirm('一度お席を離れますと、再度のご案内はいたしかねます。お席を離れますか？'))return;
       const {error}=await window.supabaseClientSpecial.rpc('leave_tea_party',{p_party_id:id,p_player_id:storedPlayerId});
       if(error){console.error('tea room leave failed',error);teaSalonMessage.textContent='退室を記録できませんでした。通信状態をご確認ください。';return}
-      closeTeaRoomView('退室しました。このチャットルームには再入室できません。');await loadTeaParties();
+      closeTeaRoomView('お席のご利用を終了いたしました。再度のご案内はいたしかねます。');await loadTeaParties();
     }
     function renderTeaExchange(){
       if(!teaExchangeList)return;const counts=coasterCounts();const rows=counts.map((count,n)=>({n,count,extra:Math.max(0,count-1)})).filter(x=>x.extra>0);
@@ -2987,10 +2987,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!window.supabaseClientSpecial)return;
       try{await expireTeaParties()}catch(error){console.warn('tea room expiry check',error)}
       const {data:parties,error}=await window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at,created_at').is('ends_at',null).order('venue');
-      if(error){teaPartyPublicStatus.textContent='チャットルームを読み込めませんでした。';console.error(error);return}
+      if(error){teaPartyPublicStatus.textContent='お席のご利用状況を確認できませんでした。';console.error(error);return}
       const rooms=parties||[];let allMembers=[];
       if(rooms.length){const {data,error:memberError}=await window.supabaseClientSpecial.from('tea_party_members').select('party_id,player_id,display_name,is_host,left_at').in('party_id',rooms.map(p=>p.id)).is('left_at',null);if(memberError){teaPartyPublicStatus.textContent='参加者情報を読み込めません。';console.error(memberError);return}allMembers=data||[]}
-      teaPartyPublicStatus.textContent='各ルーム2名まで。入室から20分で自動退室となります。退室後は再入室できません。';
+      teaPartyPublicStatus.textContent='各お席は2名様までご利用いただけます。ご利用時間は20分間でございます。お時間を迎えましたら、ご利用終了となります。なお、途中でお席を離れた場合も、再度のご案内はいたしかねます。';
       teaPartyList.innerHTML=rooms.map(p=>{const members=allMembers.filter(m=>m.party_id===p.id),mine=members.some(m=>m.player_id===storedPlayerId),full=members.length>=2,names=members.map(m=>`${teaEscapeHtml(m.display_name||'GUEST')}様`).join('、')||'空室',label=mine?'入室中・再表示':full?'満室':belongingCount('afternoonTeaTicket2')?'チケットで入室':'チケットが必要';return `<button class="menu-item" type="button" data-tea-party="${teaEscapeHtml(p.id)}" data-venue="${teaEscapeHtml(p.venue)}" data-tea-mine="${mine?'1':'0'}" data-tea-full="${full?'1':'0'}"><strong>${teaEscapeHtml(p.venue)}</strong><small>${label}　｜　${members.length}/2名</small><span class="tea-party-people">参加者：${names}</span></button>`}).join('');
       teaPartyList.querySelectorAll('[data-tea-party]').forEach(b=>b.onclick=()=>{if(b.dataset.teaMine==='1')openTeaParty(b.dataset.teaParty);else if(b.dataset.teaFull!=='1')joinTeaRoom(b.dataset.venue)});
     }
@@ -3001,13 +3001,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         window.supabaseClientSpecial.from('tea_parties').select('id,venue,host_name,ticket_type,ends_at').eq('id',id).single(),
         window.supabaseClientSpecial.from('tea_party_members').select('player_id,display_name,is_host,left_at,entered_at').eq('party_id',id).is('left_at',null)
       ]);
-      if(partyError||membersError||!party){teaSalonMessage.textContent='チャットルームを開けませんでした。';return}
-      if(party.ends_at){teaSalonMessage.textContent='利用時間の20分が終了したため、このルームは終了しました。';await loadTeaParties();return}
+      if(partyError||membersError||!party){teaSalonMessage.textContent='お席をご案内できませんでした。';return}
+      if(party.ends_at){teaSalonMessage.textContent='ご利用時間の20分が終了いたしました。';await loadTeaParties();return}
       const member=(members||[]).some(m=>m.player_id===storedPlayerId);
       if(!member){teaSalonMessage.textContent='入室にはチケットが必要です。';return}
       const ownMembership=(members||[]).find(m=>String(m.player_id)===String(storedPlayerId));
       if(!ownMembership){teaSalonMessage.textContent='入室状態を確認できませんでした。ルーム一覧を更新してください。';await loadTeaParties();return}
-      activeTeaPartyId=id;teaPartyEnteredAt=ownMembership.entered_at||new Date().toISOString();scheduleTeaRoomExpiry({entered_at:teaPartyEnteredAt});teaPartyChat.classList.remove('hidden');teaPartyRoomTitle.textContent=party.venue||'CHAT ROOM';updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
+      activeTeaPartyId=id;teaPartyEnteredAt=ownMembership.entered_at||new Date().toISOString();scheduleTeaRoomExpiry({entered_at:teaPartyEnteredAt});teaPartyChat.classList.remove('hidden');teaPartyRoomTitle.textContent=party.venue||'TEA SALON';updateTeaTradeParticipants(members||[]);void refreshTeaTradeStatus();
       renderTeaPartyMemberCount(members||[]);openView('teaPartyRoomView');
       teaPartyCompose.classList.remove('hidden');teaPartyReadOnly.classList.add('hidden');
       const {data:messages,error:messageError}=await window.supabaseClientSpecial.from('tea_party_messages').select('id,player_id,display_name,body,created_at').eq('party_id',id).order('created_at');
