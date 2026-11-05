@@ -1440,7 +1440,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           </div>
         </div>
         <div id="roomServiceNgScreen" class="room-service-ng-screen" role="dialog" aria-modal="true" aria-label="NGギミック動画" aria-hidden="true">
-          <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng_01.mp4" preload="metadata" playsinline webkit-playsinline></video>
+          <video id="roomServiceNgVideo" class="room-service-ng-video" src="room_service_ng_01.mp4" preload="metadata" playsinline webkit-playsinline controls></video>
           <button id="roomServiceNgClose" class="room-service-ng-close" type="button" aria-label="動画を閉じる">×</button>
           <div id="roomServiceNgFallback" class="room-service-ng-fallback hidden">NG動画を読み込めませんでした。room_service_ng_01.mp4、room_service_ng_02.mp4、room_service_ng_03.mp4 を確認してください。</div>
         </div>
@@ -9047,6 +9047,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     const ROOM_SERVICE_NG_VIDEO_FILES=['room_service_ng_01.mp4','room_service_ng_02.mp4'];
     let roomServiceNgCurrentEventId='',roomServiceNgCurrentVideoFile='';
+    const roomServiceNgShownEventIds=new Set();
     function roomServiceNgVideoForEvent(eventId){
       const key=String(eventId||'room-service-ng');let hash=0;
       for(let i=0;i<key.length;i++)hash=((hash<<5)-hash+key.charCodeAt(i))|0;
@@ -9055,11 +9056,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function showRoomServiceNgVideo(eventId,videoFile=''){
       if(!roomServiceNgScreen||!roomServiceNgVideo)return;
       const selectedFile=['room_service_ng_01.mp4','room_service_ng_02.mp4','room_service_ng_03.mp4'].includes(videoFile)?videoFile:roomServiceNgVideoForEvent(eventId);
-      if(!await window.__sprNamedEvents.claim('video:'+selectedFile))return;
+      const displayEventId=String(eventId||'').trim();
+      if(displayEventId&&roomServiceNgShownEventIds.has(displayEventId))return;
+      if(displayEventId)roomServiceNgShownEventIds.add(displayEventId);
       roomServiceNgCurrentEventId=String(eventId||'');roomServiceNgCurrentVideoFile=selectedFile;
       roomServiceNgClose?.classList.toggle('hidden',['room_service_ng_01.mp4','room_service_ng_02.mp4'].includes(selectedFile));
-      roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=selectedFile;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
-      try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>roomServiceNgFallback?.classList.remove('hidden'))}catch{roomServiceNgFallback?.classList.remove('hidden')}
+      roomServiceNgFallback?.classList.add('hidden');roomServiceNgVideo.src=selectedFile;roomServiceNgVideo.controls=true;roomServiceNgScreen.classList.add('open');roomServiceNgScreen.setAttribute('aria-hidden','false');
+      try{roomServiceNgVideo.currentTime=0;roomServiceNgVideo.load();const play=roomServiceNgVideo.play();if(play?.catch)play.catch(()=>{/* 同室者側で自動再生が制限された場合は、動画上の再生操作を案内する */})}catch{/* 読み込みエラーはvideoのerrorイベントで表示 */}
     }
     async function showRoomServiceNgAftermath(onCovered){
       const overlay=document.createElement('div');
@@ -9113,8 +9116,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function roomServiceHorrorNgAppliedKey(eventId){return `spr-room-service-horror-ng:${playerStorageId}:${eventId}`}
     async function applyRoomServiceHorrorResolution(payload){
-      const resolution=normalizeRoomServiceHorrorResolution(payload);if(!resolution||!roomServiceHorrorEventApplies(resolution))return false;
-      if(roomServiceHorrorAlreadyDone()&&roomServiceHorrorKnownEventId()!==resolution.event_id)return false;
+      const resolution=normalizeRoomServiceHorrorResolution(payload);if(!resolution)return false;
+      const isNgVideo=['hit','video'].includes(resolution.outcome);
+      const sameActiveRoom=Boolean(activeRoom&&roomView.classList.contains('room-active')&&String(resolution.room_no)===String(activeRoom));
+      if(isNgVideo?!sameActiveRoom:!roomServiceHorrorEventApplies(resolution))return false;
+      if(!isNgVideo&&roomServiceHorrorAlreadyDone()&&roomServiceHorrorKnownEventId()!==resolution.event_id)return false;
       const pendingId=String(roomServiceHorrorPending?.eventId||'');
       if(pendingId&&pendingId!==resolution.event_id){
         if(pendingId<resolution.event_id)return false;
