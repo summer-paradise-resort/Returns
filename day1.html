@@ -6420,6 +6420,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     const villaPoolUnderwaterImages=['Royal_Villa_Pool_Underwater.jpg','Royal_Villa_Pool_Underwater_evening.jpg','Royal_Villa_Pool_Underwater_Night.jpg'];
     let villaPoolImagesPreloaded=false;
+    let villaPoolAudioToken=0;
     function updateVillaPoolBackdrop(time=roomTimeIndex()){
       if(!villaPoolExperience)return;
       const safeTime=Math.max(0,Math.min(2,Number(time)||0));
