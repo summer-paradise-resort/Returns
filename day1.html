@@ -5327,7 +5327,31 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               break;
             }catch(error){lastError=error;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)))}
           }
-          if(!result)throw lastError||new Error('chip sync failed');
+          if(!result){
+            const errorText=String(lastError?.message||lastError||'');
+            if(/insufficient chips/i.test(errorText)){
+              // サーバーが賭け額を拒否した場合、失敗した差分を保存待ちのまま再送し続けない。
+              // 後続差分もこの残高を前提にした操作なので破棄し、DBの確定残高へ戻す。
+              try{
+                const {data,error}=await window.supabaseClientSpecial.from('players').select('chips').eq('id',playerId).maybeSingle();
+                if(error)throw error;
+                const remote=Number(data?.chips);
+                if(Number.isFinite(remote)&&remote>=0){
+                  writeCasinoChipOutbox([]);casinoLocalRevision++;
+                  casinoChips=Math.round(remote);previousCasinoChips=casinoChips;
+                  localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();
+                  if(casinoLevel==='blackjack')updateCasinoHud();if(casinoLevel==='hilo')updateHiloHud();
+                  renderPrizeCounter?.('サーバー残高と画面の残高が一致しなかったため、カジノ操作を取り消しました。残高を確認してください。');
+                  if(!casinoChipSyncAlertShown){
+                    casinoChipSyncAlertShown=true;
+                    alert(`チップ残高が不足していたため、カジノ操作を保存できませんでした。サーバーの残高に合わせました。カジノを再読み込みしてから続けてください。\nエラーコード: ${String(lastError?.code||'P0001').slice(0,40)}\n詳細: insufficient chips`);
+                  }
+                  return {ok:false,error:lastError,insufficient:true};
+                }
+              }catch(refreshError){console.warn('casino balance recovery after insufficient chips failed',refreshError)}
+            }
+            throw lastError||new Error('chip sync failed');
+          }
           writeCasinoChipOutbox(readCasinoChipOutbox().filter(item=>item.id!==operation.id));
           casinoChipSyncAlertShown=false;
           if(Number(operation.revision)===casinoLocalRevision){
