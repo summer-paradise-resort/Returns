@@ -5338,7 +5338,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
       }).catch(error=>{
         console.warn('casino chip delta sync failed; operation retained in local outbox',error);
-        if(!casinoChipSyncAlertShown){casinoChipSyncAlertShown=true;alert('チップ残高を同期できませんでした。操作は保存待ちです。カジノのプレイを止め、通信が戻ってから再度開いてください。');}
+        if(!casinoChipSyncAlertShown){
+          casinoChipSyncAlertShown=true;
+          const detail=String(error?.message||error||'原因を取得できませんでした').replace(/[\r\n]+/g,' ').slice(0,220);
+          const code=error?.code?`\nエラーコード: ${String(error.code).slice(0,40)}`:'';
+          alert(`チップ残高を同期できませんでした。操作は保存待ちです。カジノのプレイを止めてください。${code}\n詳細: ${detail}`);
+        }
         return {ok:false,error};
       });
       return casinoChipSyncChain;
