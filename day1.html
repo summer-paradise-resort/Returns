@@ -6717,6 +6717,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let roomPhonePresenceChannel=null,roomPhonePresenceReady=false,roomPresenceAnnounceReady=false,roomEntryNoticeTimer=null;
     let roomPhonePresenceSessionKey='',roomPresenceKnownSessions=new Set();
     let roomPresenceLeaveTimers=new Map(),roomPresenceRecentDepartures=new Map(),roomDepartureEventIds=new Set();
+    // PCブラウザの短いRealtime再接続を退室と誤認しないよう、退室候補を猶予時間だけ保持する。
+    let roomPresenceGraceMembers=new Map();
     function createRoomPresenceSessionKey(){return `${storedPlayerId||storedGuestName||'guest'}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`}
     function roomPresenceMemberSessionKey(member){
       const session=String(member?.presence_session_key||member?.presence_ref||'').trim();if(session)return `session:${session}`;
@@ -6760,7 +6762,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const memberName=String(member?.display_name||'ゲスト').trim()||'ゲスト';
         const personKey=roomPresencePersonKey(member),pendingLeave=roomPresenceLeaveTimers.get(personKey);
         if(pendingLeave){
-          clearTimeout(pendingLeave.timer);roomPresenceLeaveTimers.delete(personKey);roomPresenceKnownSessions.delete(pendingLeave.sessionKey);
+          clearTimeout(pendingLeave.timer);roomPresenceLeaveTimers.delete(personKey);roomPresenceGraceMembers.delete(pendingLeave.sessionKey);roomPresenceKnownSessions.delete(pendingLeave.sessionKey);
           // Presence情報の更新や一瞬の再接続は、退出→再入室として表示しない。
           if(Date.now()-Number(roomPresenceRecentDepartures.get(personKey)||0)>=2500){roomPresenceKnownSessions.add(sessionKey);return}
         }
@@ -6783,15 +6785,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
         const personKey=roomPresencePersonKey(member),sessionKey=roomPresenceMemberSessionKey(member),previous=roomPresenceLeaveTimers.get(personKey);
         if(previous)clearTimeout(previous.timer);
+        roomPresenceGraceMembers.set(sessionKey,member);
+        updateRoomOccupancyUi();syncRoomPhoneSoloWait();
         const timer=setTimeout(()=>{
           roomPresenceLeaveTimers.delete(personKey);
-          const members=roomPhonePresenceMembers();
+          const members=roomPhoneRawPresenceMembers();
           const sessionStillPresent=members.some(current=>roomPresenceMemberSessionKey(current)===sessionKey);
           const personStillPresent=members.some(current=>roomPresencePersonKey(current)===personKey);
-          if(sessionStillPresent||personStillPresent)return;
+          roomPresenceGraceMembers.delete(sessionKey);
+          if(sessionStillPresent||personStillPresent){updateRoomOccupancyUi();syncRoomPhoneSoloWait();return}
           roomPresenceKnownSessions.delete(sessionKey);
+          updateRoomOccupancyUi();syncRoomPhoneSoloWait();
           showRoomDepartureNotice(memberName,personKey);
-        },900);
+        },10000);
         roomPresenceLeaveTimers.set(personKey,{timer,sessionKey});
       });
     }
@@ -7154,12 +7160,20 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{await roomPhonePresenceChannel.track(roomPhonePresencePayload(choice));return true}
       catch(e){console.warn('room phone presence track',e);return false}
     }
-    function roomPhonePresenceMembers(){
+    function roomPhoneRawPresenceMembers(){
       if(!roomPhonePresenceChannel?.presenceState)return [];
       try{
         const state=roomPhonePresenceChannel.presenceState()||{};
         return Object.values(state).flat().filter(member=>String(member?.room_no||'')===String(activeRoom||''));
       }catch{return []}
+    }
+    function roomPhonePresenceMembers(){
+      const current=roomPhoneRawPresenceMembers(),sessions=new Set(current.map(roomPresenceMemberSessionKey)),people=new Set(current.map(roomPresencePersonKey));
+      roomPresenceGraceMembers.forEach(member=>{
+        if(String(member?.room_no||'')!==String(activeRoom||''))return;
+        if(!sessions.has(roomPresenceMemberSessionKey(member))&&!people.has(roomPresencePersonKey(member)))current.push(member);
+      });
+      return current;
     }
     function roomOccupancyPeople(){
       if(!activeRoom)return [];
@@ -7334,7 +7348,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomPhonePresenceSessionKey='';
       roomPresenceKnownSessions=new Set();
       roomPresenceLeaveTimers.forEach(item=>clearTimeout(item.timer));roomPresenceLeaveTimers=new Map();
-      roomPresenceRecentDepartures=new Map();roomDepartureEventIds=new Set();
+      roomPresenceRecentDepartures=new Map();roomDepartureEventIds=new Set();roomPresenceGraceMembers=new Map();
       villaPoolPendingBroadcasts=[];
     }
     async function startRoomPhonePresence(room){
@@ -8587,7 +8601,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       clock.textContent=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);
       clock.dateTime=now.toISOString();
     }
-    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);if(roomPhonePresenceReady)void trackRoomPhonePresence();updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
+    function chooseRoomScene(scene){const order=activeRoomSceneOrder();if(!order.includes(scene))return;if(villaPoolExperience?.classList.contains('open'))closeVillaPoolExperience(true);const previousScene=selectedRoomScene;selectedRoomScene=scene;roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');updateRoomPhoto(true);updateRoomPhoneUi();if(scene==='phone'&&roomPhoneCallState==='ringing'&&!roomPhoneDeclinedLocally())attemptRoomPhoneRing()}
     function stepRoomScene(amount){const order=activeRoomSceneOrder();if(!order.length)return;const index=Math.max(0,order.indexOf(selectedRoomScene));chooseRoomScene(order[(index+amount+order.length)%order.length])}
     roomSceneButtons.forEach(button=>button.addEventListener('click',()=>chooseRoomScene(button.dataset.roomScene)));
     document.getElementById('roomScenePrev').addEventListener('click',()=>stepRoomScene(-1));
