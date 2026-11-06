@@ -8613,6 +8613,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const sharedOrders=(shared.data||[]).reverse().map(parseRoomServiceOrderMessage).filter(Boolean);
         roomMessageCache=[];
         roomServiceCache=(o.data||[]).reverse().map(roomSharedOrder);renderChat();renderRoomServiceHistory();
+        (o.data||[]).forEach(trackNewRoomServiceDeliveryOrder);
         sharedOrders.forEach(trackNewRoomServiceDeliveryOrder);
         receipts.forEach(receipt=>applyRoomServiceReceipt(receipt,{announce:true}));
         evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
@@ -8782,6 +8783,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       failed.forEach(result=>console.warn('room service order share',result.reason));return failed.length<results.length;
     }
     function roomServiceReceiptOrders(payload){
+      const known=new Map(roomServiceDeliveryOrders.map(order=>[String(order.id),order]));
+      const ids=Array.isArray(payload?.order_ids)?payload.order_ids:Array.isArray(payload?.ids)?payload.ids:null;
+      if(ids)return ids.map(id=>known.get(String(id))).filter(Boolean);
       return (Array.isArray(payload?.orders)?payload.orders:[]).map(normalizeRoomServiceDeliveryOrder).filter(order=>order.id&&order.room);
     }
     function applyRoomServiceReceipt(payload,{announce=true}={}){
@@ -9032,9 +9036,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
         if(existing){applyRoomServiceReceipt(existing,{announce:true});return true}
         const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)throw new Error('プレイヤー情報または接続先を確認できません。');
+        // 注文内容は spr_room_service_orders に保存済みなので、共有記録にはIDだけを入れて
+        // spr_room_messages.body のサイズ制約に触れないようにする。
         const payload={
           room_no:String(activeRoom),received_by:String(playerId),received_name:String(activeGuest||storedGuestName||'ゲスト'),received_at:new Date().toISOString(),
-          orders:orders.map(order=>({id:String(order.id),room_no:String(order.room),player_id:String(order.playerId||''),display_name:String(order.guest||'ゲスト'),items:order.items,created_at:new Date(order.createdAt).toISOString()}))
+          order_ids:orders.map(order=>String(order.id))
         };
         stage='受け取り記録の保存';
         const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(activeRoom),player_id:playerId,display_name:'ROOM SERVICE',body:ROOM_SERVICE_RECEIPT_PREFIX+JSON.stringify(payload)});
