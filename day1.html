@@ -3555,9 +3555,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }catch(e){console.warn('special interruption sync',e);return fallback}
     }
     async function restoreChipsAfterInterruptedSpecial(stake){
-      const value=Math.max(0,Math.round(Number(stake)||0));if(!value)return;
-      casinoChips=value;previousCasinoChips=value;localStorage.setItem(casinoChipKey,String(value));syncCasinoBalances();
-      try{await queueCasinoChipSync(value)}catch(e){console.warn('interrupted chip restore',e)}
+      // SPECIAL TABLEでは決着までplayers.chipsを減らさないため、中断時に絶対値を書き戻さない。
+      // 古いstakeで現在残高を上書きしないよう、保存済みの最新残高を読み直す。
+      await refreshCasinoChipsFromSupabase();
+      syncCasinoBalances();
     }
     async function leaveInterruptedSpecial({returnToCasino=true,sessionId='',stake=0}={}){
       const id=String(sessionId||activeSpecialSessionId||'').trim();
@@ -4828,26 +4829,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         hiloScreen.querySelector('.casino-return').classList.add('hidden');
       }
     }
-    // オールイン決着は残高を完全確定し、Supabaseへ保存・照合する。
-    // 通常のBET最低額（VIP 100,000 CHIP）や表示用キャッシュを補填には使わない。
+    // SPECIAL TABLEの決着は「開始時の賭け額に対する差分」として一度だけ記録する。
+    // 同じ決着処理が再実行されても、operation_idにより二重加算されない。
     async function saveSpecialAllInResult(targetChips){
       const target=Math.max(0,Math.round(Number(targetChips)||0));
-      casinoChips=target;previousCasinoChips=target;
+      const delta=target-Math.max(0,Math.round(Number(specialStake)||0));
+      casinoChips=target;previousCasinoChips=target;casinoLocalRevision++;
       localStorage.setItem(casinoChipKey,String(target));syncCasinoBalances();
-      await queueCasinoChipSync(target);
-      if(!window.supabaseClientSpecial)return false;
-      try{
-        const playerId=await ensureStoredPlayerId();
-        if(!playerId)return false;
-        for(let attempt=0;attempt<3;attempt++){
-          const {data,error}=await window.supabaseClientSpecial.from('players').select('chips').eq('id',playerId).maybeSingle();
-          if(!error&&data&&Number(data.chips)===target)return true;
-          const {error:writeError}=await window.supabaseClientSpecial.from('players')
-            .update({chips:target,last_seen_at:new Date().toISOString()}).eq('id',playerId);
-          if(writeError)console.warn('all-in settlement retry',writeError);
-        }
-      }catch(error){console.warn('all-in settlement verification',error)}
-      return false;
+      if(!delta)return true;
+      const operationId=`special-settlement:${activeSpecialSessionId||playerStorageId}`;
+      const result=await queueCasinoChipDelta(delta,operationId);
+      return !!result?.ok;
     }
     async function finishSpecial(win,score={}){
       if(specialAllInSettlementInProgress)return;
@@ -5308,7 +5300,60 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     let previousCasinoChips=casinoChips;
     let casinoChipSyncChain=Promise.resolve();
     let casinoChipRefreshPromise=null;
+    let casinoLocalRevision=0;
+    let casinoChipSyncAlertShown=false;
     let specialAllInSettlementInProgress=false;
+    const casinoChipOutboxKey=`spr-casino-chip-outbox:${playerStorageId}`;
+    function readCasinoChipOutbox(){
+      try{const value=JSON.parse(localStorage.getItem(casinoChipOutboxKey)||'[]');return Array.isArray(value)?value:[]}catch{return []}
+    }
+    function writeCasinoChipOutbox(items){localStorage.setItem(casinoChipOutboxKey,JSON.stringify(items))}
+    function makeCasinoOperationId(){return globalThis.crypto?.randomUUID?.()||`chip-${Date.now()}-${Math.random().toString(36).slice(2)}`}
+    function flushCasinoChipOutbox(){
+      casinoChipSyncChain=casinoChipSyncChain.catch(()=>{}).then(async()=>{
+        while(true){
+          const outbox=readCasinoChipOutbox();if(!outbox.length)return {ok:true};
+          const operation=outbox[0];
+          const playerId=await ensureStoredPlayerId();if(!playerId)throw new Error('player id unavailable');
+          let result=null,lastError=null;
+          for(let attempt=0;attempt<3;attempt++){
+            try{
+              const {data,error}=await window.supabaseClientSpecial.rpc('spr_apply_chip_delta',{
+                p_player_id:playerId,p_delta:Number(operation.delta),p_operation_id:String(operation.id)
+              });
+              if(error)throw error;
+              result=Array.isArray(data)?data[0]:data;
+              if(!result||!Number.isFinite(Number(result.chips)))throw new Error('chip RPC returned no balance');
+              break;
+            }catch(error){lastError=error;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)))}
+          }
+          if(!result)throw lastError||new Error('chip sync failed');
+          writeCasinoChipOutbox(readCasinoChipOutbox().filter(item=>item.id!==operation.id));
+          casinoChipSyncAlertShown=false;
+          if(Number(operation.revision)===casinoLocalRevision){
+            casinoChips=Math.max(0,Math.round(Number(result.chips)||0));previousCasinoChips=casinoChips;
+            localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();
+            if(casinoLevel==='blackjack')updateCasinoHud();if(casinoLevel==='hilo')updateHiloHud();
+          }
+        }
+      }).catch(error=>{
+        console.warn('casino chip delta sync failed; operation retained in local outbox',error);
+        if(!casinoChipSyncAlertShown){casinoChipSyncAlertShown=true;alert('チップ残高を同期できませんでした。操作は保存待ちです。カジノのプレイを止め、通信が戻ってから再度開いてください。');}
+        return {ok:false,error};
+      });
+      return casinoChipSyncChain;
+    }
+    function queueCasinoChipDelta(delta,operationId=makeCasinoOperationId()){
+      const amount=Math.round(Number(delta)||0);
+      if(!amount)return Promise.resolve({ok:true,chips:casinoChips});
+      if(!window.supabaseClientSpecial)return Promise.resolve({ok:false,error:new Error('Supabase unavailable')});
+      const outbox=readCasinoChipOutbox();
+      const id=String(operationId);
+      const existing=outbox.find(item=>item.id===id);
+      if(existing&&Number(existing.delta)!==amount)return Promise.resolve({ok:false,error:new Error('operation id reused with a different delta')});
+      if(!existing){outbox.push({id,delta:amount,revision:casinoLocalRevision});writeCasinoChipOutbox(outbox)}
+      return flushCasinoChipOutbox();
+    }
     let casinoLevel='hub', casinoVipMode=false;
     let blackjackBet=100, blackjackBetStep=100, bjDeck=[], playerHand=[], dealerHand=[], bjActive=false, dealerHidden=true;
     let hiloBet=100, hiloBetStep=100, hiloDeck=[], hiloFirst=null, hiloSecond=null, hiloActive=false;
@@ -5340,7 +5385,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(!window.supabaseClientSpecial)return casinoChips;
         const playerId=await ensureStoredPlayerId();
         if(!playerId)return casinoChips;
-        // 直前の自端末からの更新があれば、先に送信完了させてから読み直す。
+        // 未送信の差分を同じoperation_idで再送してから、最新残高を読み直す。
+        try{await flushCasinoChipOutbox()}catch{}
         try{await casinoChipSyncChain}catch{}
         const {data,error}=await window.supabaseClientSpecial
           .from('players')
@@ -5411,9 +5457,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function casinoSave(){
       casinoChips=Math.max(0,Math.round(Number(casinoChips)||0));
-      queueCasinoChipSync(casinoChips);
+      const delta=casinoChips-previousCasinoChips;
+      previousCasinoChips=casinoChips;casinoLocalRevision++;
+      localStorage.setItem(casinoChipKey,String(casinoChips));
+      if(delta)void queueCasinoChipDelta(delta);
       tryTriggerSeriousEmily();
-      previousCasinoChips=casinoChips;
     }
     const casinoChipAwardInFlight=new Set();
     window.__sprAwardCasinoChipsOnce=async(amount,awardId)=>{
@@ -5426,10 +5474,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         await refreshCasinoChipsFromSupabase();
         if(localStorage.getItem(key)==='1')return false;
         casinoChips=Math.max(0,Math.round(Number(casinoChips)||0))+value;
-        previousCasinoChips=casinoChips;localStorage.setItem(key,'1');localStorage.setItem(casinoChipKey,String(casinoChips));
+        previousCasinoChips=casinoChips;casinoLocalRevision++;localStorage.setItem(casinoChipKey,String(casinoChips));
         syncCasinoBalances();renderPrizeCounter();
         if(casinoLevel==='blackjack')updateCasinoHud();if(casinoLevel==='hilo')updateHiloHud();
-        await queueCasinoChipSync(casinoChips);return true;
+        const saved=await queueCasinoChipDelta(value,`room-award:${id}`);
+        if(!saved?.ok){await refreshCasinoChipsFromSupabase();return false}
+        localStorage.setItem(key,'1');return true;
       }finally{casinoChipAwardInFlight.delete(key)}
     };
     const adminEventReset=document.getElementById('adminEventReset');
@@ -5541,18 +5591,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(key==='antidote'&&!window.__sprIsHernandoPoisoned?.()){renderPrizeCounter('今は酔い覚ましを飲む必要はなさそうだ。');return}
       if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
-      const before=casinoChips;
+      const purchaseId=makeCasinoOperationId();
       try{
-        const {data,error}=await window.supabaseClientSpecial.from('players').update({chips:before-price,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before).select('chips').maybeSingle();
-        if(error)throw error;if(!data){renderPrizeCounter('チップ残高が更新されています。もう一度交換してください。');await refreshCasinoChipsFromSupabase();return}
-        casinoChips=Math.max(0,Number(data.chips)||0);previousCasinoChips=casinoChips;localStorage.setItem(casinoChipKey,String(casinoChips));syncCasinoBalances();
+        const payment=await queueCasinoChipDelta(-price,`prize-payment:${purchaseId}`);
+        if(!payment?.ok){await refreshCasinoChipsFromSupabase();renderPrizeCounter('チップ残高を同期できませんでした。残高を確認してから、もう一度お試しください。');return}
         if(key!=='antidote'){
           try{const qty=await remoteInventoryAdjust(key,1);if(qty===null)throw new Error('inventory unavailable');const items=loadBelongings();items[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(items));}
-          catch(error){await window.supabaseClientSpecial.from('players').update({chips:before,last_seen_at:new Date().toISOString()}).eq('id',playerId).eq('chips',before-price);casinoChips=before;previousCasinoChips=before;localStorage.setItem(casinoChipKey,String(before));syncCasinoBalances();throw error}
+          catch(error){
+            const refund=await queueCasinoChipDelta(price,`prize-refund:${purchaseId}`);
+            if(!refund?.ok)console.warn('prize purchase refund remains pending',purchaseId);
+            throw error;
+          }
         }
         if(key==='antidote'){
           const cleared=await window.__sprClearHernandoPoison?.();
-          if(!cleared)throw new Error('poison state could not be cleared');
+          if(!cleared){const refund=await queueCasinoChipDelta(price,`prize-refund:${purchaseId}`);if(!refund?.ok)console.warn('antidote refund remains pending',purchaseId);throw new Error('poison state could not be cleared')}
           renderPrizeCounter('酔いざましを交換しました。');
           if(typeof renderRoomBelongings==='function')renderRoomBelongings();
           mysteryShow('酔いざまし','強すぎるアルコールにはこれがよく効く。\n酔いが治った。',[{label:'閉じる',run:mysteryClose}],'✚');
