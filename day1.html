@@ -5582,14 +5582,36 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       prizeMessage.textContent=message||'お望みの景品をお選びください。';
       if(mysteryCounterReady)renderMysteryCounter();
     }
+    let ticketExchangeBusy=false;
     async function buyTicket(key,label,price){
-      if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
-      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
+      if(ticketExchangeBusy)return;
+      ticketExchangeBusy=true;
+      const button=key==='afternoonTeaTicket2'?buyAfternoonTea2Ticket:key==='extraDrinkTicket'?buyExtraDrinkTicket:buyCafeDrinkTicket;
+      if(button)button.disabled=true;
       try{
-        const {data,error}=await window.supabaseClientSpecial.rpc('spr_exchange_prize',{p_player_id:playerId,p_item_key:key,p_price:price});if(error)throw error;
-        casinoChips=Math.max(0,Number(data?.chips)||0);const qty=Math.max(0,Number(data?.quantity)||0),belongings=loadBelongings();belongings[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));localStorage.setItem(casinoChipKey,String(casinoChips));previousCasinoChips=casinoChips;
+        // 端末内キャッシュではなく、交換直前のサーバー残高を確認する。
+        await refreshCasinoChipsFromSupabase();
+        if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
+        const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
+        const {data,error}=await window.supabaseClientSpecial.rpc('spr_exchange_prize',{p_player_id:playerId,p_item_key:key,p_price:price});
+        if(error)throw error;
+        // PostgreSQL RETURNS TABLE は配列、JSON/単一行RPCはオブジェクトで返る。
+        const result=Array.isArray(data)?data[0]:data;
+        const nextChips=Number(result?.chips),nextQuantity=Number(result?.quantity);
+        if(!result||!Number.isFinite(nextChips)||!Number.isFinite(nextQuantity))throw new Error('交換結果に残高または所持数が含まれていません。');
+        casinoChips=Math.max(0,Math.round(nextChips));const qty=Math.max(0,Math.floor(nextQuantity)),belongings=loadBelongings();belongings[key]=qty;localStorage.setItem(belongingsKey,JSON.stringify(belongings));localStorage.setItem(casinoChipKey,String(casinoChips));previousCasinoChips=casinoChips;
         syncCasinoBalances();renderPrizeCounter(`${label}を1枚交換しました。所持 ${qty}`);if(typeof renderRoomBelongings==='function')renderRoomBelongings();if(key==='cafeDrinkTicket'&&typeof syncCafeTicketFrames==='function')syncCafeTicketFrames();
-      }catch(e){console.warn('prize exchange sync',e);renderPrizeCounter('景品交換を同期できませんでした。もう一度お試しください。')}
+      }catch(e){
+        console.warn('prize exchange sync',e);
+        const clean=value=>String(value??'').replace(/[\r\n]+/g,' ').slice(0,180);
+        const code=clean(e?.code||e?.statusCode||e?.status||e?.name||'不明');
+        const detail=clean(e?.message||e||'原因を取得できませんでした');
+        const extra=[e?.details?`補足: ${clean(e.details)}`:'',e?.hint?`ヒント: ${clean(e.hint)}`:''].filter(Boolean).join(' / ');
+        renderPrizeCounter(`交換結果を確認できませんでした。残高と所持数を確認してください。エラーコード: ${code} / 詳細: ${detail}${extra?` / ${extra}`:''}`);
+      }finally{
+        ticketExchangeBusy=false;
+        renderPrizeCounter(prizeMessage.textContent);
+      }
     }
     async function buyStoryItem(key,label,price){
       await refreshCasinoChipsFromSupabase();
