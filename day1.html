@@ -9005,31 +9005,46 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(error)throw error;
       return (data||[]).map(parseRoomServiceReceiptMessage).filter(Boolean).find(receipt=>roomServiceReceiptOrders(receipt).some(order=>ids.has(String(order.id))))||null;
     }
+    function roomServiceReceiptErrorDetail(error){
+      if(!error)return '原因の詳細が返されませんでした。';
+      const parts=[];
+      if(error.code)parts.push(`コード ${error.code}`);
+      if(error.status)parts.push(`HTTP ${error.status}`);
+      if(error.message)parts.push(String(error.message));
+      if(error.details)parts.push(`詳細 ${error.details}`);
+      if(error.hint)parts.push(`補足 ${error.hint}`);
+      if(!parts.length)parts.push(String(error));
+      return parts.join(' ／ ').replace(/\s+/g,' ').slice(0,320);
+    }
     async function receiveRealRoomService(){
       const orders=dueRoomServiceOrdersHere();if(!orders.length)return false;
       if(roomServiceRealReceivePending)return true;
       roomServiceRealReceivePending=true;roomDoorReceive.disabled=true;roomDoorServiceStatus.textContent='ルームサービスを受け取っています。';
+      let stage='プレイヤー情報の確認',lookupError=null;
       try{
         let existing=null;
+        stage='過去の受け取り記録の確認';
         try{existing=await findRoomServiceReceipt(orders)}
-        catch(lookupError){
-          // 受け取り履歴の検索だけが失敗しても、受け取り記録の作成を試す。
-          // 記録の挿入が成功すれば、注文者以外の同室者にも同期できる。
-          console.warn('room service receipt lookup; continuing with insert',lookupError);
+        catch(error){
+          lookupError=error;
+          // 履歴検索だけが失敗した場合は、新しい受け取り記録の保存も試す。
+          console.warn('room service receipt lookup; continuing with insert',error);
         }
         if(existing){applyRoomServiceReceipt(existing,{announce:true});return true}
-        const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)throw new Error('プレイヤー情報を確認できません。');
+        const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)throw new Error('プレイヤー情報または接続先を確認できません。');
         const payload={
           room_no:String(activeRoom),received_by:String(playerId),received_name:String(activeGuest||storedGuestName||'ゲスト'),received_at:new Date().toISOString(),
           orders:orders.map(order=>({id:String(order.id),room_no:String(order.room),player_id:String(order.playerId||''),display_name:String(order.guest||'ゲスト'),items:order.items,created_at:new Date(order.createdAt).toISOString()}))
         };
+        stage='受け取り記録の保存';
         const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(activeRoom),player_id:playerId,display_name:'ROOM SERVICE',body:ROOM_SERVICE_RECEIPT_PREFIX+JSON.stringify(payload)});
         if(error)throw error;
         applyRoomServiceReceipt(payload,{announce:false});return true;
       }catch(error){
-        console.warn('room service receipt sync',error);
-        const detail=String(error?.message||error?.details||error?.hint||error||'不明なエラー').replace(/\s+/g,' ').slice(0,180);
-        roomDoorServiceStatus.textContent=`受け取りを同期できませんでした（${detail}）。通信状態を確認して、もう一度お試しください。`;return false;
+        console.warn('room service receipt sync', {stage,error,lookupError});
+        const details=[`${stage}で失敗`,roomServiceReceiptErrorDetail(error)];
+        if(lookupError)details.push(`受け取り履歴の検索でも失敗: ${roomServiceReceiptErrorDetail(lookupError)}`);
+        roomDoorServiceStatus.textContent=`受け取りを同期できませんでした。原因：${details.join(' ／ ')}`;return false;
       }finally{roomServiceRealReceivePending=false;roomDoorReceive.disabled=false}
     }
     function roomServiceHorrorRandomValue(){
