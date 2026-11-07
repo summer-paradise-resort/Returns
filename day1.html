@@ -10393,6 +10393,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       setDayUI(safe);renderAutoDayButton();scheduleAutoDayCheck();
       if(autoDayEnabled&&(publishAdvance||safe>manualDay))void publishDerivedDayIfNeeded(manualMarker,safe);
       if(redirect&&safe!==THIS_DAY)goDay(safe);
+      // DAYが進んだ後もページを開いたままの参加者に、前日分のNGドリンク判定を行う。
+      // startRuntime時だけの判定だと、起動後のDAY更新を取りこぼしていた。
+      if(!adminPreviewDay&&safe>1)void window.__sprProcessNgDrinkMorningPenalty?.(safe).catch(error=>console.warn('NG drink morning penalty',error));
       return safe;
     }catch(e){console.warn('day sync',e);renderAutoDayButton();return Number(currentEl?.textContent)||THIS_DAY}
   }
