@@ -1981,7 +1981,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               <div class="prize-item-side"><b>20,000 CHIP</b><span id="afternoonTea2Owned">所持 0</span><button id="buyAfternoonTea2Ticket" class="prize-exchange" type="button">交換する</button></div>
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
-            <div class="prize-item"><div><strong>？？？</strong><small>ミステリーBOX 0.5%と同じ景品です。</small></div><div class="prize-item-side"><b>10,000,000,000 CHIP</b><span id="ultraMysteryOwned">所持 0</span><button id="buyUltraMystery" class="prize-exchange" type="button">交換する</button></div></div>
+            <div class="prize-item"><div><strong>ロイヤルミステリーBOX</strong><small>一回限りの特別な抽選。中身は開けてからのお楽しみ。<br>0.5%　？？？<br>2%　リゾートペットの名付け親権（合計3枚）<br>3%　？？？<br>94.5%　ランダムコースター</small></div><div class="prize-item-side"><b>10,000,000,000 CHIP</b><button id="buyUltraMystery" class="prize-exchange" type="button">BOXを開ける</button></div></div>
             <div class="prize-item mystery-counter-item">
               <div>
                 <strong>ミステリーボックス</strong>
@@ -2173,6 +2173,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'刺せます。',max:Infinity},
+      resortPetNamingRight:{label:'リゾートペットの名付け親権',detail:'リゾートペットの名前を決められる特別な権利。全体で限定3枚。',max:Infinity},
       mysteryPostcard01:{label:'ポストカード・名前を呼ぶ海鳥',detail:'異変動物ポストカード No.01',max:Infinity,image:'postcard_seabird.png'},
       mysteryPostcard02:{label:'ポストカード・漂流ラッコ',detail:'異変動物ポストカード No.02',max:Infinity,image:'postcard_otter.png'},
       mysteryPostcard03:{label:'ポストカード・巨大な何か',detail:'異変動物ポストカード No.03',max:Infinity,image:'postcard_giant_eye.png'},
@@ -5669,7 +5670,40 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     document.getElementById('buyDimensionalBag')?.addEventListener('click',()=>buyStoryItem('dimensionalBag','次元バック',200));
     document.getElementById('buyFreshAcorn')?.addEventListener('click',()=>buyStoryItem('freshAcorn','新鮮なドングリ',500));
     document.getElementById('buyAntidote')?.addEventListener('click',()=>buyStoryItem('antidote','酔い覚まし',5000));
-    document.getElementById('buyUltraMystery')?.addEventListener('click',()=>buyStoryItem('mysteryKnife','？？？',10000000000));
+    let royalMysteryBusy=false;
+    async function openRoyalMysteryBox(){
+      if(royalMysteryBusy)return;
+      royalMysteryBusy=true;
+      const button=document.getElementById('buyUltraMystery');if(button)button.disabled=true;
+      try{
+        await refreshCasinoChipsFromSupabase();
+        const price=10000000000;
+        if(casinoChips<price){renderPrizeCounter(`交換には${casinoMoney(price)} CHIP必要です。`);return}
+        const roll=Math.random()*100;
+        if(roll<0.5){await buyStoryItem('mysteryKnife','？？？',price);return}
+        if(roll<2.5){await buyStoryItem('resortPetNamingRight','リゾートペットの名付け親権',price);return}
+        if(roll<5.5){
+          const n=1+Math.floor(Math.random()*7),key=`mysteryPostcard${String(n).padStart(2,'0')}`;
+          await buyStoryItem(key,'？？？',price);return;
+        }
+        const playerId=await sprPlayerId();
+        if(!playerId||!window.supabaseClientSpecial){renderPrizeCounter('プレイヤー情報を確認できません。SECURITY CHECKから入り直してください。');return}
+        const purchaseId=makeCasinoOperationId();
+        const payment=await queueCasinoChipDelta(-price,`royal-mystery-payment:${purchaseId}`);
+        if(!payment?.ok){await refreshCasinoChipsFromSupabase();renderPrizeCounter('チップ残高を同期できませんでした。残高を確認してから、もう一度お試しください。');return}
+        const n=Math.floor(Math.random()*89),file=`coaster${String(n).padStart(2,'0')}.PNG`,cards=loadCoasterInventory();
+        cards.push({client_id:sprSafeUuid(),venue:'ROYAL MYSTERY BOX',file,meal:'ロイヤルミステリーBOX',drink:'',at:new Date().toISOString()});
+        localStorage.setItem(coasterInventoryKey,JSON.stringify(cards));updateCollectionButton();renderRoomCollection();
+        const label=sprCoasterLabel(file);renderPrizeCounter(`ロイヤルミステリーBOXから「${label}」を手に入れました。`);
+        if(typeof renderRoomBelongings==='function')renderRoomBelongings();
+        mysteryShow('ロイヤルミステリーBOX','ランダムコースターを手に入れました。',[{label:'受け取る',run:mysteryClose}],'✦');
+        const image=document.createElement('img');image.src=file;image.alt=label;image.className='mystery-coaster-image';
+        image.onerror=()=>{mysteryBoxArt.textContent='✦';mysteryBoxStatus.textContent=`${file} を読み込めませんでした。画像ファイル名をご確認ください。`};
+        mysteryBoxArt.replaceChildren(image);
+      }catch(error){console.warn('royal mystery box failed',error);renderPrizeCounter('ロイヤルミステリーBOXを開けられませんでした。残高と所持品をご確認ください。');await hydratePersistentState()}
+      finally{royalMysteryBusy=false;if(button)button.disabled=false}
+    }
+    document.getElementById('buyUltraMystery')?.addEventListener('click',openRoyalMysteryBox);
 
     const topBgmToggle=document.getElementById('topBgmToggle');
     const exploreBgm=document.getElementById('exploreBgm');
