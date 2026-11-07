@@ -2796,13 +2796,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const teaTradeConfirmPanel=document.getElementById('teaTradeConfirmPanel'),teaTradePartner=document.getElementById('teaTradePartner'),teaTradePartnerName=document.getElementById('teaTradePartnerName'),teaTradeConfirm=document.getElementById('teaTradeConfirm'),teaTradeStatus=document.getElementById('teaTradeStatus');
     let currentTeaPartyMembers=[];
     const TEA_TRADE_CONFIRM_PREFIX='[SPR_COASTER_EXCHANGE_CONFIRM_V1]';
-    function teaPhoneEchoFlagKey(){return `tea-phone-echo:${resortDayToken()}:${cafeServiceDate()}`}
-    function teaPhoneEchoLocalKey(){return `spr-tea-phone-echo:${playerStorageId}:${resortDayToken()}:${cafeServiceDate()}`}
+    function teaPhoneEchoFlagKey(){return `tea-phone-echo-v2:${resortDayToken()}:${cafeServiceDate()}`}
+    function teaPhoneEchoLocalKey(){return `spr-tea-phone-echo-v2:${playerStorageId}:${resortDayToken()}:${cafeServiceDate()}`}
     function teaPhoneOwnStatements(messages){
+      // お茶会の会話は本人が送信したメッセージ単位で、直近4件だけ電話に載せる。
       return (messages||[]).filter(m=>String(m.player_id)===String(storedPlayerId)&&!parseTeaTradeMarker(m.body))
         .map(m=>String(m.body||'').trim()).filter(Boolean)
-        .flatMap(line=>{const parts=line.match(/[^。！？!?]+[。！？!?]?/g)||[line];return parts.map(v=>v.trim()).filter(Boolean)})
-        .slice(-3);
+        .slice(-4);
     }
     function readCachedTeaPhoneEcho(){
       const remote=windowSprFlagCache[teaPhoneEchoFlagKey()];
@@ -6728,7 +6728,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           if(msgError)throw msgError;
           const pairs=exchangePairsFromMessages(messages||[]);
           if(!pairs.some(([a,b])=>a===String(storedPlayerId)||b===String(storedPlayerId)))continue;
-          // 実際の本人の発言だけを、直近から最大3文使う。
+          // 実際の本人の発言だけを、直近から最大4件使う。
           const statements=teaPhoneOwnStatements(messages);
           void cacheTeaPhoneEcho(party.id,messages);
           return {statements,partyId:party.id};
@@ -6738,16 +6738,18 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function showRoomPhoneTeaSentences(eventId,sentences,durationSeconds=15){
       clearRoomPhonePromoTextTimers();
-      const lines=(Array.isArray(sentences)?sentences:[]).filter(Boolean).slice(0,3);
+      const lines=(Array.isArray(sentences)?sentences:[]).filter(Boolean).slice(0,4);
       const duration=Number.isFinite(durationSeconds)&&durationSeconds>0?durationSeconds:15;
       if(!lines.length){roomPhoneLastMessage='……どこかで聞いた音がする。';updateRoomPhoneUi();return;}
+      // 音声が短くても4件を急いで流さず、最低4.5秒ずつ間隔を空ける。
+      const displaySpanMs=Math.max(duration*1000,lines.length*4500);
       lines.forEach((line,index)=>{
         const display=()=>{
           if(roomPhoneAudioSequenceEventId!==String(eventId))return;
           roomPhoneLastMessage=`「${line}」`;updateRoomPhoneUi();
         };
         if(index===0)display();
-        else roomPhonePromoTextTimers.push(setTimeout(display,Math.floor(duration*1000*index/lines.length)));
+        else roomPhonePromoTextTimers.push(setTimeout(display,Math.floor(displaySpanMs*index/lines.length)));
       });
     }
     // 02は確認済みの当日交換者に優先、ほかは01と波音を従来どおり選ぶ。
@@ -7613,12 +7615,17 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       cancelRoomPhoneDeclineStop();roomPhoneDeclineSilencedEventId='';
       stopRoomPhoneRing();
       if(status==='answered'){
-        if(previousStatus==='ringing'||announce)markRoomPhoneDone(row.id);
+        const isNewAnswer=previousStatus==='ringing'||announce;
+        // 回答済みイベントをDBから復元した端末も、その日の体験済みとして固定する。
+        markRoomPhoneDone(row.id);
         roomPhoneCallState='answered';
-        if(previousStatus!=='answered')roomPhoneLastMessage='受話器を取った。';
+        if(previousStatus!=='answered'){
+          // DBから復元した回答済みイベントは再生済みの履歴なので、受話器表示を再表示しない。
+          roomPhoneLastMessage=isNewAnswer?'受話器を取った。':'';
+        }
         updateRoomPhoneUi();
         trackRoomPhonePresence('answered');
-        if(announce||previousStatus==='ringing')startRoomPhoneConversation(row);
+        if(isNewAnswer)startRoomPhoneConversation(row);
         return;
       }
       roomPhoneCallState=status==='missed'?'missed':'idle';
@@ -8725,7 +8732,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           window.supabaseClientSpecial.from('spr_room_messages').select('id,room_no,player_id,display_name,body,created_at').eq('room_no',room).like('body',`${ROOM_SERVICE_RECEIPT_PREFIX}%`).order('created_at',{ascending:false}).limit(100),
           // 注文者以外の端末でも配達時刻を復元できる、チャットには表示しない客室共有記録。
           window.supabaseClientSpecial.from('spr_room_messages').select('id,room_no,player_id,display_name,body,created_at').eq('room_no',room).like('body',`${ROOM_SERVICE_ORDER_PREFIX}%`).gte('created_at',since).order('created_at',{ascending:false}).limit(100),
-          window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,player_id,display_name,items,created_at').eq('room_no',room).order('created_at',{ascending:false}).limit(20)
+          // 過去に残った注文を再配達しないよう、同室注文も直近24時間に限定する。
+          window.supabaseClientSpecial.from('spr_room_service_orders').select('id,room_no,player_id,display_name,items,created_at').eq('room_no',room).gte('created_at',since).order('created_at',{ascending:false}).limit(20)
         ]);if(m.error)throw m.error;if(shared.error)throw shared.error;if(o.error)throw o.error;if(activeRoom!==room)return;
         const messageRows=(m.data||[]).reverse(),receipts=messageRows.map(parseRoomServiceReceiptMessage).filter(Boolean);
         const sharedOrders=(shared.data||[]).reverse().map(parseRoomServiceOrderMessage).filter(Boolean);
@@ -8925,7 +8933,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function roomServiceOrderDueAt(order){return Number(order.createdAt||0)+ROOM_SERVICE_DELIVERY_DELAY_MS}
     function roomServicePendingOrders(){
-      const done=loadRoomServiceDeliveredIds();return roomServiceDeliveryOrders.filter(order=>!done.has(String(order.id)));
+      const done=loadRoomServiceDeliveredIds(),cutoff=Date.now()-24*60*60*1000;
+      // 配達記録が欠けた古いDB行も、再入室時に新規配達として復活させない。
+      return roomServiceDeliveryOrders.filter(order=>Number(order.createdAt||0)>=cutoff&&!done.has(String(order.id)));
     }
     function roomServiceDueOrders(now=Date.now()){return roomServicePendingOrders().filter(order=>roomServiceOrderDueAt(order)<=now)}
     function formatRoomServiceDeliveredItems(orders){
