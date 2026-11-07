@@ -6403,7 +6403,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const roomServiceNgScreen=document.getElementById('roomServiceNgScreen'), roomServiceNgVideo=document.getElementById('roomServiceNgVideo'), roomServiceNgClose=document.getElementById('roomServiceNgClose'), roomServiceNgFallback=document.getElementById('roomServiceNgFallback');
     const villaPoolExperience=document.getElementById('villaPoolExperience'), villaPoolBubbles=document.getElementById('villaPoolBubbles'), villaPoolChat=document.getElementById('villaPoolChat'), villaPoolChatUnread=document.getElementById('villaPoolChatUnread'), villaPoolExit=document.getElementById('villaPoolExit');
     const villaPoolInAudio=document.getElementById('villaPoolInAudio'), villaPoolNowAudio=document.getElementById('villaPoolNowAudio'), villaPoolOutAudio=document.getElementById('villaPoolOutAudio');
-    let roomServiceCart={};
+    let roomServiceCart={},roomServiceOrderSubmitting=false;
     const deluxeScenes={
       room:['Deluxe_Ocean_Room.jpg','Deluxe_Ocean_Room_Sunset.jpg','Deluxe_Ocean_Room_Night.jpg'],
       door:['room_door.jpg','room_door.jpg','room_door.jpg'],
@@ -9576,7 +9576,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomServiceCartList.textContent=selected.length?selected.map(([name,qty])=>`${name} × ${qty}`).join(' ／ '):'商品をお選びください。';
       const hasFood=selected.some(([name])=>ROOM_SERVICE_FOOD_IMAGES.has(name));
       const hasDrink=selected.some(([name])=>ROOM_SERVICE_DRINK_NAMES.has(name));
-      roomServiceOrder.disabled=!(hasFood&&hasDrink);
+      roomServiceOrder.disabled=roomServiceOrderSubmitting||!(hasFood&&hasDrink);
       if(roomServiceCartHint)roomServiceCartHint.textContent=!hasFood&&!hasDrink?'お食事またはデザートと、ドリンクをそれぞれお選びください。':!hasFood?'ドリンクのみのご注文はできません。お食事またはデザートを1点以上お選びください。':!hasDrink?'ドリンクを1点以上お選びください。':'ご注文いただけます。';
       document.querySelectorAll('[data-service-item]').forEach(item=>{const name=item.dataset.serviceItem;item.querySelector('[data-service-qty]').textContent=String(roomServiceCart[name]||0)});
     }
@@ -9994,15 +9994,19 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       item.querySelector('[data-service-plus]').addEventListener('click',()=>{roomServiceCart[name]=Math.min(9,(roomServiceCart[name]||0)+1);renderRoomServiceCart()});
     });
     roomServiceOrder.addEventListener('click',async()=>{
-      if(!activeRoom)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));
+      if(!activeRoom||roomServiceOrderSubmitting)return;const roomAtOrder=activeRoom,items=Object.entries(roomServiceCart).filter(([,qty])=>qty>0).map(([name,qty])=>({name,qty}));
       if(!items.some(item=>ROOM_SERVICE_FOOD_IMAGES.has(item.name))||!items.some(item=>ROOM_SERVICE_DRINK_NAMES.has(item.name))){
         renderRoomServiceCart();roomServiceResult.textContent='お食事またはデザートと、ドリンクをそれぞれ1点以上お選びください。';roomServiceResult.classList.remove('hidden');return;
       }
-      const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
-      try{primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
+      // 通信中の連打で同じ内容が複数の注文行として登録されるのを防ぐ。
+      roomServiceOrderSubmitting=true;roomServiceOrder.textContent='送信中…';renderRoomServiceCart();
+      try{
+        const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial){roomServiceResult.textContent='プレイヤー情報を確認できません。';roomServiceResult.classList.remove('hidden');return}
+        primeRoomServiceDoorbellAudio();const {data,error}=await window.supabaseClientSpecial.from('spr_room_service_orders').insert({room_no:roomAtOrder,player_id:playerId,display_name:activeGuest,items}).select('id,room_no,player_id,display_name,items,created_at').single();if(error)throw error;
         roomServiceDeliveryPlayerId=String(playerId);trackNewRoomServiceDeliveryOrder(data);window.__sprArthurOrderPlaced?.(roomAtOrder,items,String(playerId));await shareRoomServiceOrder(data);
-        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);renderRoomServiceCart();roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。3分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
+        Object.keys(roomServiceCart).forEach(key=>roomServiceCart[key]=0);roomServiceResult.textContent=`${roomAtOrder}号室のご注文を承りました。3分ほどでお届けします。注文番号 ${data.id}`;roomServiceResult.classList.remove('hidden');
       }catch(e){console.warn('room service sync',e);roomServiceResult.textContent='注文を送信できませんでした。もう一度お試しください。';roomServiceResult.classList.remove('hidden')}
+      finally{roomServiceOrderSubmitting=false;roomServiceOrder.textContent='この内容で注文する';renderRoomServiceCart()}
     });
     chatSheet.addEventListener('touchstart',event=>{sheetTouchStart=event.touches[0].clientY},{passive:true});
     chatSheet.addEventListener('touchend',event=>{if(event.changedTouches[0].clientY-sheetTouchStart>70)closeChatSheet()},{passive:true});
