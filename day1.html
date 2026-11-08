@@ -8833,15 +8833,28 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
 
     function roomServiceDeliveredStorageKey(){return `spr-room-service-delivered:${handoffPlayerId||roomServiceDeliveryPlayerId||playerStorageId||'guest'}`}
     function roomServiceAlertedStorageKey(){return `spr-room-service-alerted:${handoffPlayerId||roomServiceDeliveryPlayerId||playerStorageId||'guest'}`}
-    function loadRoomServiceDeliveredIds(){
-      try{const raw=JSON.parse(localStorage.getItem(roomServiceDeliveredStorageKey())||'[]');return new Set(Array.isArray(raw)?raw.map(String):[])}catch{return new Set()}
+    // 旧版は宿泊者名（playerStorageId）をキーに使っていたため、ログインIDキーへ移行する。
+    // この移行がないと、以前受け取った注文がROOM再入室時に未配達として再表示される。
+    function roomServiceLegacyStorageKeys(kind){
+      const ids=new Set([playerStorageId,storedGuestName,localStorage.getItem('spr-guest-name')||'',localStorage.getItem('spr-player-id')||''].map(value=>String(value||'').trim()).filter(Boolean));
+      const current=roomServiceDeliveredStorageKey().replace(/^spr-room-service-delivered:/,'');
+      return [...ids].filter(id=>id!==current).flatMap(id=>{
+        const encoded=encodeURIComponent(id);
+        return [`spr-room-service-${kind}:${id}`,`spr-room-service-${kind}:${encoded}`];
+      });
     }
+    function loadRoomServiceIdSet(kind){
+      const primary=kind==='delivered'?roomServiceDeliveredStorageKey():roomServiceAlertedStorageKey();
+      const keys=[primary,...roomServiceLegacyStorageKeys(kind)],ids=new Set();
+      keys.forEach(key=>{try{const raw=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(raw))raw.forEach(id=>ids.add(String(id)))}catch{}});
+      if(ids.size)try{localStorage.setItem(primary,JSON.stringify([...ids].slice(-200)))}catch{}
+      return ids;
+    }
+    function loadRoomServiceDeliveredIds(){return loadRoomServiceIdSet('delivered')}
     function saveRoomServiceDeliveredIds(ids){
       try{localStorage.setItem(roomServiceDeliveredStorageKey(),JSON.stringify([...ids].slice(-200)))}catch{}
     }
-    function loadRoomServiceAlertedIds(){
-      try{const raw=JSON.parse(localStorage.getItem(roomServiceAlertedStorageKey())||'[]');return new Set(Array.isArray(raw)?raw.map(String):[])}catch{return new Set()}
-    }
+    function loadRoomServiceAlertedIds(){return loadRoomServiceIdSet('alerted')}
     function markRoomServiceOrdersAlerted(orders){
       const alerted=loadRoomServiceAlertedIds();orders.forEach(order=>alerted.add(String(order.id)));try{localStorage.setItem(roomServiceAlertedStorageKey(),JSON.stringify([...alerted].slice(-200)))}catch{}
     }
@@ -8951,10 +8964,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       failed.forEach(result=>console.warn('room service order share',result.reason));return failed.length<results.length;
     }
     function roomServiceReceiptOrders(payload){
+      const room=String(payload?.room_no||'');
+      if(!room)return [];
       const known=new Map(roomServiceDeliveryOrders.map(order=>[String(order.id),order]));
       const ids=Array.isArray(payload?.order_ids)?payload.order_ids:Array.isArray(payload?.ids)?payload.ids:null;
-      if(ids)return ids.map(id=>known.get(String(id))).filter(Boolean);
-      return (Array.isArray(payload?.orders)?payload.orders:[]).map(normalizeRoomServiceDeliveryOrder).filter(order=>order.id&&order.room);
+      const orders=ids?ids.map(id=>known.get(String(id))).filter(Boolean):(Array.isArray(payload?.orders)?payload.orders:[]).map(normalizeRoomServiceDeliveryOrder);
+      // 受取記録のroom_noだけでなく、各注文行のroomも照合して別室注文の混入を遮断する。
+      return orders.filter(order=>order.id&&String(order.room)===room);
     }
     function applyRoomServiceReceipt(payload,{announce=true}={}){
       const room=String(payload?.room_no||''),orders=roomServiceReceiptOrders(payload);
@@ -9170,12 +9186,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue('失礼します、ルームサービスをお届けに参りました。',revealChoices,'STAFF');
       else revealChoices();
     }
-    async function findRoomServiceReceipt(orders){
-      if(!window.supabaseClientSpecial||!activeRoom||!orders.length)return null;
+    async function findRoomServiceReceipt(orders,roomNo){
+      const room=String(roomNo||'');
+      if(!window.supabaseClientSpecial||!room||!orders.length||orders.some(order=>String(order.room)!==room))return null;
       const ids=new Set(orders.map(order=>String(order.id))),since=new Date(Date.now()-24*60*60*1000).toISOString();
       const {data,error}=await window.supabaseClientSpecial.from('spr_room_messages')
         .select('id,room_no,player_id,display_name,body,created_at')
-        .eq('room_no',activeRoom).like('body',`${ROOM_SERVICE_RECEIPT_PREFIX}%`).gte('created_at',since).order('created_at',{ascending:true}).limit(100);
+        .eq('room_no',room).like('body',`${ROOM_SERVICE_RECEIPT_PREFIX}%`).gte('created_at',since).order('created_at',{ascending:true}).limit(100);
       if(error)throw error;
       return (data||[]).map(parseRoomServiceReceiptMessage).filter(Boolean).find(receipt=>roomServiceReceiptOrders(receipt).some(order=>ids.has(String(order.id))))||null;
     }
@@ -9191,14 +9208,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return parts.join(' ／ ').replace(/\s+/g,' ').slice(0,320);
     }
     async function receiveRealRoomService(){
-      const orders=dueRoomServiceOrdersHere();if(!orders.length)return false;
+      const roomAtReceive=String(activeRoom||'');
+      const orders=dueRoomServiceOrdersHere();
+      if(!roomAtReceive||!orders.length||orders.some(order=>String(order.room)!==roomAtReceive))return false;
       if(roomServiceRealReceivePending)return true;
       roomServiceRealReceivePending=true;roomDoorReceive.disabled=true;roomDoorServiceStatus.textContent='ルームサービスを受け取っています。';
       let stage='プレイヤー情報の確認',lookupError=null;
       try{
         let existing=null;
         stage='過去の受け取り記録の確認';
-        try{existing=await findRoomServiceReceipt(orders)}
+        try{existing=await findRoomServiceReceipt(orders,roomAtReceive)}
         catch(error){
           lookupError=error;
           // 履歴検索だけが失敗した場合は、新しい受け取り記録の保存も試す。
@@ -9206,14 +9225,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
         if(existing){applyRoomServiceReceipt(existing,{announce:true});return true}
         const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)throw new Error('プレイヤー情報または接続先を確認できません。');
+        // 注文の確認中に別室へ移動した場合、元の注文を新しい部屋の受取記録へ混ぜない。
+        if(String(activeRoom||'')!==roomAtReceive||!roomView.classList.contains('room-active'))return false;
         // 注文内容は spr_room_service_orders に保存済みなので、共有記録にはIDだけを入れて
         // spr_room_messages.body のサイズ制約に触れないようにする。
         const payload={
-          room_no:String(activeRoom),received_by:String(playerId),received_name:String(activeGuest||storedGuestName||'ゲスト'),received_at:new Date().toISOString(),
+          room_no:roomAtReceive,received_by:String(playerId),received_name:String(activeGuest||storedGuestName||'ゲスト'),received_at:new Date().toISOString(),
           order_ids:orders.map(order=>String(order.id))
         };
         stage='受け取り記録の保存';
-        const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(activeRoom),player_id:playerId,display_name:'ROOM SERVICE',body:ROOM_SERVICE_RECEIPT_PREFIX+JSON.stringify(payload)});
+        const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtReceive,player_id:playerId,display_name:'ROOM SERVICE',body:ROOM_SERVICE_RECEIPT_PREFIX+JSON.stringify(payload)});
         if(error)throw error;
         applyRoomServiceReceipt(payload,{announce:false});return true;
       }catch(error){
