@@ -2170,7 +2170,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       lucaBalsaDepartureTicket:{label:'ボロボロの乗船チケット',detail:'水に濡れ、端が破れた古い乗船チケット。',image:'worn_boarding_ticket_luca_balsa.png',max:Infinity},
       lucaBalsaFishingTicket:{label:'釣り上げた乗船チケット',detail:'水に濡れ、使い込まれた跡のある古いチケット。',image:'worn_boarding_ticket_luca_balsa_used.png',max:1},
       mermaidGuardShell:{label:'人魚の護り貝',detail:'人魚の唄声を閉じ込めたと言われる、美しい貝。',max:Infinity},
-      mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます（1日の抽選上限に含む）。',max:Infinity},
+      mysteryBoxTicket:{label:'ミステリーボックス・チケット',detail:'カジノの景品交換所で無料抽選に使用できます。チップでの抽選回数とは別枠です。',max:Infinity},
       villaStayTicket:{label:'ヴィラ宿泊チケット',detail:'限定7枚の特別なヴィラ宿泊券。詳細な使用方法は今後の案内をお待ちください。',max:Infinity},
       mysteryKnife:{label:'ナイフ',detail:'刺せます。',max:Infinity},
       resortPetNamingRight:{label:'リゾートペットの名付け親権',detail:'リゾートペットの名前を決められる特別な権利。全体で限定3枚。',max:Infinity},
@@ -9704,7 +9704,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       mysteryVillaRemaining.textContent='ヴィラ宿泊チケット 限定7枚';
       mysteryFreeTicketOwned.textContent=`招待チケット ${tickets}枚`;
       buyMysteryDraw.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||casinoChips<20000;
-      useMysteryFreeTicket.disabled=mysteryBusy||!mysteryDrawVerified||remaining===0||tickets<1;
+      useMysteryFreeTicket.disabled=mysteryBusy||!mysteryDrawVerified||tickets<1;
       buyMysteryDraw.textContent=!mysteryDrawVerified?'抽選情報を確認中':remaining===0?'本日の受付終了':casinoChips<20000?'チップ不足':'1回引く';
     }
     // 管理者の全体リセット後、DAY1から移動しなかった場合も受付終了表示を解消する。
@@ -9732,8 +9732,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         mysteryShow('ミステリーボックス','抽選はカジノ・ブルーシェルの「景品を見る」からご利用ください。',[{label:'閉じる',run:mysteryClose}]);return;
       }
       if(!mysteryDrawVerified){void refreshMysteryCounter();prizeMessage.textContent='抽選情報を確認しています。';return}
-      const cost=useTicket?'サンセットテラスの招待チケット1枚':'20,000 CHIP';
-      mysteryShow('ミステリーボックス',`${cost}で1回抽選しますか？\n本日残り ${mysteryDrawInfo.remaining}回`,[
+      const cost=useTicket?'招待チケット1枚（チップ抽選とは別枠）':'20,000 CHIP';
+      const quotaText=useTicket?'チケット抽選はチップ抽選の本日上限に含まれません。':`チップ抽選の本日残り ${mysteryDrawInfo.remaining}回`;
+      mysteryShow('ミステリーボックス',`${cost}で1回抽選しますか？\n${quotaText}`,[
         {label:'箱を開ける',run:()=>void mysteryOpenBox(useTicket)},
         {label:'やめる',run:mysteryClose,cancel:true}
       ],'✧');
