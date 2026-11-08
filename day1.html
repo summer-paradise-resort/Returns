@@ -9478,7 +9478,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(roomDoorCloseAudio){try{roomDoorCloseAudio.preload='auto';roomDoorCloseAudio.load()}catch{}}
     }
     function playRoomDoorOpenSound(){
-      if(!roomPhoneMasterAudioOn())return false;
+      if(!roomPhoneMasterAudioOn()||window.__sprRoomGimmicksPaused?.())return false;
       const ctx=ensureRoomServiceDoorbellContext();
       if(ctx&&ctx.state==='running'&&roomDoorOpenBuffer){
         try{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=roomDoorOpenBuffer;gain.gain.value=1;source.connect(gain);gain.connect(ctx.destination);source.start(0);return true}catch{}
@@ -9489,7 +9489,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     window.__sprPlayRoomDoorOpenSound=playRoomDoorOpenSound;
     function playRoomDoorCloseSound(){
-      if(!roomPhoneMasterAudioOn())return false;
+      if(!roomPhoneMasterAudioOn()||window.__sprRoomGimmicksPaused?.())return false;
       const ctx=ensureRoomServiceDoorbellContext();
       if(ctx&&ctx.state==='running'&&roomDoorCloseBuffer){
         try{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=roomDoorCloseBuffer;gain.gain.value=1;source.connect(gain);gain.connect(ctx.destination);source.start(0);return true}catch{}
@@ -9515,6 +9515,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     function playVillaPoolSharedCue(action){
       if(!['enter','exit'].includes(action)||!villaPoolAudioMasterOn())return false;
+      // 地下の闘牛場演出中は、同室者のプール出入り音をこの端末で再生しない。
+      // 音声データの読み込み待ち中に闘牛場へ移動した場合も、再呼び出し時にここで止める。
+      if(window.__sprRoomGimmicksPaused?.())return false;
       const ctx=ensureRoomServiceDoorbellContext(),buffer=villaPoolSharedAudioBuffers.get(action);
       if(ctx&&ctx.state==='running'&&buffer){
         try{const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=1;source.connect(gain);gain.connect(ctx.destination);source.start(0);return true}catch{}
