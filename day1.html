@@ -8783,7 +8783,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         roomServiceCache=(o.data||[]).reverse().map(roomSharedOrder);renderChat();renderRoomServiceHistory();
         (o.data||[]).forEach(trackNewRoomServiceDeliveryOrder);
         sharedOrders.forEach(trackNewRoomServiceDeliveryOrder);
-        receipts.forEach(receipt=>applyRoomServiceReceipt(receipt,{announce:true}));
+        // 入室時に読み込む過去の受取記録は、配達済み状態だけ復元する。
+        // 過去の料理写真を「今届いた注文」として再表示しない。
+        receipts.forEach(receipt=>applyRoomServiceReceipt(receipt,{announce:false,showGallery:false}));
         evaluateRoomServiceDeliveries();scheduleRoomServiceDeliveryCheck();
       }catch(e){console.warn('room shared load',e)}
     }
@@ -8972,20 +8974,22 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // 受取記録のroom_noだけでなく、各注文行のroomも照合して別室注文の混入を遮断する。
       return orders.filter(order=>order.id&&String(order.room)===room);
     }
-    function applyRoomServiceReceipt(payload,{announce=true}={}){
+    function applyRoomServiceReceipt(payload,{announce=true,showGallery=true}={}){
       const room=String(payload?.room_no||''),orders=roomServiceReceiptOrders(payload);
       if(!room||!orders.length||!activeRoom||String(activeRoom)!==room||!roomView.classList.contains('room-active'))return false;
       const delivered=loadRoomServiceDeliveredIds(),fresh=orders.filter(order=>!delivered.has(String(order.id)));
       if(!fresh.length)return false;
       markRoomServiceOrdersDelivered(fresh);
-      const receiverId=String(payload?.received_by||''),receiverName=String(payload?.received_name||'ゲスト');
-      const me=String(storedPlayerId||handoffPlayerId||'');
-      if(announce&&receiverId!==me){
-        roomServiceDeliveryText.textContent=`${receiverName}がルームサービスを受け取った。`;
-        roomServiceDeliveryNotice.classList.remove('hidden');
+      if(showGallery){
+        const receiverId=String(payload?.received_by||''),receiverName=String(payload?.received_name||'ゲスト');
+        const me=String(storedPlayerId||handoffPlayerId||'');
+        if(announce&&receiverId!==me){
+          roomServiceDeliveryText.textContent=`${receiverName}がルームサービスを受け取った。`;
+          roomServiceDeliveryNotice.classList.remove('hidden');
+        }
+        showRoomServiceFoodGallery(fresh);
+        window.__sprArthurMealReceived?.(fresh);
       }
-      showRoomServiceFoodGallery(fresh);
-      window.__sprArthurMealReceived?.(fresh);
       updateRoomDoorServicePanel();updateRoomServiceDeliveryBadge();scheduleRoomServiceDeliveryCheck();
       return true;
     }
@@ -9194,7 +9198,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .select('id,room_no,player_id,display_name,body,created_at')
         .eq('room_no',room).like('body',`${ROOM_SERVICE_RECEIPT_PREFIX}%`).gte('created_at',since).order('created_at',{ascending:true}).limit(100);
       if(error)throw error;
-      return (data||[]).map(parseRoomServiceReceiptMessage).filter(Boolean).find(receipt=>roomServiceReceiptOrders(receipt).some(order=>ids.has(String(order.id))))||null;
+      const receipts=(data||[]).map(parseRoomServiceReceiptMessage).filter(Boolean);
+      const covered=new Set();
+      receipts.forEach(receipt=>roomServiceReceiptOrders(receipt).forEach(order=>{if(ids.has(String(order.id)))covered.add(String(order.id))}));
+      if(!covered.size)return null;
+      return {room_no:room,order_ids:[...covered],received_by:receipts[0]?.received_by||'',received_name:receipts[0]?.received_name||''};
     }
     function roomServiceReceiptErrorDetail(error){
       if(!error)return '原因の詳細が返されませんでした。';
@@ -9209,7 +9217,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function receiveRealRoomService(){
       const roomAtReceive=String(activeRoom||'');
-      const orders=dueRoomServiceOrdersHere();
+      let orders=dueRoomServiceOrdersHere();
       if(!roomAtReceive||!orders.length||orders.some(order=>String(order.room)!==roomAtReceive))return false;
       if(roomServiceRealReceivePending)return true;
       roomServiceRealReceivePending=true;roomDoorReceive.disabled=true;roomDoorServiceStatus.textContent='ルームサービスを受け取っています。';
@@ -9223,7 +9231,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           // 履歴検索だけが失敗した場合は、新しい受け取り記録の保存も試す。
           console.warn('room service receipt lookup; continuing with insert',error);
         }
-        if(existing){applyRoomServiceReceipt(existing,{announce:true});return true}
+        if(existing){
+          applyRoomServiceReceipt(existing,{announce:false,showGallery:false});
+          const alreadyRecorded=new Set(roomServiceReceiptOrders(existing).map(order=>String(order.id)));
+          orders=orders.filter(order=>!alreadyRecorded.has(String(order.id)));
+          if(!orders.length)return true;
+        }
         const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)throw new Error('プレイヤー情報または接続先を確認できません。');
         // 注文の確認中に別室へ移動した場合、元の注文を新しい部屋の受取記録へ混ぜない。
         if(String(activeRoom||'')!==roomAtReceive||!roomView.classList.contains('room-active'))return false;
