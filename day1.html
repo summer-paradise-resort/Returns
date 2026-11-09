@@ -6805,7 +6805,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
     // 選んだ時だけ3秒後に静かに止める。
     let roomPhonePresenceChannel=null,roomPhonePresenceReady=false,roomPresenceAnnounceReady=false,roomEntryNoticeTimer=null;
-    let roomPhonePresenceSessionKey='',roomPresenceKnownSessions=new Set();
+    let roomPhonePresenceSessionKey='',roomPresenceKnownSessions=new Set(),roomPresenceAnnouncedPeople=new Set();
     let roomPresenceLeaveTimers=new Map(),roomPresenceRecentDepartures=new Map(),roomDepartureEventIds=new Set();
     // PCブラウザの短いRealtime再接続を退室と誤認しないよう、退室候補を猶予時間だけ保持する。
     let roomPresenceGraceMembers=new Map();
@@ -6860,6 +6860,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         roomPresenceKnownSessions.add(sessionKey);
         if(memberId&&storedPlayerId&&memberId===String(storedPlayerId))return;
         if(!memberId&&memberName===String(activeGuest||storedGuestName||'').trim())return;
+        // 同じ宿泊者の短い切断・再接続や、タブの再接続で入室音を繰り返さない。
+        // 人単位の記録は、10秒の退室猶予が満了した時だけ解除する。
+        if(roomPresenceAnnouncedPeople.has(personKey))return;
+        roomPresenceAnnouncedPeople.add(personKey);
         if(announced.has(personKey))return;announced.add(personKey);
         playRoomDoorOpenSound();
         showRoomEntryNotice(memberName);
@@ -6885,6 +6889,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           roomPresenceGraceMembers.delete(sessionKey);
           if(sessionStillPresent||personStillPresent){updateRoomOccupancyUi();syncRoomPhoneSoloWait();return}
           roomPresenceKnownSessions.delete(sessionKey);
+          roomPresenceAnnouncedPeople.delete(personKey);
           updateRoomOccupancyUi();syncRoomPhoneSoloWait();
           showRoomDepartureNotice(memberName,personKey);
         },10000);
@@ -7317,7 +7322,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     roomOccupancyButton?.addEventListener('click',event=>{event.stopPropagation();setRoomOccupancyExpanded(roomOccupancyButton.getAttribute('aria-expanded')!=='true')});
     document.addEventListener('click',event=>{if(roomOccupancyNames&&!roomOccupancyNames.classList.contains('hidden')&&!event.target.closest('.room-identity'))setRoomOccupancyExpanded(false)});
-    const villaPoolSharedEventIds=new Set();
+    const villaPoolSharedEventIds=new Set(),villaPoolSharedStateByPlayer=new Map();
     let villaPoolPendingBroadcasts=[];
     function rememberVillaPoolSharedEvent(eventId){
       if(!eventId)return;
@@ -7329,6 +7334,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!eventId||!isVillaRoom(room)||!isVillaRoom(activeRoom)||!roomView.classList.contains('room-active')||!['enter','exit'].includes(action))return false;
       if(villaPoolSharedEventIds.has(eventId))return true;
       rememberVillaPoolSharedEvent(eventId);
+      const actor=String(payload?.player_id||payload?.origin_session_key||payload?.display_name||'guest');
+      const previousAction=villaPoolSharedStateByPlayer.get(actor);
+      // Presence再接続などで同じ「入る／上がる」通知が別IDで届いても、
+      // 状態が変わっていなければ効果音を重ねない。反対の操作後は次の操作を再生する。
+      if(previousAction===action)return true;
+      villaPoolSharedStateByPlayer.set(actor,action);
       if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return true;
       playVillaPoolSharedCue(action);
       const display=String(payload?.display_name||'ゲスト').trim()||'ゲスト';
@@ -7437,6 +7448,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       roomPhonePresenceChannel=null;
       roomPhonePresenceSessionKey='';
       roomPresenceKnownSessions=new Set();
+      roomPresenceAnnouncedPeople=new Set();
       roomPresenceLeaveTimers.forEach(item=>clearTimeout(item.timer));roomPresenceLeaveTimers=new Map();
       roomPresenceRecentDepartures=new Map();roomDepartureEventIds=new Set();roomPresenceGraceMembers=new Map();
       villaPoolPendingBroadcasts=[];
@@ -7456,7 +7468,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         // 最初のPresence同期は既に部屋にいた人の読み込みなので、入室通知は出さない。
         // 同じセッションの電話・NG状態更新がjoinとして再通知されても、演出を繰り返さない。
         if(!roomPresenceAnnounceReady){
-          roomPhonePresenceMembers().forEach(member=>roomPresenceKnownSessions.add(roomPresenceMemberSessionKey(member)));
+          roomPhonePresenceMembers().forEach(member=>{roomPresenceKnownSessions.add(roomPresenceMemberSessionKey(member));roomPresenceAnnouncedPeople.add(roomPresencePersonKey(member))});
           roomPresenceAnnounceReady=true;
         }
       };
