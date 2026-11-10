@@ -278,6 +278,9 @@
     .room-entry input,.chat-compose input{width:100%;min-height:46px;border:1px solid #d8cfbf;background:#fff;padding:10px 12px;color:var(--navy);font:inherit;font-size:16px}
     .room-entry .field{margin-bottom:15px}
     .primary-btn{width:100%;min-height:46px;border:0;background:var(--navy);color:white;letter-spacing:.1em;padding:12px}
+    #teaTradeConfirm{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:12px!important;padding:12px 16px;border:1px solid #e7cf94;border-radius:3px;background:#b88a35;color:#071a2b;font-size:14px;font-weight:700;letter-spacing:.08em;line-height:1.5;opacity:1;visibility:visible}
+    #teaTradeConfirm:disabled{background:#d7c49a;color:#26384a;border-color:#c1a56a;opacity:1;cursor:not-allowed}
+    #teaTradeConfirm:not(:disabled):hover{background:#d2b56e}
     .room-error{min-height:1.5em;color:#a53b32;font-size:12px;margin:8px 0 0}
     #roomView.room-active{overflow:hidden;background:#071a2b}
     #roomView.room-active .subhead,#roomView.room-active .info>h2,#roomView.room-active .info>.jp,#roomView.room-active .info>.meta,#roomView.room-active .info>p,#roomView.room-active #roomEntry{display:none!important}
@@ -2844,6 +2847,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     let coasterReadGeneration=0,tradeLoading=false,tradeSelectionGeneration=0,tradeRefreshQueued=false,tradeChoiceReloadQueued=false;
     const teaTradeGive=document.getElementById('teaTradeGive'),teaTradeGiveChoices=document.getElementById('teaTradeGiveChoices'),teaTradePrompt=document.getElementById('teaTradePrompt');
+    teaTradeConfirm.textContent='このコースターを差し出す';teaTradeConfirm.setAttribute('aria-label','このコースターを差し出す');
     async function refreshOwnedCoasters(){
       const generation=++coasterReadGeneration,playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
       const migrationKey=`spr-coaster-owner-migrated:${playerStorageId}`;
