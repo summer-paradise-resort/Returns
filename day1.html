@@ -2878,6 +2878,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     async function loadTeaTradeOptions(){
       const generation=++tradeSelectionGeneration,party=activeTeaPartyId,partner=teaTradePartner.value;
+      const previousCard=teaTradeGive.value;
+      const previousChoice=[...teaTradeGiveChoices.querySelectorAll('.tea-trade-choice')].find(b=>b.dataset.cardId===String(previousCard||''));
+      const previousFile=previousChoice?.dataset.file||'';
       teaTradeConfirm.disabled=true;teaTradeGive.replaceChildren();teaTradeGiveChoices.replaceChildren();
       if(!party||!partner)return;
       try{
@@ -2891,9 +2894,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             teaTradeGive.value=c.id;teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.remove('selected'));
             teaTradeGiveChoices.querySelectorAll('.tea-trade-choice')[ [...files].indexOf(c.file) ]?.classList.add('selected');
             teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradePartner.value;
-          });choice.dataset.cardId=c.id;teaTradeGiveChoices.append(choice);
+          });choice.dataset.cardId=c.id;choice.dataset.file=c.file;teaTradeGiveChoices.append(choice);
         }
         if(!files.size){const empty=document.createElement('div');empty.className='tea-exchange-empty';empty.textContent='交換に出せるダブりがありません。';teaTradeGiveChoices.append(empty)}
+        if(previousCard||previousFile){
+          const preserved=[...teaTradeGive.options].find(o=>o.value===String(previousCard||''))||[...teaTradeGive.options].find(o=>o.value&&(data.mine||[]).some(c=>String(c.id)===o.value&&c.file===previousFile));
+          if(preserved){teaTradeGive.value=preserved.value;teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.toggle('selected',b.dataset.cardId===preserved.value))}
+        }
         teaTradeConfirm.disabled=!teaTradeGive.value||!teaTradePartner.value;
       }catch(error){teaTradeStatus.textContent='交換用の所持品を確認できません。通信状態と追加SQLを確認してください。';console.warn('coaster options',error)}
     }
@@ -2914,9 +2921,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const {data,error}=await window.supabaseClientSpecial.rpc('spr_coaster_exchange_state',{p_party_id:party,p_player_id:storedPlayerId});if(error)throw error;
         if(party!==activeTeaPartyId)return;
         await refreshOwnedCoasters();const counts=ownCoasterCounts();teaTradePrompt.replaceChildren();
-        if(!data){teaTradeGive.value='';teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.remove('selected'));teaTradeStatus.textContent='交換中のコースターはありません。お互いに差し出す1枚を選んでください。';return}
+        if(!data){
+          const selectedCard=teaTradeGive.value;
+          teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.toggle('selected',b.dataset.cardId===String(selectedCard||'')));
+          teaTradeStatus.textContent=selectedCard?'コースターを選択中です。「このコースターを差し出す」を押してください。':'交換中のコースターはありません。お互いに差し出す1枚を選んでください。';return
+        }
         const isA=String(data.player_a)===String(storedPlayerId),ownCard=isA?data.card_a:data.card_b,ownFile=isA?data.file_a:data.file_b,partnerCard=isA?data.card_b:data.card_a,partnerFile=isA?data.file_b:data.file_a;
-        teaTradeGive.value=ownCard||'';teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.toggle('selected',b.dataset.cardId===String(ownCard||'')));
+        const selectedCard=ownCard||teaTradeGive.value;
+        teaTradeGive.value=selectedCard;teaTradeGiveChoices.querySelectorAll('.tea-trade-choice').forEach(b=>b.classList.toggle('selected',b.dataset.cardId===String(selectedCard||'')));
         if(ownFile){const ownLine=document.createElement('div');ownLine.textContent=`あなたが差し出す：${sprCoasterLabel(ownFile)}　`;addOwnCoasterCount(ownLine,ownFile,counts);teaTradePrompt.append(ownLine)}
         if(partnerFile){
           const partnerName=(currentTeaPartyMembers||[]).find(m=>String(m.player_id)!==String(storedPlayerId))?.display_name||'相手';
