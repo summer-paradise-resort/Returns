@@ -5342,7 +5342,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           const outbox=readCasinoChipOutbox();if(!outbox.length)return {ok:true};
           const operation=outbox[0];
           const playerId=await ensureStoredPlayerId();if(!playerId)throw new Error('player id unavailable');
-          let result=null,lastError=null;
+          let result=null,lastError=null,operationIdRotated=false;
           for(let attempt=0;attempt<3;attempt++){
             try{
               const {data,error}=await window.supabaseClientSpecial.rpc('spr_apply_chip_delta',{
@@ -5352,7 +5352,22 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               result=Array.isArray(data)?data[0]:data;
               if(!result||!Number.isFinite(Number(result.chips)))throw new Error('chip RPC returned no balance');
               break;
-            }catch(error){lastError=error;if(attempt<2)await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)))}
+            }catch(error){
+              lastError=error;
+              // Supabase has already recorded this id for a different delta. That means
+              // this exact request was rejected; retry it under a fresh id and persist
+              // the new id first so a later login cannot replay the stale collision.
+              if(!operationIdRotated&&/operation id reused with a different delta/i.test(String(error?.message||error))){
+                const previousId=String(operation.id);
+                operation.id=`${previousId}:retry:${makeCasinoOperationId()}`;
+                const pending=readCasinoChipOutbox();
+                const index=pending.findIndex(item=>String(item.id)===previousId);
+                if(index>=0){pending[index]={...pending[index],id:operation.id};writeCasinoChipOutbox(pending)}
+                operationIdRotated=true;lastError=null;
+                continue;
+              }
+              if(attempt<2)await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)));
+            }
           }
           if(!result){
             const errorText=String(lastError?.message||lastError||'');
