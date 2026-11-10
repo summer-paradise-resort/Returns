@@ -4636,7 +4636,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           challenger_id:storedGuestName,
           challenger_player_id:challengerId,
           challenger_name:storedGuestName,
-          stake:casinoChips,
+          // Supabase側のstake列はbigintへ変更する。文字列で渡してJSON数値の丸めを避ける。
+          stake:String(Math.trunc(casinoChips)),
           status:'countdown',
           starts_at:startsAt,
           public_state:{challenger:storedGuestName,challenger_player_id:challengerId,phase,table_name:tableName,starts_at:startsAt,message:phase==='invitation'?'招待中':'開卓をお待ちください。',heartbeat_at:new Date().toISOString(),presence:'visible'}
@@ -4654,7 +4655,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           return null;
         }
         return createdId;
-      }catch(e){console.warn('special session create',e);return null}
+      }catch(e){
+        console.warn('special session create',e);
+        if(tableName==='ROYAL TABLE')setCasinoStatus('ロイヤルテーブルの招待を登録できませんでした。Supabaseの stake 列を bigint に更新してください。');
+        return null
+      }
     }
     async function pushSpecialState(patch,status='playing'){
       if(!activeSpecialSessionId||!window.supabaseClientSpecial)return;
