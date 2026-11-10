@@ -4853,22 +4853,27 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     }
     // SPECIAL TABLEの決着は「開始時の賭け額に対する差分」として一度だけ記録する。
     // 同じ決着処理が再実行されても、operation_idにより二重加算されない。
-    async function saveSpecialAllInResult(targetChips){
+    async function saveSpecialAllInResult(targetChips,stakeAmount=specialStake,operationId){
       const target=Math.max(0,Math.round(Number(targetChips)||0));
-      const delta=target-Math.max(0,Math.round(Number(specialStake)||0));
+      const stake=Math.max(0,Math.round(Number(stakeAmount)||0));
+      const delta=target-stake;
       casinoChips=target;previousCasinoChips=target;casinoLocalRevision++;
       localStorage.setItem(casinoChipKey,String(target));syncCasinoBalances();
       if(!delta)return true;
-      const operationId=`special-settlement:${activeSpecialSessionId||playerStorageId}`;
-      const result=await queueCasinoChipDelta(delta,operationId);
+      // Keep one stable id for every retry of this table's settlement. Include the
+      // stake and outcome so a stale queued settlement cannot collide with a new one.
+      const settlementId=operationId||`special-settlement:${activeSpecialSessionId||playerStorageId}:${stake}:${target}`;
+      const result=await queueCasinoChipDelta(delta,settlementId);
       return !!result?.ok;
     }
     async function finishSpecial(win,score={}){
       if(specialAllInSettlementInProgress)return;
       specialAllInSettlementInProgress=true;
-      const stake=specialStake;
+      const stake=Math.max(0,Math.round(Number(specialStake)||0));
+      const settlementSessionId=activeSpecialSessionId||playerStorageId;
+      const settlementOperationId=`special-settlement:${settlementSessionId}:${stake}:${win?'win':'lose'}`;
       const finalChips=win?Math.max(0,Math.round(stake*2)):0;
-      let allInSaved=await saveSpecialAllInResult(finalChips);
+      let allInSaved=await saveSpecialAllInResult(finalChips,stake,settlementOperationId);
       if(specialSelectedGame==='blackjack'){actionPanel.classList.add('hidden');betPanel.classList.add('hidden');setCasinoStatus(win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。')}
       else{hiloActionPanel.classList.add('hidden');hiloBetPanel.classList.add('hidden');hiloStatus.textContent=win?`WIN　${casinoMoney(stake)} → ${casinoMoney(casinoChips)} CHIP`:'LOSE　賭けたCHIPは失われました。'}
 
@@ -4927,7 +4932,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(back){back.classList.remove('hidden');back.textContent='カジノホールへ戻る';back.dataset.casinoReturn='hub'}
       }
       // 会話中の遅延通信で残高を戻された場合も、決着額を最後に再確定する。
-      allInSaved=await saveSpecialAllInResult(finalChips)||allInSaved;
+      allInSaved=await saveSpecialAllInResult(finalChips,stake,settlementOperationId)||allInSaved;
       specialAllInSettlementInProgress=false;
       if(!allInSaved&&window.supabaseClientSpecial){
         console.warn('SPECIAL TABLE: final chip balance was not verified in Supabase');
