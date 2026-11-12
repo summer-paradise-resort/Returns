@@ -194,6 +194,25 @@
     @media(max-width:520px){.mystery-counter-item{grid-template-columns:1fr}.mystery-counter-side{text-align:left}.mystery-counter-side .prize-exchange{width:100%}}
 
     .prize-message{min-height:1.8em!important;color:#e9dcc0!important}
+    .arthur-gacha-rates{display:grid;gap:4px;margin-top:10px;color:#e7d7ac;font-size:11px;line-height:1.65}
+    .arthur-gacha-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.94);color:#fff;opacity:1;transition:background .45s ease,opacity .4s ease;overflow:auto}
+    .arthur-gacha-overlay.hidden{display:none!important}
+    .arthur-gacha-overlay.gacha-gold{background:radial-gradient(circle,rgba(255,211,93,.76),rgba(5,9,22,.97) 70%)}
+    .arthur-gacha-overlay.gacha-rainbow{background:radial-gradient(circle,rgba(255,255,255,.82),rgba(5,9,22,.93) 68%);animation:gachaRainbowGlow 1.15s ease-in-out infinite alternate}
+    .arthur-gacha-overlay.gacha-white{background:rgba(255,255,255,.98)}
+    @keyframes gachaRainbowGlow{0%{box-shadow:inset 0 0 60px rgba(255,0,80,.72)}20%{box-shadow:inset 0 0 70px rgba(255,220,0,.76)}40%{box-shadow:inset 0 0 75px rgba(0,220,120,.76)}60%{box-shadow:inset 0 0 80px rgba(0,180,255,.8)}80%{box-shadow:inset 0 0 85px rgba(105,80,255,.82)}100%{box-shadow:inset 0 0 90px rgba(255,50,200,.8)}}
+    .arthur-gacha-panel{width:min(860px,100%);max-height:92dvh;overflow:auto;padding:22px 16px;background:linear-gradient(145deg,#122e46,#061726);border:1px solid rgba(231,207,148,.72);box-shadow:0 18px 70px rgba(0,0,0,.55);text-align:center}
+    .arthur-gacha-panel h3{margin:0 0 8px;color:#f0d89d;font:22px Georgia,'Yu Mincho',serif;letter-spacing:.12em;font-weight:400}
+    .arthur-gacha-status{min-height:1.7em;margin:8px 0 16px;color:#e8dcc0;font-size:12px;line-height:1.7}
+    .arthur-gacha-results{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+    .arthur-gacha-card{min-width:0;padding:6px 5px 8px;background:rgba(255,255,255,.055);border:1px solid rgba(221,191,119,.28);animation:gachaCardReveal .42s ease both}
+    @keyframes gachaCardReveal{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .arthur-gacha-card img,.arthur-gacha-card-placeholder{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:linear-gradient(145deg,#153956,#071827);border:1px solid rgba(231,207,148,.25)}
+    .arthur-gacha-card-placeholder{display:grid;place-items:center;color:#e8d49b;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.08em}
+    .arthur-gacha-card small{display:block;margin-top:6px;color:#f4e3b4;font-size:10px;line-height:1.4}
+    .arthur-gacha-close{min-height:44px;min-width:min(260px,100%);margin-top:18px;padding:9px 18px;border:1px solid #d9bf79;background:#f6f0e5;color:#0d2743;font-size:12px;letter-spacing:.12em}
+    @media(max-width:520px){.arthur-gacha-panel{padding:18px 10px}.arthur-gacha-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.arthur-gacha-card:nth-child(odd):last-child{grid-column:auto}}
+
     .casino-return{min-height:48px;border:1px solid rgba(231,207,148,.38);background:rgba(255,255,255,.06);color:#fff;letter-spacing:.1em}
     /* CASINO GALLERY: one-screen horizontal gallery (no vertical scroll / no blur) */
     .casino-game.gallery-lock{overflow:hidden!important;overscroll-behavior:none!important}
@@ -1614,6 +1633,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     </div>
   </div>
 
+  <div id="arthurGachaOverlay" class="arthur-gacha-overlay hidden" role="dialog" aria-modal="true" aria-label="お楽しみガチャの結果" aria-hidden="true">
+    <div class="arthur-gacha-panel">
+      <h3 id="arthurGachaTitle">お楽しみガチャ</h3>
+      <p id="arthurGachaStatus" class="arthur-gacha-status" aria-live="polite">運命のカードを選出しています……</p>
+      <div id="arthurGachaResults" class="arthur-gacha-results"></div>
+      <button id="arthurGachaClose" class="arthur-gacha-close" type="button">結果を確認する</button>
+    </div>
+  </div>
+
   <section class="subview" id="exploreView" aria-hidden="true">
     <div class="subhead"><button class="back" type="button" data-back>← BACK</button><div class="subhead-title">EXPLORE THE ISLAND</div><div></div></div>
     <div class="gallery" data-gallery="explore"><div class="track">
@@ -1985,6 +2013,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             </div>
             <div class="prize-item"><div><strong>CAFEドリンクチケット</strong><small>THE PEARL TERRACE / MARINE BLOOM CAFE<br>1日1回・ドリンク10杯＋ランダムコースター10枚</small></div><div class="prize-item-side"><b>100,000 CHIP</b><span id="cafeDrinkTicketOwned">所持 0</span><button id="buyCafeDrinkTicket" class="prize-exchange" type="button">交換する</button></div></div>
             <div class="prize-item"><div><strong>ロイヤルミステリーBOX</strong><small>1日10回まで（朝7:00リセット）。中身は開けてからのお楽しみ。<br>0.5%　？？？<br>2%　リゾートペットの名付け親権（全体で合計3枚）<br>3%　？？？<br>94.5%　ランダムコースター</small></div><div class="prize-item-side"><b>10,000,000,000 CHIP</b><button id="buyUltraMystery" class="prize-exchange" type="button">BOXを開ける</button></div></div>
+            <div class="prize-item arthur-gacha-item"><div><strong>お楽しみガチャ</strong><small>アーサーにまつわるカードが10枚出現する10連ガチャ。カードの内容は引くまでのお楽しみ。</small><div class="arthur-gacha-rates" aria-label="お楽しみガチャの確率"><span>SR　95%</span><span>SSR　3%</span><span>UR　1%</span><span>箔押しSSR　0.6%</span><span>箔押しUR　0.4%</span></div></div><div class="prize-item-side"><b>5,000 CHIP</b><span>10連・1回</span><button id="buyArthurGacha" class="prize-exchange" type="button">ガチャを回す</button></div></div>
             <div class="prize-item mystery-counter-item">
               <div>
                 <strong>ミステリーボックス</strong>
@@ -5643,6 +5672,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(acornButton){acornButton.disabled=casinoChips<500;acornButton.textContent=casinoChips<500?'チップ不足':'交換する'}
       if(antidoteButton){const poisoned=!!window.__sprIsHernandoPoisoned?.();antidoteButton.disabled=casinoChips<5000||!poisoned;antidoteButton.textContent=casinoChips<5000?'チップ不足':'交換する'}
       if(ultraMysteryButton){ultraMysteryButton.disabled=casinoChips<10000000000;ultraMysteryButton.textContent=casinoChips<10000000000?'チップ不足':'交換する'}
+      const arthurGachaButton=document.getElementById('buyArthurGacha');if(arthurGachaButton&&!arthurGachaBusy){arthurGachaButton.disabled=casinoChips<5000;arthurGachaButton.textContent=casinoChips<5000?'チップ不足':'ガチャを回す'}
       if(afternoonTea2Owned)afternoonTea2Owned.textContent=`所持 ${tea2}`;extraDrinkTicketOwned.textContent=`所持 ${extra}`;cafeDrinkTicketOwned.textContent=`所持 ${cafe}`;
       [[buyAfternoonTea2Ticket,20000],[buyExtraDrinkTicket,5000],[buyCafeDrinkTicket,100000]].forEach(([button,price])=>{button.disabled=casinoChips<price;button.textContent=casinoChips<price?'チップ不足':'交換する'});
       prizeMessage.textContent=message||'お望みの景品をお選びください。';
@@ -6324,6 +6354,90 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     buyAfternoonTea2Ticket.addEventListener('click',()=>buyTicket('afternoonTeaTicket2','アフタヌーンティールーム入場チケット',20000));
     buyExtraDrinkTicket.addEventListener('click',()=>buyTicket('extraDrinkTicket','BARドリンクチケット',5000));
     buyCafeDrinkTicket.addEventListener('click',()=>buyTicket('cafeDrinkTicket','CAFEドリンクチケット',100000));
+    // お楽しみガチャ：各レアリティ内のカードは均等に選び、1回の料金で10枚抽選する。
+    const buyArthurGacha=document.getElementById('buyArthurGacha');
+    const arthurGachaOverlay=document.getElementById('arthurGachaOverlay');
+    const arthurGachaStatus=document.getElementById('arthurGachaStatus');
+    const arthurGachaResults=document.getElementById('arthurGachaResults');
+    const arthurGachaClose=document.getElementById('arthurGachaClose');
+    const arthurGachaRevealAudio=new Audio('arthur_gacha_reveal.mp3');
+    arthurGachaRevealAudio.preload='auto';
+    arthurGachaRevealAudio.volume=.85;
+    function playArthurGachaRevealSound(){
+      if(localStorage.getItem('spr-bgm-enabled')==='off')return;
+      try{arthurGachaRevealAudio.pause();arthurGachaRevealAudio.currentTime=0;const playback=arthurGachaRevealAudio.play();if(playback?.catch)playback.catch(()=>{})}catch{}
+    }
+    const ARTHUR_GACHA_GROUPS=[
+      {label:'SR',weight:95,files:['arthur_sr01.jpg','arthur_sr02.jpg','arthur_sr03.jpg','arthur_sr04.jpg']},
+      {label:'SSR',weight:3,files:['arthur_ssr01.jpg','arthur_ssr02.jpg']},
+      {label:'UR',weight:1,files:['arthur_ur01.jpg']},
+      {label:'箔押しSSR',weight:.6,signed:true,files:['arthur_sign_ssr01.jpg','arthur_sign_ssr02.jpg']},
+      {label:'箔押しUR',weight:.4,signed:true,files:['arthur_sign_ur01.jpg']}
+    ];
+    let arthurGachaBusy=false;
+    const arthurGachaWait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+    function arthurGachaDrawOne(){
+      const roll=Math.random()*100;let edge=0;
+      const group=ARTHUR_GACHA_GROUPS.find(item=>{edge+=item.weight;return roll<edge})||ARTHUR_GACHA_GROUPS[0];
+      const file=group.files[Math.floor(Math.random()*group.files.length)];
+      return {...group,file};
+    }
+    function arthurGachaRenderCards(cards){
+      arthurGachaResults.replaceChildren();
+      cards.forEach((card,index)=>{
+        const tile=document.createElement('div');tile.className='arthur-gacha-card';tile.style.animationDelay=`${index*65}ms`;
+        const img=document.createElement('img');img.src=card.file;img.alt=card.label;img.loading='eager';
+        img.onerror=()=>{const placeholder=document.createElement('div');placeholder.className='arthur-gacha-card-placeholder';placeholder.textContent=card.label;img.replaceWith(placeholder)};
+        const label=document.createElement('small');label.textContent=card.label;tile.append(img,label);arthurGachaResults.append(tile);
+      });
+    }
+    function arthurGachaCloseResult(){
+      arthurGachaOverlay.classList.add('hidden');arthurGachaOverlay.setAttribute('aria-hidden','true');
+      arthurGachaRevealAudio.pause();
+      arthurGachaOverlay.classList.remove('gacha-gold','gacha-rainbow','gacha-white');
+      document.body.style.overflow='hidden';
+      arthurGachaBusy=false;buyArthurGacha.disabled=casinoChips<5000;
+    }
+    arthurGachaClose.addEventListener('click',arthurGachaCloseResult);
+    async function playArthurGacha(){
+      if(arthurGachaBusy)return;
+      arthurGachaBusy=true;buyArthurGacha.disabled=true;
+      try{
+        await refreshCasinoChipsFromSupabase();
+        if(casinoChips<5000){renderPrizeCounter('お楽しみガチャには5,000 CHIP必要です。');return}
+        const player=await sprPlayerId();
+        if(!player||!window.supabaseClientSpecial){renderPrizeCounter('ガチャにはオンライン接続が必要です。SECURITY CHECKから入り直してください。');return}
+        const payment=await queueCasinoChipDelta(-5000,`arthur-gacha:${player}:${sprSafeUuid()}`);
+        if(!payment?.ok){await refreshCasinoChipsFromSupabase();renderPrizeCounter('チップを確認できませんでした。残高を確認して、もう一度お試しください。');return}
+        await refreshCasinoChipsFromSupabase();renderPrizeCounter('お楽しみガチャを10連しました。');
+        const cards=Array.from({length:10},arthurGachaDrawOne);
+        const hasSigned=cards.some(card=>card.signed);
+        const hasGold=cards.some(card=>card.label==='SSR'||card.label==='UR');
+        arthurGachaResults.replaceChildren();arthurGachaStatus.textContent='運命のカードを選出しています……';
+        arthurGachaOverlay.classList.remove('hidden');arthurGachaOverlay.setAttribute('aria-hidden','false');
+        arthurGachaOverlay.classList.add('gacha-white');await arthurGachaWait(520);
+        arthurGachaOverlay.classList.remove('gacha-white');
+        if(hasSigned){
+          arthurGachaOverlay.classList.add('gacha-rainbow');arthurGachaStatus.textContent='箔押しカード確定！虹色の光が広がる……';await arthurGachaWait(1250);
+          arthurGachaStatus.textContent='10枚のカードを獲得しました。';
+        }else if(hasGold){
+          arthurGachaOverlay.classList.add('gacha-gold');arthurGachaStatus.textContent='SSR・URを確認！金色の光がきらめく……';await arthurGachaWait(1000);
+          arthurGachaStatus.textContent='10枚のカードを獲得しました。';
+        }else{
+          arthurGachaOverlay.classList.add('gacha-white');arthurGachaStatus.textContent='白い光の中からカードが現れる……';await arthurGachaWait(700);
+          arthurGachaOverlay.classList.remove('gacha-white');arthurGachaStatus.textContent='10枚のカードを獲得しました。';
+        }
+        arthurGachaRenderCards(cards);
+        playArthurGachaRevealSound();
+      }catch(error){
+        console.warn('Arthur gacha failed',error);
+        renderPrizeCounter('ガチャを完了できませんでした。チップ残高をご確認ください。');
+      }finally{
+        if(arthurGachaOverlay.classList.contains('hidden')){arthurGachaBusy=false;buyArthurGacha.disabled=casinoChips<5000}
+      }
+    }
+    buyArthurGacha.addEventListener('click',()=>void playArthurGacha());
+
     // CAFE iframe と DAY1 の所持品を同期する。srcdoc 側のlocalStorageに依存しない。
     window.addEventListener('message',async e=>{
       const d=e.data||{};
