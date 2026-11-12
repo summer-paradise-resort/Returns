@@ -195,21 +195,35 @@
 
     .prize-message{min-height:1.8em!important;color:#e9dcc0!important}
     .arthur-gacha-rates{display:grid;gap:4px;margin-top:10px;color:#e7d7ac;font-size:11px;line-height:1.65}
-    .arthur-gacha-overlay{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.94);color:#fff;opacity:1;transition:background .45s ease,opacity .4s ease;overflow:auto}
+    .arthur-gacha-overlay{position:fixed;inset:0;z-index:2147483000;isolation:isolate;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.96);color:#fff;overflow:auto}
     .arthur-gacha-overlay.hidden{display:none!important}
-    .arthur-gacha-overlay.gacha-gold{background:radial-gradient(circle,rgba(255,211,93,.76),rgba(5,9,22,.97) 70%)}
-    .arthur-gacha-overlay.gacha-rainbow{background:radial-gradient(circle,rgba(255,255,255,.82),rgba(5,9,22,.93) 68%);animation:gachaRainbowGlow 1.15s ease-in-out infinite alternate}
-    .arthur-gacha-overlay.gacha-white{background:rgba(255,255,255,.98)}
-    @keyframes gachaRainbowGlow{0%{box-shadow:inset 0 0 60px rgba(255,0,80,.72)}20%{box-shadow:inset 0 0 70px rgba(255,220,0,.76)}40%{box-shadow:inset 0 0 75px rgba(0,220,120,.76)}60%{box-shadow:inset 0 0 80px rgba(0,180,255,.8)}80%{box-shadow:inset 0 0 85px rgba(105,80,255,.82)}100%{box-shadow:inset 0 0 90px rgba(255,50,200,.8)}}
-    .arthur-gacha-panel{width:min(860px,100%);max-height:92dvh;overflow:auto;padding:22px 16px;background:linear-gradient(145deg,#122e46,#061726);border:1px solid rgba(231,207,148,.72);box-shadow:0 18px 70px rgba(0,0,0,.55);text-align:center}
+    .arthur-gacha-overlay::before,.arthur-gacha-overlay::after{content:"";position:absolute;inset:-20%;z-index:2;pointer-events:none;opacity:0}
+    .arthur-gacha-overlay.gacha-dark-in{animation:gachaDarken .42s ease-out both}
+    @keyframes gachaDarken{from{background:rgba(0,0,0,0)}to{background:rgba(0,0,0,.97)}}
+    .arthur-gacha-overlay.gacha-white::before{background:radial-gradient(ellipse at center,rgba(255,255,255,1) 0%,rgba(255,255,255,.9) 18%,rgba(190,225,255,.35) 48%,transparent 72%);animation:gachaWhiteFlash .62s ease-out both}
+    @keyframes gachaWhiteFlash{0%{opacity:0;transform:scale(.25)}22%{opacity:1}100%{opacity:0;transform:scale(1.2)}}
+    .arthur-gacha-overlay.gacha-gold::before{background:radial-gradient(ellipse at center,rgba(255,248,200,.98),rgba(255,194,55,.72) 24%,rgba(255,130,0,.25) 52%,transparent 72%),conic-gradient(from 0deg at 50% 50%,transparent 0deg,rgba(255,223,130,.7) 12deg,transparent 24deg,rgba(255,235,170,.45) 38deg,transparent 52deg,rgba(255,196,70,.6) 66deg,transparent 80deg);animation:gachaGoldBurst 1.05s ease-out both}
+    .arthur-gacha-overlay.gacha-gold::after{background:linear-gradient(110deg,transparent 30%,rgba(255,245,191,.9) 48%,rgba(255,184,44,.3) 53%,transparent 68%);animation:gachaLightSweep .82s ease-in-out both}
+    @keyframes gachaGoldBurst{0%{opacity:0;transform:scale(.2) rotate(0)}20%{opacity:1}100%{opacity:.14;transform:scale(1.05) rotate(35deg)}}
+    @keyframes gachaLightSweep{0%{opacity:0;transform:translateX(-55%)}35%{opacity:1}100%{opacity:0;transform:translateX(55%)}}
+    .arthur-gacha-overlay.gacha-rainbow::before{background:conic-gradient(from 0deg at 50% 50%,rgba(255,45,100,.88),rgba(255,210,45,.84),rgba(40,240,160,.82),rgba(50,185,255,.9),rgba(135,80,255,.9),rgba(255,45,190,.86),rgba(255,45,100,.88));filter:blur(18px);animation:gachaPrismSpin 1.7s linear infinite}
+    .arthur-gacha-overlay.gacha-rainbow::after{background:linear-gradient(115deg,transparent 18%,rgba(255,255,255,.12) 34%,rgba(255,255,255,.95) 49%,rgba(255,255,255,.16) 56%,transparent 74%);animation:gachaPrismSweep 1.1s ease-in-out infinite}
+    @keyframes gachaPrismSpin{0%{opacity:.15;transform:rotate(0) scale(.65)}45%{opacity:.96}100%{opacity:.3;transform:rotate(360deg) scale(1.15)}}
+    @keyframes gachaPrismSweep{0%{opacity:0;transform:translateX(-45%)}45%{opacity:1}100%{opacity:0;transform:translateX(45%)}}
+    .arthur-gacha-panel{position:relative;z-index:1;width:min(860px,100%);max-height:92dvh;overflow:auto;padding:22px 16px;background:linear-gradient(145deg,#122e46,#061726);border:1px solid rgba(231,207,148,.72);box-shadow:0 18px 70px rgba(0,0,0,.55);text-align:center}
     .arthur-gacha-panel h3{margin:0 0 8px;color:#f0d89d;font:22px Georgia,'Yu Mincho',serif;letter-spacing:.12em;font-weight:400}
-    .arthur-gacha-status{min-height:1.7em;margin:8px 0 16px;color:#e8dcc0;font-size:12px;line-height:1.7}
+    .arthur-gacha-status{display:none}
     .arthur-gacha-results{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
-    .arthur-gacha-card{min-width:0;padding:6px 5px 8px;background:rgba(255,255,255,.055);border:1px solid rgba(221,191,119,.28);animation:gachaCardReveal .42s ease both}
-    @keyframes gachaCardReveal{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
-    .arthur-gacha-card img,.arthur-gacha-card-placeholder{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:linear-gradient(145deg,#153956,#071827);border:1px solid rgba(231,207,148,.25)}
+    .arthur-gacha-card{position:relative;min-width:0;aspect-ratio:2/3;perspective:900px;animation:gachaCardRise .42s ease both}
+    @keyframes gachaCardRise{from{opacity:0;transform:translateY(22px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .arthur-gacha-card-inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .72s cubic-bezier(.2,.75,.2,1)}
+    .arthur-gacha-card.revealed .arthur-gacha-card-inner{transform:rotateY(180deg)}
+    .arthur-gacha-card-back,.arthur-gacha-card-face{position:absolute;inset:0;overflow:hidden;border:1px solid rgba(231,207,148,.65);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+    .arthur-gacha-card-back{display:grid;place-items:center;background:repeating-linear-gradient(135deg,#0b2034 0 9px,#163d5c 9px 18px);box-shadow:inset 0 0 0 5px rgba(4,15,27,.7),inset 0 0 0 7px rgba(226,195,119,.4);color:#f0d89d;font:clamp(20px,5vw,38px) Georgia,serif;text-shadow:0 0 16px rgba(255,221,133,.85)}
+    .arthur-gacha-card-face{transform:rotateY(180deg);background:#071827;box-shadow:0 8px 24px rgba(0,0,0,.38)}
+    .arthur-gacha-card-face img,.arthur-gacha-card-placeholder{display:block;width:100%;height:100%;object-fit:cover;background:linear-gradient(145deg,#153956,#071827)}
     .arthur-gacha-card-placeholder{display:grid;place-items:center;color:#e8d49b;font:12px Georgia,'Yu Mincho',serif;letter-spacing:.08em}
-    .arthur-gacha-card small{display:block;margin-top:6px;color:#f4e3b4;font-size:10px;line-height:1.4}
+    .arthur-gacha-card-face small{position:absolute;left:0;right:0;bottom:0;padding:5px 2px;background:linear-gradient(transparent,rgba(0,0,0,.88));color:#fff1c6;font-size:10px;line-height:1.4}
     .arthur-gacha-close{min-height:44px;min-width:min(260px,100%);margin-top:18px;padding:9px 18px;border:1px solid #d9bf79;background:#f6f0e5;color:#0d2743;font-size:12px;letter-spacing:.12em}
     @media(max-width:520px){.arthur-gacha-panel{padding:18px 10px}.arthur-gacha-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.arthur-gacha-card:nth-child(odd):last-child{grid-column:auto}}
 
@@ -6385,15 +6399,25 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function arthurGachaRenderCards(cards){
       arthurGachaResults.replaceChildren();
       cards.forEach((card,index)=>{
-        const tile=document.createElement('div');tile.className='arthur-gacha-card';tile.style.animationDelay=`${index*65}ms`;
+        const tile=document.createElement('div');tile.className='arthur-gacha-card';tile.style.animationDelay=`${index*55}ms`;
+        const inner=document.createElement('div');inner.className='arthur-gacha-card-inner';
+        const back=document.createElement('div');back.className='arthur-gacha-card-back';back.textContent='✦';
+        const face=document.createElement('div');face.className='arthur-gacha-card-face';
         const img=document.createElement('img');img.src=card.file;img.alt=card.label;img.loading='eager';
         img.onerror=()=>{const placeholder=document.createElement('div');placeholder.className='arthur-gacha-card-placeholder';placeholder.textContent=card.label;img.replaceWith(placeholder)};
-        const label=document.createElement('small');label.textContent=card.label;tile.append(img,label);arthurGachaResults.append(tile);
+        const label=document.createElement('small');label.textContent=card.label;face.append(img,label);inner.append(back,face);tile.append(inner);arthurGachaResults.append(tile);
       });
+    }
+    async function arthurGachaRevealCards(){
+      const tiles=[...arthurGachaResults.querySelectorAll('.arthur-gacha-card')];
+      playArthurGachaRevealSound();
+      tiles.forEach((tile,index)=>setTimeout(()=>tile.classList.add('revealed'),index*110));
+      await arthurGachaWait(Math.max(0,tiles.length-1)*110+760);
     }
     function arthurGachaCloseResult(){
       arthurGachaOverlay.classList.add('hidden');arthurGachaOverlay.setAttribute('aria-hidden','true');
       arthurGachaRevealAudio.pause();
+      arthurGachaClose.disabled=false;
       arthurGachaOverlay.classList.remove('gacha-gold','gacha-rainbow','gacha-white');
       document.body.style.overflow='hidden';
       arthurGachaBusy=false;buyArthurGacha.disabled=casinoChips<5000;
@@ -6413,22 +6437,23 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const cards=Array.from({length:10},arthurGachaDrawOne);
         const hasSigned=cards.some(card=>card.signed);
         const hasGold=cards.some(card=>card.label==='SSR'||card.label==='UR');
-        arthurGachaResults.replaceChildren();arthurGachaStatus.textContent='運命のカードを選出しています……';
+        arthurGachaStatus.textContent='';arthurGachaClose.disabled=true;
+        arthurGachaOverlay.classList.remove('gacha-dark-in','gacha-white','gacha-gold','gacha-rainbow');
+        arthurGachaRenderCards(cards);
         arthurGachaOverlay.classList.remove('hidden');arthurGachaOverlay.setAttribute('aria-hidden','false');
-        arthurGachaOverlay.classList.add('gacha-white');await arthurGachaWait(520);
+        arthurGachaOverlay.classList.add('gacha-dark-in');await arthurGachaWait(430);
+        arthurGachaOverlay.classList.remove('gacha-dark-in');
+        arthurGachaOverlay.classList.add('gacha-white');await arthurGachaWait(620);
         arthurGachaOverlay.classList.remove('gacha-white');
         if(hasSigned){
-          arthurGachaOverlay.classList.add('gacha-rainbow');arthurGachaStatus.textContent='箔押しカード確定！虹色の光が広がる……';await arthurGachaWait(1250);
-          arthurGachaStatus.textContent='10枚のカードを獲得しました。';
+          arthurGachaOverlay.classList.add('gacha-rainbow');await arthurGachaWait(1450);
+          arthurGachaOverlay.classList.remove('gacha-rainbow');
         }else if(hasGold){
-          arthurGachaOverlay.classList.add('gacha-gold');arthurGachaStatus.textContent='SSR・URを確認！金色の光がきらめく……';await arthurGachaWait(1000);
-          arthurGachaStatus.textContent='10枚のカードを獲得しました。';
-        }else{
-          arthurGachaOverlay.classList.add('gacha-white');arthurGachaStatus.textContent='白い光の中からカードが現れる……';await arthurGachaWait(700);
-          arthurGachaOverlay.classList.remove('gacha-white');arthurGachaStatus.textContent='10枚のカードを獲得しました。';
+          arthurGachaOverlay.classList.add('gacha-gold');await arthurGachaWait(1050);
+          arthurGachaOverlay.classList.remove('gacha-gold');
         }
-        arthurGachaRenderCards(cards);
-        playArthurGachaRevealSound();
+        await arthurGachaRevealCards();
+        arthurGachaClose.disabled=false;
       }catch(error){
         console.warn('Arthur gacha failed',error);
         renderPrizeCounter('ガチャを完了できませんでした。チップ残高をご確認ください。');
