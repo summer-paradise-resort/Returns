@@ -1579,13 +1579,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               </div>
             </div>
           </figure>
-          <section id="villaDarkroomConsole" class="villa-darkroom-console hidden" aria-label="ヴィラの暗室" aria-live="off">
+          <section id="villaDarkroomConsole" class="villa-darkroom-console hidden" aria-label="ヴィラの種付け部屋" aria-live="off">
             <div class="villa-darkroom-caption">ROYAL VILLA — DARK ROOM</div>
             <div id="villaDarkroomStatus" class="villa-darkroom-status" aria-live="polite">音声の準備ができています。</div>
             <div id="villaDarkroomPeerStatus" class="villa-darkroom-peer-status" aria-live="polite"></div>
             <div class="villa-darkroom-layout">
               <div class="villa-darkroom-controls-column">
-                <div id="villaDarkroomCommands" class="villa-darkroom-command-grid hidden" aria-label="暗室の音声操作">
+                <div id="villaDarkroomCommands" class="villa-darkroom-command-grid hidden" aria-label="種付け部屋の音声操作">
                   <button type="button" data-darkroom-command="kiss1">キス1</button>
                   <button type="button" data-darkroom-command="kiss2">キス2</button>
                   <button type="button" data-darkroom-command="kiss3">キス3</button>
@@ -1605,8 +1605,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
                 <button type="button" id="villaDarkroomEnableSound" class="villa-darkroom-unlock hidden">音声を有効にする</button>
               </div>
               <div class="villa-darkroom-gauge-panel">
-                <div class="villa-darkroom-gauge-title">種付けゲージ</div>
-                <div id="villaDarkroomGauge" class="villa-darkroom-gauge-track" role="meter" aria-label="種付けゲージ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="小">
+                <div class="villa-darkroom-gauge-title">受精率ゲージ</div>
+                <div id="villaDarkroomGauge" class="villa-darkroom-gauge-track" role="meter" aria-label="受精率ゲージ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="小">
                   <div id="villaDarkroomGaugeFill" class="villa-darkroom-gauge-fill"></div>
                   <span class="villa-darkroom-gauge-level low">小</span><span class="villa-darkroom-gauge-level mid">中</span><span class="villa-darkroom-gauge-level high">高</span>
                 </div>
@@ -1623,7 +1623,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
             <button type="button" data-room-scene="phone" aria-pressed="false">電話</button>
             <button type="button" data-room-scene="closet" aria-pressed="false">クローゼット</button>
             <button type="button" data-room-scene="bathroom" aria-pressed="false">バスルーム</button>
-            <button type="button" data-room-scene="darkroom" aria-pressed="false">暗室</button>
+            <button type="button" data-room-scene="darkroom" aria-pressed="false">種付け部屋</button>
           </nav>
         </div>
         <div id="roomFallback" class="room-fallback hidden">
@@ -1694,7 +1694,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         <section id="villaDarkroomBelongingsSheet" class="room-belongings-sheet villa-darkroom-item-sheet" aria-hidden="true" aria-label="501号室所持品">
           <div class="service-sheet-head"><h3>BELONGINGS</h3><button id="villaDarkroomBelongingsClose" class="service-sheet-close" type="button" aria-label="所持品を閉じる">⌄</button></div>
           <div class="belongings-body villa-darkroom-stat-content">
-            <div class="villa-darkroom-item-row"><span>媚薬（無限）<br>使うと種付けゲージが約30%上昇</span><button id="villaDarkroomUseAphrodisiac" type="button">使う</button></div>
+            <div class="villa-darkroom-item-row"><span>媚薬（無限）<br>使うと受精率ゲージが約30%上昇</span><button id="villaDarkroomUseAphrodisiac" type="button">使う</button></div>
             <p class="villa-darkroom-item-note">何度でも使用できます。</p>
           </div>
         </section>
@@ -6837,7 +6837,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(isVillaRoom(room))return{key:'villa',label:'ROYAL VILLA',name:'特別ヴィラ',scenes:villaScenes};
       return null;
     }
-    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム',darkroom:'暗室'};
+    const sceneNames={room:'部屋全体',door:'扉',window:'窓',pool:'プール',desk:'机',phone:'電話',closet:'クローゼット',bathroom:'バスルーム',darkroom:'種付け部屋'};
     const roomSceneOrder=['room','door','window','pool','desk','phone','closet','bathroom','darkroom'];
     function activeRoomSceneOrder(config=roomVisualConfig(activeRoom)){return config?roomSceneOrder.filter(scene=>scene==='darkroom'?String(activeRoom)==='501':Array.isArray(config.scenes?.[scene])):roomSceneOrder.filter(scene=>scene!=='darkroom')}
     const timeNames=['昼','夕暮れ','夜'];
