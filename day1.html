@@ -404,9 +404,12 @@
     .chat-message p{font-size:13px;line-height:1.6;margin:0;color:var(--sheet-fg)}
     .chat-message.system-event-red p{color:#d83434;font-weight:700}
     .chat-empty{text-align:center;color:var(--sheet-muted);font-size:12px;margin:auto}
-    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid rgba(130,110,76,.2)}
+    .chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:10px 12px max(12px,env(safe-area-inset-bottom));border-top:1px solid rgba(130,110,76,.2)}
     .chat-compose input{width:100%;min-height:46px;border:1px solid rgba(130,110,76,.35);background:var(--message-bg);padding:10px 12px;color:var(--sheet-fg);font:inherit;font-size:16px}
-    .chat-compose button{border:0;background:var(--gold);color:white;padding:0 18px;min-width:70px}
+    .chat-compose button{border:0;background:var(--gold);color:white;padding:0 16px;min-width:64px}
+    .chat-compose .chat-image-pick{min-width:48px;padding:0 12px;background:rgba(130,110,76,.18);color:var(--sheet-fg);font-size:20px}
+    .chat-image-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+    .chat-message-image{display:block;max-width:min(70vw,360px);max-height:360px;width:auto;height:auto;margin-top:7px;border-radius:6px;object-fit:contain;background:rgba(0,0,0,.08)}
     .room-service-sheet{position:absolute;z-index:21;left:0;right:0;bottom:0;height:min(82%,760px);display:flex;flex-direction:column;background:var(--sheet-bg);color:var(--sheet-fg);box-shadow:0 -16px 38px rgba(0,0,0,.34);transform:translateY(105%);visibility:hidden;transition:transform .32s ease,visibility .32s}
     .room-service-sheet.open{transform:none;visibility:visible}
     .service-sheet-head{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:4px 14px 10px;border-bottom:1px solid rgba(130,110,76,.2)}
@@ -1647,7 +1650,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           
           <div class="chat-sheet-head"><h3 id="chatSheetTitle">この客室の会話</h3><button id="chatCloseButton" class="chat-sheet-close" type="button" aria-label="会話を閉じる">⌄</button></div>
           <div id="chatLog" class="chat-log" role="log" aria-live="polite"></div>
-          <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off" required><button type="submit">送信</button></form>
+          <form id="chatForm" class="chat-compose"><input id="chatInput" maxlength="300" placeholder="メッセージを入力" autocomplete="off"><input id="chatImageFile" class="chat-image-file" type="file" accept="image/*"><button id="chatImagePick" class="chat-image-pick" type="button" aria-label="画像を選ぶ" title="画像を送る">＋</button><button id="chatSendButton" type="submit">送信</button></form>
         </section>
         <section id="roomServiceSheet" class="room-service-sheet" aria-hidden="true" aria-label="ルームサービス">
           
@@ -3515,7 +3518,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }else startCasinoMusic(); // ROYAL開卓待機中だけ通常カジノBGM
       }else{
         stopRoyalAudio(royalTableBgm);
-        try{await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
+        try{await sprStartAudioClean(specialBgm,{volume:.25,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})}catch{}
       }
       if(specialSelectedGame){
         specialTableScreen.classList.add('hidden');specialTableScreen.setAttribute('aria-hidden','true');
@@ -4275,7 +4278,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       stopRoyalAudio(specialBgm);
       casinoBgm.pause();
       if(localStorage.getItem('spr-bgm-enabled')==='off')return;
-      void sprStartAudioClean(royalTableBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
+      void sprStartAudioClean(royalTableBgm,{volume:.25,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).then(ok=>{
         if(!ok)console.warn('ROYAL TABLE BGM: playback requires a user tap');
       });
     }
@@ -4307,13 +4310,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         royalTableBgm.muted=true;
         if(localStorage.getItem('spr-bgm-enabled')==='off')return;
         if(!force&&same&&!royalSpectatorWaitingBgm.paused)return;
-        void sprStartAudioClean(royalSpectatorWaitingBgm,{volume:.34,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
+        void sprStartAudioClean(royalSpectatorWaitingBgm,{volume:.12,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
       }else{
         stopRoyalAudio(royalSpectatorWaitingBgm);
         stopRoyalAudio(royalTableBgm);
         if(localStorage.getItem('spr-bgm-enabled')==='off')return;
         if(!force&&same&&!specialBgm.paused)return;
-        void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
+        void sprStartAudioClean(specialBgm,{volume:.25,loop:true,restart:!same,guard:SPR_AUDIO_START_GUARD_MS});
       }
     }
     function syncSpectatorBgmFromState(state={}){
@@ -4536,9 +4539,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // 通常のSPECIAL TABLE招待は、最後のセリフを見届けた直後に専用BGMを開始する。
       // iOS Safariが自動再生を拒否した場合は、次の画面タップで再試行する。
       if(!royalInvitation){
-        const started=await sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        const started=await sprStartAudioClean(specialBgm,{volume:.25,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
         if(!started&&localStorage.getItem('spr-bgm-enabled')!=='off'){
-          const unlockSpecialInvitationBgm=()=>{void sprStartAudioClean(specialBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})};
+          const unlockSpecialInvitationBgm=()=>{void sprStartAudioClean(specialBgm,{volume:.25,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS})};
           specialOverlay.addEventListener('pointerdown',unlockSpecialInvitationBgm,{once:true});
         }
       }
@@ -5964,7 +5967,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       if(!open||window.__sprExploreVideoPlaying||localStorage.getItem('spr-bgm-enabled')==='off')return;
       if(changed||force||exploreBgm.paused){
-        void sprStartAudioClean(exploreBgm,{volume:.34,loop:true,restart:changed,guard:SPR_AUDIO_START_GUARD_MS});
+        void sprStartAudioClean(exploreBgm,{volume:.12,loop:true,restart:changed,guard:SPR_AUDIO_START_GUARD_MS});
       }
     }
     function startExploreMusic(){if(!exploreBgm)return;casinoBgm.pause();syncExploreMusicForTime({force:true})}
@@ -5998,7 +6001,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       seasideBarBgm.preload='auto';
       seasideBarBgm.loop=true;
       seasideBarBgm.muted=false;
-      seasideBarBgm.volume=.34;
+      seasideBarBgm.volume=.20;
       if(restart){try{seasideBarBgm.currentTime=0}catch{}}
 
       if(force||seasideBarBgm.paused){
@@ -6026,15 +6029,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       const shouldPlay=document.getElementById('sunsetTerraceView')?.classList.contains('open') && localStorage.getItem('spr-bgm-enabled')!=='off';
       if(!shouldPlay){sprCancelGuardedAudioStart(audio);audio.pause();return;}
       document.getElementById('integratedCafeBgm')?.pause();
-      audio.volume=.34;audio.loop=true;
+      audio.volume=.20;audio.loop=true;
       if(audio.paused){
         try{const p=audio.play();if(p&&p.catch)p.catch(e=>console.warn('Sunset Terrace BGM start',e));}
         catch(e){console.warn('Sunset Terrace BGM start',e)}
       }
     }
-    function startResortMusic(){casinoBgm.pause();if(!spectatorScreen.classList.contains('hidden')){syncSpectatorBgm(spectatorBgmMode||'special',{force:true});return}if(document.body.classList.contains('special-table-playing')&&seriousEmilyMode&&royalBgmAuthorized){startRoyalTableBgm();return}const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.42,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
+    function startResortMusic(){casinoBgm.pause();if(!spectatorScreen.classList.contains('hidden')){syncSpectatorBgm(spectatorBgmMode||'special',{force:true});return}if(document.body.classList.contains('special-table-playing')&&seriousEmilyMode&&royalBgmAuthorized){startRoyalTableBgm();return}const view=document.getElementById('exploreView');if(view?.classList.contains('open'))startExploreMusic();const bar=document.getElementById('barView');if(bar?.classList.contains('open'))startSeasideBarMusic();const arena=document.getElementById('hernandoEncounter'),arenaBgm=document.getElementById('hernandoArenaBgm');if(arena?.classList.contains('open')&&arenaBgm)void sprStartAudioClean(arenaBgm,{volume:.25,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});syncSunsetTerraceMusic();if(typeof window.__sprSyncIntegratedCafeBgm==='function')window.__sprSyncIntegratedCafeBgm()}
     function pauseResortMusic(){casinoBgm.pause();pauseExploreMusic();stopSeasideBarMusic(false);const cafeBgm=document.getElementById('integratedCafeBgm');if(cafeBgm)cafeBgm.pause();const terraceBgm=document.getElementById('sunsetTerraceBgm');if(terraceBgm){sprCancelGuardedAudioStart(terraceBgm);terraceBgm.pause()}const special=document.getElementById('specialBgm');if(special){sprCancelGuardedAudioStart(special);special.pause()}stopRoyalAudio(royalTableBgm,{reset:false});stopRoyalAudio(royalSpectatorWaitingBgm,{reset:false});const arenaBgm=document.getElementById('hernandoArenaBgm');if(arenaBgm){sprCancelGuardedAudioStart(arenaBgm);arenaBgm.pause()}}
-    function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.38)}
+    function startCasinoMusic(){pauseExploreMusic();stopSeasideBarMusic(false);playAudio(casinoBgm,.23)}
     function stopCasinoMusic(){casinoBgm.pause()}
     function setCasinoHeader(title,sub){casinoHeaderTitle.textContent=title;casinoHeaderSub.textContent=sub}
     function hideCasinoScreens(){[casinoHub,casinoGameSelect,casinoPrize,casinoGalleryScreen,casinoVipRoom,blackjackScreen,hiloScreen].forEach(el=>el.classList.add('hidden'))}
@@ -6939,24 +6942,27 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function villaDarkroomSyncGaugeFromPresence(){if(activeRoom!=='501'||villaDarkroomDatabaseRevision>=0)return;const member=roomPhonePresenceMembers().sort((a,b)=>Number(b?.friendship_gauge_at||0)-Number(a?.friendship_gauge_at||0))[0];if(member&&Number.isFinite(Number(member.friendship_gauge)))villaDarkroomSetGauge(member.friendship_gauge,{at:member.friendship_gauge_at,eventId:member.friendship_gauge_event_id||''})}
     villaDarkroomRenderGauge();
     let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
-    let villaDarkroomEffectKey='',villaDarkroomEffectRequest=0;
+    let villaDarkroomEffectKey='',villaDarkroomEffectRequest=0,villaDarkroomEffectSerial=0;
     let villaDarkroomPendingAckOrigin=null;
-    // Shared command effects use Web Audio instead of starting a new HTML <audio>
-    // from a Supabase callback (which Mobile Safari commonly rejects).
-    let villaDarkroomAudioContext=null,villaDarkroomEffectSource=null,villaDarkroomEffectGain=null;
-    const villaDarkroomAudioBuffers=new Map();
+    // Each command gets its own source so button sounds can overlap until STOP.
+    let villaDarkroomAudioContext=null;
+    const villaDarkroomAudioBuffers=new Map(),villaDarkroomActiveEffects=new Map(),villaDarkroomEffectNodes=new Map();
     function villaDarkroomIsController(){return String(activeGuest||'').trim()===VILLA_DARKROOM_CONTROLLER}
     function villaDarkroomInVilla(){return activeRoom==='501'&&roomView.classList.contains('room-active')}
     function villaDarkroomIsHere(){return villaDarkroomInVilla()&&selectedRoomScene==='darkroom'}
     function villaDarkroomAudioAllowed(){return localStorage.getItem('spr-bgm-enabled')!=='off'}
     function villaDarkroomStopOne(audio){if(!audio)return;sprCancelGuardedAudioStart(audio);try{audio.pause();audio.muted=false;if(audio.readyState>0)audio.currentTime=0}catch{}}
     function villaDarkroomStopWebEffect(){
-      if(villaDarkroomEffectSource){try{villaDarkroomEffectSource.stop()}catch{}try{villaDarkroomEffectSource.disconnect()}catch{}villaDarkroomEffectSource=null}
-      if(villaDarkroomEffectGain){try{villaDarkroomEffectGain.disconnect()}catch{}villaDarkroomEffectGain=null}
+      for(const node of villaDarkroomEffectNodes.values()){
+        if(node.source){try{node.source.stop()}catch{}try{node.source.disconnect()}catch{}}
+        if(node.gain){try{node.gain.disconnect()}catch{}}
+        if(node.audio){node.audio.pause();try{node.audio.currentTime=0}catch{}}
+      }
+      villaDarkroomEffectNodes.clear();
     }
     function villaDarkroomStopEffect(){
       ++villaDarkroomEffectRequest;
-      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
+      villaDarkroomStopWebEffect();villaDarkroomActiveEffects.clear();villaDarkroomStopOne(villaDarkroomEffect);
       villaDarkroomEffectKey='';villaDarkroomPendingAckOrigin=null;
     }
     function villaDarkroomStopLocal(){
@@ -7030,7 +7036,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // The ambient track must stay exclusively inside the dark room.
       if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed()||!villaDarkroomBgm)return;
       if(!villaDarkroomBgm.paused){try{villaDarkroomBgm.muted=false}catch{}return}
-      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.20,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
+      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.12,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
       if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed())return;
       if(!started){
         if(villaDarkroomBgm.error){villaDarkroomSetStatus('暗室BGMを再生できません。villa_darkroom_bgm.mp3 を確認してください。')}
@@ -7038,24 +7044,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
     }
     // Return diagnostic status for acknowledgment to the sending roommate.
-    async function villaDarkroomStartEffect(key){
+    async function villaDarkroomStartEffect(key,origin=null,effectId=''){
       if(!VILLA_DARKROOM_FILES[key]||!villaDarkroomInVilla())return 'outside';
       if(!villaDarkroomAudioAllowed())return 'muted';
-      if(villaDarkroomEffectKey===key&&villaDarkroomEffectSource&&villaDarkroomAudioUnblocked())return 'started';
-      ++villaDarkroomEffectRequest;
-      const request=villaDarkroomEffectRequest;
-      villaDarkroomStopWebEffect();villaDarkroomStopOne(villaDarkroomEffect);
-      villaDarkroomEffectKey=key;
-      const file=VILLA_DARKROOM_FILES[key];
-      const ctx=villaDarkroomAudioContext;
+      const id=String(effectId||origin?.event_id||`local-${++villaDarkroomEffectSerial}-${Date.now()}`);
+      if(villaDarkroomEffectNodes.has(id))return 'started';
+      const generation=villaDarkroomEffectRequest;
+      villaDarkroomActiveEffects.set(id,key);villaDarkroomEffectKey=key;
+      const file=VILLA_DARKROOM_FILES[key],ctx=villaDarkroomAudioContext;
       if(ctx){
-        // Preload/decode even if blocked, so tapping Enable can immediately replay.
         let decoded;
         try{decoded=await villaDarkroomBuffer(key)}catch(e){
-          if(request===villaDarkroomEffectRequest&&key===villaDarkroomEffectKey)villaDarkroomFileError(key,e);
+          if(generation===villaDarkroomEffectRequest&&villaDarkroomActiveEffects.has(id))villaDarkroomFileError(key,e);
           return 'missing';
         }
-        if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla()||key!==villaDarkroomEffectKey)return 'superseded';
+        if(generation!==villaDarkroomEffectRequest||!villaDarkroomActiveEffects.has(id)||!villaDarkroomInVilla())return 'superseded';
         if(!villaDarkroomAudioAllowed())return 'muted';
         if(ctx.state!=='running'){
           villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」を受信しました。「音声を有効にする」を押してください。`);
@@ -7064,27 +7067,29 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         }
         try{
           const source=ctx.createBufferSource(),gain=ctx.createGain();
-          source.buffer=decoded;source.loop=true;gain.gain.value=.8;
+          source.buffer=decoded;source.loop=true;gain.gain.value=/^vibration[1-3]$/.test(key)?1.4:.8;
           source.connect(gain);gain.connect(ctx.destination);
-          villaDarkroomEffectSource=source;villaDarkroomEffectGain=gain;
+          villaDarkroomEffectNodes.set(id,{source,gain,key});
           source.start(0);
-          villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);
+          villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（重ねて再生）`);
           if(villaDarkroomAudioUnblocked())villaDarkroomUnlock?.classList.add('hidden');villaDarkroomUpdateUnlockButtons();
           return 'started';
         }catch(e){
           console.warn('villa darkroom web audio start',e);
-          villaDarkroomSetStatus(`音声が開始できません。「音声を有効にする」を押してください。`);
+          villaDarkroomEffectNodes.delete(id);
+          villaDarkroomSetStatus('音声が開始できません。「音声を有効にする」を押してください。');
           villaDarkroomUnlock?.classList.remove('hidden');
           return 'blocked';
         }
       }
-      // Old browsers without Web Audio can use the existing HTML audio element.
-      if(!villaDarkroomEffect)return 'unsupported';
-      villaDarkroomEffect.src=file;villaDarkroomEffect.loop=true;villaDarkroomEffect.load();
-      const started=await sprStartAudioClean(villaDarkroomEffect,{volume:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
-      if(request!==villaDarkroomEffectRequest||!villaDarkroomInVilla())return 'superseded';
-      if(started){villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（ループ）`);return 'started'}
-      if(villaDarkroomEffect.error||villaDarkroomEffect.networkState===3){villaDarkroomFileError(key);return 'missing'}
+      // Web Audio非対応端末では、コマンドごとのAudioで重ねて再生する。
+      const audio=new Audio(file);audio.loop=true;audio.preload='auto';
+      villaDarkroomEffectNodes.set(id,{audio,key});
+      const started=await sprStartAudioClean(audio,{volume:/^vibration[1-3]$/.test(key)?1:.9,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+      if(generation!==villaDarkroomEffectRequest||!villaDarkroomActiveEffects.has(id)||!villaDarkroomInVilla()){audio.pause();villaDarkroomEffectNodes.delete(id);return 'superseded'}
+      if(started){villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を再生中（重ねて再生）`);return 'started'}
+      villaDarkroomEffectNodes.delete(id);
+      if(audio.error||audio.networkState===3){villaDarkroomFileError(key);return 'missing'}
       villaDarkroomSetStatus(`「${VILLA_DARKROOM_LABELS[key]}」の再生がブロックされました。「音声を有効にする」を押してください。`);
       villaDarkroomUnlock?.classList.remove('hidden');return 'blocked';
     }
@@ -7113,10 +7118,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         return;
       }
       if(villaDarkroomIsHere())void villaDarkroomStartBgm();
+      if(key==='bgm'){villaDarkroomMarkSelected();if(!villaDarkroomActiveEffects.size)villaDarkroomSetStatus('暗室のBGMを再生中');return}
       if(Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,key)){
         villaDarkroomMarkSelected(key);
         villaDarkroomSetStatus(`${VILLA_DARKROOM_LABELS[key]} を読み込み中…`);
-        const state=await villaDarkroomStartEffect(key);
+        const state=await villaDarkroomStartEffect(key,origin,String(origin?.event_id||''));
         if(origin&&state!=='superseded'){
           villaDarkroomPendingAckOrigin=state==='blocked'?origin:null;
           void villaDarkroomSendAck(origin,state);
@@ -7171,9 +7177,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(villaDarkroomEffectKey){villaDarkroomStopEffect();villaDarkroomMarkSelected('');villaDarkroomSetStatus('暗室のBGMを再生中')}
         return;
       }
-      villaDarkroomApplyShared({room_no:'501',display_name:VILLA_DARKROOM_CONTROLLER,origin_session_key:owner.presence_session_key,
-        event_id:owner.darkroom_action_id,occurred_at:owner.darkroom_action_at,action:owner.darkroom_action,mayo_count:owner.mayo_count,mayo_count_at:owner.mayo_count_at,
-        friendship_gauge:owner.friendship_gauge,friendship_gauge_at:owner.friendship_gauge_at,friendship_gauge_event_id:owner.friendship_gauge_event_id});
+      const sharedBase={room_no:'501',display_name:VILLA_DARKROOM_CONTROLLER,origin_session_key:owner.presence_session_key,
+        occurred_at:owner.darkroom_action_at,mayo_count:owner.mayo_count,mayo_count_at:owner.mayo_count_at,
+        friendship_gauge:owner.friendship_gauge,friendship_gauge_at:owner.friendship_gauge_at,friendship_gauge_event_id:owner.friendship_gauge_event_id};
+      const activeEffects=Array.isArray(owner.darkroom_active_effects)?owner.darkroom_active_effects.filter(effect=>effect&&Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,effect.key)):[];
+      if(activeEffects.length){activeEffects.forEach(effect=>villaDarkroomApplyShared({...sharedBase,event_id:String(effect.event_id||owner.darkroom_action_id),action:String(effect.key)}));return}
+      villaDarkroomApplyShared({...sharedBase,event_id:owner.darkroom_action_id,action:owner.darkroom_action});
     }
     async function villaDarkroomPublish(action){
       if(!villaDarkroomIsController()||activeRoom!=='501')return;
@@ -7214,9 +7223,9 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     async function resumeVillaDarkroomAudioAfterMasterOn(){
       if(!villaDarkroomInVilla())return;
       if(villaDarkroomIsHere())void villaDarkroomStartBgm();
-      if(villaDarkroomEffectKey){
-        const key=villaDarkroomEffectKey;villaDarkroomEffectKey='';
-        const status=await villaDarkroomStartEffect(key);
+      const active=[...villaDarkroomActiveEffects.entries()];
+      for(const [id,key] of active){
+        const status=await villaDarkroomStartEffect(key,null,id);
         if(villaDarkroomPendingAckOrigin&&status!=='superseded'){
           const origin=villaDarkroomPendingAckOrigin;villaDarkroomPendingAckOrigin=null;
           void villaDarkroomSendAck(origin,status);
@@ -7854,7 +7863,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         if(selection==='tea-echo'){
           let started=false;
           if(roomPhoneMasterAudioOn()&&roomPhoneTeaBgm){
-            try{void sprStartAudioClean(roomPhoneTeaBgm,{volume:.28,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).catch(error=>console.warn('room_phone_02_bgm.mp3 playback',error))}
+            try{void sprStartAudioClean(roomPhoneTeaBgm,{volume:.17,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS}).catch(error=>console.warn('room_phone_02_bgm.mp3 playback',error))}
             catch(error){console.warn('room_phone_02_bgm.mp3 playback',error)}
           }
           if(roomPhoneMasterAudioOn()&&roomPhoneTeaEcho){
@@ -7936,6 +7945,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         darkroom_action:villaDarkroomIsController()?villaDarkroomAction:'',
         darkroom_action_id:villaDarkroomIsController()?villaDarkroomActionId:'',
         darkroom_action_at:villaDarkroomIsController()?villaDarkroomActionAt:0,
+        darkroom_active_effects:villaDarkroomIsController()?[...villaDarkroomActiveEffects].map(([event_id,key])=>({event_id,key})):[],
         mayo_count:villaDarkroomIsController()?villaDarkroomMayoCount:null,
         mayo_count_at:villaDarkroomIsController()?villaDarkroomMayoCountAt:0,
         friendship_gauge:villaDarkroomGaugeValue,
@@ -8896,7 +8906,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{
         hernandoArenaBgm.loop=true;
         hernandoArenaBgm.muted=false;
-        hernandoArenaBgm.volume=.42;
+        hernandoArenaBgm.volume=.25;
         if(restart&&hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;
         const p=hernandoArenaBgm.play();
         if(p&&p.catch)p.catch(e=>console.warn('Hernando BGM play',e));
@@ -8905,7 +8915,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function cancelHernandoArenaBgmFade(restoreVolume=false){
       hernandoArenaBgmFadeToken++;
       if(restoreVolume&&hernandoArenaBgm){
-        try{hernandoArenaBgm.volume=.42}catch{}
+        try{hernandoArenaBgm.volume=.25}catch{}
       }
     }
     function fadeHernandoArenaBgm(targetVolume=.07,duration=3000,onDone=null){
@@ -9088,13 +9098,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(fadeOut&&hernandoArenaBgm&&!hernandoArenaBgm.paused){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
         fadeHernandoArenaBgm(0,900,()=>{
-          try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+          try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.25}catch{}
         });
         return;
       }
       cancelHernandoArenaBgmFade();
       sprCancelGuardedAudioStart(hernandoArenaBgm);
-      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+      try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.25}catch{}
     }
     async function showHernandoKnifeAftermath(){
       const scene=document.createElement('div');
@@ -9135,7 +9145,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // 導入動画が終わるまでは闘牛場BGMを再生しない。動画終了後に showHernandoArena() で初めて開始する。
       if(hernandoArenaBgm){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
-        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.25}catch{}
         }
       hernandoVideoScreen.classList.add('open');hernandoVideoScreen.setAttribute('aria-hidden','false');
       hernandoVideoFallback.classList.remove('show');hernandoVideoContinue.classList.add('hidden');hernandoVideoPlay.classList.remove('hidden');
@@ -9162,7 +9172,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       pauseResortMusic();
       if(hernandoArenaBgm){
         sprCancelGuardedAudioStart(hernandoArenaBgm);
-        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.42}catch{}
+        try{hernandoArenaBgm.pause();if(hernandoArenaBgm.readyState>0)hernandoArenaBgm.currentTime=0;hernandoArenaBgm.muted=false;hernandoArenaBgm.volume=.25}catch{}
         }
 
       // 再訪は文章・階段・動画を挟まず、短い暗転だけで闘牛場へ。
@@ -9451,11 +9461,13 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateRoomPhoto()});
     let roomMessageCache=[],roomServiceCache=[],roomRealtimeChannel=null;
     function roomMessages(){return roomMessageCache}
+    const ROOM_CHAT_IMAGE_PREFIX='SPR_ROOM_CHAT_IMAGE::';
+    function parseRoomChatImage(text){const raw=String(text||'');if(!raw.startsWith(ROOM_CHAT_IMAGE_PREFIX))return null;try{const data=JSON.parse(raw.slice(ROOM_CHAT_IMAGE_PREFIX.length));return data&&typeof data.image==='string'&&data.image.startsWith('data:image/jpeg;base64,')?data:null}catch{return null}}
     function renderChat(){
       if(!activeRoom)return;
       const messages=roomMessages(); chatLog.replaceChildren();
       if(!messages.length){const empty=document.createElement('div');empty.className='chat-empty';empty.textContent='この客室の会話はまだありません。';chatLog.append(empty);return;}
-      messages.slice(-100).forEach(message=>{const item=document.createElement('div'),isSystem=message.name==='SYSTEM',redEvent=isSystem&&(message.text==='エルナンドはマーカスに繁殖促進剤を嗅がせた。受精率ゲージが上がった！'||message.text==='マーカスからミルクが出るようになった！');item.className='chat-message'+(message.name===activeGuest?' mine':'')+(isSystem?' system-event':'')+(redEvent?' system-event-red':'');const meta=document.createElement('small');meta.textContent=`${message.name}　${message.time}`;if(isSystem)meta.hidden=true;const body=document.createElement('p');body.textContent=message.text;item.append(meta,body);chatLog.append(item)});
+      messages.slice(-100).forEach(message=>{const imageData=parseRoomChatImage(message.body??message.text),item=document.createElement('div'),isSystem=message.name==='SYSTEM',redEvent=isSystem&&(message.text==='エルナンドはマーカスに繁殖促進剤を嗅がせた。受精率ゲージが上がった！'||message.text==='マーカスからミルクが出るようになった！');item.className='chat-message'+(message.name===activeGuest?' mine':'')+(isSystem?' system-event':'')+(redEvent?' system-event-red':'');const meta=document.createElement('small');meta.textContent=`${message.name}　${message.time}`;if(isSystem)meta.hidden=true;item.append(meta);if(imageData){const image=document.createElement('img');image.className='chat-message-image';image.src=imageData.image;image.alt='チャットで共有された画像';image.loading='lazy';item.append(image);if(imageData.caption){const caption=document.createElement('p');caption.textContent=imageData.caption;item.append(caption)}}else{const body=document.createElement('p');body.textContent=message.text;item.append(body)}chatLog.append(item)});
       chatLog.scrollTop=chatLog.scrollHeight;
     }
     function updateUnread(){const value=String(unreadCount);chatUnread.textContent=value;chatUnread.classList.toggle('hidden',unreadCount===0);if(villaPoolChatUnread){villaPoolChatUnread.textContent=value;villaPoolChatUnread.classList.toggle('hidden',unreadCount===0)}}
@@ -9481,7 +9493,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         return order;
       }catch(error){console.warn('room service order parse',error);return null}
     }
-    function roomSharedMessage(row){return {id:row.id,name:row.display_name||'ゲスト',text:row.body||'',time:new Date(row.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}}
+    function roomSharedMessage(row){const body=String(row.body||''),image=parseRoomChatImage(body);return {id:row.id,name:row.display_name||'ゲスト',text:image?(image.caption||'画像を送信しました'):body,body,time:new Date(row.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}}
     function roomSharedOrder(row){return {id:String(row.id),room:row.room_no,playerId:String(row.player_id||''),guest:row.display_name||'ゲスト',items:Array.isArray(row.items)?row.items:[],time:new Date(row.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}}
     async function loadRoomSharedData(room){
       if(!window.supabaseClientSpecial||!room)return;
@@ -10099,7 +10111,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         const awarded=await window.__sprAwardCasinoChipsOnce?.(10000000,resolution.event_id);
         if(!awarded&&localStorage.getItem(`spr-casino-award:${playerStorageId}:${resolution.event_id}`)!=='1')console.warn('room service lucky stay chip award could not be confirmed');
         stopRoomLuckyStayBgm();
-        if(localStorage.getItem('spr-bgm-enabled')!=='off')void sprStartAudioClean(roomLuckyStayBgm,{volume:.42,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
+        if(localStorage.getItem('spr-bgm-enabled')!=='off')void sprStartAudioClean(roomLuckyStayBgm,{volume:.25,loop:true,restart:true,guard:SPR_AUDIO_START_GUARD_MS});
         if(typeof window.__sprShowStaffDialogue==='function')window.__sprShowStaffDialogue(prizeText,stopRoomLuckyStayBgm,'STAFF');
         else{showRoomServiceHorrorResult(prizeText,'STAFF');stopRoomLuckyStayBgm()}
         return true;
@@ -10886,10 +10898,14 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(overlay){overlay.style.transition='opacity .42s ease';overlay.style.opacity='0';await new Promise(resolve=>setTimeout(resolve,440))}
     };
     window.__sprSendArthurChat=async(room,body)=>{const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return false;const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:String(room),player_id:playerId,display_name:'Arthur Grey',body:String(body)});if(error){console.warn('Arthur chat event',error);return false}return true};
+    const chatImageInput=document.getElementById('chatImageFile'),chatImagePick=document.getElementById('chatImagePick'),chatSendButton=document.getElementById('chatSendButton');
+    chatImagePick?.addEventListener('click',()=>chatImageInput?.click());
+    function compressRoomChatImage(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),image=new Image();image.onload=()=>{try{const scale=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));const ctx=canvas.getContext('2d');if(!ctx)throw new Error('画像を変換できません');ctx.drawImage(image,0,0,canvas.width,canvas.height);let quality=.78,data=canvas.toDataURL('image/jpeg',quality);while(data.length>480000&&quality>.48){quality-=.08;data=canvas.toDataURL('image/jpeg',quality)}URL.revokeObjectURL(url);if(data.length>480000)throw new Error('画像が大きすぎます。別の画像を選んでください。');resolve(data)}catch(error){URL.revokeObjectURL(url);reject(error)}};image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('この画像を読み込めませんでした。'))};image.src=url})}
     document.getElementById('chatForm').addEventListener('submit',async event=>{
-      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),roomAtSend=activeRoom,nameAtSend=activeGuest;if(!message||!roomAtSend)return;
+      event.preventDefault();const input=document.getElementById('chatInput'),message=input.value.trim(),file=chatImageInput?.files?.[0],roomAtSend=activeRoom,nameAtSend=activeGuest;if((!message&&!file)||!roomAtSend)return;
       const playerId=await sprPlayerId();if(!playerId||!window.supabaseClientSpecial)return;
-      input.disabled=true;try{const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body:message});if(error)throw error;input.value=''}catch(e){console.warn('room chat sync',e)}finally{input.disabled=false;input.focus()}
+      input.disabled=true;if(chatImageInput)chatImageInput.disabled=true;if(chatImagePick)chatImagePick.disabled=true;if(chatSendButton)chatSendButton.disabled=true;
+      try{let body=message;if(file){const image=await compressRoomChatImage(file);body=ROOM_CHAT_IMAGE_PREFIX+JSON.stringify({image,caption:message})}const {error}=await window.supabaseClientSpecial.from('spr_room_messages').insert({room_no:roomAtSend,player_id:playerId,display_name:nameAtSend,body});if(error)throw error;input.value='';if(chatImageInput)chatImageInput.value=''}catch(e){console.warn('room chat sync',e);alert(`送信できませんでした：${String(e.message||e)}`)}finally{input.disabled=false;if(chatImageInput)chatImageInput.disabled=false;if(chatImagePick)chatImagePick.disabled=false;if(chatSendButton)chatSendButton.disabled=false;input.focus()}
     });
     let roomLeaveInProgress=false;
     async function leaveActiveRoom(){
@@ -11870,7 +11886,7 @@ function syncIntegratedCafeMasterBgm(){
   const terraceOpen=document.getElementById('sunsetTerraceView')?.classList.contains('open');
   const shouldPlay=(integratedCafeShell.classList.contains('open')||teaOpen) && !terraceOpen && localStorage.getItem('spr-bgm-enabled')!=='off';
   if(!shouldPlay){integratedCafeBgm.pause();return;}
-  integratedCafeBgm.volume=.34;
+  integratedCafeBgm.volume=.20;
   if(integratedCafeBgm.paused){
     try{
       const result=integratedCafeBgm.play();
@@ -14775,7 +14791,7 @@ window.addEventListener('message',e=>{
          try{
            const ctx=day7EndingAudioContext;
            const source=ctx.createBufferSource(),gain=ctx.createGain();
-           source.buffer=buffer;source.loop=true;gain.gain.value=.72;
+           source.buffer=buffer;source.loop=true;gain.gain.value=.43;
            source.connect(gain);gain.connect(ctx.destination);
            source.start(0);
            day7EndingBgmSource=source;day7EndingBgmGain=gain;day7EndingBgmStarted=true;
@@ -14790,7 +14806,7 @@ window.addEventListener('message',e=>{
          day7EndingFallbackAudio.loop=true;
          day7EndingFallbackAudio.preload='auto';
        }
-       day7EndingFallbackAudio.volume=.72;
+       day7EndingFallbackAudio.volume=.43;
        const playing=day7EndingFallbackAudio.play();
        if(playing?.then)await playing;
        if(!day7EndingBgmWanted){day7EndingFallbackAudio.pause();return false}
