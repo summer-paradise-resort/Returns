@@ -736,6 +736,8 @@
     .villa-darkroom-side-button.hidden{display:none!important}
     .villa-darkroom-gauge-panel{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 6px;border:1px solid rgba(210,187,141,.4);background:rgba(12,12,12,.72);color:#f4e6cb}
     .villa-darkroom-gauge-title{font-size:11px;letter-spacing:.12em;line-height:1.4}
+    .villa-darkroom-fertility-result{padding:7px 5px;border:1px solid rgba(210,187,141,.55);background:rgba(10,10,10,.92);color:#efd79a;font:12px Georgia,serif;letter-spacing:.04em;text-align:center}
+    .villa-darkroom-fertility-result.hidden{display:none!important}
     .villa-darkroom-gauge-track{position:relative;flex:1;width:min(62px,70%);min-height:275px;overflow:hidden;border:1px solid rgba(210,187,141,.62);border-radius:18px;background:linear-gradient(180deg,rgba(82,32,32,.55),rgba(91,73,37,.46) 52%,rgba(33,61,43,.48));box-shadow:inset 0 0 12px rgba(0,0,0,.65)}
     .villa-darkroom-gauge-fill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(0deg,#83b58a,#d2ad61 57%,#ad5c5c);transition:height .38s ease;box-shadow:0 0 16px rgba(218,179,99,.38)}
     .villa-darkroom-gauge-level{position:absolute;left:0;right:0;z-index:1;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;text-shadow:0 1px 4px #000,0 0 5px #000;pointer-events:none}
@@ -1606,6 +1608,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
               </div>
               <div class="villa-darkroom-gauge-panel">
                 <div class="villa-darkroom-gauge-title">受精率ゲージ</div>
+                <div id="villaDarkroomFertilityResult" class="villa-darkroom-fertility-result hidden" aria-live="polite"></div>
                 <div id="villaDarkroomGauge" class="villa-darkroom-gauge-track" role="meter" aria-label="受精率ゲージ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="小">
                   <div id="villaDarkroomGaugeFill" class="villa-darkroom-gauge-fill"></div>
                   <span class="villa-darkroom-gauge-level low">小</span><span class="villa-darkroom-gauge-level mid">中</span><span class="villa-darkroom-gauge-level high">高</span>
@@ -1702,7 +1705,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <div class="service-sheet-head"><h3>STATUS</h3><button id="villaDarkroomStatClose" class="service-sheet-close" type="button" aria-label="ステータス画面を閉じる">⌄</button></div>
           <div class="belongings-body villa-darkroom-stat-content">
             <div class="villa-darkroom-stat-person">エルナンド・ロメロ：繁殖期</div>
-            <div class="villa-darkroom-stat-person">マーカス・ソーン：繁殖期</div>
+            <div class="villa-darkroom-stat-person">マーカス・ソーン：<strong id="villaDarkroomMarcusStatus">繁殖期</strong></div>
             <div class="villa-darkroom-stat-count">マーカスへの種付け回数<strong id="villaDarkroomMayoCount" aria-live="polite">0回</strong></div>
           </div>
         </section>
@@ -6726,6 +6729,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const villaDarkroomRoomUnlock=document.getElementById('villaDarkroomRoomEnableSound');
     const villaDarkroomStatOpen=document.getElementById('villaDarkroomStatOpen'),villaDarkroomStatSheet=document.getElementById('villaDarkroomStatSheet'),villaDarkroomMayoCountEl=document.getElementById('villaDarkroomMayoCount');
     const villaDarkroomGauge=document.getElementById('villaDarkroomGauge'),villaDarkroomGaugeFill=document.getElementById('villaDarkroomGaugeFill'),villaDarkroomResistance=document.getElementById('villaDarkroomResistance');
+    const villaDarkroomFertilityResultEl=document.getElementById('villaDarkroomFertilityResult'),villaDarkroomMarcusStatusEl=document.getElementById('villaDarkroomMarcusStatus');
     const villaDarkroomBelongingsOpen=document.getElementById('villaDarkroomBelongingsOpen'),villaDarkroomBelongingsSheet=document.getElementById('villaDarkroomBelongingsSheet');
     let roomServiceCart={},roomServiceOrderSubmitting=false;
     const deluxeScenes={
@@ -6860,22 +6864,53 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     const VILLA_DARKROOM_MAYO_COUNT_KEY='spr-villa-501-mayo-count-v1',VILLA_DARKROOM_MAYO_COUNT_AT_KEY='spr-villa-501-mayo-count-at-v1';
     let villaDarkroomMayoCount=Math.max(0,Number(localStorage.getItem(VILLA_DARKROOM_MAYO_COUNT_KEY)||0)||0),villaDarkroomMayoCountAt=Number(localStorage.getItem(VILLA_DARKROOM_MAYO_COUNT_AT_KEY)||0)||0;
     function villaDarkroomRenderMayoCount(){if(villaDarkroomMayoCountEl)villaDarkroomMayoCountEl.textContent=`${villaDarkroomMayoCount}回`}
-    function villaDarkroomSetMayoCount(value,{persist=false,at=Date.now()}={}){const count=Math.max(0,Math.floor(Number(value)||0)),timestamp=Number.isFinite(Number(at))?Number(at):Date.now();if(timestamp<villaDarkroomMayoCountAt)return false;villaDarkroomMayoCount=count;villaDarkroomMayoCountAt=timestamp;if(persist)try{localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_KEY,String(count));localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_AT_KEY,String(timestamp))}catch{}villaDarkroomRenderMayoCount();return true}
+    function villaDarkroomSetMayoCount(value,{persist=false,at=Date.now(),force=false}={}){const count=Math.max(0,Math.floor(Number(value)||0)),timestamp=Number.isFinite(Number(at))?Number(at):Date.now();if(!force&&timestamp<villaDarkroomMayoCountAt)return false;villaDarkroomMayoCount=count;villaDarkroomMayoCountAt=timestamp;if(persist)try{localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_KEY,String(count));localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_AT_KEY,String(timestamp))}catch{}villaDarkroomRenderMayoCount();return true}
     async function villaDarkroomPublishMayoCount(){if(activeRoom!=='501'||!roomPhonePresenceReady||!roomPhonePresenceChannel)return;try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-mayo-count',payload:{room_no:'501',count:villaDarkroomMayoCount,count_at:villaDarkroomMayoCountAt,origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER}})}catch(e){console.warn('darkroom mayo count sync',e)}}
-    window.addEventListener('spr:darkroom-counters-reset',()=>{const at=Date.now();villaDarkroomSetMayoCount(0,{persist:true,at});villaDarkroomSetGauge(0,{at,eventId:sprSafeUuid()})});
-    function villaDarkroomLatestCountFromPresence(){if(activeRoom!=='501')return;const member=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER).sort((a,b)=>Number(b?.mayo_count_at||0)-Number(a?.mayo_count_at||0))[0];if(member&&Number.isFinite(Number(member.mayo_count)))villaDarkroomSetMayoCount(member.mayo_count,{at:member.mayo_count_at})}
+    window.addEventListener('spr:darkroom-counters-reset',()=>{const at=Date.now();villaDarkroomSetMayoCount(0,{persist:true,at,force:true});villaDarkroomSetGauge(0,{at,eventId:sprSafeUuid(),force:true});villaDarkroomFertilityRate=null;villaDarkroomMarcusStatus='繁殖期';villaDarkroomRenderFertilityState()});
+    function villaDarkroomLatestCountFromPresence(){if(activeRoom!=='501'||villaDarkroomDatabaseRevision>=0)return;const member=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER).sort((a,b)=>Number(b?.mayo_count_at||0)-Number(a?.mayo_count_at||0))[0];if(member&&Number.isFinite(Number(member.mayo_count)))villaDarkroomSetMayoCount(member.mayo_count,{at:member.mayo_count_at})}
     villaDarkroomRenderMayoCount();
     const VILLA_DARKROOM_GAUGE_KEY='spr-villa-501-friendship-gauge-v1',VILLA_DARKROOM_GAUGE_AT_KEY='spr-villa-501-friendship-gauge-at-v1';
     let villaDarkroomGaugeValue=Math.max(0,Math.min(100,Number(localStorage.getItem(VILLA_DARKROOM_GAUGE_KEY)||0)||0));
     let villaDarkroomGaugeAt=Number(localStorage.getItem(VILLA_DARKROOM_GAUGE_AT_KEY)||0)||0;
     let villaDarkroomGaugeEventId='';
+    let villaDarkroomFertilityRate=null,villaDarkroomMarcusStatus='繁殖期',villaDarkroomDatabaseRevision=-1;
+    function villaDarkroomRenderFertilityState(){
+      if(villaDarkroomFertilityResultEl){villaDarkroomFertilityResultEl.classList.toggle('hidden',villaDarkroomFertilityRate===null);villaDarkroomFertilityResultEl.textContent=villaDarkroomFertilityRate===null?'':`受精率 ${villaDarkroomFertilityRate}%`}
+      if(villaDarkroomMarcusStatusEl)villaDarkroomMarcusStatusEl.textContent=villaDarkroomMarcusStatus;
+      villaDarkroomRenderGauge();
+    }
     function villaDarkroomRenderGauge(){
       const value=Math.max(0,Math.min(100,Number(villaDarkroomGaugeValue)||0));
       if(villaDarkroomGaugeFill)villaDarkroomGaugeFill.style.height=`${value}%`;
-      if(villaDarkroomGauge){villaDarkroomGauge.setAttribute('aria-valuenow',String(value));villaDarkroomGauge.setAttribute('aria-valuetext',value>=67?'高':value>=34?'中':'小')}
+      if(villaDarkroomGauge){villaDarkroomGauge.setAttribute('aria-valuenow',String(value));villaDarkroomGauge.setAttribute('aria-valuetext',`${value>=67?'高':value>=34?'中':'小'}${villaDarkroomFertilityRate===null?'':`・受精率 ${villaDarkroomFertilityRate}%`}`)}
     }
-    function villaDarkroomSetGauge(value,{at=Date.now(),eventId='',broadcast=false}={}){
-      const timestamp=Number(at)||Date.now();if(timestamp<villaDarkroomGaugeAt)return false;
+    function villaDarkroomApplyDatabaseState(raw){
+      const state=Array.isArray(raw)?raw[0]:raw;if(!state)return;
+      const revision=Number(state.revision);if(Number.isFinite(revision)&&revision<villaDarkroomDatabaseRevision)return;if(Number.isFinite(revision))villaDarkroomDatabaseRevision=revision;
+      const at=Date.parse(state.updated_at||'')||Date.now();
+      villaDarkroomSetMayoCount(state.mayo_count,{persist:true,at,force:true});
+      villaDarkroomSetGauge(state.gauge_value,{at,eventId:`db:${state.updated_at||at}`,force:true});
+      const rate=state.fertility_rate===null||state.fertility_rate===undefined?null:Number(state.fertility_rate);
+      villaDarkroomFertilityRate=Number.isFinite(rate)&&rate>=50&&rate<=100?Math.round(rate):null;
+      villaDarkroomMarcusStatus=state.marcus_status==='受精完了'?'受精完了':'繁殖期';
+      villaDarkroomRenderFertilityState();
+    }
+    async function villaDarkroomLoadDatabaseState(){
+      if(activeRoom!=='501'||!window.supabaseClientSpecial)return;
+      const {data,error}=await window.supabaseClientSpecial.from('spr_villa_501_state').select('id,mayo_count,gauge_value,fertility_rate,marcus_status,revision,updated_at').eq('id',1).maybeSingle();
+      if(error){villaDarkroomSetStatus('リアルタイム共有SQLが未設定です。付属SQLをSupabaseで実行してください。');console.warn('darkroom shared state load',error);return}
+      if(data)villaDarkroomApplyDatabaseState(data);
+    }
+    async function villaDarkroomRunDatabaseAction(action){
+      const client=window.supabaseClientSpecial,playerId=await ensureStoredPlayerId();
+      if(!client||!playerId){villaDarkroomSetStatus('共有状態を更新できません。接続を確認してください。');return}
+      const {data,error}=await client.rpc('spr_villa_501_apply_action',{p_action:action,p_player_id:playerId});
+      if(error){villaDarkroomSetStatus('リアルタイム共有SQLが未設定か、更新に失敗しました。付属SQLをSupabaseで実行してください。');console.warn('darkroom shared action',action,error);void villaDarkroomLoadDatabaseState();return}
+      villaDarkroomApplyDatabaseState(data);
+    }
+    function villaDarkroomSetFertilityPendingReset(){villaDarkroomFertilityRate=null;villaDarkroomRenderFertilityState()}
+    function villaDarkroomSetGauge(value,{at=Date.now(),eventId='',broadcast=false,force=false}={}){
+      const timestamp=Number(at)||Date.now();if(!force&&timestamp<villaDarkroomGaugeAt)return false;
       villaDarkroomGaugeValue=Math.max(0,Math.min(100,Math.round(Number(value)||0)));villaDarkroomGaugeAt=timestamp;villaDarkroomGaugeEventId=String(eventId||'');
       try{localStorage.setItem(VILLA_DARKROOM_GAUGE_KEY,String(villaDarkroomGaugeValue));localStorage.setItem(VILLA_DARKROOM_GAUGE_AT_KEY,String(villaDarkroomGaugeAt))}catch{}
       villaDarkroomRenderGauge();
@@ -6883,7 +6918,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       return true;
     }
     function villaDarkroomAdjustGauge(amount){const next=Math.max(0,Math.min(100,villaDarkroomGaugeValue+Number(amount||0)));if(next===villaDarkroomGaugeValue)return;villaDarkroomSetGauge(next,{at:Date.now(),eventId:sprSafeUuid(),broadcast:true})}
-    function villaDarkroomSyncGaugeFromPresence(){if(activeRoom!=='501')return;const member=roomPhonePresenceMembers().sort((a,b)=>Number(b?.friendship_gauge_at||0)-Number(a?.friendship_gauge_at||0))[0];if(member&&Number.isFinite(Number(member.friendship_gauge)))villaDarkroomSetGauge(member.friendship_gauge,{at:member.friendship_gauge_at,eventId:member.friendship_gauge_event_id||''})}
+    function villaDarkroomSyncGaugeFromPresence(){if(activeRoom!=='501'||villaDarkroomDatabaseRevision>=0)return;const member=roomPhonePresenceMembers().sort((a,b)=>Number(b?.friendship_gauge_at||0)-Number(a?.friendship_gauge_at||0))[0];if(member&&Number.isFinite(Number(member.friendship_gauge)))villaDarkroomSetGauge(member.friendship_gauge,{at:member.friendship_gauge_at,eventId:member.friendship_gauge_event_id||''})}
     villaDarkroomRenderGauge();
     let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
     let villaDarkroomEffectKey='',villaDarkroomEffectRequest=0;
@@ -7096,7 +7131,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     function villaDarkroomApplyShared(payload){
       if(String(payload?.room_no||'')!=='501'||!villaDarkroomInVilla())return;
       if(String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;
-      if(Number.isFinite(Number(payload?.mayo_count)))villaDarkroomSetMayoCount(payload.mayo_count,{at:payload.mayo_count_at});
+      if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.mayo_count)))villaDarkroomSetMayoCount(payload.mayo_count,{at:payload.mayo_count_at});
       if(Number.isFinite(Number(payload?.friendship_gauge)))villaDarkroomSetGauge(payload.friendship_gauge,{at:payload.friendship_gauge_at,eventId:payload.friendship_gauge_event_id||''});
       if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
       const action=String(payload?.action||'');
@@ -7148,6 +7183,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         // Do not silence already shared effects when a roommate enters later.
         void villaDarkroomStartBgm();
         void villaDarkroomPreloadEffects();
+        void villaDarkroomLoadDatabaseState();
         if(villaDarkroomIsController())void villaDarkroomPublish('bgm');
         else villaDarkroomSyncPresence();
       }
@@ -7173,8 +7209,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(!villaDarkroomIsController()||!villaDarkroomIsHere())return;
       primeVillaDarkroomSharedAudio();
       const key=btn.dataset.darkroomCommand;
-      if(['kiss1','kiss2','kiss3','nail','vibration1','vibration2','vibration3'].includes(key))villaDarkroomAdjustGauge(10);
-      if(key==='mayo'){const countAt=Date.now();villaDarkroomSetMayoCount(villaDarkroomMayoCount+1,{persist:true,at:countAt});if(roomPhonePresenceReady)void trackRoomPhonePresence();void villaDarkroomPublishMayoCount();villaDarkroomSetGauge(0,{at:countAt,eventId:sprSafeUuid(),broadcast:true})}
+      if(['kiss1','kiss2','kiss3','nail','vibration1','vibration2','vibration3'].includes(key)){villaDarkroomAdjustGauge(10);void villaDarkroomRunDatabaseAction('stimulate')}
+      if(key==='mayo'){const countAt=Date.now();villaDarkroomSetMayoCount(villaDarkroomMayoCount+1,{persist:true,at:countAt,force:true});if(roomPhonePresenceReady)void trackRoomPhonePresence();void villaDarkroomPublishMayoCount();villaDarkroomSetGauge(0,{at:countAt,eventId:sprSafeUuid(),broadcast:true,force:true});villaDarkroomSetFertilityPendingReset();void villaDarkroomRunDatabaseAction('mayo')}
       void villaDarkroomApplyAction(key);
       void villaDarkroomPublish(key);
     }));
@@ -8130,10 +8166,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'room-service-order-created'},({payload})=>{if(activeRoom!==roomAtStart)return;applySharedRoomServiceOrder(payload)})
         .on('broadcast',{event:'room-service-delivery-arrived'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomServiceArrival(payload)})
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
+        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_villa_501_state'},payload=>{if(activeRoom==='501'&&payload?.new) villaDarkroomApplyDatabaseState(payload.new)})
         .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
         .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
-        .on('broadcast',{event:'villa-darkroom-mayo-count'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey||String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;if(Number.isFinite(Number(payload?.count)))villaDarkroomSetMayoCount(payload.count,{persist:true,at:payload.count_at})})
-        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||''})})
+        .on('broadcast',{event:'villa-darkroom-mayo-count'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey||String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.count)))villaDarkroomSetMayoCount(payload.count,{persist:true,at:payload.count_at})})
+        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||''})})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
@@ -8142,6 +8179,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           roomPhonePresenceReady=true;
           void syncMysteryRoomPresence(roomAtStart);
           await trackRoomPhonePresence();
+          if(roomAtStart==='501')void villaDarkroomLoadDatabaseState();
           void flushVillaPoolPendingBroadcasts();
           syncSharedRoomState();
         }
@@ -10739,10 +10777,10 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     belongingPreview?.addEventListener('click',e=>{if(e.target===belongingPreview)closeBelongingPreview()});
     villaDarkroomStatOpen?.addEventListener('click',()=>{if(!villaDarkroomIsHere())return;closeChatSheet();closeRoomService();closeRoomBelongings();closeRoomCollection();roomSceneNav.classList.remove('open');roomSceneNav.setAttribute('aria-hidden','true');roomSceneMenuToggle.setAttribute('aria-expanded','false');villaDarkroomLatestCountFromPresence();villaDarkroomStatSheet?.classList.add('open');villaDarkroomStatSheet?.setAttribute('aria-hidden','false')});
     document.getElementById('villaDarkroomStatClose')?.addEventListener('click',()=>{villaDarkroomStatSheet?.classList.remove('open');villaDarkroomStatSheet?.setAttribute('aria-hidden','true')});
-    villaDarkroomResistance?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||villaDarkroomIsController())return;villaDarkroomAdjustGauge(-10)});
+    villaDarkroomResistance?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||villaDarkroomIsController())return;villaDarkroomAdjustGauge(-10);if(villaDarkroomGaugeValue<100)villaDarkroomSetFertilityPendingReset();void villaDarkroomRunDatabaseAction('resist')});
     villaDarkroomBelongingsOpen?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;closeRoomService();closeChatSheet();villaDarkroomBelongingsSheet?.classList.add('open');villaDarkroomBelongingsSheet?.setAttribute('aria-hidden','false')});
     document.getElementById('villaDarkroomBelongingsClose')?.addEventListener('click',()=>{villaDarkroomBelongingsSheet?.classList.remove('open');villaDarkroomBelongingsSheet?.setAttribute('aria-hidden','true')});
-    document.getElementById('villaDarkroomUseAphrodisiac')?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;villaDarkroomAdjustGauge(30)});
+    document.getElementById('villaDarkroomUseAphrodisiac')?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;villaDarkroomAdjustGauge(30);void villaDarkroomRunDatabaseAction('aphrodisiac')});
     document.getElementById('roomBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('fallbackBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('roomBelongingsClose').addEventListener('click',closeRoomBelongings);document.getElementById('roomCollectionOpen').addEventListener('click',openRoomCollection);document.getElementById('roomCollectionClose').addEventListener('click',closeRoomCollection);updateCollectionButton();
