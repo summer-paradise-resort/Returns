@@ -6943,7 +6943,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
       return true;
     }
-    function villaDarkroomAdjustGauge(amount){const next=Math.max(0,Math.min(100,villaDarkroomGaugeValue+Number(amount||0)));if(next===villaDarkroomGaugeValue)return;villaDarkroomSetGauge(next,{at:Date.now(),eventId:sprSafeUuid(),broadcast:true})}
+    function villaDarkroomAdjustGauge(amount){const next=Math.max(0,Math.min(100,villaDarkroomGaugeValue+Number(amount||0)));if(next===villaDarkroomGaugeValue)return;villaDarkroomSetGauge(next,{at:Date.now(),eventId:sprSafeUuid(),broadcast:true,force:true})}
     function villaDarkroomSyncGaugeFromPresence(){if(activeRoom!=='501'||villaDarkroomDatabaseRevision>=0)return;const member=roomPhonePresenceMembers().sort((a,b)=>Number(b?.friendship_gauge_at||0)-Number(a?.friendship_gauge_at||0))[0];if(member&&Number.isFinite(Number(member.friendship_gauge)))villaDarkroomSetGauge(member.friendship_gauge,{at:member.friendship_gauge_at,eventId:member.friendship_gauge_event_id||''})}
     villaDarkroomRenderGauge();
     let villaDarkroomLatestRemoteAction='',villaDarkroomLatestRemoteAt=0;
@@ -7162,7 +7162,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(String(payload?.room_no||'')!=='501'||!villaDarkroomInVilla())return;
       if(String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;
       if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.mayo_count)))villaDarkroomSetMayoCount(payload.mayo_count,{at:payload.mayo_count_at});
-      if(Number.isFinite(Number(payload?.friendship_gauge)))villaDarkroomSetGauge(payload.friendship_gauge,{at:payload.friendship_gauge_at,eventId:payload.friendship_gauge_event_id||''});
+      if(Number.isFinite(Number(payload?.friendship_gauge)))villaDarkroomSetGauge(payload.friendship_gauge,{at:payload.friendship_gauge_at,eventId:payload.friendship_gauge_event_id||'',force:true});
       if(String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;
       const action=String(payload?.action||'');
       if(action!=='stop'&&action!=='bgm'&&!Object.prototype.hasOwnProperty.call(VILLA_DARKROOM_FILES,action))return;
@@ -8230,7 +8230,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
         .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
         .on('broadcast',{event:'villa-darkroom-mayo-count'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey||String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.count)))villaDarkroomSetMayoCount(payload.count,{persist:true,at:payload.count_at})})
-        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||''})})
+        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||'',force:true})})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
