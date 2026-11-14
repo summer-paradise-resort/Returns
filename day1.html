@@ -1699,14 +1699,15 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
           <div class="service-sheet-head"><h3>BELONGINGS</h3><button id="villaDarkroomBelongingsClose" class="service-sheet-close" type="button" aria-label="所持品を閉じる">⌄</button></div>
           <div class="belongings-body villa-darkroom-stat-content">
             <div class="villa-darkroom-item-row"><span>媚薬（無限）<br>使うと現在のゲージが約30%上昇</span><button id="villaDarkroomUseAphrodisiac" type="button">使う</button></div>
-            <p class="villa-darkroom-item-note">何度でも使用できます。</p>
+            <div class="villa-darkroom-item-row"><span>雌化率促進剤（無限）<br>使うとマーカスの雌化率ゲージが60%上昇</span><button id="villaDarkroomUseFemalePromoter" type="button">使う</button></div>
+            <p class="villa-darkroom-item-note">どちらも何度でも使用できます。</p>
           </div>
         </section>
         <section id="villaDarkroomStatSheet" class="room-belongings-sheet villa-darkroom-stat-sheet" aria-hidden="true" aria-label="501号室ステータス画面">
           <div class="service-sheet-head"><h3>STATUS</h3><button id="villaDarkroomStatClose" class="service-sheet-close" type="button" aria-label="ステータス画面を閉じる">⌄</button></div>
           <div class="belongings-body villa-darkroom-stat-content">
-            <div class="villa-darkroom-stat-person">エルナンド・ロメロ：繁殖期</div>
-            <div class="villa-darkroom-stat-person">マーカス・ソーン：<strong id="villaDarkroomMarcusStatus">繁殖期</strong></div>
+            <div class="villa-darkroom-stat-person">エルナンド・ロメロ：発情期</div>
+            <div class="villa-darkroom-stat-person">マーカス・ソーン：<strong id="villaDarkroomMarcusStatus">強制繁殖期</strong><br><small>(エルナンド専用雌牛)</small></div>
             <div class="villa-darkroom-stat-person">雌化率：<strong id="villaDarkroomFemaleRate">0%</strong></div>
             <div class="villa-darkroom-stat-count">マーカスへの種付け回数<strong id="villaDarkroomMayoCount" aria-live="polite">0回</strong></div>
           </div>
@@ -6881,8 +6882,8 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(villaDarkroomGaugeTitleEl)villaDarkroomGaugeTitleEl.textContent=gaugeLabel;
       if(villaDarkroomGauge)villaDarkroomGauge.setAttribute('aria-label',gaugeLabel);
       if(villaDarkroomFertilityResultEl){villaDarkroomFertilityResultEl.classList.toggle('hidden',isFertilized||villaDarkroomFertilityRate===null);villaDarkroomFertilityResultEl.textContent=isFertilized||villaDarkroomFertilityRate===null?'':`受精率 ${villaDarkroomFertilityRate}%`}
-      if(villaDarkroomMarcusStatusEl)villaDarkroomMarcusStatusEl.textContent=villaDarkroomMarcusStatus;
-      if(villaDarkroomFemaleRateEl)villaDarkroomFemaleRateEl.textContent=`${villaDarkroomFemaleRate}%`;
+      if(villaDarkroomMarcusStatusEl)villaDarkroomMarcusStatusEl.textContent='強制繁殖期';
+      if(villaDarkroomFemaleRateEl)villaDarkroomFemaleRateEl.textContent=`${villaDarkroomFemaleRate}%${villaDarkroomFemaleRate>=100?'　搾乳可能。':''}`;
       villaDarkroomRenderGauge();
       villaDarkroomUpdateResistanceCooldown();
     }
@@ -10799,6 +10800,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     villaDarkroomBelongingsOpen?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;closeRoomService();closeChatSheet();villaDarkroomBelongingsSheet?.classList.add('open');villaDarkroomBelongingsSheet?.setAttribute('aria-hidden','false')});
     document.getElementById('villaDarkroomBelongingsClose')?.addEventListener('click',()=>{villaDarkroomBelongingsSheet?.classList.remove('open');villaDarkroomBelongingsSheet?.setAttribute('aria-hidden','true')});
     document.getElementById('villaDarkroomUseAphrodisiac')?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;villaDarkroomAdjustGauge(30);void villaDarkroomRunDatabaseAction('aphrodisiac')});
+    document.getElementById('villaDarkroomUseFemalePromoter')?.addEventListener('click',()=>{if(!villaDarkroomIsHere()||!villaDarkroomIsController())return;void villaDarkroomRunDatabaseAction('female_promoter')});
     document.getElementById('roomBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('fallbackBelongingsOpen').addEventListener('click',openRoomBelongings);
     document.getElementById('roomBelongingsClose').addEventListener('click',closeRoomBelongings);document.getElementById('roomCollectionOpen').addEventListener('click',openRoomCollection);document.getElementById('roomCollectionClose').addEventListener('click',closeRoomCollection);updateCollectionButton();
