@@ -6857,10 +6857,12 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     });
     const VILLA_DARKROOM_LABELS=Object.freeze({kiss1:'キス1',kiss2:'キス2',kiss3:'キス3',fast:'高速',fast2:'高速2',fast3:'高速3',fast4:'高速4',nail:'爪',vibration1:'振動1',vibration2:'振動2',vibration3:'振動3',mayo:'マヨ'});
     let villaDarkroomAction='bgm',villaDarkroomActionId='',villaDarkroomActionAt=0;
-    const VILLA_DARKROOM_MAYO_COUNT_KEY='spr-villa-501-mayo-count-v1';
-    let villaDarkroomMayoCount=Math.max(0,Number(localStorage.getItem(VILLA_DARKROOM_MAYO_COUNT_KEY)||0)||0),villaDarkroomMayoCountAt=Date.now();
+    const VILLA_DARKROOM_MAYO_COUNT_KEY='spr-villa-501-mayo-count-v1',VILLA_DARKROOM_MAYO_COUNT_AT_KEY='spr-villa-501-mayo-count-at-v1';
+    let villaDarkroomMayoCount=Math.max(0,Number(localStorage.getItem(VILLA_DARKROOM_MAYO_COUNT_KEY)||0)||0),villaDarkroomMayoCountAt=Number(localStorage.getItem(VILLA_DARKROOM_MAYO_COUNT_AT_KEY)||0)||0;
     function villaDarkroomRenderMayoCount(){if(villaDarkroomMayoCountEl)villaDarkroomMayoCountEl.textContent=`${villaDarkroomMayoCount}回`}
-    function villaDarkroomSetMayoCount(value,{persist=false,at=Date.now()}={}){const count=Math.max(0,Math.floor(Number(value)||0));villaDarkroomMayoCount=count;villaDarkroomMayoCountAt=Math.max(villaDarkroomMayoCountAt,Number(at)||Date.now());if(persist)try{localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_KEY,String(count))}catch{}villaDarkroomRenderMayoCount()}
+    function villaDarkroomSetMayoCount(value,{persist=false,at=Date.now()}={}){const count=Math.max(0,Math.floor(Number(value)||0)),timestamp=Number.isFinite(Number(at))?Number(at):Date.now();if(timestamp<villaDarkroomMayoCountAt)return false;villaDarkroomMayoCount=count;villaDarkroomMayoCountAt=timestamp;if(persist)try{localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_KEY,String(count));localStorage.setItem(VILLA_DARKROOM_MAYO_COUNT_AT_KEY,String(timestamp))}catch{}villaDarkroomRenderMayoCount();return true}
+    async function villaDarkroomPublishMayoCount(){if(activeRoom!=='501'||!roomPhonePresenceReady||!roomPhonePresenceChannel)return;try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-mayo-count',payload:{room_no:'501',count:villaDarkroomMayoCount,count_at:villaDarkroomMayoCountAt,origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER}})}catch(e){console.warn('darkroom mayo count sync',e)}}
+    window.addEventListener('spr:darkroom-counters-reset',()=>{const at=Date.now();villaDarkroomSetMayoCount(0,{persist:true,at});villaDarkroomSetGauge(0,{at,eventId:sprSafeUuid()})});
     function villaDarkroomLatestCountFromPresence(){if(activeRoom!=='501')return;const member=roomPhonePresenceMembers().filter(m=>String(m?.display_name||'').trim()===VILLA_DARKROOM_CONTROLLER).sort((a,b)=>Number(b?.mayo_count_at||0)-Number(a?.mayo_count_at||0))[0];if(member&&Number.isFinite(Number(member.mayo_count)))villaDarkroomSetMayoCount(member.mayo_count,{at:member.mayo_count_at})}
     villaDarkroomRenderMayoCount();
     const VILLA_DARKROOM_GAUGE_KEY='spr-villa-501-friendship-gauge-v1',VILLA_DARKROOM_GAUGE_AT_KEY='spr-villa-501-friendship-gauge-at-v1';
@@ -6945,6 +6947,16 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       villaDarkroomAudioBuffers.set(key,task);
       try{return await task}catch(e){villaDarkroomAudioBuffers.delete(key);throw e}
     }
+    let villaDarkroomPreloadRun=0;
+    async function villaDarkroomPreloadEffects(){
+      if(!villaDarkroomIsHere())return;
+      const run=++villaDarkroomPreloadRun,keys=Object.keys(VILLA_DARKROOM_FILES);
+      villaDarkroomSetStatus('効果音を事前に読み込んでいます…');
+      const results=await Promise.all(keys.map(async key=>{try{await villaDarkroomBuffer(key);return ''}catch(error){console.warn('villa darkroom preload failed',VILLA_DARKROOM_FILES[key],error);return VILLA_DARKROOM_LABELS[key]}}));
+      if(run!==villaDarkroomPreloadRun||!villaDarkroomIsHere()||villaDarkroomEffectKey)return;
+      const failed=results.filter(Boolean);
+      villaDarkroomSetStatus(failed.length?`音源を読み込めません：${failed.join('・')}（ファイル名・配置・MP3形式を確認）`:'効果音の準備ができました。');
+    }
     function villaDarkroomSetStatus(msg){if(villaDarkroomIsHere()&&villaDarkroomStatus)villaDarkroomStatus.textContent=msg}
     function villaDarkroomSetPeerStatus(msg){if(villaDarkroomPeerStatus)villaDarkroomPeerStatus.textContent=msg}
     function villaDarkroomMarkSelected(key=''){
@@ -6965,7 +6977,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // The ambient track must stay exclusively inside the dark room.
       if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed()||!villaDarkroomBgm)return;
       if(!villaDarkroomBgm.paused){try{villaDarkroomBgm.muted=false}catch{}return}
-      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.40,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
+      const started=await sprStartAudioClean(villaDarkroomBgm,{volume:.20,loop:true,restart:false,guard:SPR_AUDIO_START_GUARD_MS});
       if(!villaDarkroomIsHere()||!villaDarkroomAudioAllowed())return;
       if(!started){
         if(villaDarkroomBgm.error){villaDarkroomSetStatus('暗室BGMを再生できません。villa_darkroom_bgm.mp3 を確認してください。')}
@@ -7135,6 +7147,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         villaDarkroomLatestRemoteAt=0;villaDarkroomLatestRemoteAction='';
         // Do not silence already shared effects when a roommate enters later.
         void villaDarkroomStartBgm();
+        void villaDarkroomPreloadEffects();
         if(villaDarkroomIsController())void villaDarkroomPublish('bgm');
         else villaDarkroomSyncPresence();
       }
@@ -7161,7 +7174,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       primeVillaDarkroomSharedAudio();
       const key=btn.dataset.darkroomCommand;
       if(['kiss1','kiss2','kiss3','nail','vibration1','vibration2','vibration3'].includes(key))villaDarkroomAdjustGauge(10);
-      if(key==='mayo'){villaDarkroomSetMayoCount(villaDarkroomMayoCount+1,{persist:true});villaDarkroomMayoCountAt=Date.now();if(roomPhonePresenceReady)void trackRoomPhonePresence();villaDarkroomSetGauge(0,{at:Date.now(),eventId:sprSafeUuid(),broadcast:true})}
+      if(key==='mayo'){const countAt=Date.now();villaDarkroomSetMayoCount(villaDarkroomMayoCount+1,{persist:true,at:countAt});if(roomPhonePresenceReady)void trackRoomPhonePresence();void villaDarkroomPublishMayoCount();villaDarkroomSetGauge(0,{at:countAt,eventId:sprSafeUuid(),broadcast:true})}
       void villaDarkroomApplyAction(key);
       void villaDarkroomPublish(key);
     }));
@@ -8119,6 +8132,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
         .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
         .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
+        .on('broadcast',{event:'villa-darkroom-mayo-count'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey||String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;if(Number.isFinite(Number(payload?.count)))villaDarkroomSetMayoCount(payload.count,{persist:true,at:payload.count_at})})
         .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||''})})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
@@ -11239,7 +11253,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   });
   // WORLD RESET: 管理人本人のログインだけを残し、他参加者は SECURITY CHECK へ戻す。
   // spr-last-seen は SECURITY CHECK を通った時刻なので、リセット後の再ログイン判定にも使用する。
-  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-first-conversation-done'];delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')||k.startsWith('ng-drinks-consumed:')||k.startsWith('ng-drink-penalty:')).forEach(k=>delete windowSprFlagCache[k]);}}
+  function clearLocalGimmicks(){const preserve=new Set(['spr-guest-name','spr-player-id','spr-last-seen','spr-bgm-enabled']);Object.keys(localStorage).filter(k=>k.startsWith('spr-')&&!preserve.has(k)).forEach(k=>localStorage.removeItem(k));if(typeof windowSprFlagCache==='object'&&windowSprFlagCache){delete windowSprFlagCache['hernando-first-conversation-done'];delete windowSprFlagCache['hernando-intro-seen'];delete windowSprFlagCache['hernando-visit-count'];delete windowSprFlagCache['hernando-poison-until'];delete windowSprFlagCache['emily-casual-progress'];Object.keys(windowSprFlagCache).filter(k=>k.startsWith('room-phone-done:')||k.startsWith('room-service-horror:')||k.startsWith('ng-drinks-consumed:')||k.startsWith('ng-drink-penalty:')).forEach(k=>delete windowSprFlagCache[k]);}window.dispatchEvent(new Event('spr:darkroom-counters-reset'));}
   function resetKeepPlayerId(message=''){const m=String(message||'').match(/(?:^|\|)KEEP:([^|]+)/);return m?decodeURIComponent(m[1]):''}
   function clearLoginAndReturnToSecurity(){
     const bgm=localStorage.getItem('spr-bgm-enabled');
@@ -11309,7 +11323,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
   }
   if(resetBtn)resetBtn.addEventListener('click',async()=>{
     if(!IS_ADMIN)return;
-    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・過去に登録されたログアウト中の参加者も全員、所持品・CAFEコレクション・進行状態を初期化します\n・全参加者のCHIPは0になります\n・ミステリーボックスの抽選回数とヴィラ発行数を初期化します\n\nこの操作を実行しますか？'))return;
+    if(!confirm('本番用にDAY1〜DAY7の全ギミックを初期化します。\n\n・この端末（管理人）のログインは残します\n・それ以外の参加者は全員ログアウトします\n・他の端末はSECURITY CHECKから入り直しになります\n・過去に登録されたログアウト中の参加者も全員、所持品・CAFEコレクション・進行状態を初期化します\n・全参加者のCHIPは0になります\n・ミステリーボックスの抽選回数とヴィラ発行数を初期化します\n・種付け回数と受精率ゲージも初期化します\n\nこの操作を実行しますか？'))return;
     if(!confirm('最終確認です。\n現在ログインしていない人も含め、過去に登録された全プレイヤーの試運転データを削除・初期化します。\nプレイヤーIDと名前は残ります。本番用に実行しますか？'))return;
     const resetCode=await requestAdminResetPin();
     if(resetCode===null)return;
@@ -11334,7 +11348,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       // 管理人本人はリセット後も同じログインで操作を続けられるようにする。
       localStorage.setItem('spr-last-seen',String(Date.now()));
       window.dispatchEvent(new Event('spr:world-reset-completed'));
-      if(statusEl)statusEl.textContent=`初期化完了。ログアウト中を含む登録済み${resetPlayerCount}人の所持品・CAFEコレクション・進行状態・CHIP、抽選回数・ヴィラ残数をリセットし、他の参加者はログアウトしました。DAY1へ戻ります。`;
+      if(statusEl)statusEl.textContent=`初期化完了。ログアウト中を含む登録済み${resetPlayerCount}人の所持品・CAFEコレクション・進行状態・CHIP、抽選回数・ヴィラ残数・種付け回数・受精率ゲージをリセットし、他の参加者はログアウトしました。DAY1へ戻ります。`;
       setTimeout(()=>goDay(1),500);
     }catch(e){alert('初期化に失敗しました。\n'+(e.message||e));if(statusEl)statusEl.textContent='初期化失敗';}
     finally{resetBtn.disabled=false}
