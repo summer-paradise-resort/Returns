@@ -6891,7 +6891,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       villaDarkroomSetMayoCount(state.mayo_count,{persist:true,at,force:true});
       villaDarkroomSetGauge(state.gauge_value,{at,eventId:`db:${state.updated_at||at}`,force:true});
       const rate=state.fertility_rate===null||state.fertility_rate===undefined?null:Number(state.fertility_rate);
-      villaDarkroomFertilityRate=Number.isFinite(rate)&&rate>=50&&rate<=100?Math.round(rate):null;
+      villaDarkroomFertilityRate=Number.isFinite(rate)&&rate>=30&&rate<=100?Math.round(rate):null;
       villaDarkroomMarcusStatus=state.marcus_status==='受精完了'?'受精完了':'繁殖期';
       villaDarkroomRenderFertilityState();
     }
