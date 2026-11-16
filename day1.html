@@ -6919,14 +6919,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       villaDarkroomRenderFertilityState();
     }
     function villaDarkroomSharedStatePayload(){return{room_no:'501',revision:villaDarkroomDatabaseRevision,mayo_count:villaDarkroomMayoCount,gauge_value:villaDarkroomGaugeValue,fertility_rate:villaDarkroomFertilityRate,marcus_status:villaDarkroomMarcusStatus,female_rate:villaDarkroomFemaleRate,resistance_available_at:villaDarkroomResistanceAvailableAt?new Date(villaDarkroomResistanceAvailableAt).toISOString():null,updated_at:new Date().toISOString(),origin_session_key:roomPhonePresenceSessionKey,display_name:VILLA_DARKROOM_CONTROLLER}}
-    async function villaDarkroomBroadcastSharedState(){if(activeRoom!=='501'||!roomPhonePresenceReady||!roomPhonePresenceChannel)return;try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-state',payload:villaDarkroomSharedStatePayload()})}catch(e){console.warn('darkroom state broadcast',e)}}
+    async function villaDarkroomBroadcastSharedState(){if(activeRoom!=='501')return false;if(!roomPhonePresenceReady||!roomPhonePresenceChannel){villaDarkroomStateBroadcastPending=true;return false}const sent=await sendRoomPhonePresenceBroadcast('villa-darkroom-state',villaDarkroomSharedStatePayload());villaDarkroomStateBroadcastPending=!sent;return sent}
     function villaDarkroomApplySharedState(payload){if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;const revision=Number(payload?.revision);if(Number.isFinite(revision)&&revision>=0&&villaDarkroomDatabaseRevision>=0&&revision<villaDarkroomDatabaseRevision)return;if(Number.isFinite(revision)&&revision>=0)villaDarkroomDatabaseRevision=Math.max(villaDarkroomDatabaseRevision,revision);villaDarkroomApplyDatabaseState(payload)}
-    async function villaDarkroomLoadDatabaseState(){
+    let villaDarkroomDatabaseLoadBusy=false;
+    async function villaDarkroomLoadDatabaseState({onlyIfNewer=false}={}){
       if(activeRoom!=='501'||!window.supabaseClientSpecial)return;
-      const {data,error}=await window.supabaseClientSpecial.from('spr_villa_501_state').select('id,mayo_count,gauge_value,fertility_rate,marcus_status,female_rate,resistance_available_at,revision,updated_at').eq('id',1).maybeSingle();
-      if(error){villaDarkroomSetStatus('リアルタイム共有SQLが未設定です。付属SQLをSupabaseで実行してください。');console.warn('darkroom shared state load',error);return}
-      if(data)villaDarkroomApplyDatabaseState(data);
+      if(villaDarkroomDatabaseLoadBusy)return;villaDarkroomDatabaseLoadBusy=true;
+      try{
+        const {data,error}=await window.supabaseClientSpecial.from('spr_villa_501_state').select('id,mayo_count,gauge_value,fertility_rate,marcus_status,female_rate,resistance_available_at,revision,updated_at').eq('id',1).maybeSingle();
+        if(error){villaDarkroomSetStatus('リアルタイム共有SQLが未設定です。付属SQLをSupabaseで実行してください。');console.warn('darkroom shared state load',error);return}
+        if(data&&(!onlyIfNewer||Number(data.revision)>villaDarkroomDatabaseRevision))villaDarkroomApplyDatabaseState(data);
+      }finally{villaDarkroomDatabaseLoadBusy=false}
     }
+    // Realtime broadcast is immediate; this light reconciliation catches silent
+    // websocket drops so another browser still sees committed state promptly.
+    setInterval(()=>{if(activeRoom==='501'&&villaDarkroomInVilla()&&villaDarkroomDatabaseRevision>=0)void villaDarkroomLoadDatabaseState({onlyIfNewer:true})},2000);
     async function villaDarkroomRunDatabaseAction(action){
       const client=window.supabaseClientSpecial,playerId=await ensureStoredPlayerId();
       if(!client||!playerId){villaDarkroomSetStatus('共有状態を更新できません。接続を確認してください。');return}
@@ -6942,7 +6949,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       try{localStorage.setItem(VILLA_DARKROOM_GAUGE_KEY,String(villaDarkroomGaugeValue));localStorage.setItem(VILLA_DARKROOM_GAUGE_AT_KEY,String(villaDarkroomGaugeAt))}catch{}
       villaDarkroomRenderGauge();
       if(activeRoom==='501'){
-        if(roomPhonePresenceReady){void trackRoomPhonePresence();if(broadcast&&roomPhonePresenceChannel)void roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-gauge',payload:{room_no:'501',value:villaDarkroomGaugeValue,gauge_value:villaDarkroomGaugeValue,occurred_at:villaDarkroomGaugeAt,event_id:villaDarkroomGaugeEventId,origin_session_key:roomPhonePresenceSessionKey,display_name:String(activeGuest||storedGuestName||'ゲスト'),fertility_rate:villaDarkroomFertilityRate,marcus_status:villaDarkroomMarcusStatus,female_rate:villaDarkroomFemaleRate,resistance_available_at:villaDarkroomResistanceAvailableAt?new Date(villaDarkroomResistanceAvailableAt).toISOString():null,revision:villaDarkroomDatabaseRevision,updated_at:new Date(villaDarkroomGaugeAt).toISOString()}}).catch(e=>{villaDarkroomGaugeBroadcastPending=true;console.warn('darkroom gauge sync',e)})}
+        if(roomPhonePresenceReady){void trackRoomPhonePresence();if(broadcast&&roomPhonePresenceChannel)void sendRoomPhonePresenceBroadcast('villa-darkroom-gauge',{room_no:'501',value:villaDarkroomGaugeValue,gauge_value:villaDarkroomGaugeValue,occurred_at:villaDarkroomGaugeAt,event_id:villaDarkroomGaugeEventId,origin_session_key:roomPhonePresenceSessionKey,display_name:String(activeGuest||storedGuestName||'ゲスト'),fertility_rate:villaDarkroomFertilityRate,marcus_status:villaDarkroomMarcusStatus,female_rate:villaDarkroomFemaleRate,resistance_available_at:villaDarkroomResistanceAvailableAt?new Date(villaDarkroomResistanceAvailableAt).toISOString():null,revision:villaDarkroomDatabaseRevision,updated_at:new Date(villaDarkroomGaugeAt).toISOString()}).then(sent=>{if(!sent)villaDarkroomGaugeBroadcastPending=true})}
         else if(broadcast)villaDarkroomGaugeBroadcastPending=true;
       }
       return true;
@@ -7200,8 +7207,7 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       if(activeRoom!=='501'||!roomPhonePresenceReady||!roomPhonePresenceChannel)return;
       if(villaDarkroomGaugeBroadcastPending){
         const payload={room_no:'501',value:villaDarkroomGaugeValue,gauge_value:villaDarkroomGaugeValue,occurred_at:villaDarkroomGaugeAt,event_id:villaDarkroomGaugeEventId,origin_session_key:roomPhonePresenceSessionKey,display_name:String(activeGuest||storedGuestName||'ゲスト'),fertility_rate:villaDarkroomFertilityRate,marcus_status:villaDarkroomMarcusStatus,female_rate:villaDarkroomFemaleRate,resistance_available_at:villaDarkroomResistanceAvailableAt?new Date(villaDarkroomResistanceAvailableAt).toISOString():null,revision:villaDarkroomDatabaseRevision,updated_at:new Date(villaDarkroomGaugeAt).toISOString()};
-        try{await roomPhonePresenceChannel.send({type:'broadcast',event:'villa-darkroom-gauge',payload});villaDarkroomGaugeBroadcastPending=false}
-        catch(e){console.warn('darkroom gauge queued sync',e)}
+        villaDarkroomGaugeBroadcastPending=!await sendRoomPhonePresenceBroadcast('villa-darkroom-gauge',payload);
       }
       if(!villaDarkroomIsController())return;
       const queued=villaDarkroomPendingAudioPayloads.splice(0);
@@ -7540,6 +7546,21 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
     // 誰か1人でも未選択なら着信音は部屋全体で鳴り続け、全員が「出ない」を
     // 選んだ時だけ3秒後に静かに止める。
     let roomPhonePresenceChannel=null,roomPhonePresenceReady=false,roomPresenceAnnounceReady=false,roomEntryNoticeTimer=null;
+    let roomPhonePresenceRetryTimer=0,roomPhonePresenceRetryAttempt=0,roomPhonePresenceLastStatus='idle';
+    let villaDarkroomStateBroadcastPending=false;
+    function scheduleRoomPhonePresenceReconnect(room,reason='Realtime接続が切断されました。'){
+      const target=String(room||'');if(!target||String(activeRoom||'')!==target||!roomView.classList.contains('room-active'))return;
+      roomPhonePresenceReady=false;roomPhonePresenceLastStatus='disconnected';
+      if(target==='501')villaDarkroomSetStatus(`${reason} 再接続しています…`);
+      if(roomPhonePresenceRetryTimer)return;
+      const delay=Math.min(15000,1000*Math.pow(2,Math.min(roomPhonePresenceRetryAttempt,4)));roomPhonePresenceRetryAttempt++;
+      roomPhonePresenceRetryTimer=setTimeout(()=>{roomPhonePresenceRetryTimer=0;if(String(activeRoom||'')===target&&roomView.classList.contains('room-active'))void startRoomPhonePresence(target)},delay);
+    }
+    async function sendRoomPhonePresenceBroadcast(event,payload){
+      const channel=roomPhonePresenceChannel;if(!channel||!roomPhonePresenceReady)return false;
+      try{const result=await channel.send({type:'broadcast',event,payload});if(result==='ok'||result?.status==='ok')return true;console.warn('room realtime broadcast was not accepted',{event,status:result?.status,error:result?.error});scheduleRoomPhonePresenceReconnect(activeRoom,`共有イベント「${event}」の送信に失敗しました。`);return false}
+      catch(error){console.warn('room realtime broadcast failed',{event,error});scheduleRoomPhonePresenceReconnect(activeRoom,`共有イベント「${event}」を送信できませんでした。`);return false}
+    }
     let roomPhonePresenceSessionKey='',roomPresenceKnownSessions=new Set(),roomPresenceAnnouncedPeople=new Set();
     let roomPresenceLeaveTimers=new Map(),roomPresenceRecentDepartures=new Map(),roomDepartureEventIds=new Set();
     // PCブラウザの短いRealtime再接続を退室と誤認しないよう、退室候補を猶予時間だけ保持する。
@@ -8185,9 +8206,11 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
       }
     },15000);
     function stopRoomPhonePresence(){
+      if(roomPhonePresenceRetryTimer){clearTimeout(roomPhonePresenceRetryTimer);roomPhonePresenceRetryTimer=0}
       cancelRoomPhoneDeclineStop();
       roomPhoneDeclineSilencedEventId='';
       roomPhonePresenceReady=false;
+      roomPhonePresenceLastStatus='stopped';
       roomPhoneStayStartedAt=0; // 部屋の人数を確認できない間はカウントしない。
       roomPresenceAnnounceReady=false;
       hideRoomEntryNotice();
@@ -8239,23 +8262,28 @@ window.sprBuildNarrativeCharSpans = function(target, source, charClass){
         .on('broadcast',{event:'room-service-order-created'},({payload})=>{if(activeRoom!==roomAtStart)return;applySharedRoomServiceOrder(payload)})
         .on('broadcast',{event:'room-service-delivery-arrived'},({payload})=>{if(activeRoom!==roomAtStart)return;applyRoomServiceArrival(payload)})
         .on('broadcast',{event:'villa-pool-action'},({payload})=>{if(activeRoom!==roomAtStart)return;applyVillaPoolSharedAction(payload)})
-        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_villa_501_state'},payload=>{if(activeRoom==='501'&&payload?.new) villaDarkroomApplyDatabaseState(payload.new)})
+        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'spr_villa_501_state'},payload=>{if(activeRoom==='501'&&payload?.new){roomPhonePresenceLastStatus='live';villaDarkroomApplyDatabaseState(payload.new)}})
         .on('broadcast',{event:'villa-darkroom-audio'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplyShared(payload)})
-        .on('broadcast',{event:'villa-darkroom-state'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomApplySharedState(payload)})
+        .on('broadcast',{event:'villa-darkroom-state'},({payload})=>{if(activeRoom!==roomAtStart)return;roomPhonePresenceLastStatus='live';villaDarkroomApplySharedState(payload)})
         .on('broadcast',{event:'villa-darkroom-audio-ack'},({payload})=>{if(activeRoom!==roomAtStart)return;villaDarkroomReceiveAck(payload)})
         .on('broadcast',{event:'villa-darkroom-mayo-count'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey||String(payload?.display_name||'').trim()!==VILLA_DARKROOM_CONTROLLER)return;if(villaDarkroomDatabaseRevision<0&&Number.isFinite(Number(payload?.count)))villaDarkroomSetMayoCount(payload.count,{persist:true,at:payload.count_at})})
-        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||'',force:true});if(payload?.fertility_rate!==undefined||payload?.marcus_status!==undefined)villaDarkroomApplySharedState({...payload,gauge_value:payload.value,updated_at:payload.updated_at||new Date(Number(payload.occurred_at)||Date.now()).toISOString()})})
+        .on('broadcast',{event:'villa-darkroom-gauge'},({payload})=>{if(activeRoom!=='501'||String(payload?.room_no)!=='501'||String(payload?.origin_session_key||'')===roomPhonePresenceSessionKey)return;roomPhonePresenceLastStatus='live';if(Number.isFinite(Number(payload?.value)))villaDarkroomSetGauge(payload.value,{at:payload.occurred_at,eventId:payload.event_id||'',force:true});if(payload?.fertility_rate!==undefined||payload?.marcus_status!==undefined)villaDarkroomApplySharedState({...payload,gauge_value:payload.value,updated_at:payload.updated_at||new Date(Number(payload.occurred_at)||Date.now()).toISOString()})})
         .on('broadcast',{event:'hernando-room-entrance'},({payload})=>{if(activeRoom!==roomAtStart||String(payload?.room_no||'')!==roomAtStart)return;applyHernandoRoomEntrance(roomAtStart,{discoveredBy:payload?.discovered_by,announce:true})});
       roomPhonePresenceChannel=channel;
       channel.subscribe(async status=>{
         if(roomPhonePresenceChannel!==channel||activeRoom!==roomAtStart)return;
         if(status==='SUBSCRIBED'){
           roomPhonePresenceReady=true;
+          roomPhonePresenceLastStatus='SUBSCRIBED';roomPhonePresenceRetryAttempt=0;
+          if(roomPhonePresenceRetryTimer){clearTimeout(roomPhonePresenceRetryTimer);roomPhonePresenceRetryTimer=0}
           void syncMysteryRoomPresence(roomAtStart);
           await trackRoomPhonePresence();
-          if(roomAtStart==='501'){void villaDarkroomLoadDatabaseState();void villaDarkroomFlushPendingBroadcasts()}
+          if(roomAtStart==='501'){void villaDarkroomLoadDatabaseState();void villaDarkroomFlushPendingBroadcasts();if(villaDarkroomStateBroadcastPending)void villaDarkroomBroadcastSharedState()}
           void flushVillaPoolPendingBroadcasts();
           syncSharedRoomState();
+        }else if(['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)){
+          roomPhonePresenceLastStatus=status;console.warn('room realtime channel status',roomAtStart,status);
+          scheduleRoomPhonePresenceReconnect(roomAtStart,`Realtimeチャンネル状態: ${status}`);
         }
       });
     }
